@@ -27,7 +27,10 @@ import org.orekit.utils.ParameterDriver;
 /** Class modifying theoretical inter-satellites phase measurement with ambiguity.
  * @author Bryan Cazabonne
  * @since 10.3
+ * @deprecated as of 12.1 ambiguity is managed directly by raw measurements
+ * {@link org.orekit.estimation.measurements.gnss.InterSatellitesPhase}
  */
+@Deprecated
 public class InterSatellitesPhaseAmbiguityModifier extends AbstractAmbiguityModifier implements EstimationModifier<InterSatellitesPhase> {
 
     /** Constructor.

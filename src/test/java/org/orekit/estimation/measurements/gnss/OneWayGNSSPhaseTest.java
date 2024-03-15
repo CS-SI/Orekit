@@ -155,7 +155,9 @@ public class OneWayGNSSPhaseTest {
         final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new OneWayGNSSPhaseCreator(ephemeris, FREQUENCY, ambiguity, localClockOffset, remoteClockOffset),
+                                                               new OneWayGNSSPhaseCreator(ephemeris, "remote",
+                                                                                          FREQUENCY, ambiguity,
+                                                                                          localClockOffset, remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -287,7 +289,9 @@ public class OneWayGNSSPhaseTest {
         final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new OneWayGNSSPhaseCreator(ephemeris, FREQUENCY, ambiguity, localClockOffset, remoteClockOffset),
+                                                               new OneWayGNSSPhaseCreator(ephemeris, "remote",
+                                                                                          FREQUENCY, ambiguity,
+                                                                                          localClockOffset, remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -436,7 +440,8 @@ public class OneWayGNSSPhaseTest {
         final int    ambiguity         = 1234;
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
-        final OneWayGNSSPhaseCreator creator = new OneWayGNSSPhaseCreator(ephemeris, FREQUENCY, ambiguity, localClockOffset, remoteClockOffset);
+        final OneWayGNSSPhaseCreator creator = new OneWayGNSSPhaseCreator(ephemeris, "remote",
+                                                                          FREQUENCY, ambiguity, localClockOffset, remoteClockOffset);
         creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -572,7 +577,7 @@ public class OneWayGNSSPhaseTest {
         Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
-            if (driver.getName().equals(Phase.AMBIGUITY_NAME)) {
+            if (driver instanceof AmbiguityDriver) {
                 Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
                 Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
             }

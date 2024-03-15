@@ -45,6 +45,9 @@ public class ObservableSatellite {
      */
     private static final double CLOCK_OFFSET_SCALE = FastMath.scalb(1.0, -10);
 
+    /** Prefix for satellite names. */
+    private static final String SAT_PREFIX = "sat-";
+
     /** Index of the propagator related to this satellite. */
     private final int propagatorIndex;
 
@@ -73,6 +76,18 @@ public class ObservableSatellite {
         this.clockAccelerationDriver = new ParameterDriver(CLOCK_ACCELERATION_PREFIX + propagatorIndex,
                                                            0.0, CLOCK_OFFSET_SCALE,
                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+    }
+
+    /** Build a name for the satellite.
+     * <p>
+     * This is mainly useful to build the arguments for {@link
+     * org.orekit.estimation.measurements.gnss.AmbiguityCache#getAmbiguity(String,
+     * String, double)}
+     * </p>
+     * @since 12.1
+     */
+    public String getName() {
+        return SAT_PREFIX + propagatorIndex;
     }
 
     /** Get the index of the propagator related to this satellite.

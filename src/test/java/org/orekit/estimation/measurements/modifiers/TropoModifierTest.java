@@ -186,7 +186,8 @@ public class TropoModifierTest {
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
@@ -234,7 +235,8 @@ public class TropoModifierTest {
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);

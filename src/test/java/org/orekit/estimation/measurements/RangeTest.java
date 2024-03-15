@@ -184,6 +184,7 @@ public class RangeTest {
      * Generic test function for values of the range
      * @param printResults Print the results ?
      */
+    @SuppressWarnings("deprecation")
     void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");

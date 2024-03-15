@@ -148,7 +148,6 @@ class FieldImpulseManeuverTest {
         final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
         final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
                 AbsoluteDate.ARBITRARY_EPOCH);
-        @SuppressWarnings("unchecked")
         final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate).withThreshold(zero.add(100.));
 
         // When
@@ -172,7 +171,6 @@ class FieldImpulseManeuverTest {
         final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
         final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
                 AbsoluteDate.ARBITRARY_EPOCH);
-        @SuppressWarnings("unchecked")
         final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate);
 
         // When
@@ -242,7 +240,6 @@ class FieldImpulseManeuverTest {
         final T fieldThreshold = field.getZero().add(detector.getThreshold());
         FieldAbstractDetector<?, T> fieldDetector;
         if (detector instanceof DateDetector) {
-            @SuppressWarnings("unchecked")
             FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field,
                                                                         new FieldAbsoluteDate<>(field, ((DateDetector) detector).getDate()));
             fieldDetector = dateDetector;
@@ -467,10 +464,8 @@ class FieldImpulseManeuverTest {
         propagator.addEventDetector(dateDetector);
         propagator.setOrbitType(OrbitType.CARTESIAN);
         final Gradient zero = field.getZero();
-        @SuppressWarnings("unchecked")
         final FieldDateDetector<Gradient> fieldDateDetector =
-                        new FieldDateDetector<>(field,
-                                        new FieldAbsoluteDate<>(field, dateDetector.getDate()));
+                        new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, dateDetector.getDate()));
         final FieldVector3D<Gradient> fieldDeltaV = new FieldVector3D<>(
                 Gradient.variable(freeParameters, 0, 0.),
                 Gradient.variable(freeParameters, 1, 0.),

@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import static org.orekit.orbits.PositionAngleType.MEAN;
 
-import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;

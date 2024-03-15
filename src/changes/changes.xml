@@ -21,6 +21,13 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1333">
+          Deprecated InterSatellitesPhaseAmbiguityModifier, OneWayGNSSPhaseAmbiguityModifier
+          and PhaseAmbiguityModifier.
+      </action>
+      <action dev="luc" type="add" >
+          Added AmbiguityDriver and AmbiguityCache.
+      </action>
       <action dev="evan" type="fix" issue="986">
           Fix DSST Jacobian setup.
       </action>

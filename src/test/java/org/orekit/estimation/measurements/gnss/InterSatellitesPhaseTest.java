@@ -588,7 +588,8 @@ public class InterSatellitesPhaseTest {
         // Create a phase measurement. Remote is set to null since it not used by the test
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     AbsoluteDate.J2000_EPOCH, 467614.701, Frequency.G01.getWavelength(),
-                                                                    0.02, 1.0);
+                                                                    0.02, 1.0,
+                                                                    new AmbiguityCache());
 
         // First check
         Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
@@ -603,7 +604,7 @@ public class InterSatellitesPhaseTest {
         Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
-            if (Phase.AMBIGUITY_NAME.equals(driver.getName())) {
+            if (driver instanceof AmbiguityDriver) {
                 Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
                 Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
             }

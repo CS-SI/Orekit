@@ -605,7 +605,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Create state interpolator
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitInterpolator, null, null, null, null);
+                new SpacecraftStateInterpolator(2, 1.0e-3, sergeiFrame, orbitInterpolator, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
@@ -664,7 +664,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Create state interpolator
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitInterpolator, null, null, null, null);
+                new SpacecraftStateInterpolator(2, 1.0e-3, sergeiFrame, orbitInterpolator, null, null, null, null);
 
         // When & then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
@@ -722,7 +722,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Create state interpolator
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitInterpolator, null, null, null, null);
+                new SpacecraftStateInterpolator(2, 1.0e-3, sergeiFrame, orbitInterpolator, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,

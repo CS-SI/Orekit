@@ -140,7 +140,8 @@ public class WindUpTest {
         PhaseBuilder        builder   = new PhaseBuilder(null, station,
                                                          Frequency.G01.getWavelength(),
                                                          0.01 * Frequency.G01.getWavelength(),
-                                                         1.0, obsSat);
+                                                         1.0, obsSat,
+                                                         new AmbiguityCache());
         generator.addScheduler(new EventBasedScheduler<>(builder,
                                                          new FixedStepSelector(60.0, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(obsSat),

@@ -76,6 +76,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
+                                                                                          "remote",
                                                                                           FREQUENCY,
                                                                                           ambiguity,
                                                                                           localClockOffset,
@@ -92,6 +93,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
+                                                                                          "remote",
                                                                                           FREQUENCY,
                                                                                           ambiguity,
                                                                                           localClockOffset,
@@ -139,6 +141,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
+                                                                                          "remote",
                                                                                           FREQUENCY,
                                                                                           ambiguity,
                                                                                           localClockOffset,
@@ -153,6 +156,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
+                                                                                          "remote",
                                                                                           FREQUENCY,
                                                                                           ambiguity,
                                                                                           localClockOffset,

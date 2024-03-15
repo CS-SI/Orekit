@@ -16,17 +16,13 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhaseCreator;
@@ -43,17 +39,15 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ShapiroOneWayGNSSPhaseModifierTest {
+import java.util.List;
 
-    /** Frequency of the measurements. */
+@Deprecated
+public class OneWayGNSSPhaseAmbiguityModifierTest {
+
     private static final Frequency FREQUENCY = Frequency.G01;
 
     @Test
-    public void testShapiro() {
-        doTestShapiro(0.000047764, 0.000086953, 0.000164659);
-    }
-
-    private void doTestShapiro(final double expectedMin, final double expectedMean, final double expectedMax) {
+    public void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -62,7 +56,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
-        // create perfect one way GNSS phase measurements without antenna offset
+        // create perfect inter-satellites phase measurements without antenna offset
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
         final Orbit closeOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(context.initialOrbit.getDate(),
                                                                                  original.getPosition().add(new Vector3D(1000, 2000, 3000)),
@@ -76,55 +70,50 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final int    ambiguity         = 1234;
+        final int    ambiguity1        = 1234;
+        final int    ambiguity2        = -45764;
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
-        List<ObservedMeasurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
                                                                                           "remote",
                                                                                           FREQUENCY,
-                                                                                          ambiguity,
+                                                                                          ambiguity1,
                                                                                           localClockOffset,
                                                                                           remoteClockOffset,
                                                                                           Vector3D.ZERO,
                                                                                           Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);
 
-        final ShapiroOneWayGNSSPhaseModifier modifier = new ShapiroOneWayGNSSPhaseModifier(context.initialOrbit.getMu());
-        final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator p2 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
-        DescriptiveStatistics stat = new DescriptiveStatistics();
-        for (ObservedMeasurement<?> measurement : measurements) {
-            OneWayGNSSPhase sr = (OneWayGNSSPhase) measurement;
-            SpacecraftState[] states = new SpacecraftState[] {
-                p3.propagate(sr.getDate()), ephemeris.propagate(sr.getDate())
-            };
-            EstimatedMeasurementBase<OneWayGNSSPhase>
-                evalNoMod =
-                sr.estimateWithoutDerivatives(0, 0, states);
 
+        OneWayGNSSPhaseAmbiguityModifier modifier = new OneWayGNSSPhaseAmbiguityModifier(39, ambiguity2);
+        for (int i = 0; i < measurements.size(); ++i) {
+            OneWayGNSSPhase sr = (OneWayGNSSPhase) measurements.get(i);
+            final SpacecraftState localRefState  = p2.propagate(sr.getDate());
+            final SpacecraftState remoteRefState = ephemeris.propagate(sr.getDate());
+            sr.addModifier(modifier);
+            EstimatedMeasurementBase<OneWayGNSSPhase> evalNoMod = sr.estimateWithoutDerivatives(0, 0,
+                                                                                                new SpacecraftState[] {
+                                                                                                    localRefState,
+                                                                                                    remoteRefState
+                                                                                                });
             // add modifier
             sr.addModifier(modifier);
-            boolean found = false;
-            for (final EstimationModifier<OneWayGNSSPhase> existing : sr.getModifiers()) {
-                found = found || existing == modifier;
-            }
-            Assertions.assertTrue(found);
-            EstimatedMeasurementBase<OneWayGNSSPhase>
-                eval =
-                sr.estimateWithoutDerivatives(0, 0, states);
+            EstimatedMeasurementBase<OneWayGNSSPhase> eval = sr.estimateWithoutDerivatives(0, 0,
+                                                                                           new SpacecraftState[] {
+                                                                                               localRefState,
+                                                                                               remoteRefState
+                                                                                           });
 
-            stat.addValue(
-                eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
+            Assertions.assertEquals(ambiguity2, eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0], 4e-11);
 
         }
-        final double wavelength = ((OneWayGNSSPhase) measurements.get(0)).getWavelength();
-
-        Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
-        Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);
-        Assertions.assertEquals(expectedMax,  stat.getMax() * wavelength,  1.0e-9);
 
     }
 
 }
+
+
