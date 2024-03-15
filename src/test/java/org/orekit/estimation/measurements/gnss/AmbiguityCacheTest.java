@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.modifiers;
+package org.orekit.estimation.measurements.gnss;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,8 +24,9 @@ public class AmbiguityCacheTest {
 
     @Test
     public void testCache() {
-        final AmbiguityCache  cache  = new AmbiguityCache();
-        final AmbiguityDriver driver01 = cache.getAmbiguity("E18", "TUKT", Frequency.E01.getWavelength());
+        final AmbiguityCache cache  = new AmbiguityCache();
+        final AmbiguityDriver
+            driver01 = cache.getAmbiguity("E18", "TUKT", Frequency.E01.getWavelength());
         Assertions.assertEquals("E18",  driver01.getEmitter());
         Assertions.assertEquals("TUKT", driver01.getReceiver());
         Assertions.assertEquals(Frequency.E01.getWavelength(), driver01.getWavelength(), 1.0e-10);

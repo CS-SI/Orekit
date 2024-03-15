@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.modifiers;
+package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.util.Precision;
 
@@ -26,6 +26,13 @@ import java.util.Map;
  * @since 12.1
  */
 public class AmbiguityCache {
+
+    /** Default cache.
+     * @deprecated this default cache is only a temporary hack for compatibility purposes
+     * it will be removed in Orekit 13.0
+     */
+    @Deprecated
+    public static final AmbiguityCache DEFAULT_CACHE = new AmbiguityCache();
 
     /** Cache map. */
     private final Map<Key, AmbiguityDriver> cache;

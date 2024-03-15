@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.modifiers;
+package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.gnss.Frequency;

@@ -16,15 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
-import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.Phase;
@@ -37,17 +33,13 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 
-public class ShapiroPhaseModifierTest {
+import java.util.List;
 
-    /** Frequency of the measurements. */
-    private static final Frequency FREQUENCY = Frequency.G01;
+@Deprecated
+public class PhaseAmbiguityModifierTest {
 
     @Test
-    public void testShapiro() {
-        doTestShapiro(0.006850703, 0.008320738, 0.010297509);
-    }
-
-    private void doTestShapiro(final double expectedMin, final double expectedMean, final double expectedMax) {
+    public void testPhaseAmbiguityModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -56,60 +48,48 @@ public class ShapiroPhaseModifierTest {
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
+        }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final int    ambiguity         = 1234;
+        final int    ambiguity1        = 1234;
+        final int    ambiguity2        = -45764;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
-        List<ObservedMeasurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           FREQUENCY,
-                                                                                           ambiguity,
+                                                                                           Frequency.G01,
+                                                                                           ambiguity1,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
-
         propagator.clearStepHandlers();
 
+        final PhaseAmbiguityModifier modifier = new PhaseAmbiguityModifier(17, ambiguity2);
 
-        final ShapiroPhaseModifier modifier = new ShapiroPhaseModifier(context.initialOrbit.getMu());
-
-        DescriptiveStatistics stat = new DescriptiveStatistics();
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
-            final SpacecraftState refstate = propagator.propagate(date);
+            final SpacecraftState refState = propagator.propagate(date);
 
             Phase phase = (Phase) measurement;
-            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
-            Assertions.assertEquals(12, evalNoMod.getIteration());
-            Assertions.assertEquals(17, evalNoMod.getCount());
+            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+
 
             // add modifier
             phase.addModifier(modifier);
-            boolean found = false;
-            for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
-                found = found || existing == modifier;
-            }
-            Assertions.assertTrue(found);
-            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(0, 0,  new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
 
-            stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
+            Assertions.assertEquals(ambiguity2, eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 
         }
-
-        // wavelength
-        final double wavelength = ((Phase) measurements.get(0)).getWavelength();
-
-        Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
-        Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);
-        Assertions.assertEquals(expectedMax,  stat.getMax() * wavelength,  1.0e-9);
-
     }
 
 }
-
-

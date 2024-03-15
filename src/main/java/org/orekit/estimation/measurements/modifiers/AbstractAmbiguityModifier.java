@@ -32,7 +32,12 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 10.3
+ * @deprecated as of 12.1 ambiguity is managed directly by raw measurements
+ * {@link org.orekit.estimation.measurements.gnss.Phase},
+ * {@link org.orekit.estimation.measurements.gnss.OneWayGNSSPhase}
+ * and {@link org.orekit.estimation.measurements.gnss.InterSatellitesPhase}
  */
+@Deprecated
 public class AbstractAmbiguityModifier {
 
     /** Ambiguity scale factor.

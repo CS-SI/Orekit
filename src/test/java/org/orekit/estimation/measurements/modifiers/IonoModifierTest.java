@@ -109,7 +109,8 @@ public class IonoModifierTest {
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01, 0,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
@@ -180,7 +181,8 @@ public class IonoModifierTest {
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01, 0,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
@@ -654,7 +656,7 @@ public class IonoModifierTest {
 
     }
 
-    private class MockIonosphericModel implements IonosphericModel {
+    private static class MockIonosphericModel implements IonosphericModel {
 
         /** Driver for the ionospheric delay.*/
         private final ParameterDriver ionoDelay;

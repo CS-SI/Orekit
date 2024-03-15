@@ -27,7 +27,10 @@ import org.orekit.utils.ParameterDriver;
 /** Class modifying theoretical one-way GNSS phase measurement with ambiguity.
  * @author Bryan Cazabonne
  * @since 10.3
+ * @deprecated as of 12.1 ambiguity is managed directly by raw measurements
+ * {@link org.orekit.estimation.measurements.gnss.OneWayGNSSPhase}
  */
+@Deprecated
 public class OneWayGNSSPhaseAmbiguityModifier extends AbstractAmbiguityModifier implements EstimationModifier<OneWayGNSSPhase> {
 
     /** Constructor.

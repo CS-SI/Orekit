@@ -46,11 +46,14 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "InterSatellitesPhase";
 
-    /** Name for ambiguity driver. */
+    /** Name for ambiguity driver.
+     * @deprecated as of 12.1 not used anymore
+     */
+    @Deprecated
     public static final String AMBIGUITY_NAME = "ambiguity";
 
     /** Driver for ambiguity. */
-    private final ParameterDriver ambiguityDriver;
+    private final AmbiguityDriver ambiguityDriver;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
@@ -63,18 +66,42 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 12.1, replaced by {@link #InterSatellitesPhase(ObservableSatellite,
+     * ObservableSatellite, AbsoluteDate, double, double, double, double,
+     * AmbiguityCache)}
      */
+    @Deprecated
     public InterSatellitesPhase(final ObservableSatellite local,
                                 final ObservableSatellite remote,
                                 final AbsoluteDate date, final double phase,
                                 final double wavelength, final double sigma,
                                 final double baseWeight) {
+        this(local, remote, date, phase, wavelength, sigma, baseWeight,
+             AmbiguityCache.DEFAULT_CACHE);
+    }
+
+    /** Constructor.
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote remote satellite which simply emits the signal
+     * @param date date of the measurement
+     * @param phase observed value (cycles)
+     * @param wavelength phase observed value wavelength (m)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param cache from which ambiguity drive should come
+     * @since 12.1
+     */
+    public InterSatellitesPhase(final ObservableSatellite local,
+                                final ObservableSatellite remote,
+                                final AbsoluteDate date, final double phase,
+                                final double wavelength, final double sigma,
+                                final double baseWeight,
+                                final AmbiguityCache cache) {
         // Call to super constructor
         super(date, phase, sigma, baseWeight, local, remote);
 
         // Initialize phase ambiguity driver
-        ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME, 0.0, 1.0,
-                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        ambiguityDriver = cache.getAmbiguity(remote.getName(), local.getName(), wavelength);
 
         // Add parameter drivers
         addParameterDriver(ambiguityDriver);

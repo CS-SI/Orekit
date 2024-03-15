@@ -52,7 +52,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public abstract class AbstractOneWayGNSSMeasurement<T extends ObservedMeasurement<T>> extends AbstractOnBoardMeasurement<T> {
+public abstract class AbstractOneWayGNSSMeasurement<T extends ObservedMeasurement<T>>
+    extends AbstractOnBoardMeasurement<T> {
 
     /** Emitting satellite. */
     private final PVCoordinatesProvider remotePV;

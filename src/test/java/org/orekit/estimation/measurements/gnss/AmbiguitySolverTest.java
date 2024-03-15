@@ -20,6 +20,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.gnss.Frequency;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.ArrayList;
@@ -54,11 +55,11 @@ public class AmbiguitySolverTest {
     }
 
     private List<ParameterDriver> createAmbiguities(double...floatValues) {
+        final AmbiguityCache cache = new AmbiguityCache();
         final List<ParameterDriver> ambiguitiesDrivers = new ArrayList<>(floatValues.length);
         for (int i = 0; i < floatValues.length; ++i) {
-            final ParameterDriver driver = new ParameterDriver(Phase.AMBIGUITY_NAME + i, 0.0, 1.0,
-                                                               Double.NEGATIVE_INFINITY,
-                                                               Double.POSITIVE_INFINITY);
+            final ParameterDriver driver = cache.getAmbiguity("emitter-" + i, "receiver",
+                                                              Frequency.E01.getWavelength());
             driver.setValue(floatValues[i]);
             driver.setSelected(true);
             ambiguitiesDrivers.add(driver);
