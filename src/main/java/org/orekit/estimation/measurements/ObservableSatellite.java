@@ -84,6 +84,7 @@ public class ObservableSatellite {
      * org.orekit.estimation.measurements.gnss.AmbiguityCache#getAmbiguity(String,
      * String, double)}
      * </p>
+     * @return name for the satellite (built from the propagator index)
      * @since 12.1
      */
     public String getName() {
