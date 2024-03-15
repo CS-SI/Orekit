@@ -68,7 +68,7 @@ public class FieldSortedListTrimmer {
      * only the n earliest (or latest) entries. A typical example of the later
      * case is leap seconds cache, since the number of leap seconds cannot be
      * arbitrarily increased.
-     * <p>
+     * </p>
      * @param <T>  the type of data
      * @param <K>  the type of the field elements
      * @param central central date

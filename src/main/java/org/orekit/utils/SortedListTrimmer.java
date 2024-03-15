@@ -65,7 +65,7 @@ public class SortedListTrimmer {
      * only the n earliest (or latest) entries. A typical example of the later
      * case is leap seconds cache, since the number of leap seconds cannot be
      * arbitrarily increased.
-     * <p>
+     * </p>
      * @param <T>  the type of data
      * @param central central date
      * @param data complete list of entries (must be chronologically sorted)
