@@ -116,7 +116,7 @@ public enum CdmMetadataKey {
     INTRACK_THRUST((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setIntrackThrust));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

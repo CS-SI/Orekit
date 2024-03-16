@@ -38,7 +38,7 @@ public enum TdmDataKey {
     EPOCH((token, context, observationsBlock) -> token.processAsDate(observationsBlock::addObservationEpoch, context));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

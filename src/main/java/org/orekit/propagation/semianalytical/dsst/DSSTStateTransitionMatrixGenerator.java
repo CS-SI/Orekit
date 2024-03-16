@@ -123,6 +123,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
         // initialize short period terms.
         // the propagator will have called the non-field method

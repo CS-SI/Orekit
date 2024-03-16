@@ -102,6 +102,7 @@ public class TDOA extends GroundReceiverMeasurement<TDOA> {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("checkstyle:WhitespaceAround")
     @Override
     protected EstimatedMeasurementBase<TDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
                                                                                      final SpacecraftState[] states) {

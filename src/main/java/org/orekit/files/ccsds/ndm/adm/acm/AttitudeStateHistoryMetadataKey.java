@@ -66,7 +66,7 @@ public enum AttitudeStateHistoryMetadataKey {
     RATE_TYPE((token, context, container) -> token.processAsEnum(RateElementsType.class, container::setRateType));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

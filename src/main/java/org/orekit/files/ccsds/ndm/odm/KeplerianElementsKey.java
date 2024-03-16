@@ -85,7 +85,7 @@ public enum KeplerianElementsKey {
     GM((token, context, container) -> token.processAsDouble(Units.KM3_PER_S2, context.getParsedUnitsBehavior(), container::setMu));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

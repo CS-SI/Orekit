@@ -33,7 +33,7 @@ enum XmlSubStructureKey {
     attitudeState((token, parser) -> parser.manageXmlAttitudeStateSection(token.getType() == TokenType.START));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

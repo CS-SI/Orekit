@@ -173,7 +173,7 @@ public enum AdditionalParametersKey {
     COV_CONFIDENCE_METHOD((token, context, container) -> token.processAsFreeTextString(container::setCovConfidenceMethod));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

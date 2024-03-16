@@ -52,7 +52,7 @@ public enum AttitudeCovarianceHistoryMetadataKey {
     COV_TYPE((token, context, container) -> token.processAsEnum(AttitudeCovarianceType.class, container::setCovType));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

@@ -50,6 +50,20 @@ public class ModifiedSaastamoinenModelTest {
     private double[] heights;
 
     @Test
+    public void testIssue1078() {
+        try {
+            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 50.0);
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
+        }
+        try {
+            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, -50.0);
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
+        }
+    }
+
+    @Test
     public void testFixedElevation() {
         Utils.setDataRoot("atmosphere");
         ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();

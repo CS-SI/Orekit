@@ -142,7 +142,7 @@ public enum OrbitDeterminationKey {
     DATA_TYPES((token, context, container) -> token.processAsFreeTextList(container::setDataTypes));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
