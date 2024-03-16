@@ -18,11 +18,13 @@ package org.orekit;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.SelfDescribing;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.Attitude;
@@ -36,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.array;
 
 /**
  * A set of matchers specific to the Orekit value classes.
@@ -363,6 +366,192 @@ public class OrekitMatchers {
         matchers.add(closeTo(number, absTol));
         matchers.add(relativelyCloseTo(number, ulps));
         return anyOf(matchers);
+    }
+
+    /**
+     * match a double array based on matchers for each element.
+     *
+     * @param matchers matcher for each element.
+     * @return a matcher for a double[]
+     * @see org.hamcrest.collection.IsArray
+     */
+    @SafeVarargs
+    public static Matcher<double[]> doubleArrayContaining(
+            Matcher<? super Double>... matchers) {
+        return new TypeSafeDiagnosingMatcher<double[]>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendList("[", ", ", "]", Arrays.<Matcher<?>>asList(matchers));
+            }
+
+            @Override
+            protected boolean matchesSafely(double[] actual,
+                                            Description mismatchDescription) {
+                if (actual.length != matchers.length) {
+                    mismatchDescription.appendText("array length was " + actual.length);
+                    return false;
+                }
+                for (int i = 0; i < actual.length; i++) {
+                    if (!matchers[i].matches(actual[i])) {
+                        mismatchDescription.appendText("in element " + i + " ");
+                        matchers[i].describeMismatch(actual[i],
+                                mismatchDescription);
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+    }
+
+    /**
+     * Check that the double[] contains exactly the specified values.
+     *
+     * @param values the expected values.
+     * @return matcher for double[]s
+     * @see Matchers#arrayContaining(Object...)
+     */
+    public static Matcher<double[]> doubleArrayContaining(double... values) {
+        @SuppressWarnings("unchecked")
+        Matcher<Double>[] elementMatchers = new Matcher[values.length];
+        for (int i = 0; i < elementMatchers.length; i++) {
+            elementMatchers[i] = Matchers.is(values[i]);
+        }
+        return doubleArrayContaining(elementMatchers);
+    }
+
+    /**
+     * Check that a double[] contains the specified values to within an absolute
+     * tolerance.
+     *
+     * @param values the expected values
+     * @param absTol the absolute tolerance used in comparisons
+     * @return a {@link Matcher} for double[]'s
+     */
+    public static Matcher<double[]> doubleArrayContaining(
+            final double[] values, final double absTol) {
+        @SuppressWarnings("unchecked")
+        Matcher<Double>[] elementMatchers = new Matcher[values.length];
+        for (int i = 0; i < elementMatchers.length; i++) {
+            elementMatchers[i] = closeTo(values[i], absTol);
+        }
+        return doubleArrayContaining(elementMatchers);
+    }
+
+    /**
+     * Check that a double[] contains the specified values to within a relative
+     * tolerance.
+     *
+     * @param values the expected values
+     * @param ulps   the units in last place the values can be off by. These are ulps of
+     *               the expected values. Specifying 1 ulp corresponds to ~16 decimal
+     *               digits of accuracy.
+     * @return a {@link Matcher} for a double[]
+     */
+    public static Matcher<double[]> doubleArrayContaining(
+            final double[] values, final int ulps) {
+        @SuppressWarnings("unchecked")
+        Matcher<Double>[] elementMatchers = new Matcher[values.length];
+        for (int i = 0; i < elementMatchers.length; i++) {
+            elementMatchers[i] = relativelyCloseTo(values[i], ulps);
+        }
+        return doubleArrayContaining(elementMatchers);
+    }
+
+    /**
+     * Check that a double[] contains the specified values to within a relative tolerance
+     * or absolute tolerance. Specifically, each comparison will pass if the difference is
+     * less than {@code absTol} <em>Or</em> the difference, expressed in ulps is less than
+     * {@code ulps}.
+     *
+     * @param values the expected values
+     * @param absTol absolute tolerance on comparisons
+     * @param ulps   relative tolerance, in units in last place
+     * @return matcher for the double array
+     */
+    public static Matcher<double[]> doubleArrayContaining(
+            final double[] values, final double absTol, final int ulps) {
+        @SuppressWarnings("unchecked")
+        Matcher<Double>[] elementMatchers = new Matcher[values.length];
+        for (int i = 0; i < elementMatchers.length; i++) {
+            elementMatchers[i] = numberCloseTo(values[i], absTol, ulps);
+        }
+        return doubleArrayContaining(elementMatchers);
+    }
+
+    /**
+     * Match a {@link RealMatrix#getData()} as a double[][].
+     *
+     * @param dataMatcher matcher for the data as a double[][]
+     * @return a {@link RealMatrix} matcher
+     */
+    public static Matcher<RealMatrix> matrix(
+            final Matcher<double[][]> dataMatcher) {
+        return new TypeSafeDiagnosingMatcher<RealMatrix>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("matrix that ").appendDescriptionOf(
+                        dataMatcher);
+            }
+
+            @Override
+            protected boolean matchesSafely(RealMatrix item,
+                                            Description mismatchDescription) {
+                if (dataMatcher.matches(item.getData())) {
+                    return true;
+                } else {
+                    mismatchDescription.appendText("matrix did not match ");
+                    dataMatcher.describeMismatch(item.getData(),
+                            mismatchDescription);
+                    return false;
+                }
+            }
+        };
+    }
+
+    /**
+     * Match a {@link RealMatrix} to within the given absolute tolerance
+     *
+     * @param expected the expected values
+     * @param absTol   the absolute tolerance on the comparison
+     * @return a matrix matcher
+     * @see #matrix(Matcher)
+     * @see #doubleArrayContaining(double[], double)
+     */
+    public static Matcher<RealMatrix> matrixCloseTo(RealMatrix expected,
+                                                    double absTol) {
+        @SuppressWarnings("rawtypes")
+        Matcher[] rowMatchers = new Matcher[expected.getRowDimension()];
+        for (int i = 0; i < rowMatchers.length; i++) {
+            rowMatchers[i] = doubleArrayContaining(expected.getRow(i), absTol);
+        }
+        @SuppressWarnings("unchecked")
+        Matcher<double[][]> dataMatcher = array(rowMatchers);
+        return matrix(dataMatcher);
+    }
+
+    /**
+     * Match a {@link RealMatrix} to within the given absolute tolerance
+     *
+     * @param expected the expected values
+     * @param absTol   the absolute tolerance on the comparison
+     * @param ulps     the maximum allowable difference, in units in last place
+     * @return a matrix matcher
+     * @see #matrix(Matcher)
+     * @see #doubleArrayContaining(double[], double)
+     */
+    public static Matcher<RealMatrix> matrixCloseTo(RealMatrix expected,
+                                                    double absTol, int ulps) {
+        @SuppressWarnings("rawtypes")
+        Matcher[] rowMatchers = new Matcher[expected.getRowDimension()];
+        for (int i = 0; i < rowMatchers.length; i++) {
+            rowMatchers[i] = doubleArrayContaining(expected.getRow(i), absTol,
+                    ulps);
+        }
+        @SuppressWarnings("unchecked")
+        Matcher<double[][]> dataMatcher = array(rowMatchers);
+        return matrix(dataMatcher);
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,6 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -162,6 +161,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** Generator for the interpolation grid. */
     private InterpolationGrid interpolationgrid;
+
+    /**
+     * Same as {@link org.orekit.propagation.AbstractPropagator#harvester} but with the
+     * more specific type. Saved to avoid a cast.
+     */
+    private DSSTHarvester harvester;
 
     /** Create a new instance of DSSTPropagator.
      *  <p>
@@ -340,17 +345,41 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
-                                                        final DoubleArrayDictionary initialJacobianColumns) {
-        return new DSSTHarvester(this, stmName, initialStm, initialJacobianColumns);
+    public DSSTHarvester setupMatricesComputation(
+            final String stmName,
+            final RealMatrix initialStm,
+            final DoubleArrayDictionary initialJacobianColumns) {
+
+        if (stmName == null) {
+            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
+        }
+        final DSSTHarvester dsstHarvester =
+                createHarvester(stmName, initialStm, initialJacobianColumns);
+        return this.harvester = dsstHarvester;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected DSSTHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                            final DoubleArrayDictionary initialJacobianColumns) {
+        final DSSTHarvester dsstHarvester =
+                new DSSTHarvester(this, stmName, initialStm, initialJacobianColumns);
+        this.harvester = dsstHarvester;
+        return dsstHarvester;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected DSSTHarvester getHarvester() {
+        return harvester;
     }
 
     /** {@inheritDoc} */
     @Override
     protected void setUpStmAndJacobianGenerators() {
 
-        final AbstractMatricesHarvester harvester = getHarvester();
-        if (harvester != null) {
+        final DSSTHarvester dsstHarvester = getHarvester();
+        if (dsstHarvester != null) {
 
             // set up the additional equations and additional state providers
             final DSSTStateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
@@ -358,7 +387,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // as we are now starting the propagation, everything is configured
             // we can freeze the names in the harvester
-            harvester.freezeColumnsNames();
+            dsstHarvester.freezeColumnsNames();
 
         }
 
@@ -370,13 +399,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private DSSTStateTransitionMatrixGenerator setUpStmGenerator() {
 
-        final AbstractMatricesHarvester harvester = getHarvester();
+        final DSSTHarvester dsstHarvester = getHarvester();
 
         // add the STM generator corresponding to the current settings, and setup state accordingly
         DSSTStateTransitionMatrixGenerator stmGenerator = null;
         for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
             if (equations instanceof DSSTStateTransitionMatrixGenerator &&
-                equations.getName().equals(harvester.getStmName())) {
+                equations.getName().equals(dsstHarvester.getStmName())) {
                 // the STM generator has already been set up in a previous propagation
                 stmGenerator = (DSSTStateTransitionMatrixGenerator) equations;
                 break;
@@ -384,17 +413,18 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
         if (stmGenerator == null) {
             // this is the first time we need the STM generate, create it
-            stmGenerator = new DSSTStateTransitionMatrixGenerator(harvester.getStmName(),
+            stmGenerator = new DSSTStateTransitionMatrixGenerator(dsstHarvester.getStmName(),
                                                                   getAllForceModels(),
-                                                                  getAttitudeProvider());
+                                                                  getAttitudeProvider(),
+                                                                  getPropagationType());
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(harvester.getStmName())) {
+        if (!getInitialIntegrationState().hasAdditionalState(dsstHarvester.getStmName())) {
             // add the initial State Transition Matrix if it is not already there
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
-                                                                         harvester.getInitialStateTransitionMatrix()),
+                                                                         dsstHarvester.getInitialStateTransitionMatrix()),
                             getPropagationType());
         }
 
@@ -751,6 +781,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     @Override
     protected void beforeIntegration(final SpacecraftState initialState,
                                      final AbsoluteDate tEnd) {
+        // If this method is updated also update DSSTStateTransitionMatrixGenerator.init(...)
 
         // check if only mean elements must be used
         final PropagationType type = getPropagationType();

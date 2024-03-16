@@ -467,7 +467,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (tsStr.equalsIgnoreCase("ccc")) {
                         ts = TimeSystem.GPS;
                     } else {
-                        ts = TimeSystem.valueOf(tsStr);
+                        ts = TimeSystem.parseTimeSystem(tsStr);
                     }
                     pi.file.getHeader().setTimeSystem(ts);
                     pi.timeScale = ts.getTimeScale(pi.timeScales);

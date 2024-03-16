@@ -1,7 +1,16 @@
 package org.orekit.time;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.LazyLoadedDataContext;
@@ -83,6 +92,39 @@ public class LazyLoadedTimeScalesTest {
                 Assertions.assertTrue(!scales.contains(ut1), message + " " + scales);
                 scales.add(ut1);
             }
+        }
+    }
+
+    /**
+     * Tests fix for issue-1296
+     */
+    @RepeatedTest(10)
+    void testGetUtcLazyInit() throws InterruptedException, ExecutionException {
+        LazyLoadedDataContext defaultContext =
+            (LazyLoadedDataContext) Utils.setDataRoot("regular-data");
+
+        LazyLoadedTimeScales ts = defaultContext.getTimeScales();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+        try {
+            List<Future<UTCScale>> futures = new ArrayList<>();
+            for (int i = 0; i < 100; i++) {
+                futures.add(executorService.submit(ts::getUTC));
+            }
+
+            for (Future<?> f : futures) {
+                try {
+                    assertNotNull(f.get());
+                } catch (ExecutionException e) {
+                    if (e.getCause() instanceof ConcurrentModificationException) {
+                        fail("ConcurrentModificationException detected, not thread safe");
+                    }
+                    throw e;
+                }
+            }
+
+        } finally {
+            executorService.shutdown();
         }
     }
 

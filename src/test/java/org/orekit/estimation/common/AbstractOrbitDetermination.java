@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -137,7 +137,7 @@ import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.MappingFunction;
 import org.orekit.models.earth.troposphere.MendesPavlisModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
-import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.TimeSpanEstimatedTroposphericModel;
 import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
 import org.orekit.orbits.CartesianOrbit;
@@ -1678,7 +1678,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                 } else {
                     // Empirical tropospheric model
-                    troposphericModel = SaastamoinenModel.getStandardModel();
+                    troposphericModel = ModifiedSaastamoinenModel.getStandardModel();
                 }
 
                 rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);

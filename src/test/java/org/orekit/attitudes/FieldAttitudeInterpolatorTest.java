@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -199,8 +199,9 @@ public class FieldAttitudeInterpolatorTest {
         OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
                                                                         () -> attitudeInterpolator.interpolate(interpolationDate, attitudes));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS, thrown.getSpecifier());
         Assertions.assertEquals(1, ((Integer) thrown.getParts()[0]).intValue());
+        Assertions.assertEquals(2, ((Integer) thrown.getParts()[1]).intValue());
 
     }
 

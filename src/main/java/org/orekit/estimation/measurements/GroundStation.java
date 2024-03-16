@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -413,15 +413,14 @@ public class GroundStation {
         final double    y          = northOffsetDriver.getValue();
         final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final StaticTransform baseToBody =
-                baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
+        final StaticTransform baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
 
         if (date != null) {
             origin = origin.add(computeDisplacement(date, origin));
         }
 
-        return baseShape.transform(origin, baseShape.getBodyFrame(), null);
+        return baseShape.transform(origin, baseShape.getBodyFrame(), date);
 
     }
 

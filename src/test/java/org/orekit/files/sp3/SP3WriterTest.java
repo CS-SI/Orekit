@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 Luc Maisonobe
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -134,6 +134,11 @@ public class SP3WriterTest {
     @Test
     public void testRoundtripLageos() {
         doTestRoundtrip("/sp3/truncated-nsgf.orb.lageos2.160305.v35.sp3");
+    }
+
+    @Test
+    public void testRoundtripIssue1327FullLine() {
+        doTestRoundtrip("/sp3/issue1327-136-sats.sp3");
     }
 
     private  void doTestRoundtrip(final String name) {

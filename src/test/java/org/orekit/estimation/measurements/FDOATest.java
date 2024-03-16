@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 Mark Rutten
+/* Copyright 2002-2024 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -135,7 +135,7 @@ public class FDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 2e-5);
+        Assertions.assertEquals(0, maxRelativeError, 5.4e-6);
 
     }
 
@@ -212,11 +212,13 @@ public class FDOATest {
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i], date);
-                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
+                if (ref != 0.0) {
+                    maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
+                }
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 1e-4);
+        Assertions.assertEquals(0, maxRelativeError, 3.4e-8);
 
     }
 

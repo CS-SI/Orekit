@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -248,7 +248,14 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * @param additionalStateInterpolator additional state interpolator (can be null)
      *
      * @see AbstractTimeInterpolator
+     *
+     * @deprecated using this constructor may throw an exception if any given interpolator
+     * does not use {@link #DEFAULT_INTERPOLATION_POINTS} and {@link
+     * #DEFAULT_EXTRAPOLATION_THRESHOLD_SEC}. Use {@link #SpacecraftStateInterpolator(int,
+     * double, Frame, TimeInterpolator, TimeInterpolator, TimeInterpolator,
+     * TimeInterpolator, TimeInterpolator)} instead.
      */
+    @Deprecated
     public SpacecraftStateInterpolator(final Frame outputFrame, final TimeInterpolator<Orbit> orbitInterpolator,
                                        final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator,
                                        final TimeInterpolator<TimeStampedDouble> massInterpolator,
@@ -401,7 +408,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
     protected SpacecraftState interpolate(final InterpolationData interpolationData) {
 
         // Get first state definition
-        final SpacecraftState earliestState   = interpolationData.getNeighborList().get(0);
+        final List<SpacecraftState> samples   = interpolationData.getNeighborList();
+        final SpacecraftState earliestState   = samples.get(0);
         final boolean         areOrbitDefined = earliestState.isOrbitDefined();
 
         // Prepare samples
@@ -419,7 +427,6 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
                 createAdditionalStateSample(additionalDotEntries);
 
         // Fill interpolators with samples
-        final List<SpacecraftState>       samples      = interpolationData.getCachedSamples().getAll();
         final List<Orbit>                 orbitSample  = new ArrayList<>();
         final List<AbsolutePVCoordinates> absPVASample = new ArrayList<>();
         for (SpacecraftState state : samples) {

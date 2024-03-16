@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>12.0.1</version>
+  <version>12.0.2</version>
   <name>OREKIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -38,7 +38,7 @@
     <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
     <orekit.maven-project-info-reports-plugin.version>3.4.5</orekit.maven-project-info-reports-plugin.version>
-    <orekit.maven-wagon-ssh-plugin.version>3.5.2</orekit.maven-wagon-ssh-plugin.version>
+    <orekit.maven-wagon-ssh-external-plugin.version>3.5.3</orekit.maven-wagon-ssh-external-plugin.version>
     <orekit.maven-source-plugin.version>3.3.0</orekit.maven-source-plugin.version>
     <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
          https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
@@ -60,19 +60,9 @@
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
-    <!-- sonar related properties -->
-    <sonar.host.url>https://sonar.orekit.org/</sonar.host.url>
-    <!-- for building javac plugin -->
     <tools.jar.dir>${java.home}/../lib/</tools.jar.dir>
     <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
-
-  <distributionManagement>
-    <site>
-      <id>website</id>
-      <url>scp://cochise@spoutnik.orekit.org/var/www/mvn-sites/site-orekit-${project.version}</url>
-    </site>
-  </distributionManagement>
 
   <developers>
     <developer>
@@ -386,7 +376,7 @@
 
   <organization>
     <name>CS GROUP</name>
-    <url>http://www.c-s.fr/</url>
+    <url>https://www.csgroup.eu/</url>
   </organization>
 
   <licenses>
@@ -641,8 +631,8 @@
           <dependencies>
             <dependency><!-- add support for ssh/scp -->
               <groupId>org.apache.maven.wagon</groupId>
-              <artifactId>wagon-ssh</artifactId>
-              <version>${orekit.maven-wagon-ssh-plugin.version}</version>
+              <artifactId>wagon-ssh-external</artifactId>
+              <version>${orekit.maven-wagon-ssh-external-plugin.version}</version>
             </dependency>
           </dependencies>
       </plugin>
@@ -685,7 +675,7 @@
             <option>-extdirs</option>
             <option>${tools.jar.dir}</option>
           </additionalOptions>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
@@ -911,7 +901,7 @@
         <version>${orekit.maven-jxr-plugin.version}</version>
         <configuration>
           <linkJavadoc>false</linkJavadoc>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
         </configuration>
       </plugin>
       <plugin>
@@ -927,7 +917,7 @@
             <option>-extdirs</option>
             <option>${tools.jar.dir}</option>
           </additionalOptions>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>

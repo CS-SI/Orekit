@@ -102,9 +102,9 @@ public class FieldStepHandlerMultiplexerTest {
         multiplexer.add(counterVar);
         multiplexer.add(zero.newInstance(10.0), counter10);
         Assertions.assertEquals(3, multiplexer.getHandlers().size());
-        Assertions.assertTrue(((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(0)).getFixedStepHandler() instanceof FieldFixedCounter);
+        Assertions.assertInstanceOf(FieldFixedCounter.class, ((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(0)).getFixedStepHandler());
         Assertions.assertEquals(60.0, ((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(0)).getFixedTimeStep().getReal(), 1.0e-15);
-        Assertions.assertTrue(((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(2)).getFixedStepHandler() instanceof FieldFixedCounter);
+        Assertions.assertInstanceOf(FieldFixedCounter.class, ((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(2)).getFixedStepHandler());
         Assertions.assertEquals(10.0, ((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(2)).getFixedTimeStep().getReal(), 1.0e-15);
 
         // first run with all handlers

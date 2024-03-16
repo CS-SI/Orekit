@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ImmutableFieldTimeStampedCache;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -115,9 +116,31 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
             final FieldAbsoluteDate<KK> date,
             final ImmutableFieldTimeStampedCache<T, KK> cachedSamples,
             final double threshold) {
+        return getCentralDate(
+                date,
+                cachedSamples.getEarliest().getDate(),
+                cachedSamples.getLatest().getDate(),
+                threshold);
+    }
+
+    /**
+     * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+     *
+     * @param date interpolation date
+     * @param minDate earliest date in the sample.
+     * @param maxDate latest date in the sample.
+     * @param threshold extrapolation threshold
+     * @param <KK> type of calculus field element
+     *
+     * @return central date to use to find neighbors
+     * @since 12.0.1
+     */
+    public static <KK extends CalculusFieldElement<KK>> FieldAbsoluteDate<KK> getCentralDate(
+            final FieldAbsoluteDate<KK> date,
+            final FieldAbsoluteDate<KK> minDate,
+            final FieldAbsoluteDate<KK> maxDate,
+            final double threshold) {
         final FieldAbsoluteDate<KK> central;
-        final FieldAbsoluteDate<KK> minDate = cachedSamples.getEarliest().getDate();
-        final FieldAbsoluteDate<KK> maxDate = cachedSamples.getLatest().getDate();
 
         if (date.compareTo(minDate) < 0 && FastMath.abs(date.durationFrom(minDate)).getReal() <= threshold) {
             // avoid TimeStampedCacheException as we are still within the tolerance before minDate
@@ -214,9 +237,6 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
         /** Interpolation date. */
         private final FieldAbsoluteDate<KK> interpolationDate;
 
-        /** Immutable time stamped cached samples. */
-        private final ImmutableFieldTimeStampedCache<T, KK> cachedSamples;
-
         /** Unmodifiable list of neighbors. */
         private final List<T> neighborList;
 
@@ -236,34 +256,42 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
          * @param sample time stamped sample
          */
         protected InterpolationData(final FieldAbsoluteDate<KK> interpolationDate, final Collection<T> sample) {
-            try {
-                // Handle specific case that is not handled by the immutable time stamped cache constructor
-                if (sample.size() < 2) {
-                    throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA,
-                                                             sample.size());
-                }
+            // Handle specific case that is not handled by the immutable time stamped cache constructor
+            if (sample.isEmpty()) {
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, 0);
+            }
+
+            // TODO performance: create neighborsList without copying sample.
+            if (sample.size() == interpolationPoints) {
+                // shortcut for simple case
+                // copy list to make neighborList immutable
+                this.neighborList = Collections.unmodifiableList(new ArrayList<>(sample));
+            } else {
+                // else, select sample.
 
                 // Create immutable time stamped cache
-                cachedSamples = new ImmutableFieldTimeStampedCache<>(interpolationPoints, sample);
+                final ImmutableFieldTimeStampedCache<T, KK> cachedSamples =
+                        new ImmutableFieldTimeStampedCache<>(interpolationPoints, sample);
 
                 // Find neighbors
-                final FieldAbsoluteDate<KK> central         = getCentralDate(interpolationDate);
-                final Stream<T>             neighborsStream = cachedSamples.getNeighbors(central);
-
-                // Extract field and useful terms
-                this.field = interpolationDate.getField();
-                this.zero  = field.getZero();
-                this.one   = field.getOne();
+                final FieldAbsoluteDate<KK> central =
+                        AbstractFieldTimeInterpolator.getCentralDate(
+                                interpolationDate,
+                                cachedSamples,
+                                extrapolationThreshold);
+                final Stream<T> neighborsStream = cachedSamples.getNeighbors(central);
 
                 // Convert to unmodifiable list
                 neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
+            }
 
-                // Store interpolation date
-                this.interpolationDate = interpolationDate;
-            }
-            catch (OrekitIllegalArgumentException exception) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sample.size());
-            }
+            // Extract field and useful terms
+            this.field = interpolationDate.getField();
+            this.zero = field.getZero();
+            this.one = field.getOne();
+
+            // Store interpolation date
+            this.interpolationDate = interpolationDate;
         }
 
         /**
@@ -272,9 +300,17 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
          * @param date interpolation date
          *
          * @return central date to use to find neighbors
+         *
+         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
+         * Please Comment on forum.orekit.org if you have a use case for this method.
          */
+        @Deprecated
         protected FieldAbsoluteDate<KK> getCentralDate(final FieldAbsoluteDate<KK> date) {
-            return AbstractFieldTimeInterpolator.getCentralDate(date, cachedSamples, extrapolationThreshold);
+            return AbstractFieldTimeInterpolator.getCentralDate(
+                    date,
+                    neighborList.get(0).getDate(),
+                    neighborList.get(neighborList.size() - 1).getDate(),
+                    extrapolationThreshold);
         }
 
         /** Get interpolation date.
@@ -286,9 +322,15 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
 
         /** Get cached samples.
          * @return cached samples
+         *
+         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
+         * Please Comment on forum.orekit.org if you have a use case for this method.
          */
+        @Deprecated
         public ImmutableFieldTimeStampedCache<T, KK> getCachedSamples() {
-            return cachedSamples;
+            return new ImmutableFieldTimeStampedCache<>(
+                    interpolationPoints,
+                    getNeighborList());
         }
 
         /** Get neighbor list.

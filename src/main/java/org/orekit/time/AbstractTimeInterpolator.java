@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ImmutableTimeStampedCache;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -107,9 +108,28 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     public static <T extends TimeStamped> AbsoluteDate getCentralDate(final AbsoluteDate date,
                                                                       final ImmutableTimeStampedCache<T> cachedSamples,
                                                                       final double threshold) {
-        final AbsoluteDate central;
         final AbsoluteDate minDate = cachedSamples.getEarliest().getDate();
         final AbsoluteDate maxDate = cachedSamples.getLatest().getDate();
+        return getCentralDate(date, minDate, maxDate, threshold);
+    }
+
+    /**
+     * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+     *
+     * @param date interpolation date
+     * @param minDate earliest date in the sample.
+     * @param maxDate latest date in the sample.
+     * @param threshold extrapolation threshold
+     * @param <T> type of element
+     *
+     * @return central date to use to find neighbors
+     * @since 12.0.1
+     */
+    public static <T extends TimeStamped> AbsoluteDate getCentralDate(final AbsoluteDate date,
+                                                                      final AbsoluteDate minDate,
+                                                                      final AbsoluteDate maxDate,
+                                                                      final double threshold) {
+        final AbsoluteDate central;
 
         if (date.compareTo(minDate) < 0 && FastMath.abs(date.durationFrom(minDate)) <= threshold) {
             // avoid TimeStampedCacheException as we are still within the tolerance before minDate
@@ -203,9 +223,6 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
         /** Interpolation date. */
         private final AbsoluteDate interpolationDate;
 
-        /** Cached samples. */
-        private final ImmutableTimeStampedCache<T> cachedSamples;
-
         /** Neighbor list around interpolation date. */
         private final List<T> neighborList;
 
@@ -217,19 +234,32 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          */
         protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<T> sample) {
             // Handle specific case that is not handled by the immutable time stamped cache constructor
-            if (sample.size() < 2) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sample.size());
+            if (sample.isEmpty()) {
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, 0);
             }
 
-            // Create immutable time stamped cache
-            this.cachedSamples = new ImmutableTimeStampedCache<>(interpolationPoints, sample);
+            // TODO performance: create neighborsList without copying sample.
+            if (sample.size() == interpolationPoints) {
+                // shortcut for simple case
+                // copy list to make neighborList immutable
+                this.neighborList = Collections.unmodifiableList(new ArrayList<>(sample));
+            } else {
+                // else, select sample.
 
-            // Find neighbors
-            final AbsoluteDate central         = getCentralDate(interpolationDate);
-            final Stream<T>    neighborsStream = cachedSamples.getNeighbors(central);
+                // Create immutable time stamped cache
+                final ImmutableTimeStampedCache<T> cachedSamples =
+                        new ImmutableTimeStampedCache<>(interpolationPoints, sample);
 
-            // Convert to unmodifiable list
-            this.neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
+                // Find neighbors
+                final AbsoluteDate central = AbstractTimeInterpolator.getCentralDate(
+                        interpolationDate,
+                        cachedSamples,
+                        extrapolationThreshold);
+                final Stream<T> neighborsStream = cachedSamples.getNeighbors(central);
+
+                // Convert to unmodifiable list
+                this.neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
+            }
 
             // Store interpolation date
             this.interpolationDate = interpolationDate;
@@ -241,9 +271,16 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          * @param date interpolation date
          *
          * @return central date to use to find neighbors
+         *
+         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
+         * Please Comment on forum.orekit.org if you have a use case for this method.
          */
+        @Deprecated
         protected AbsoluteDate getCentralDate(final AbsoluteDate date) {
-            return AbstractTimeInterpolator.getCentralDate(date, cachedSamples, extrapolationThreshold);
+            return AbstractTimeInterpolator.getCentralDate(date,
+                    neighborList.get(0).getDate(),
+                    neighborList.get(neighborList.size() - 1).getDate(),
+                    extrapolationThreshold);
         }
 
         /** Get interpolation date.
@@ -255,9 +292,13 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
 
         /** Get cached samples.
          * @return cached samples
+         *
+         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
+         * Please Comment on forum.orekit.org if you have a use case for this method.
          */
+        @Deprecated
         public ImmutableTimeStampedCache<T> getCachedSamples() {
-            return cachedSamples;
+            return new ImmutableTimeStampedCache<>(interpolationPoints, neighborList);
         }
 
         /** Get neighbor list.

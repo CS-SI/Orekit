@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public enum TimeSystem {
     QZSS("QZS", "QZ", "J", ts -> ts.getQZSS()),
 
     /** Beidou. */
-    BEIDOU("BDS", "BD", "C", ts -> ts.getBDT()),
+    BEIDOU("BDT", "BD", "C", ts -> ts.getBDT()),
 
     /** IRNSS. */
     IRNSS("IRN", "IR", "I", ts -> ts.getIRNSS()),
@@ -61,7 +61,7 @@ public enum TimeSystem {
     /** SBAS.
      * @since 12.0
      */
-    SBAS("SBAS", "SB", "S", ts -> ts.getUTC()),
+    SBAS(null, "SB", "S", ts -> ts.getUTC()),
 
     /** GMT (should only by used in RUN BY / DATE entries).
      * @since 12.0
@@ -86,7 +86,9 @@ public enum TimeSystem {
 
     static {
         for (final TimeSystem timeSystem : values()) {
-            KEYS_MAP.put(timeSystem.key, timeSystem);
+            if (timeSystem.key != null) {
+                KEYS_MAP.put(timeSystem.key, timeSystem);
+            }
             if (timeSystem.twoLettersCode != null) {
                 TLC_MAP.put(timeSystem.twoLettersCode, timeSystem);
             }
@@ -115,7 +117,7 @@ public enum TimeSystem {
     private final Function<TimeScales, TimeScale> timeScaleProvider;
 
     /** Simple constructor.
-     * @param key key letter
+     * @param key key letter (may be null)
      * @param twoLettersCode two letters code (may be null)
      * @param oneLetterCode one letter code (may be null)
      * @param timeScaleProvider time scale provider

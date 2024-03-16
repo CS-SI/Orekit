@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 Mark Rutten
+/* Copyright 2002-2024 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,8 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldTransform;
@@ -117,74 +114,38 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                                                               final int evaluation,
                                                                                               final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[0];
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states[0]);
+        final TimeStampedPVCoordinates transitPV = common.getTransitPV();
+        final AbsoluteDate transitDate = transitPV.getDate();
 
-        // Coordinates of the spacecraft
-        final TimeStampedPVCoordinates pva = state.getPVCoordinates();
+        // Approximate emitter location at transit time
+        final Transform emitterToInertial =
+                getEmitterStation().getOffsetToInertial(common.getState().getFrame(), transitDate, true);
+        final TimeStampedPVCoordinates emitterApprox =
+                emitterToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(transitDate,
+                                                                                      Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
-        // transform between station and inertial frame, expressed as a gradient
-        // The components of station's position in offset frame are the 3 last derivative parameters
-        final Transform offsetToInertialRx = getReceiverStation().getOffsetToInertial(state.getFrame(), getDate(), false);
-        final AbsoluteDate downlinkDate    = offsetToInertialRx.getDate();
-
-        // Station position in inertial frame at end of the downlink leg
-        final TimeStampedPVCoordinates stationReceiver =
-                offsetToInertialRx.transformPVCoordinates(new TimeStampedPVCoordinates(downlinkDate,
-                                                                                       Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
-
-        // Compute propagation times
-        // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have delta == tauD and transitState will be the same as state)
-
-        // Downlink delay
-        final double tauD = signalTimeOfFlight(pva, stationReceiver.getPosition(), downlinkDate);
-
-        // Transit state & Transit state (re)computed with gradients
-        final double delta = downlinkDate.durationFrom(state.getDate());
-        final double deltaMTauD = delta - tauD;
-        final SpacecraftState transitState = state.shiftedBy(deltaMTauD);
-        final TimeStampedPVCoordinates transitStateDS = pva.shiftedBy(deltaMTauD);
-
-        // transform between secondary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
-        // The components of secondary station's position in offset frame are the 3 last derivative parameters
-        final AbsoluteDate transitDate = downlinkDate.shiftedBy(-tauD);
-        final Transform offsetToInertialTxApprox = getEmitterStation().getOffsetToInertial(state.getFrame(), transitDate, true);
-
-        // Secondary station PV in inertial frame at transit time
-        final TimeStampedPVCoordinates transmitApprox =
-                offsetToInertialTxApprox.transformPVCoordinates(new TimeStampedPVCoordinates(transitDate,
-                                                                                             Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
-
-        // Uplink time of flight from secondary station to transit state of leg2
-        final double tauU = signalTimeOfFlight(transmitApprox, transitStateDS.getPosition(), transitStateDS.getDate());
-
-        // Total time of flight
-        final double tauTotal = tauU - deltaMTauD;
-
-        // Absolute date of transmission
-        final AbsoluteDate transmitDate = downlinkDate.shiftedBy(tauTotal);
-        final Transform transmitToInert = emitter.getOffsetToInertial(state.getFrame(), transmitDate, true);
+        // Uplink time of flight from emitter station to transit state
+        final double tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitDate);
 
         // Secondary station PV in inertial frame at rebound date on secondary station
-        final TimeStampedPVCoordinates stationTransmitter =
-                transmitToInert.transformPVCoordinates(new TimeStampedPVCoordinates(transmitDate,
-                                                                                    Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+        final TimeStampedPVCoordinates emitterPV = emitterApprox.shiftedBy(-tauU);
 
         // Prepare the evaluation
         final EstimatedMeasurementBase<BistaticRange> estimated =
                         new EstimatedMeasurementBase<>(this,
                                                        iteration, evaluation,
                                                        new SpacecraftState[] {
-                                                           transitState
+                                                           common.getTransitState()
                                                        },
                                                        new TimeStampedPVCoordinates[] {
-                                                           stationReceiver,
-                                                           transitStateDS,
-                                                           stationTransmitter
+                                                           common.getStationDownlink(),
+                                                           transitPV,
+                                                           emitterPV
                                                        });
 
         // Range value
-        final double tau = tauD + tauU;
+        final double tau = common.getTauD() + tauU;
         final double range = tau * Constants.SPEED_OF_LIGHT;
 
         estimated.setEstimatedValue(range);
@@ -199,10 +160,9 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
     protected EstimatedMeasurement<BistaticRange> theoreticalEvaluation(final int iteration,
                                                                         final int evaluation,
                                                                         final SpacecraftState[] states) {
-
         final SpacecraftState state = states[0];
 
-        // Range derivatives are computed with respect to spacecraft state in inertial frame
+        // Bistatic range derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters
         // ----------------------
         //
@@ -210,87 +170,39 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
-        int nbParams = 6;
-        final Map<String, Integer> indices = new HashMap<>();
-        for (ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    if (!indices.containsKey(span.getData())) {
-                        indices.put(span.getData(), nbParams++);
-                    }
-                }
-            }
-        }
-        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
+        final GroundReceiverCommonParametersWithDerivatives common = computeCommonParametersWithDerivatives(state);
+        final int nbParams = common.getTauD().getFreeParameters();
+        final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();
+        final FieldAbsoluteDate<Gradient> transitDate = transitPV.getDate();
 
-        // Coordinates of the spacecraft expressed as a gradient
-        final TimeStampedFieldPVCoordinates<Gradient> pvaDS = getCoordinates(state, 0, nbParams);
+        // Approximate emitter location (at transit time)
+        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(common.getTauD().getField());
+        final FieldTransform<Gradient> emitterToInertial =
+                getEmitterStation().getOffsetToInertial(state.getFrame(), transitDate, nbParams, common.getIndices());
+        final TimeStampedFieldPVCoordinates<Gradient> emitterApprox =
+                emitterToInertial.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(transitDate,
+                                                                                             zero, zero, zero));
 
-        // transform between station and inertial frame, expressed as a gradient
-        // The components of station's position in offset frame are the 3 last derivative parameters
-        final FieldTransform<Gradient> offsetToInertialRx =
-                getReceiverStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
-        final FieldAbsoluteDate<Gradient> downlinkDateDS = offsetToInertialRx.getFieldDate();
+        // Uplink time of flight from emiiter to transit state
+        final Gradient tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitPV.getDate());
 
-        // Station position in inertial frame at end of the downlink leg
-        final TimeStampedFieldPVCoordinates<Gradient> stationReceiver =
-                offsetToInertialRx.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
-                        zero, zero, zero));
-
-        // Compute propagation times
-        // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have delta == tauD and transitState will be the same as state)
-
-        // Downlink delay
-        final Gradient tauD = signalTimeOfFlight(pvaDS, stationReceiver.getPosition(), downlinkDateDS);
-
-        // Transit state & Transit state (re)computed with gradients
-        final Gradient delta = downlinkDateDS.durationFrom(state.getDate());
-        final Gradient deltaMTauD = tauD.negate().add(delta);
-        final SpacecraftState transitState = state.shiftedBy(deltaMTauD.getValue());
-        final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
-
-        // transform between secondary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
-        // The components of secondary station's position in offset frame are the 3 last derivative parameters
-        final FieldAbsoluteDate<Gradient> transitDate = downlinkDateDS.shiftedBy(tauD.negate());
-        final FieldTransform<Gradient> offsetToInertialTxApprox =
-                getEmitterStation().getOffsetToInertial(state.getFrame(), transitDate, nbParams, indices);
-
-        // Secondary station PV in inertial frame at transit time
-        final TimeStampedFieldPVCoordinates<Gradient> transmitApprox =
-                offsetToInertialTxApprox.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(transitDate,
-                        zero, zero, zero));
-
-        // Uplink time of flight from secondary station to transit state of leg2
-        final Gradient tauU = signalTimeOfFlight(transmitApprox, transitStateDS.getPosition(), transitStateDS.getDate());
-
-        // Total time of flight
-        final Gradient tauTotal = deltaMTauD.negate().add(tauU);
-
-        // Absolute date of transmission
-        final FieldAbsoluteDate<Gradient> transmitDateDS = downlinkDateDS.shiftedBy(tauTotal);
-        final FieldTransform<Gradient> transmitToInert =
-                emitter.getOffsetToInertial(state.getFrame(), transmitDateDS, nbParams, indices);
-
-        // Secondary station PV in inertial frame at rebound date on secondary station
-        final TimeStampedFieldPVCoordinates<Gradient> stationTransmitter =
-                transmitToInert.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(transmitDateDS,
-                        zero, zero, zero));
+        // Emitter coordinates at transmit time
+        final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitterApprox.shiftedBy(tauU.negate());
 
         // Prepare the evaluation
         final EstimatedMeasurement<BistaticRange> estimated = new EstimatedMeasurement<>(this,
                 iteration, evaluation,
                 new SpacecraftState[] {
-                    transitState
+                    common.getTransitState()
                 },
                 new TimeStampedPVCoordinates[] {
-                    stationReceiver.toTimeStampedPVCoordinates(),
-                    transitStateDS.toTimeStampedPVCoordinates(),
-                    stationTransmitter.toTimeStampedPVCoordinates()
+                    common.getStationDownlink().toTimeStampedPVCoordinates(),
+                    common.getTransitPV().toTimeStampedPVCoordinates(),
+                    emitterPV.toTimeStampedPVCoordinates()
                 });
 
         // Range value
-        final Gradient tau = tauD.add(tauU);
+        final Gradient tau = common.getTauD().add(tauU);
         final Gradient range = tau.multiply(Constants.SPEED_OF_LIGHT);
 
         estimated.setEstimatedValue(range.getValue());
@@ -303,7 +215,7 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = indices.get(span.getData());
+                final Integer index = common.getIndices().get(span.getData());
                 if (index != null) {
                     estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }

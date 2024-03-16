@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,9 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -104,84 +102,50 @@ public class TDOA extends GroundReceiverMeasurement<TDOA> {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("checkstyle:WhitespaceAround")
     @Override
     protected EstimatedMeasurementBase<TDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
                                                                                      final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[0];
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states[0]);
+        final TimeStampedPVCoordinates emitterPV = common.getTransitPV();
+        final AbsoluteDate emitterDate = emitterPV.getDate();
 
-        // coordinates of the spacecraft
-        final TimeStampedPVCoordinates pva = state.getPVCoordinates();
+        // Approximate second location at transit time
+        final Transform secondToInertial =
+                getSecondStation().getOffsetToInertial(common.getState().getFrame(), emitterDate, true);
+        final TimeStampedPVCoordinates secondApprox =
+                secondToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(emitterDate,
+                        Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
-        // transform between prime station frame and inertial frame
-        // at the real date of measurement, i.e. taking station clock offset into account
-        final Transform primeToInert = getStation().getOffsetToInertial(state.getFrame(), getDate(), false);
-        final AbsoluteDate measurementDate = primeToInert.getDate();
+        // Time of flight from emitter to second station
+        final double tau2 = forwardSignalTimeOfFlight(secondApprox, emitterPV.getPosition(), emitterDate);
 
-        // prime station PV in inertial frame at the real date of the measurement
-        final TimeStampedPVCoordinates primePV =
-                        primeToInert.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
-                                                                                         Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
-
-        // compute downlink delay from emitter to prime receiver
-        final double tau1 = signalTimeOfFlight(pva, primePV.getPosition(), measurementDate);
-
-        // elapsed time between state date and signal arrival to the prime receiver
-        final double dtMtau1 = measurementDate.durationFrom(state.getDate()) - tau1;
-
-        // satellite state at signal emission
-        final SpacecraftState emitterState = state.shiftedBy(dtMtau1);
-
-        // satellite pv at signal emission (re)computed with gradient
-        final TimeStampedPVCoordinates emitterPV = pva.shiftedBy(dtMtau1);
-
-        // second station PV in inertial frame at real date of signal reception
-        TimeStampedPVCoordinates secondPV;
-        // initialize search loop of the reception date by second station
-        double tau2 = tau1;
-        double delta;
-        int count = 0;
-        do {
-            final double previous = tau2;
-            // date of signal arrival on second receiver
-            final AbsoluteDate dateAt2 = emitterState.getDate().shiftedBy(previous);
-            // transform between second station frame and inertial frame
-            // at the date of signal arrival, taking clock offset into account
-            final Transform secondToInert =
-                            secondStation.getOffsetToInertial(state.getFrame(), dateAt2, true);
-            // second receiver position in inertial frame at the real date of signal reception
-            secondPV = secondToInert.transformPVCoordinates(new TimeStampedPVCoordinates(secondToInert.getDate(),
-                                                                                         Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
-            // downlink delay from emitter to second receiver
-            tau2 = linkDelay(emitterPV.getPosition(), secondPV.getPosition());
-
-            // Change in the computed downlink delay
-            delta = FastMath.abs(tau2 - previous);
-        } while (count++ < 10 && delta >= 2 * FastMath.ulp(tau2));
+        // Secondary station PV in inertial frame at receive at second station
+        final TimeStampedPVCoordinates secondPV = secondApprox.shiftedBy(tau2);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final double offset1 = getStation().getClockOffsetDriver().getValue(emitterState.getDate());
-        final double offset2 = secondStation.getClockOffsetDriver().getValue(emitterState.getDate());
-        final double tdoa   = (tau1 + offset1) - (tau2 + offset2);
+        final double offset1 = getPrimeStation().getClockOffsetDriver().getValue(emitterDate);
+        final double offset2 = getSecondStation().getClockOffsetDriver().getValue(emitterDate);
+        final double tdoa = (common.getTauD() + offset1) - (tau2 + offset2);
 
-        // Evaluate the TDOA value and derivatives
+        // Evaluate the TDOA value
         // -------------------------------------------
         final EstimatedMeasurement<TDOA> estimated =
-                        new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   new SpacecraftState[] {
-                                                       emitterState
-                                                   },
-                                                   new TimeStampedPVCoordinates[] {
-                                                       emitterPV,
-                                                       tdoa > 0 ? secondPV : primePV,
-                                                       tdoa > 0 ? primePV : secondPV
-                                                   });
+                new EstimatedMeasurement<>(this, iteration, evaluation,
+                        new SpacecraftState[] {
+                            common.getTransitState()
+                        },
+                        new TimeStampedPVCoordinates[] {
+                            emitterPV,
+                            tdoa > 0.0 ? secondPV : common.getStationDownlink(),
+                            tdoa > 0.0 ? common.getStationDownlink() : secondPV
+                        });
 
         // set TDOA value
         estimated.setEstimatedValue(tdoa);
 
         return estimated;
-
     }
 
     /** {@inheritDoc} */
@@ -191,96 +155,49 @@ public class TDOA extends GroundReceiverMeasurement<TDOA> {
 
         final SpacecraftState state = states[0];
 
-        // TDOA derivatives are computed with respect to:
-        // - Spacecraft state in inertial frame
-        // - Prime station parameters
-        // - Second station parameters
-        // --------------------------
+        // TDOA derivatives are computed with respect to spacecraft state in inertial frame
+        // and station parameters
+        // ----------------------
+        //
+        // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - stations' parameters (clock offset, station offsets, pole, prime meridian...)
-        int nbParams = 6;
-        final Map<String, Integer> indices = new HashMap<>();
-        for (ParameterDriver driver : getParametersDrivers()) {
-            // we have to check for duplicate keys because primary and secondary station share
-            // pole and prime meridian parameters names that must be considered
-            // as one set only (they are combined together by the estimation engine)
-            if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
+        final GroundReceiverCommonParametersWithDerivatives common = computeCommonParametersWithDerivatives(state);
+        final int nbParams = common.getTauD().getFreeParameters();
+        final TimeStampedFieldPVCoordinates<Gradient> emitterPV = common.getTransitPV();
+        final FieldAbsoluteDate<Gradient> emitterDate = emitterPV.getDate();
 
-                    if (!indices.containsKey(span.getData())) {
-                        indices.put(span.getData(), nbParams++);
-                    }
-                }
-            }
-        }
-        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
+        // Approximate secondary location (at emission time)
+        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(common.getTauD().getField());
+        final FieldTransform<Gradient> secondToInertial =
+                getSecondStation().getOffsetToInertial(state.getFrame(), emitterDate, nbParams, common.getIndices());
+        final TimeStampedFieldPVCoordinates<Gradient> secondApprox =
+                secondToInertial.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(emitterDate,
+                        zero, zero, zero));
 
-        // coordinates of the spacecraft as a gradient
-        final TimeStampedFieldPVCoordinates<Gradient> pvaG = getCoordinates(state, 0, nbParams);
+        // Time of flight from emitter to second station
+        final Gradient tau2 = forwardSignalTimeOfFlight(secondApprox, emitterPV.getPosition(), emitterDate);
 
-        // transform between prime station frame and inertial frame
-        // at the real date of measurement, i.e. taking station clock offset into account
-        final FieldTransform<Gradient> primeToInert =
-                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
-        final FieldAbsoluteDate<Gradient> measurementDateG = primeToInert.getFieldDate();
-
-        // prime station PV in inertial frame at the real date of the measurement
-        final TimeStampedFieldPVCoordinates<Gradient> primePV =
-                        primeToInert.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(measurementDateG,
-                                                                                                zero, zero, zero));
-
-        // compute downlink delay from emitter to prime receiver
-        final Gradient tau1 = signalTimeOfFlight(pvaG, primePV.getPosition(), measurementDateG);
-
-        // elapsed time between state date and signal arrival to the prime receiver
-        final Gradient dtMtau1 = measurementDateG.durationFrom(state.getDate()).subtract(tau1);
-
-        // satellite state at signal emission
-        final SpacecraftState emitterState = state.shiftedBy(dtMtau1.getValue());
-
-        // satellite pv at signal emission (re)computed with gradient
-        final TimeStampedFieldPVCoordinates<Gradient> emitterPV = pvaG.shiftedBy(dtMtau1);
-
-        // second station PV in inertial frame at real date of signal reception
-        TimeStampedFieldPVCoordinates<Gradient> secondPV;
-        // initialize search loop of the reception date by second station
-        Gradient tau2 = tau1;
-        double delta;
-        int count = 0;
-        do {
-            final double previous = tau2.getValue();
-            // date of signal arrival on second receiver
-            final AbsoluteDate dateAt2 = emitterState.getDate().shiftedBy(previous);
-            // transform between second station frame and inertial frame
-            // at the date of signal arrival, taking clock offset into account
-            final FieldTransform<Gradient> secondToInert =
-                            secondStation.getOffsetToInertial(state.getFrame(), dateAt2,
-                                                              nbParams, indices);
-            // second receiver position in inertial frame at the real date of signal reception
-            secondPV = secondToInert.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(secondToInert.getFieldDate(),
-                                                                                                zero, zero, zero));
-            // downlink delay from emitter to second receiver
-            tau2 = linkDelay(emitterPV.getPosition(), secondPV.getPosition());
-
-            // Change in the computed downlink delay
-            delta = FastMath.abs(tau2.getValue() - previous);
-        } while (count++ < 10 && delta >= 2 * FastMath.ulp(tau2.getValue()));
+        // Second station coordinates at receive time
+        final TimeStampedFieldPVCoordinates<Gradient> secondPV = secondApprox.shiftedBy(tau2);
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final Gradient offset1 = getStation().getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
-        final Gradient offset2 = secondStation.getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
-        final Gradient tdoaG   = tau1.add(offset1).subtract(tau2.add(offset2));
+        final Gradient offset1 = getPrimeStation().getClockOffsetDriver()
+                .getValue(nbParams, common.getIndices(), emitterDate.toAbsoluteDate());
+        final Gradient offset2 = getSecondStation().getClockOffsetDriver()
+                .getValue(nbParams, common.getIndices(), emitterDate.toAbsoluteDate());
+        final Gradient tdoaG   = common.getTauD().add(offset1).subtract(tau2.add(offset2));
         final double tdoa      = tdoaG.getValue();
 
         // Evaluate the TDOA value and derivatives
         // -------------------------------------------
-        final TimeStampedPVCoordinates pv1 = primePV.toTimeStampedPVCoordinates();
+        final TimeStampedPVCoordinates pv1 = common.getStationDownlink().toTimeStampedPVCoordinates();
         final TimeStampedPVCoordinates pv2 = secondPV.toTimeStampedPVCoordinates();
         final EstimatedMeasurement<TDOA> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       emitterState
+                                                       common.getTransitState()
                                                    },
                                                    new TimeStampedPVCoordinates[] {
                                                        emitterPV.toTimeStampedPVCoordinates(),
@@ -298,7 +215,7 @@ public class TDOA extends GroundReceiverMeasurement<TDOA> {
         // set partial derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = indices.get(span.getData());
+                final Integer index = common.getIndices().get(span.getData());
                 if (index != null) {
                     estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
@@ -306,28 +223,75 @@ public class TDOA extends GroundReceiverMeasurement<TDOA> {
         }
 
         return estimated;
+    }
+
+
+    /** Compute propagation delay on a link leg (typically downlink or uplink).  This differs from signalTimeOfFlight
+     * through <em>advancing</em> rather than delaying the emitter.
+     *
+     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableEmitterPV}
+     * @param signalArrivalDate date at which the signal arrives to receiver
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     */
+    public static double forwardSignalTimeOfFlight(final TimeStampedPVCoordinates adjustableEmitterPV,
+                                                   final Vector3D receiverPosition,
+                                                   final AbsoluteDate signalArrivalDate) {
+
+        // initialize emission date search loop assuming the state is already correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge very fast
+        final double offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
+        double delay = offset;
+
+        // search signal transit date, computing the signal travel in inertial frame
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
+        double delta;
+        int count = 0;
+        do {
+            final double previous   = delay;
+            final Vector3D transitP = adjustableEmitterPV.shiftedBy(delay - offset).getPosition();
+            delay                   = receiverPosition.distance(transitP) * cReciprocal;
+            delta                   = FastMath.abs(delay - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
+
+        return delay;
 
     }
 
-    /** Compute propagation delay on a link.
-     * @param emitter  the position of the emitter
-     * @param receiver the position of the receiver (same frame as emitter)
-     * @return the propagation delay
-     * @since 12.0
+    /** Compute propagation delay on a link leg (typically downlink or uplink).This differs from signalTimeOfFlight
+     * through <em>advancing</em> rather than delaying the emitter.
+     *
+     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableEmitterPV}
+     * @param signalArrivalDate date at which the signal arrives to receiver
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     * @param <T> the type of the components
      */
-    private double linkDelay(final Vector3D emitter,
-                             final Vector3D receiver) {
-        return receiver.distance(emitter) / Constants.SPEED_OF_LIGHT;
-    }
+    public static <T extends CalculusFieldElement<T>> T forwardSignalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
+                                                                                  final FieldVector3D<T> receiverPosition,
+                                                                                  final FieldAbsoluteDate<T> signalArrivalDate) {
 
-    /** Compute propagation delay on a link.
-     * @param emitter  the position of the emitter
-     * @param receiver the position of the receiver (same frame as emitter)
-     * @return the propagation delay
-     */
-    private Gradient linkDelay(final FieldVector3D<Gradient> emitter,
-                               final FieldVector3D<Gradient> receiver) {
-        return receiver.distance(emitter).divide(Constants.SPEED_OF_LIGHT);
+        // Initialize emission date search loop assuming the emitter PV is almost correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge extremely fast
+        final T offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
+        T delay = offset;
+
+        // search signal transit date, computing the signal travel in the frame shared by emitter and receiver
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
+        double delta;
+        int count = 0;
+        do {
+            final double previous           = delay.getReal();
+            final FieldVector3D<T> transitP = adjustableEmitterPV.shiftedBy(delay.subtract(offset)).getPosition();
+            delay                           = receiverPosition.distance(transitP).multiply(cReciprocal);
+            delta                           = FastMath.abs(delay.getReal() - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getReal()));
+
+        return delay;
     }
 
 }

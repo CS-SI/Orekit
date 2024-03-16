@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-    <property name="project.version"                    value="12.0.1"                                                 />
+    <property name="project.version"                    value="12.0.2"                                                 />
     <property name="src.dir"                            location="src"                                               />
     <property name="main.src.dir"                       value="${src.dir}/main/java"                                 />
     <property name="main.resources.dir"                 value="${src.dir}/main/resources"                            />
@@ -64,7 +64,7 @@
     <property name="tools.path"                         value="lib"                                                  />
 
 
-    <property name="copyright"                  value="2002-2023 CS GROUP" />
+    <property name="copyright"                  value="2002-2024 CS GROUP" />
 
     <property environment="env"/>
 

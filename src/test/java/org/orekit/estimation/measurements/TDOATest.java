@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TDOATroposphericDelayModifier;
-import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -78,8 +78,8 @@ public class TDOATest {
         }
 
         // Mean and std errors check
-        Assertions.assertEquals(0.0, diffStat.getMean(), 1.e-16);
-        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 1.e-16);
+        Assertions.assertEquals(0.0, diffStat.getMean(), 1.4e-16);
+        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 2.0e-16);
 
         // Test measurement type
         Assertions.assertEquals(TDOA.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
@@ -170,7 +170,7 @@ public class TDOATest {
 
         // create a modifier
         final TDOATroposphericDelayModifier modifier =
-                        new TDOATroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                        new TDOATroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -206,7 +206,7 @@ public class TDOATest {
 
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 9.0e-4);
+        Assertions.assertEquals(0, maxRelativeError, 3.2e-3);
 
     }
 
@@ -328,7 +328,7 @@ public class TDOATest {
 
         // create a modifier
         final TDOATroposphericDelayModifier modifier =
-                        new TDOATroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                        new TDOATroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {

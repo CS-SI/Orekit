@@ -1,4 +1,4 @@
-/* Copyright 2023 Luc Maisonobe
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
@@ -331,15 +332,14 @@ public class SP3Writer {
             output.append(String.format(Locale.US, "%3s", satId));
             --remaining;
             column += 3;
-            if (column >= 60) {
+            if (column >= 60 && remaining > 0) {
                 // finish line
                 output.append(EOL);
                 ++lines;
-                if (remaining > 0) {
-                    // start new line
-                    output.append("+        ");
-                    column = 9;
-                }
+
+                // start new line
+                output.append("+        ");
+                column = 9;
             }
         }
         while (column < 60) {
@@ -367,15 +367,14 @@ public class SP3Writer {
             output.append(String.format(Locale.US, THREE_DIGITS_INTEGER, accuracyExp));
             --remaining;
             column += 3;
-            if (column >= 60) {
+            if (column >= 60 && remaining > 0) {
                 // finish line
                 output.append(EOL);
                 ++lines;
-                if (remaining > 0) {
-                    // start new line
-                    output.append(ACCURACY_LINE_PREFIX);
-                    column = 9;
-                }
+
+                // start new line
+                output.append(ACCURACY_LINE_PREFIX);
+                column = 9;
             }
         }
         while (column < 60) {
@@ -396,9 +395,11 @@ public class SP3Writer {
         if (header.getVersion() == 'a') {
             output.append(TIME_SYSTEM_DEFAULT).append(EOL);
         } else {
+            final TimeSystem ts = header.getTimeSystem().getKey() == null ?
+                                  TimeSystem.UTC :
+                                  header.getTimeSystem();
             output.append(String.format(Locale.US, "%%c %1s  cc %3s ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc%n",
-                                        header.getType().getKey(),
-                                        header.getTimeSystem().getKey()));
+                                        header.getType().getKey(), ts.getKey()));
         }
         output.append(TIME_SYSTEM_DEFAULT).append(EOL);
 

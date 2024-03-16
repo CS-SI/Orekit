@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ import org.orekit.utils.ParameterDriver;
  * the {@link GlobalMappingFunctionModel Global Mapping Function}, or
  * the {@link NiellMappingFunctionModel Niell Mapping Function}
  * </p> <p>
- * The tropospheric zenith delay δ<sub>h</sub> is computed empirically with a {@link SaastamoinenModel}
+ * The tropospheric zenith delay δ<sub>h</sub> is computed empirically with a {@link ModifiedSaastamoinenModel}
  * while the tropospheric total zenith delay δ<sub>t</sub> is estimated as a {@link ParameterDriver}
  */
 public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
@@ -105,7 +105,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
-        final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0);
+        final ModifiedSaastamoinenModel saastamoinen = new ModifiedSaastamoinenModel(t0, p0, 0.0);
         // Zenith delays. elevation = pi/2 because we compute the delay in the zenith direction
         final double zhd = saastamoinen.pathDelay(0.5 * FastMath.PI, point, parameters, date);
         final double ztd = parameters[0];
@@ -120,7 +120,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
-        final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0);
+        final ModifiedSaastamoinenModel saastamoinen = new ModifiedSaastamoinenModel(t0, p0, 0.0);
         // Zenith delays. elevation = pi/2 because we compute the delay in the zenith direction
         final T zhd = saastamoinen.pathDelay(elevation.getPi().multiply(0.5), point, parameters, date);
         final T ztd = parameters[0];

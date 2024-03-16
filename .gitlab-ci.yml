@@ -6,7 +6,7 @@ stages:
 
 default:
   # Default image
-  image: registry.orekit.org/orekit/ci-utils/maven:3.6.2-jdk-8-slim
+  image: registry.orekit.org/orekit/ci-utils/maven:3.9.6-eclipse-temurin-11
   # Cache downloaded dependencies and plugins between builds.
   # To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
   cache:
@@ -27,16 +27,20 @@ variables:
   MAVEN_CLI_OPTS: "-s .CI/maven-settings.xml --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
   SONAR_PROJECT_KEY: "${CI_PROJECT_NAMESPACE}:${CI_PROJECT_NAME}"
   SONAR_PROJECT_NAME: "${CI_PROJECT_TITLE} (${CI_PROJECT_NAMESPACE}:${CI_PROJECT_NAME})"
+  # Deployment target properties
+  TARGET_URL_PREFIX: "cochise@ganymede.orekit.org:/var/www/mvn-sites/site-orekit"
 
 verify:
   stage: verify
   script:
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
+          -Dsonar.host.url=${SONAR_HOST_URL}
           -Dsonar.login=${SONAR_TOKEN}
           -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
           -Dsonar.projectKey="$SONAR_PROJECT_KEY"
           -Dsonar.projectName="$SONAR_PROJECT_NAME"
+          -Dsonar.qualitygate.wait=true
   artifacts:
     paths:
       - target/*.jar
@@ -101,23 +105,23 @@ deploy:artifacts:
     paths:
       - target/*.jar
   only:
-    - develop@orekit/orekit
-    - /^release-[.0-9]+$/@orekit/orekit
     - master@orekit/orekit
+    - /^release-[.0-9]+$/@orekit/orekit
+    - develop@orekit/orekit
 
 deploy:site:
   stage: deploy
   before_script:
-    # Create the SSH directory and give it the right permissions
+    # Prepare the SSH environment required to push documentation onto the server
+    - eval $(ssh-agent -s)
+    - echo "$SSH_SECRET_KEY" | ssh-add -
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - echo "$SSH_SECRET_KEY" > ~/.ssh/id_website
-    - chmod 600 ~/.ssh/id_website
-
-    # Add known hosts
     - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
   script:
-    - mvn $MAVEN_CLI_OPTS site:deploy
+    - PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+    - rsync -rz --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
+            target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
   only:
     - master@orekit/orekit
     - /^release-[.0-9]+$/@orekit/orekit

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.FieldVector2D;
@@ -37,6 +39,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /** Utility class for tests to reduce code duplication. */
 public class TestUtils {
@@ -101,7 +106,7 @@ public class TestUtils {
      */
     public static <T extends CalculusFieldElement<T>> FieldAdditionalStateProvider<T> getFieldAdditionalProviderWithInit() {
         return new FieldAdditionalStateProvider<T>() {
-  
+
             @Override
             public void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
                 initialState.getMass();
@@ -232,6 +237,81 @@ public class TestUtils {
                 }
             }
         }
+    }
+
+    /**
+     * Pretty print a matrix.
+     *
+     * @param matrix the matrix to print.
+     */
+    public static void prettyPrint(RealMatrix matrix) {
+        prettyPrint(matrix.getData());
+    }
+
+    /**
+     * Pretty print a double[][].
+     *
+     * @param array the array to print.
+     */
+    public static void prettyPrint(double[][] array) {
+        for (double[] anArray : array) {
+            for (double value : anArray) {
+                System.out.format("%20g ", value);
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * Pretty print an array
+     *
+     * @param array the array to print.
+     */
+    public static void prettyPrint(double[] array) {
+        System.out.println(Arrays.toString(array));
+    }
+
+    /**
+     * Check if the given value contains a NaN. Useful as a condition for breakpoints.
+     * Knows how to check arrays, {@link DerivativeStructure}, and {@link Gradient}.
+     *
+     * @param o to check for NaNs.
+     * @return if the object contains any NaNs.
+     */
+    public static boolean isAnyNan(Object o) {
+        if (o instanceof Double) {
+            return Double.isNaN((Double) o);
+        } else if (o instanceof double[]) {
+            for (double v : (double[]) o) {
+                if (Double.isNaN(v)) {
+                    return true;
+                }
+            }
+        } else if (o instanceof Object[]) {
+            for (Object object : (Object[]) o) {
+                if (isAnyNan(object)) {
+                    return true;
+                }
+            }
+        } else if (o instanceof Collection) {
+            for (Object object : (Collection<?>) o) {
+                if (isAnyNan(object)) {
+                    return true;
+                }
+            }
+        } else if (o instanceof CalculusFieldElement) {
+            CalculusFieldElement<?> cfe = (CalculusFieldElement<?>) o;
+            if (cfe.isNaN()) {
+                return true;
+            }
+            if (cfe instanceof Gradient) {
+                return isAnyNan(((Gradient) cfe).getGradient());
+            }
+            if (cfe instanceof DerivativeStructure) {
+                return isAnyNan(((DerivativeStructure) cfe).getAllDerivatives());
+            }
+        }
+        return false;
     }
 
 }

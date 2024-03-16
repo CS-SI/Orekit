@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -219,7 +219,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
                                             final CartesianDerivativesFilter pvaFilter,
                                             final AngularDerivativesFilter angularFilter) {
 
-        this(outputFrame,
+        this(interpolationPoints, extrapolationThreshold, outputFrame,
              new FieldOrbitHermiteInterpolator<>(interpolationPoints, extrapolationThreshold, outputFrame, pvaFilter),
              new FieldAbsolutePVCoordinatesHermiteInterpolator<>(interpolationPoints, extrapolationThreshold, outputFrame,
                                                                  pvaFilter),
@@ -242,7 +242,15 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * @param massInterpolator mass interpolator
      * @param attitudeInterpolator attitude interpolator
      * @param additionalStateInterpolator additional state interpolator
+     *
+     * @deprecated using this constructor may throw an exception if any given interpolator
+     * does not use {@link #DEFAULT_INTERPOLATION_POINTS} and {@link
+     * #DEFAULT_EXTRAPOLATION_THRESHOLD_SEC}. Use {@link
+     * #FieldSpacecraftStateInterpolator(int, double, Frame, FieldTimeInterpolator,
+     * FieldTimeInterpolator, FieldTimeInterpolator, FieldTimeInterpolator,
+     * FieldTimeInterpolator)} instead.
      */
+    @Deprecated
     public FieldSpacecraftStateInterpolator(final Frame outputFrame,
                                             final FieldTimeInterpolator<FieldOrbit<KK>, KK> orbitInterpolator,
                                             final FieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK> absPVAInterpolator,
@@ -250,6 +258,39 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
                                             final FieldTimeInterpolator<FieldAttitude<KK>, KK> attitudeInterpolator,
                                             final FieldTimeInterpolator<TimeStampedField<KK>, KK> additionalStateInterpolator) {
         super(DEFAULT_INTERPOLATION_POINTS, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
+        checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
+        this.outputFrame                 = outputFrame;
+        this.orbitInterpolator           = orbitInterpolator;
+        this.absPVAInterpolator          = absPVAInterpolator;
+        this.massInterpolator            = massInterpolator;
+        this.attitudeInterpolator        = attitudeInterpolator;
+        this.additionalStateInterpolator = additionalStateInterpolator;
+    }
+
+    /**
+     * Constructor.
+     * <p>
+     * <b>BEWARE:</b> output frame <b>must be inertial</b> if interpolated spacecraft states are defined by orbit. Throws an
+     * error otherwise.
+     *
+     * @param interpolationPoints number of interpolation points
+     * @param extrapolationThreshold extrapolation threshold beyond which the propagation will fail
+     * @param outputFrame output frame
+     * @param orbitInterpolator orbit interpolator
+     * @param absPVAInterpolator absolute position-velocity-acceleration
+     * @param massInterpolator mass interpolator
+     * @param attitudeInterpolator attitude interpolator
+     * @param additionalStateInterpolator additional state interpolator
+     */
+    public FieldSpacecraftStateInterpolator(final int interpolationPoints,
+                                            final double extrapolationThreshold,
+                                            final Frame outputFrame,
+                                            final FieldTimeInterpolator<FieldOrbit<KK>, KK> orbitInterpolator,
+                                            final FieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK> absPVAInterpolator,
+                                            final FieldTimeInterpolator<TimeStampedField<KK>, KK> massInterpolator,
+                                            final FieldTimeInterpolator<FieldAttitude<KK>, KK> attitudeInterpolator,
+                                            final FieldTimeInterpolator<TimeStampedField<KK>, KK> additionalStateInterpolator) {
+        super(interpolationPoints, extrapolationThreshold);
         checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
         this.outputFrame                 = outputFrame;
         this.orbitInterpolator           = orbitInterpolator;
@@ -346,7 +387,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
                 createAdditionalStateSample(additionalDotEntries);
 
         // Fill interpolators with samples
-        final List<FieldSpacecraftState<KK>>       samples      = interpolationData.getCachedSamples().getAll();
+        final List<FieldSpacecraftState<KK>>       samples      = interpolationData.getNeighborList();
         final List<FieldOrbit<KK>>                 orbitSample  = new ArrayList<>();
         final List<FieldAbsolutePVCoordinates<KK>> absPVASample = new ArrayList<>();
         for (FieldSpacecraftState<KK> state : samples) {

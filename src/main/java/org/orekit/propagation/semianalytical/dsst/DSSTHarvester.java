@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,9 @@ package org.orekit.propagation.semianalytical.dsst;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.MatrixUtils;
@@ -72,8 +74,13 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
     /** Columns names for parameters. */
     private List<String> columnsNames;
 
-    /** Field short periodic terms. */
-    private List<FieldShortPeriodTerms<Gradient>> fieldShortPeriodTerms;
+    /**
+     * Field short periodic terms. Key is the force model to which they pertain. Value is
+     * the terms. They need to be stored in a map because the DsstForceModel interface
+     * does not have a getter for the terms.
+     */
+    private final Map<DSSTForceModel, List<FieldShortPeriodTerms<Gradient>>>
+            fieldShortPeriodTerms;
 
     /** Simple constructor.
      * <p>
@@ -95,7 +102,8 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
         this.propagator                            = propagator;
         this.shortPeriodDerivativesStm             = new double[STATE_DIMENSION][STATE_DIMENSION];
         this.shortPeriodDerivativesJacobianColumns = new DoubleArrayDictionary();
-        this.fieldShortPeriodTerms                 = new ArrayList<>();
+        // Use identity hash map to have the same behavior as a getter on the force model
+        this.fieldShortPeriodTerms                 = new IdentityHashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -232,9 +240,24 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      * @param reference current mean spacecraft state
      */
     public void initializeFieldShortPeriodTerms(final SpacecraftState reference) {
+        initializeFieldShortPeriodTerms(reference, propagator.getPropagationType());
+    }
+
+    /**
+     * Initialize the short periodic terms for the "field" elements.
+     *
+     * @param reference current mean spacecraft state
+     * @param type      MEAN or OSCULATING
+     */
+    public void initializeFieldShortPeriodTerms(final SpacecraftState reference,
+                                                final PropagationType type) {
 
         // Converter
         final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
+
+        // clear old values
+        // prevents duplicates or stale values when reusing a DSSTPropagator
+        fieldShortPeriodTerms.clear();
 
         // Loop on force models
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
@@ -244,8 +267,15 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
             final Gradient[] dsParameters = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
-            // Initialize the "Field" short periodic terms in OSCULATING mode
-            fieldShortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, dsParameters));
+            // Initialize the "Field" short periodic terms, same mode as the propagator
+            final List<FieldShortPeriodTerms<Gradient>> terms =
+                    forceModel.initializeShortPeriodTerms(
+                            auxiliaryElements,
+                            type,
+                            dsParameters);
+            // create a copy of the list to protect against inadvertent modification
+            fieldShortPeriodTerms.computeIfAbsent(forceModel, x -> new ArrayList<>())
+                    .addAll(terms);
 
         }
 
@@ -294,7 +324,9 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
             final Gradient zero = dsState.getDate().getField().getZero();
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
-            for (final FieldShortPeriodTerms<Gradient> spt : fieldShortPeriodTerms) {
+            final List<FieldShortPeriodTerms<Gradient>> terms = fieldShortPeriodTerms
+                    .computeIfAbsent(forceModel, x -> new ArrayList<>(0));
+            for (final FieldShortPeriodTerms<Gradient> spt : terms) {
                 final Gradient[] spVariation = spt.value(dsState.getOrbit());
                 for (int i = 0; i < spVariation .length; i++) {
                     shortPeriod[i] = shortPeriod[i].add(spVariation[i]);

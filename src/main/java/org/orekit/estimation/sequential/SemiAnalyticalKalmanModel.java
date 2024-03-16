@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -663,10 +663,14 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     @Override
     public void initializeShortPeriodicTerms(final SpacecraftState meanState) {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        // initialize ForceModels in OSCULATING mode even if propagation is MEAN
+        final PropagationType type = PropagationType.OSCULATING;
         for (final DSSTForceModel force :  builder.getAllForceModels()) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(new AuxiliaryElements(meanState.getOrbit(), 1), PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(new AuxiliaryElements(meanState.getOrbit(), 1), type, force.getParameters(meanState.getDate())));
         }
         dsstPropagator.setShortPeriodTerms(shortPeriodTerms);
+        // also need to initialize the Field terms in the same mode
+        harvester.initializeFieldShortPeriodTerms(meanState, type);
     }
 
     /** Get the normalized state transition matrix (STM) from previous point to current point.

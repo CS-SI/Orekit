@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,12 +26,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -97,6 +100,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPress
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
+import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
@@ -108,7 +113,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 public class DSSTPropagatorTest {
 
@@ -1184,6 +1194,305 @@ public class DSSTPropagatorTest {
 
         // Verify that no exception occurred
         Assertions.assertNotNull(state);
+    }
+
+    /**
+     * Check that the DSST can include the derivatives of force model parameters in the
+     * Jacobian. Uses a very basic force model for a quick test. Checks both mean and
+     * osculating as well as zero, one, or two force model parameters.
+     */
+    @Test
+    public void testJacobianWrtParametersIssue986() {
+        // setup - all
+        Frame eci = FramesFactory.getGCRF();
+        AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        UnnormalizedSphericalHarmonicsProvider harmonics =
+                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        double mu = harmonics.getMu();
+        // semi-major axis
+        double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 500e3;
+        // Short period derivatives are NaN when ecc is zero.
+        // Due to FieldEquinoctialOrbit.getE() = sqrt(ex**2 + ey**2)
+        // When ex = 0 and ey = 0 then e = 0 and the derivative is infinite,
+        // but when composed with zero derivatives the result is NaN.
+        // so use some small, ignorable e.
+        double e = 1e-17;
+        Orbit orbit = new EquinoctialOrbit(new KeplerianOrbit(
+                a, e, 1, 0, 0, 0,
+                PositionAngleType.MEAN, eci, epoch, mu));
+        final SpacecraftState initialState = new SpacecraftState(orbit);
+        final double[][] tols = DSSTPropagator.tolerances(1, orbit);
+        ODEIntegrator integrator = new DormandPrince853Integrator(
+                100 * 60,
+                Constants.JULIAN_DAY,
+                tols[0],
+                tols[1]);
+        final double dt = 2 * orbit.getKeplerianPeriod();
+        AbsoluteDate end = epoch.shiftedBy(dt);
+        final double n = orbit.getKeplerianMeanMotion();
+        RealMatrix expectedStm = MatrixUtils.createRealIdentityMatrix(6);
+        // Montenbruck & Gill Eq. 7.11
+        final double dmda = -3.0 * n * dt / (2 * a);
+        expectedStm.setEntry(5, 0, dmda);
+        int ulps = 5;
+        double absTol = 1e-18;
+        final double[] expectedStmMdot = {0, 0, 0, 0, 0, dt};
+        final Matcher<double[]> stmMdotMatcherExact = OrekitMatchers
+                .doubleArrayContaining(expectedStmMdot, ulps);
+        final Matcher<double[]> stmMdotMatcherClose = OrekitMatchers
+                .doubleArrayContaining(expectedStmMdot, 1e-30, 15);
+        // d (M = n * dt) /d (mu)
+        final double dmdmu = dt / (2 * Math.sqrt(mu * a * a * a));
+        final Matcher<double[]> stmMuMatcherClose = OrekitMatchers
+                .doubleArrayContaining(new double[]{0, 0, 0, 0, 0, dmdmu}, 1e-27, 15);
+        // Not sure why adding a paramter changes the STM, but it does
+        double twoParameterAbsTol = 1e-12;
+        // larger tolerance for osculating comparisons because I'm treating
+        // the osculating variations as error. I.e. I do not check the correctness of the
+        // osculating terms in the derivatives. I assume other tests do that.
+        double osculatingAbsTol = 1e-12;
+
+        // setup - mean no selected parameter
+        DSSTPropagator dsst = new DSSTPropagator(integrator, PropagationType.MEAN);
+        dsst.setInitialState(initialState, PropagationType.MEAN);
+        // an intentionally negligible force model, but with a different parameter
+        dsst.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu));
+
+        // action - mean no selected parameter
+        DSSTHarvester harvester = dsst.setupMatricesComputation("stm", null, null);
+        SpacecraftState state = dsst.propagate(end);
+        RealMatrix stm = harvester.getStateTransitionMatrix(state);
+        RealMatrix stmParameters = harvester.getParametersJacobian(state);
+
+        // verify - mean no selected parameter
+        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(
+                harvester.getPositionAngleType(),
+                is(PositionAngleType.MEAN));
+        MatcherAssert.assertThat(stmParameters, nullValue());
+        MatcherAssert.assertThat(stm, OrekitMatchers.matrixCloseTo(expectedStm, absTol));
+
+        // setup - mean with parameter
+        dsst = new DSSTPropagator(integrator, PropagationType.MEAN);
+        dsst.setInitialState(initialState, PropagationType.MEAN);
+        MDot mDot = new MDot();
+        mDot.getParametersDrivers().get(0).setSelected(true);
+        dsst.addForceModel(mDot);
+        // an intentionally negligible force model, but with a different parameter
+        dsst.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu));
+
+        // action - mean with parameter
+        harvester = dsst.setupMatricesComputation("stm", null, null);
+        state = dsst.propagate(end);
+        stm = harvester.getStateTransitionMatrix(state);
+        stmParameters = harvester.getParametersJacobian(state);
+
+        // verify - mean with parameter
+        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(
+                harvester.getPositionAngleType(),
+                is(PositionAngleType.MEAN));
+        MatcherAssert.assertThat(stm, OrekitMatchers.matrixCloseTo(expectedStm, absTol));
+        MatcherAssert.assertThat(harvester.getJacobiansColumnsNames(), contains("MDot"));
+        MatcherAssert.assertThat(stmParameters.getColumn(0), stmMdotMatcherExact);
+        MatcherAssert.assertThat(stmParameters.getColumnDimension(), is(1));
+        MatcherAssert.assertThat(stmParameters.getRowDimension(), is(6));
+
+        // setup - mean with two parameters
+        dsst = new DSSTPropagator(integrator, PropagationType.MEAN);
+        dsst.setInitialState(initialState, PropagationType.MEAN);
+        mDot = new MDot();
+        mDot.getParametersDrivers().get(0).setSelected(true);
+        dsst.addForceModel(mDot);
+        // an intentionally negligible force model, but with a different parameter
+        DSSTThirdBody third = new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu);
+        third.getParametersDrivers().get(1).setSelected(true);
+        dsst.addForceModel(third);
+
+        // action - mean with two parameters
+        harvester = dsst.setupMatricesComputation("stm", null, null);
+        state = dsst.propagate(end);
+        stm = harvester.getStateTransitionMatrix(state);
+        stmParameters = harvester.getParametersJacobian(state);
+
+        // verify - mean with two parameters
+        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(
+                harvester.getPositionAngleType(),
+                is(PositionAngleType.MEAN));
+        MatcherAssert.assertThat(stm,
+                OrekitMatchers.matrixCloseTo(expectedStm, twoParameterAbsTol));
+        // "Spancentral" seems like an odd name, but that's what the code uses.
+        MatcherAssert.assertThat(harvester.getJacobiansColumnsNames(),
+                contains("MDot", "Spancentral attraction coefficient0"));
+        MatcherAssert.assertThat(stmParameters.getColumn(0), stmMdotMatcherClose);
+        MatcherAssert.assertThat(stmParameters.getColumn(1), stmMuMatcherClose);
+        MatcherAssert.assertThat(stmParameters.getColumnDimension(), is(2));
+        MatcherAssert.assertThat(stmParameters.getRowDimension(), is(6));
+
+        // setup - osculating no selected parameter
+        dsst = new DSSTPropagator(integrator, PropagationType.OSCULATING);
+        dsst.setInitialState(initialState, PropagationType.MEAN);
+        // an intentionally negligible force model, but with a different parameter
+        dsst.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu));
+
+        // action - osculating no selected parameter
+        harvester = dsst.setupMatricesComputation("stm", null, null);
+        harvester.initializeFieldShortPeriodTerms(initialState);
+        harvester.updateFieldShortPeriodTerms(initialState);
+        harvester.setReferenceState(initialState);
+        state = dsst.propagate(end);
+        stm = harvester.getStateTransitionMatrix(state);
+        stmParameters = harvester.getParametersJacobian(state);
+
+        // verify - osculating no selected parameter
+        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(harvester.getPositionAngleType(), is(PositionAngleType.MEAN));
+        MatcherAssert.assertThat(stmParameters, nullValue());
+        MatcherAssert.assertThat(stm,
+                OrekitMatchers.matrixCloseTo(expectedStm, osculatingAbsTol));
+
+        // setup - osculating with parameter
+        dsst = new DSSTPropagator(integrator, PropagationType.OSCULATING);
+        dsst.setInitialState(initialState, PropagationType.MEAN);
+        mDot = new MDot();
+        mDot.getParametersDrivers().get(0).setSelected(true);
+        dsst.addForceModel(mDot);
+        // an intentionally negligible force model, but with a different parameter
+        dsst.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu));
+
+        // action - osculating with parameter
+        harvester = dsst.setupMatricesComputation("stm", null, null);
+        harvester.initializeFieldShortPeriodTerms(initialState);
+        harvester.updateFieldShortPeriodTerms(initialState);
+        harvester.setReferenceState(initialState);
+        state = dsst.propagate(end);
+        stm = harvester.getStateTransitionMatrix(state);
+        stmParameters = harvester.getParametersJacobian(state);
+
+        // verify - osculating with parameter
+        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(harvester.getPositionAngleType(), is(PositionAngleType.MEAN));
+        MatcherAssert.assertThat(stm,
+                OrekitMatchers.matrixCloseTo(expectedStm, osculatingAbsTol));
+        MatcherAssert.assertThat(harvester.getJacobiansColumnsNames(), contains("MDot"));
+        MatcherAssert.assertThat(stmParameters.getColumn(0), stmMdotMatcherExact);
+        MatcherAssert.assertThat(stmParameters.getColumnDimension(), is(1));
+        MatcherAssert.assertThat(stmParameters.getRowDimension(), is(6));
+
+        // setup - osculating with two parameters
+        dsst = new DSSTPropagator(integrator, PropagationType.OSCULATING);
+        dsst.setInitialState(initialState, PropagationType.MEAN);
+        mDot = new MDot();
+        mDot.getParametersDrivers().get(0).setSelected(true);
+        dsst.addForceModel(mDot);
+        // an intentionally negligible force model, but with a different parameter
+        third = new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu);
+        third.getParametersDrivers().get(1).setSelected(true);
+        dsst.addForceModel(third);
+
+        // action - osculating with two parameters
+        harvester = dsst.setupMatricesComputation("stm", null, null);
+        harvester.initializeFieldShortPeriodTerms(initialState);
+        harvester.updateFieldShortPeriodTerms(initialState);
+        harvester.setReferenceState(initialState);
+        state = dsst.propagate(end);
+        stm = harvester.getStateTransitionMatrix(state);
+        stmParameters = harvester.getParametersJacobian(state);
+
+        // verify - osculating with two parameters
+        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(
+                harvester.getPositionAngleType(),
+                is(PositionAngleType.MEAN));
+        MatcherAssert.assertThat(stm,
+                OrekitMatchers.matrixCloseTo(expectedStm, twoParameterAbsTol));
+        // "Spancentral" seems like an odd name, but that's what the code uses.
+        MatcherAssert.assertThat(harvester.getJacobiansColumnsNames(),
+                contains("MDot", "Spancentral attraction coefficient0"));
+        MatcherAssert.assertThat(stmParameters.getColumn(0), stmMdotMatcherClose);
+        MatcherAssert.assertThat(stmParameters.getColumn(1), stmMuMatcherClose);
+        MatcherAssert.assertThat(stmParameters.getColumnDimension(), is(2));
+        MatcherAssert.assertThat(stmParameters.getRowDimension(), is(6));
+    }
+
+    /** Attempt at the bare minimum force model with a parameter. */
+    private static class MDot implements DSSTForceModel {
+
+        /** Mean Anomaly Rate */
+        private final ParameterDriver mDot = new ParameterDriver(
+                "MDot",
+                // this seems to be needed to ensure the name is "MDot"
+                new TimeSpanMap<>("MDot"),
+                new TimeSpanMap<>(0.0),
+                0,
+                1,
+                Double.NEGATIVE_INFINITY,
+                Double.POSITIVE_INFINITY);
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.singletonList(mDot);
+        }
+
+        @Override
+        public double[] getMeanElementRate(SpacecraftState state,
+                                           AuxiliaryElements auxiliaryElements,
+                                           double[] parameters) {
+            return new double[]{0, 0, 0, 0, 0, parameters[0]};
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(
+                FieldSpacecraftState<T> state,
+                 FieldAuxiliaryElements<T> auxiliaryElements,
+                  T[] parameters) {
+
+            final Field<T> field = state.getA().getField();
+            final T zero = field.getZero();
+            final T[] rates = MathArrays.buildArray(field, 6);
+            rates[0] = zero;
+            rates[1] = zero;
+            rates[2] = zero;
+            rates[3] = zero;
+            rates[4] = zero;
+            rates[5] = parameters[0];
+            return rates;
+        }
+
+        /* not used */
+
+        @Override
+        public List<ShortPeriodTerms> initializeShortPeriodTerms(
+                AuxiliaryElements auxiliaryElements,
+                PropagationType type,
+                double[] parameters) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>>
+        initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
+                                   PropagationType type,
+                                   T[] parameters) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void registerAttitudeProvider(AttitudeProvider provider) {
+        }
+
+        @Override
+        public void updateShortPeriodTerms(double[] parameters,
+                                           SpacecraftState... meanStates) {
+        }
+
+        @SafeVarargs
+        @Override
+        public final <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(
+                T[] parameters, FieldSpacecraftState<T>... meanStates) {
+        }
+
     }
 
     private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {

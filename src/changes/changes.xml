@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2023 CS GROUP
+<!-- Copyright 2002-2024 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -20,6 +20,46 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+  <release version="12.0.2" date="15/03/2024"
+           description="Version 12.0.2 is a patch release of Orekit.
+       It fixes issues related to SP3 files, interpolation, measurements, multi-threading
+       and DSST jacobian setup. Copyright year has been updated.">
+      <action dev="luc" type="fix" issue="1347">
+          Change visibility of InertiaAxis and Inertia constructors to public.
+      </action>
+      <action dev="luc" type="fix" issue="1346">
+          Allow Rinex V4 observation files to have either "ANTENNA: DELTA X/Y/Z"
+          or "ANTENNA: DELTA H/E/N" header line.
+      </action>
+      <action dev="luc" type="fix" issue="1328">
+          Field versions of Frame.getStaticTransformTo don't allow
+          null dates (they never did, but the javadoc wrongly stated this was allowed).
+      </action>
+      <action dev="markrutten" type="fix" issue="1327">
+          Removed blank lines in SP3 file generation.
+      </action>
+      <action dev="luc" type="fix" issue="1322">
+          Fixed forbidden SBAS System Time in SP3 files.
+      </action>
+      <action dev="luc" type="fix" issue="1321">
+          Fixed wrong key for Beidou System Time in SP3 files.
+      </action>
+      <action dev="luc" type="update" issue="1314">
+          Fixed wrong parsing of some time systems in SP3 files.
+      </action>
+      <action dev="markrutten" type="fix" issue="1309">
+          Fixed incorrect transmitter location in BistaticRange measurement.
+      </action>
+      <action dev="evan" type="fix" issue="1300" due-to="Sander Cochran">
+          Fix regression in Ephemeris with interpolationPoints=1.
+      </action>
+      <action dev="Christopher Schank " type="fix" issue="1296">
+          Fixed loading of UTC (now thread safe).
+      </action>
+      <action dev="evan" type="fix" issue="986">
+          Fix DSST Jacobian setup.
+      </action>
+  </release>
   <release version="12.0.1" date="31/12/2023"
            description="Version 12.0.1 is a patch release of Orekit.
            It fixes several issues related to the Ephemeris class, interpolation and caching behaviours.

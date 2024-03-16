@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
-import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -309,7 +309,7 @@ public class TurnAroundRangeTest {
 
             // Add modifiers if test implies it
             final TurnAroundRangeTroposphericDelayModifier modifier =
-                            new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                            new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
             if (isModifier) {
                 ((TurnAroundRange) measurement).addModifier(modifier);
             }
@@ -456,7 +456,7 @@ public class TurnAroundRangeTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
           // Add modifiers if test implies it
-          final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+          final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
           if (isModifier) {
               ((TurnAroundRange) measurement).addModifier(modifier);
           }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -96,7 +98,8 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         final DSSTStateTransitionMatrixGenerator dummyStmGenerator =
                         new DSSTStateTransitionMatrixGenerator("dummy-1",
                                                                Collections.emptyList(),
-                                                               propagator2.getAttitudeProvider());
+                                                               propagator2.getAttitudeProvider(),
+                                                               propagator2.getPropagationType());
         propagator2.addAdditionalDerivativesProvider(dummyStmGenerator);
         propagator2.setInitialState(propagator2.getInitialState().addAdditionalState(dummyStmGenerator.getName(), new double[36]),
                                     propagator2.getPropagationType());
@@ -135,8 +138,12 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
 
         // after completing the two-stage propagation, we get the same matrices
+        MatcherAssert.assertThat(stm2,
+                OrekitMatchers.matrixCloseTo(stm1, 2e-11 * stm1.getNorm1()));
         Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 2.0e-11 * stm1.getNorm1());
-        Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-10 * jacobian1.getNorm1());
+        MatcherAssert.assertThat(jacobian2,
+                OrekitMatchers.matrixCloseTo(jacobian1, 4e-12));
+        Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 1.0e-9 * jacobian1.getNorm1());
 
     }
 

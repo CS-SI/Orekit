@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,8 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldTransform;
@@ -112,72 +109,51 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
     protected EstimatedMeasurementBase<BistaticRangeRate> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                   final int evaluation,
                                                                                                   final SpacecraftState[] states) {
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states[0]);
+        final TimeStampedPVCoordinates transitPV = common.getTransitPV();
+        final AbsoluteDate transitDate = transitPV.getDate();
 
-        final SpacecraftState state = states[0];
+        // Approximate emitter location at transit time
+        final Transform emitterToInertial =
+                getEmitterStation().getOffsetToInertial(common.getState().getFrame(), transitDate, true);
+        final TimeStampedPVCoordinates emitterApprox =
+                emitterToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(transitDate,
+                        Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
-        // coordinates of the spacecraft
-        final TimeStampedPVCoordinates pva = state.getPVCoordinates();
+        // Uplink time of flight from emitter station to transit state
+        final double tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitDate);
 
-        // transform between receiver station frame and inertial frame
-        // at the real date of measurement, i.e. taking station clock offset into account
-        final Transform receiverToInertial = getReceiverStation().getOffsetToInertial(state.getFrame(), getDate(), false);
-        final AbsoluteDate measurementDate = receiverToInertial.getDate();
+        // Secondary station PV in inertial frame at rebound date on secondary station
+        final TimeStampedPVCoordinates emitterPV = emitterApprox.shiftedBy(-tauU);
 
-        // Receiver PV in inertial frame at the end of the downlink leg
-        final TimeStampedPVCoordinates receiverPV =
-                        receiverToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
-                                                                                               Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
-
-        // Compute propagation times
-        // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have delta == tauD and transitState will be the same as state)
-
-        // Downlink delay
-        final double tauD       = signalTimeOfFlight(pva, receiverPV.getPosition(), measurementDate);
-        final double delta      = measurementDate.durationFrom(state.getDate());
-        final double deltaMTauD = delta - tauD;
-
-        // Transit state
-        final SpacecraftState transitState = state.shiftedBy(deltaMTauD);
-
-        // Transit PV
-        final TimeStampedPVCoordinates transitPV = pva.shiftedBy(deltaMTauD);
-
-        // Downlink range-rate
-        final EstimatedMeasurementBase<BistaticRangeRate> evalDownlink =
-                        oneWayTheoreticalEvaluation(iteration, evaluation, true,
-                                                    receiverPV, transitPV, transitState);
-
-        // transform between emitter station frame and inertial frame at the transit date
-        // clock offset from receiver is already compensated
-        final Transform emitterToInertial = getEmitterStation().getOffsetToInertial(state.getFrame(), transitPV.getDate(), true);
-
-        // emitter PV in inertial frame at the end of the uplink leg
-        final TimeStampedPVCoordinates emitterPV =
-                        emitterToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(transitPV.getDate(),
-                                                                                              Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
-
-        // Uplink delay
-        final double tauU = signalTimeOfFlight(emitterPV, transitPV.getPosition(), transitPV.getDate());
-
-        // emitter position in inertial frame at the end of the uplink leg
-        final TimeStampedPVCoordinates emitterUplink = emitterPV.shiftedBy(-tauU);
-
-        // Uplink range-rate
-        final EstimatedMeasurementBase<BistaticRangeRate> evalUplink =
-                        oneWayTheoreticalEvaluation(iteration, evaluation, false,
-                                                    emitterUplink, transitPV, transitState);
-
-        // combine uplink and downlink values
+        // Prepare the evaluation
         final EstimatedMeasurementBase<BistaticRangeRate> estimated =
-                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                                                       evalDownlink.getStates(),
-                                                       new TimeStampedPVCoordinates[] {
-                                                           evalUplink.getParticipants()[0],
-                                                           evalDownlink.getParticipants()[0],
-                                                           evalDownlink.getParticipants()[1]
-                                                       });
-        estimated.setEstimatedValue(evalDownlink.getEstimatedValue()[0] + evalUplink.getEstimatedValue()[0]);
+                new EstimatedMeasurementBase<>(this,
+                        iteration, evaluation,
+                        new SpacecraftState[] {
+                            common.getTransitState()
+                        },
+                        new TimeStampedPVCoordinates[] {
+                            common.getStationDownlink(),
+                            transitPV,
+                            emitterPV
+                        });
+
+        // Range-rate components
+        final Vector3D receiverDirection = common.getStationDownlink().getPosition()
+                .subtract(transitPV.getPosition()).normalize();
+        final Vector3D emitterDirection = emitterPV.getPosition()
+                .subtract(transitPV.getPosition()).normalize();
+
+        final Vector3D receiverVelocity = common.getStationDownlink().getVelocity()
+                .subtract(transitPV.getVelocity());
+        final Vector3D emitterVelocity = emitterPV.getVelocity()
+                .subtract(transitPV.getVelocity());
+
+        // range rate
+        final double rangeRate = Vector3D.dotProduct(receiverDirection, receiverVelocity) +
+                 Vector3D.dotProduct(emitterDirection, emitterVelocity);
+        estimated.setEstimatedValue(rangeRate);
 
         return estimated;
 
@@ -191,220 +167,70 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
 
         final SpacecraftState state = states[0];
 
-        // Bistatic range rate derivatives are computed with respect to:
-        // - Spacecraft state in inertial frame
-        // - Emitter station parameters
-        // - Receiver station parameters
-        // --------------------------
+        // Bistatic range-rate derivatives are computed with respect to spacecraft state in inertial frame
+        // and station parameters
+        // ----------------------
+        //
+        // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - stations' parameters (stations' offsets, pole, prime meridian...)
-        int nbParams = 6;
-        final Map<String, Integer> indices = new HashMap<String, Integer>();
-        for (ParameterDriver driver : getParametersDrivers()) {
-            // we have to check for duplicate keys because emitter and receiver stations share
-            // pole and prime meridian parameters names that must be considered
-            // as one set only (they are combined together by the estimation engine)
-            if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
+        final GroundReceiverCommonParametersWithDerivatives common = computeCommonParametersWithDerivatives(state);
+        final int nbParams = common.getTauD().getFreeParameters();
+        final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();
+        final FieldAbsoluteDate<Gradient> transitDate = transitPV.getDate();
 
-                    if (!indices.containsKey(span.getData())) {
-                        indices.put(span.getData(), nbParams++);
-                    }
-                }
-            }
-        }
-        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
-
-        // coordinates of the spacecraft as a gradient
-        final TimeStampedFieldPVCoordinates<Gradient> pvaG = getCoordinates(state, 0, nbParams);
-
-        // transform between receiver station frame and inertial frame
-        // at the real date of measurement, i.e. taking station clock offset into account
-        final FieldTransform<Gradient> receiverToInertial =
-                        getReceiverStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
-        final FieldAbsoluteDate<Gradient> measurementDateG = receiverToInertial.getFieldDate();
-
-        // Receiver PV in inertial frame at the end of the downlink leg
-        final TimeStampedFieldPVCoordinates<Gradient> receiverPV =
-                        receiverToInertial.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(measurementDateG,
-                                                                                                      zero, zero, zero));
-
-        // Compute propagation times
-        // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have delta == tauD and transitState will be the same as state)
-
-        // Downlink delay
-        final Gradient tauD       = signalTimeOfFlight(pvaG, receiverPV.getPosition(), measurementDateG);
-        final Gradient delta      = measurementDateG.durationFrom(state.getDate());
-        final Gradient deltaMTauD = delta.subtract(tauD);
-
-        // Transit state
-        final SpacecraftState transitState = state.shiftedBy(deltaMTauD.getValue());
-
-        // Transit PV
-        final TimeStampedFieldPVCoordinates<Gradient> transitPV = pvaG.shiftedBy(deltaMTauD);
-
-        // Downlink range-rate
-        final EstimatedMeasurement<BistaticRangeRate> evalDownlink =
-                        oneWayTheoreticalEvaluation(iteration, evaluation, true,
-                                                    receiverPV, transitPV, transitState, indices);
-
-        // transform between emitter station frame and inertial frame at the transit date
-        // clock offset from receiver is already compensated
+        // Approximate emitter location (at transit time)
+        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(common.getTauD().getField());
         final FieldTransform<Gradient> emitterToInertial =
-                        getEmitterStation().getOffsetToInertial(state.getFrame(), transitPV.getDate(), nbParams, indices);
+                getEmitterStation().getOffsetToInertial(state.getFrame(), transitDate, nbParams, common.getIndices());
+        final TimeStampedFieldPVCoordinates<Gradient> emitterApprox =
+                emitterToInertial.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(transitDate,
+                        zero, zero, zero));
 
-        // emitter PV in inertial frame at the end of the uplink leg
-        final TimeStampedFieldPVCoordinates<Gradient> emitterPV =
-                        emitterToInertial.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(transitPV.getDate(),
-                                                                                                     zero, zero, zero));
+        // Uplink time of flight from emiiter to transit state
+        final Gradient tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitPV.getDate());
 
-        // Uplink delay
-        final Gradient tauU = signalTimeOfFlight(emitterPV, transitPV.getPosition(), transitPV.getDate());
+        // Emitter coordinates at transmit time
+        final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitterApprox.shiftedBy(tauU.negate());
 
-        // emitter position in inertial frame at the end of the uplink leg
-        final TimeStampedFieldPVCoordinates<Gradient> emitterUplink = emitterPV.shiftedBy(tauU.negate());
+        // Prepare the evaluation
+        final EstimatedMeasurement<BistaticRangeRate> estimated = new EstimatedMeasurement<>(this,
+                iteration, evaluation,
+                new SpacecraftState[] {
+                        common.getTransitState()
+                },
+                new TimeStampedPVCoordinates[] {
+                        common.getStationDownlink().toTimeStampedPVCoordinates(),
+                        common.getTransitPV().toTimeStampedPVCoordinates(),
+                        emitterPV.toTimeStampedPVCoordinates()
+                });
 
-        // Uplink range-rate
-        final EstimatedMeasurement<BistaticRangeRate> evalUplink =
-                        oneWayTheoreticalEvaluation(iteration, evaluation, false,
-                                                    emitterUplink, transitPV, transitState, indices);
+        // Range-rate components
+        final FieldVector3D<Gradient> receiverDirection = common.getStationDownlink().getPosition()
+                .subtract(transitPV.getPosition()).normalize();
+        final FieldVector3D<Gradient> emitterDirection = emitterPV.getPosition()
+                .subtract(transitPV.getPosition()).normalize();
 
-        // combine uplink and downlink values
-        final EstimatedMeasurement<BistaticRangeRate> estimated =
-                        new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   evalDownlink.getStates(),
-                                                   new TimeStampedPVCoordinates[] {
-                                                       evalUplink.getParticipants()[0],
-                                                       evalDownlink.getParticipants()[0],
-                                                       evalDownlink.getParticipants()[1]
-                                                   });
-        estimated.setEstimatedValue(evalDownlink.getEstimatedValue()[0] + evalUplink.getEstimatedValue()[0]);
-
-        // combine uplink and downlink partial derivatives with respect to state
-        final double[][] sd1 = evalDownlink.getStateDerivatives(0);
-        final double[][] sd2 = evalUplink.getStateDerivatives(0);
-        final double[][] sd  = new double[sd1.length][sd1[0].length];
-        for (int i = 0; i < sd.length; ++i) {
-            for (int j = 0; j < sd[0].length; ++j) {
-                sd[i][j] = sd1[i][j] + sd2[i][j];
-            }
-        }
-        estimated.setStateDerivatives(0, sd);
-
-        // combine uplink and downlink partial derivatives with respect to parameters
-        evalDownlink.getDerivativesDrivers().forEach(driver -> {
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final double[] pd1 = evalDownlink.getParameterDerivatives(driver, span.getStart());
-                final double[] pd2 = evalUplink.getParameterDerivatives(driver, span.getStart());
-                final double[] pd  = new double[pd1.length];
-                for (int i = 0; i < pd.length; ++i) {
-                    pd[i] = pd1[i] + pd2[i];
-                }
-                estimated.setParameterDerivatives(driver, span.getStart(), pd);
-            }
-        });
-
-        return estimated;
-
-    }
-
-    /** Evaluate range rate measurement in one-way without derivatives.
-     * @param iteration iteration number
-     * @param evaluation evaluations counter
-     * @param downlink indicator for downlink leg
-     * @param stationPV station coordinates when signal is at station
-     * @param transitPV spacecraft coordinates at onboard signal transit
-     * @param transitState orbital state at onboard signal transit
-     * @return theoretical value for the current leg
-     * @since 12.0
-     */
-    private EstimatedMeasurementBase<BistaticRangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation,
-                                                                                    final boolean downlink,
-                                                                                    final TimeStampedPVCoordinates stationPV,
-                                                                                    final TimeStampedPVCoordinates transitPV,
-                                                                                    final SpacecraftState transitState) {
-
-        // prepare the evaluation
-        final EstimatedMeasurementBase<BistaticRangeRate> estimated =
-            new EstimatedMeasurementBase<>(this, iteration, evaluation,
-                                           new SpacecraftState[] {
-                                               transitState
-                                           }, new TimeStampedPVCoordinates[] {
-                                               downlink ? transitPV : stationPV,
-                                               downlink ? stationPV : transitPV
-                                           });
-
-        // range rate value
-        final Vector3D stationPosition  = stationPV.getPosition();
-        final Vector3D relativePosition = stationPosition.subtract(transitPV.getPosition());
-
-        final Vector3D stationVelocity  = stationPV.getVelocity();
-        final Vector3D relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
-
-        // radial direction
-        final Vector3D lineOfSight      = relativePosition.normalize();
+        final FieldVector3D<Gradient> receiverVelocity = common.getStationDownlink().getVelocity()
+                .subtract(transitPV.getVelocity());
+        final FieldVector3D<Gradient> emitterVelocity = emitterPV.getVelocity()
+                .subtract(transitPV.getVelocity());
 
         // range rate
-        final double rangeRate = Vector3D.dotProduct(relativeVelocity, lineOfSight);
-
-        estimated.setEstimatedValue(rangeRate);
-
-        return estimated;
-
-    }
-
-    /** Evaluate range rate measurement in one-way.
-     * @param iteration iteration number
-     * @param evaluation evaluations counter
-     * @param downlink indicator for downlink leg
-     * @param stationPV station coordinates when signal is at station
-     * @param transitPV spacecraft coordinates at onboard signal transit
-     * @param transitState orbital state at onboard signal transit
-     * @param indices indices of the estimated parameters in derivatives computations
-     * @return theoretical value for the current leg
-     */
-    private EstimatedMeasurement<BistaticRangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
-                                                                                final TimeStampedFieldPVCoordinates<Gradient> stationPV,
-                                                                                final TimeStampedFieldPVCoordinates<Gradient> transitPV,
-                                                                                final SpacecraftState transitState,
-                                                                                final Map<String, Integer> indices) {
-
-        // prepare the evaluation
-        final EstimatedMeasurement<BistaticRangeRate> estimated =
-            new EstimatedMeasurement<BistaticRangeRate>(this, iteration, evaluation,
-                                                        new SpacecraftState[] {
-                                                            transitState
-                                                        }, new TimeStampedPVCoordinates[] {
-                                                            (downlink ? transitPV : stationPV).toTimeStampedPVCoordinates(),
-                                                            (downlink ? stationPV : transitPV).toTimeStampedPVCoordinates()
-                                                        });
-
-        // range rate value
-        final FieldVector3D<Gradient> stationPosition  = stationPV.getPosition();
-        final FieldVector3D<Gradient> relativePosition = stationPosition.subtract(transitPV.getPosition());
-
-        final FieldVector3D<Gradient> stationVelocity  = stationPV.getVelocity();
-        final FieldVector3D<Gradient> relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
-
-        // radial direction
-        final FieldVector3D<Gradient> lineOfSight      = relativePosition.normalize();
-
-        // range rate
-        final Gradient rangeRate = FieldVector3D.dotProduct(relativeVelocity, lineOfSight);
-
+        final Gradient rangeRate = FieldVector3D.dotProduct(receiverDirection, receiverVelocity)
+                .add(FieldVector3D.dotProduct(emitterDirection, emitterVelocity));
         estimated.setEstimatedValue(rangeRate.getValue());
 
-        // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates
+        // Range partial derivatives with respect to state
         final double[] derivatives = rangeRate.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
         // set partial derivatives with respect to parameters
+        // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = indices.get(span.getData());
+                final Integer index = common.getIndices().get(span.getData());
                 if (index != null) {
                     estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }

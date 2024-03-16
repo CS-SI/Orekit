@@ -1,4 +1,4 @@
-/* Copyright 2023 Luc Maisonobe
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.utils.units.Unit;
 public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
 
     /** Converters for Klobuchar parameters. */
-    public static final Unit[] S_PER_SC_N;
+    static final Unit[] S_PER_SC_N;
     static {
         final Unit sc = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
         S_PER_SC_N = new Unit[4];

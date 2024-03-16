@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,11 +27,13 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
@@ -75,16 +77,23 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     /** Observers for partial derivatives. */
     private final Map<String, DSSTPartialsObserver> partialsObservers;
 
+    /** Mean or osculating. */
+    private final PropagationType propagationType;
+
     /** Simple constructor.
      * @param stmName name of the Cartesian STM additional state
      * @param forceModels force models used in propagation
      * @param attitudeProvider attitude provider used in propagation
+     * @param propagationType mean or osculating.
      */
-    DSSTStateTransitionMatrixGenerator(final String stmName, final List<DSSTForceModel> forceModels,
-                                       final AttitudeProvider attitudeProvider) {
+    DSSTStateTransitionMatrixGenerator(final String stmName,
+                                       final List<DSSTForceModel> forceModels,
+                                       final AttitudeProvider attitudeProvider,
+                                       final PropagationType propagationType) {
         this.stmName           = stmName;
         this.forceModels       = forceModels;
         this.attitudeProvider  = attitudeProvider;
+        this.propagationType   = propagationType;
         this.partialsObservers = new HashMap<>();
     }
 
@@ -111,6 +120,42 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     @Override
     public int getDimension() {
         return STATE_DIMENSION * STATE_DIMENSION;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // initialize short period terms.
+        // the propagator will have called the non-field method
+        // so just call the field method here
+        // This should be a Field copy of the code in DSSTPropagator.beforeIntegration(...)
+        // but with just the short period initialization calls
+        // See also how the field state is set up in computePartials(...)
+
+        final DSSTGradientConverter converter =
+                new DSSTGradientConverter(initialState, attitudeProvider);
+
+        // check if only mean elements must be used
+        final PropagationType type = propagationType;
+
+        // initialize all perturbing forces
+        for (final DSSTForceModel forceModel : forceModels) {
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+            final Gradient[] parameters = converter.getParametersAtStateDate(dsState, forceModel);
+            final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
+            forceModel.initializeShortPeriodTerms(auxiliaryElements, type, parameters);
+        }
+
+        // if required, insert the special short periodics step handler
+        if (type == PropagationType.OSCULATING) {
+            // Compute short periodic coefficients for this point
+            for (DSSTForceModel forceModel : forceModels) {
+                final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+                final Gradient[] parameters = converter.getParametersAtStateDate(dsState, forceModel);
+                forceModel.updateShortPeriodTerms(parameters, dsState);
+            }
+        }
+
     }
 
     /** {@inheritDoc} */

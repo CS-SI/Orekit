@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,7 +52,7 @@ import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
-import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -97,7 +97,7 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+        final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -198,7 +198,7 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+        final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -306,7 +306,7 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+        final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -357,7 +357,7 @@ public class TropoModifierTest {
         propagator.clearStepHandlers();
 
         final BistaticRangeTroposphericDelayModifier modifier =
-                        new BistaticRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                        new BistaticRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             BistaticRange biRange = (BistaticRange) measurement;
@@ -408,7 +408,7 @@ public class TropoModifierTest {
         propagator.clearStepHandlers();
 
         final BistaticRangeRateTroposphericDelayModifier modifier =
-                        new BistaticRangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                        new BistaticRangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             BistaticRangeRate biRangeRate = (BistaticRangeRate) measurement;
@@ -520,7 +520,7 @@ public class TropoModifierTest {
         propagator.clearStepHandlers();
 
         final TDOATroposphericDelayModifier modifier =
-                        new TDOATroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                        new TDOATroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             TDOA tdoa = (TDOA) measurement;
@@ -625,7 +625,7 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), false);
+        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), false);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -722,7 +722,7 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final AngularTroposphericDelayModifier modifier = new AngularTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+        final AngularTroposphericDelayModifier modifier = new AngularTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
+import org.orekit.OrekitMatchers;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeInterpolator;
@@ -966,6 +968,32 @@ public class EphemerisTest {
 
         // WHEN & THEN
         ephemeris.propagate(ephemeris.getMinDate(), ephemeris.getMaxDate());
+    }
+
+    /* Ephemeris propagate fails for interpolation point value of 1 */
+    @Test
+    void testMinInterpolationPoints() {
+        // GIVEN
+        final AbsoluteDate initialDate  = new AbsoluteDate();
+        final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);
+
+        // Setup propagator
+        final Orbit                 finalOrbit = initialOrbit.shiftedBy(1);
+        final List<SpacecraftState> states     = new ArrayList<>();
+        states.add(new SpacecraftState(initialOrbit));
+        states.add(new SpacecraftState(finalOrbit));
+
+        final Ephemeris ephemeris = new Ephemeris(states, 1);
+
+        // WHEN
+        final AbsoluteDate t = ephemeris.getMaxDate();
+        final SpacecraftState actual = ephemeris.propagate(t);
+
+        // THEN
+        MatcherAssert.assertThat(actual.getDate(),
+                OrekitMatchers.durationFrom(t, OrekitMatchers.closeTo(0, 0)));
+        MatcherAssert.assertThat(actual.getPVCoordinates(),
+                OrekitMatchers.pvCloseTo(finalOrbit.getPVCoordinates(), 0.0));
     }
 
     public void setUp() throws IllegalArgumentException, OrekitException {

@@ -32,7 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-
+@Deprecated
 public class SaastamoinenModelTest {
 
     private static double epsilon = 1e-6;
