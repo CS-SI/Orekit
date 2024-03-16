@@ -20,6 +20,7 @@ package org.orekit.orbits;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
@@ -190,21 +191,32 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     protected static <T extends CalculusFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final T mu) {
 
-        final FieldVector3D<T> a = pva.getAcceleration();
-        if (a == null) {
-            return false;
-        }
+        if (mu.getField().getZero() instanceof Derivative<?>) {
+            return Orbit.hasNonKeplerianAcceleration(pva.toPVCoordinates(), mu.getReal()); // for performance
 
-        final FieldVector3D<T> p = pva.getPosition();
-        final T r2 = p.getNormSq();
-        final T r  = r2.sqrt();
-        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), p);
-        if (a.getNorm().getReal() > 1.0e-9 * keplerianAcceleration.getNorm().getReal()) {
-            // we have a relevant acceleration, we can compute derivatives
-            return true;
         } else {
-            // the provided acceleration is either too small to be reliable (probably even 0), or NaN
-            return false;
+            final FieldVector3D<T> a = pva.getAcceleration();
+            if (a == null) {
+                return false;
+            }
+
+            final FieldVector3D<T> p = pva.getPosition();
+            final T r2 = p.getNormSq();
+
+            // Check if acceleration is relatively close to 0 compared to the Keplerian acceleration
+            final double tolerance = mu.getReal() * 1e-9;
+            final FieldVector3D<T> aTimesR2 = a.scalarMultiply(r2);
+            if (aTimesR2.getNorm().getReal() < tolerance) {
+                return false;
+            }
+
+            if ((aTimesR2.add(p.normalize().scalarMultiply(mu))).getNorm().getReal() > tolerance) {
+                // we have a relevant acceleration, we can compute derivatives
+                return true;
+            } else {
+                // the provided acceleration is either too small to be reliable (probably even 0), or NaN
+                return false;
+            }
         }
 
     }

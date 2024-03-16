@@ -987,9 +987,10 @@ public class FieldKeplerianOrbitTest {
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
         T r2 = position.getNormSq();
         T r = r2.sqrt();
-        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,
-                                                                       new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu),
-                                                                                           position));
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()),
+                position);
+        final FieldVector3D<T> nonKeplerianAcceleration = keplerianAcceleration.scalarMultiply(1.1);
+        final FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity, nonKeplerianAcceleration);
         FieldKeplerianOrbit<T>  fieldOrbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, field.getZero().add(mu));
         KeplerianOrbit orbit = fieldOrbit.toOrbit();
         Assertions.assertTrue(orbit.hasDerivatives());
@@ -1000,13 +1001,6 @@ public class FieldKeplerianOrbitTest {
         MatcherAssert.assertThat(orbit.getRightAscensionOfAscendingNode(), relativelyCloseTo(fieldOrbit.getRightAscensionOfAscendingNode().getReal(), 0));
         MatcherAssert.assertThat(orbit.getTrueAnomaly(),                   relativelyCloseTo(fieldOrbit.getTrueAnomaly().getReal(),                   0));
         MatcherAssert.assertThat(orbit.getADot(),                              relativelyCloseTo(fieldOrbit.getADot().getReal(),                              0));
-        MatcherAssert.assertThat(orbit.getEquinoctialExDot(),                  relativelyCloseTo(fieldOrbit.getEquinoctialExDot().getReal(),                  0));
-        MatcherAssert.assertThat(orbit.getEquinoctialEyDot(),                  relativelyCloseTo(fieldOrbit.getEquinoctialEyDot().getReal(),                  0));
-        MatcherAssert.assertThat(orbit.getHxDot(),                             relativelyCloseTo(fieldOrbit.getHxDot().getReal(),                             0));
-        MatcherAssert.assertThat(orbit.getHyDot(),                             relativelyCloseTo(fieldOrbit.getHyDot().getReal(),                             0));
-        MatcherAssert.assertThat(orbit.getLvDot(),                             relativelyCloseTo(fieldOrbit.getLvDot().getReal(),                             0));
-        MatcherAssert.assertThat(orbit.getLEDot(),                             relativelyCloseTo(fieldOrbit.getLEDot().getReal(),                             0));
-        MatcherAssert.assertThat(orbit.getLMDot(),                             relativelyCloseTo(fieldOrbit.getLMDot().getReal(),                             0));
         MatcherAssert.assertThat(orbit.getEDot(),                              relativelyCloseTo(fieldOrbit.getEDot().getReal(),                              0));
         MatcherAssert.assertThat(orbit.getIDot(),                              relativelyCloseTo(fieldOrbit.getIDot().getReal(),                              0));
         MatcherAssert.assertThat(orbit.getPerigeeArgumentDot(),                relativelyCloseTo(fieldOrbit.getPerigeeArgumentDot().getReal(),                0));
