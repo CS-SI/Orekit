@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -38,6 +35,10 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /** Builder for DSST propagator.
  * @author Bryan Cazabonne
@@ -115,7 +116,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
                                  final AttitudeProvider attitudeProvider) {
         super(referenceOrbit, PositionAngleType.MEAN, positionScale, true, attitudeProvider);
         this.builder           = builder;
-        this.forceModels       = new ArrayList<DSSTForceModel>();
+        this.forceModels       = new ArrayList<>();
         this.mass              = Propagator.DEFAULT_MASS;
         this.propagationType   = propagationType;
         this.stateType         = stateType;

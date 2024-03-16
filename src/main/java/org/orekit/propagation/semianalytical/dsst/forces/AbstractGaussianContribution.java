@@ -16,16 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.CalculusFieldUnivariateVectorFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -58,6 +50,14 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Common handling of {@link DSSTForceModel} methods for Gaussian contributions
@@ -202,19 +202,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-
-        // Parameter drivers
-        final List<ParameterDriver> drivers = new ArrayList<>();
-
-        // Loop on drivers (without central attraction coefficient driver)
-        for (final ParameterDriver driver : getParametersDriversWithoutMu()) {
-            drivers.add(driver);
-        }
-
+        // Initialize drivers (without central attraction coefficient driver)
+        final List<ParameterDriver> drivers = new ArrayList<>(getParametersDriversWithoutMu());
         // We put central attraction coefficient driver at the end of the array
         drivers.add(gmParameterDriver);
         return drivers;
-
     }
 
     /**
@@ -234,9 +226,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements, final PropagationType type,
             final double[] parameters) {
 
-        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> list = new ArrayList<>();
         gaussianSPCoefs = new GaussianShortPeriodicCoefficients(coefficientsKeyPrefix, JMAX, INTERPOLATION_POINTS,
-                new TimeSpanMap<Slot>(new Slot(JMAX, INTERPOLATION_POINTS)));
+                new TimeSpanMap<>(new Slot(JMAX, INTERPOLATION_POINTS)));
         list.add(gaussianSPCoefs);
         return list;
 
@@ -474,7 +466,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
         T maxDiff = FastMath.abs(meanRef[0].subtract(meanCur[0])).divide(auxiliaryElements.getSma());
-        ;
+
         // Corrects mean element rates
         for (int i = 1; i < meanRef.length; i++) {
             maxDiff = FastMath.max(maxDiff, FastMath.abs(meanRef[i].subtract(meanCur[i])));
@@ -504,7 +496,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, extractedParameters);
 
             // Compute rhoj and sigmaj
-            final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), auxiliaryElements);
+            final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(auxiliaryElements);
 
             // Generate the Cij and Sij coefficients
             final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, auxiliaryElements,
@@ -543,7 +535,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
             // Compute rhoj and sigmaj
-            final T[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context, field);
+            final T[][] currentRhoSigmaj = computeRhoSigmaCoefficients(context, field);
 
             // Generate the Cij and Sij coefficients
             final FieldFourierCjSjCoefficients<T> fourierCjSj = new FieldFourierCjSjCoefficients<>(meanState, JMAX,
@@ -567,11 +559,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * ρ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>C<sub>j</sub>(k, h) <br/>
      * σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
      * </p>
-     * @param date              current date
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @return computed coefficients
      */
-    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date, final AuxiliaryElements auxiliaryElements) {
+    private double[][] computeRhoSigmaCoefficients(final AuxiliaryElements auxiliaryElements) {
         final double[][] currentRhoSigmaj = new double[2][3 * JMAX + 1];
         final CjSjCoefficient cjsjKH = new CjSjCoefficient(auxiliaryElements.getK(), auxiliaryElements.getH());
         final double b = 1. / (1 + auxiliaryElements.getB());
@@ -598,13 +589,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
      * </p>
      * @param <T>     type of the elements
-     * @param date    current date
      * @param context container for attributes
      * @param field   field used by default
      * @return computed coefficients
      */
-    private <T extends CalculusFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbsoluteDate<T> date,
-            final FieldAbstractGaussianContributionContext<T> context, final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbstractGaussianContributionContext<T> context, final Field<T> field) {
         // zero
         final T zero = field.getZero();
 
@@ -722,9 +711,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final FieldVector3D<T> vel = new FieldVector3D<>(Xdot, auxiliaryElements.getVectorF(), Ydot,
                     auxiliaryElements.getVectorG());
 
-            // Compute acceleration
-            FieldVector3D<T> acc = FieldVector3D.getZero(field);
-
             // shift the orbit to dt
             final FieldOrbit<T> shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
@@ -742,7 +728,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final FieldSpacecraftState<T> shiftedState = new FieldSpacecraftState<>(recomposedOrbit, recomposedAttitude,
                     state.getMass());
 
-            acc = contribution.acceleration(shiftedState, parameters);
+            final FieldVector3D<T> acc = contribution.acceleration(shiftedState, parameters);
 
             // Compute the derivatives of the elements by the speed
             final T[] deriv = MathArrays.buildArray(field, dimension);
@@ -760,7 +746,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             deriv[5] = getLoV(X, Y, Xdot, Ydot).dotProduct(acc);
 
             // Compute mean elements rates
-            T[] val = null;
+            final T[] val;
             if (meanMode) {
                 val = MathArrays.buildArray(field, dimension);
                 for (int i = 0; i < 6; i++) {
@@ -973,6 +959,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
 
         /** {@inheritDoc} */
+        @SuppressWarnings("checkstyle:FinalLocalVariable")
         @Override
         public double[] value(final double x) {
 
@@ -995,9 +982,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final Vector3D vel = new Vector3D(Xdot, auxiliaryElements.getVectorF(), Ydot,
                     auxiliaryElements.getVectorG());
 
-            // Compute acceleration
-            Vector3D acc = Vector3D.ZERO;
-
             // shift the orbit to dt
             final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
@@ -1015,7 +999,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                     state.getMass());
 
             // here parameters is a list of all span values of each parameter driver
-            acc = contribution.acceleration(shiftedState, parameters);
+            final Vector3D acc = contribution.acceleration(shiftedState, parameters);
 
             // Compute the derivatives of the elements by the speed
             final double[] deriv = new double[6];
@@ -1033,7 +1017,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             deriv[5] = getLoV(X, Y, Xdot, Ydot).dotProduct(acc);
 
             // Compute mean elements rates
-            double[] val = null;
+            final double[] val;
             if (meanMode) {
                 val = new double[6];
                 for (int i = 0; i < 6; i++) {
@@ -1531,7 +1515,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             }
             final T[] t = y.clone();
             final T[] c = MathArrays.buildArray(field, v.length);
-            ;
             final T[] s = t.clone();
             for (int i = 1; i < points.length; i++) {
                 x = points[i];
@@ -1917,8 +1900,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                     }
 
                     // add the computed coefficients to C<sub>i</sub>⁰
-                    currentCij[0][i] += -(currentCij[j][i] * uijvij.currentRhoSigmaj[0][j] +
-                            currentSij[j][i] * uijvij.currentRhoSigmaj[1][j]);
+                    currentCij[0][i] -= currentCij[j][i] * uijvij.currentRhoSigmaj[0][j] +
+                        currentSij[j][i] * uijvij.currentRhoSigmaj[1][j];
                 }
 
             }
@@ -2026,7 +2009,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // select the coefficients slot
             final Slot slot = slots.get(date);
 
-            final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * JMAX + 3);
+            final Map<String, double[]> coefficients = new HashMap<>(2 * JMAX + 3);
             storeIfSelected(coefficients, selected, slot.cij[0].value(date), "d", 0);
             storeIfSelected(coefficients, selected, slot.dij[1].value(date), "d", 1);
             storeIfSelected(coefficients, selected, slot.dij[2].value(date), "d", 2);
@@ -2221,8 +2204,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @return the coefficient k₂⁰
          */
         private T computeK20(final int kMax, final T[][] currentRhoSigmaj, final Field<T> field) {
-            final T zero = field.getZero();
-            T k20 = zero;
+            T k20 = field.getZero();
 
             for (int kIndex = 1; kIndex <= kMax; kIndex++) {
                 // After inserting 2.5.3-(8) into 2.5.3-(9a) the result becomes:
@@ -2302,7 +2284,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // select the coefficients slot
             final FieldSlot<T> slot = slots.get(date);
 
-            final Map<String, T[]> coefficients = new HashMap<String, T[]>(2 * JMAX + 3);
+            final Map<String, T[]> coefficients = new HashMap<>(2 * JMAX + 3);
             storeIfSelected(coefficients, selected, slot.cij[0].value(date), "d", 0);
             storeIfSelected(coefficients, selected, slot.dij[1].value(date), "d", 1);
             storeIfSelected(coefficients, selected, slot.dij[2].value(date), "d", 2);
@@ -2736,7 +2718,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // compute the coefficients
             computeU1V1Coefficients(field);
-            computeU2V2Coefficients(field);
+            computeU2V2Coefficients();
         }
 
         /**
@@ -2869,9 +2851,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * <p>
          * Only the coefficients for Fourier index = 1 (i == 0) are required.
          * </p>
-         * @param field field used by default
          */
-        private void computeU2V2Coefficients(final Field<T> field) {
+        private void computeU2V2Coefficients() {
             for (int j = 1; j <= jMax; j++) {
                 // compute 1 / j
                 final double ooj = 1. / j;

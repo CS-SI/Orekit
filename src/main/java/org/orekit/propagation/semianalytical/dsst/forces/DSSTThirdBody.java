@@ -16,16 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
@@ -58,6 +48,16 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 
 /** Third body attraction perturbation to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -212,9 +212,9 @@ public class DSSTThirdBody implements DSSTForceModel {
         final int jMax = staticContext.getMaxAR3Pow() + 1;
         shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
                                                               staticContext.getMaxFreqF(), body.getName(),
-                                                              new TimeSpanMap<Slot>(new Slot(jMax, INTERPOLATION_POINTS)));
+                                                              new TimeSpanMap<>(new Slot(jMax, INTERPOLATION_POINTS)));
 
-        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> list = new ArrayList<>();
         list.add(shortPeriods);
         return list;
 
@@ -1782,13 +1782,13 @@ public class DSSTThirdBody implements DSSTForceModel {
         private final int sMax;
 
         /** The coefficients G<sub>n,s</sub>. */
-        private final double gns[][];
+        private final double[][] gns;
 
         /** The derivatives of the coefficients G<sub>n,s</sub> by a. */
-        private final double dgnsda[][];
+        private final double[][] dgnsda;
 
         /** The derivatives of the coefficients G<sub>n,s</sub> by γ. */
-        private final double dgnsdgamma[][];
+        private final double[][] dgnsdgamma;
 
         /** Standard constructor.
          *
@@ -1901,13 +1901,13 @@ public class DSSTThirdBody implements DSSTForceModel {
         private final int sMax;
 
         /** The coefficients G<sub>n,s</sub>. */
-        private final T gns[][];
+        private final T[][] gns;
 
         /** The derivatives of the coefficients G<sub>n,s</sub> by a. */
-        private final T dgnsda[][];
+        private final T[][] dgnsda;
 
         /** The derivatives of the coefficients G<sub>n,s</sub> by γ. */
-        private final T dgnsdgamma[][];
+        private final T[][] dgnsdgamma;
 
         /** Standard constructor.
          *
@@ -2036,19 +2036,19 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /** The coeficient sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final double coefAandDeriv[];
+        private final double[] coefAandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final double coefBandDeriv[];
+        private final double[] coefBandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final double coefDandDeriv[];
+        private final double[] coefDandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final double coefEandDeriv[];
+        private final double[] coefEandDeriv;
 
         /**
          * Standard constructor.
@@ -2294,19 +2294,19 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /** The coeficient sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final T coefAandDeriv[];
+        private final T[] coefAandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final T coefBandDeriv[];
+        private final T[] coefBandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final T coefDandDeriv[];
+        private final T[] coefDandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final T coefEandDeriv[];
+        private final T[] coefEandDeriv;
 
         /**
          * Standard constructor.
@@ -3255,7 +3255,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             // select the coefficients slot
             final Slot slot = slots.get(date);
 
-            final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxFreqF + 1);
+            final Map<String, double[]> coefficients = new HashMap<>(2 * maxFreqF + 1);
             storeIfSelected(coefficients, selected, slot.cij[0].value(date), "c", 0);
             for (int j = 1; j <= maxFreqF; j++) {
                 storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
@@ -3360,15 +3360,15 @@ public class DSSTThirdBody implements DSSTForceModel {
             final T F = meanOrbit.getLE();
 
             //initialize the short periodic contribution with the corresponding C⁰ coeficient
-            final T[] shortPeriodic = (T[]) slot.cij[0].value(meanOrbit.getDate());
+            final T[] shortPeriodic = slot.cij[0].value(meanOrbit.getDate());
 
             // Add the cos and sin dependent terms
             for (int j = 1; j <= maxFreqF; j++) {
                 //compute cos and sin
                 final FieldSinCos<T> scjF = FastMath.sinCos(F.multiply(j));
 
-                final T[] c = (T[]) slot.cij[j].value(meanOrbit.getDate());
-                final T[] s = (T[]) slot.sij[j].value(meanOrbit.getDate());
+                final T[] c = slot.cij[j].value(meanOrbit.getDate());
+                final T[] s = slot.sij[j].value(meanOrbit.getDate());
                 for (int i = 0; i < 6; i++) {
                     shortPeriodic[i] = shortPeriodic[i].add(c[i].multiply(scjF.cos()).add(s[i].multiply(scjF.sin())));
                 }
@@ -3398,7 +3398,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             // select the coefficients slot
             final FieldSlot<T> slot = slots.get(date);
 
-            final Map<String, T[]> coefficients = new HashMap<String, T[]>(2 * maxFreqF + 1);
+            final Map<String, T[]> coefficients = new HashMap<>(2 * maxFreqF + 1);
             storeIfSelected(coefficients, selected, slot.cij[0].value(date), "c", 0);
             for (int j = 1; j <= maxFreqF; j++) {
                 storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
@@ -3788,8 +3788,8 @@ public class DSSTThirdBody implements DSSTForceModel {
                     // (n - s) must be even
                     if ((n - s) % 2 == 0) {
                         // Extract data from previous computation :
-                        final T kns   = (T) hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
-                        final T dkns  = (T) hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
+                        final T kns   = hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
+                        final T dkns  = hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
 
                         final double vns = Vns.get(new NSKey(n, s));
                         final T coef0 = delta0s.multiply(vns).multiply(aoR3Pow[n]);

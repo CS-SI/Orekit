@@ -16,17 +16,17 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Provider of the Jacobi polynomials P<sub>l</sub><sup>v,w</sup>.
  * <p>
@@ -41,8 +41,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 public class JacobiPolynomials {
 
     /** Storage map. */
-    private static final Map<JacobiKey, List<PolynomialFunction>> MAP =
-                    new HashMap<JacobiKey, List<PolynomialFunction>>();
+    private static final Map<JacobiKey, List<PolynomialFunction>> MAP = new HashMap<>();
 
     /** Private constructor as class is a utility. */
     private JacobiPolynomials() {
@@ -150,7 +149,7 @@ public class JacobiPolynomials {
 
             // Check the existence of the corresponding key in the map.
             if (!MAP.containsKey(key)) {
-                MAP.put(key, new ArrayList<PolynomialFunction>());
+                MAP.put(key, new ArrayList<>());
             }
 
             polyList = MAP.get(key);

@@ -199,20 +199,18 @@ public class ModifiedSaastamoinenModelTest {
             FastMath.toRadians(70.0), FastMath.toRadians(75.0), FastMath.toRadians(80.0),
             FastMath.toRadians(85.0), FastMath.toRadians(90.0)
         };
-        for (int h = 0; h < heights.length; h++) {
-            for (int e = 0; e < elevations.length; e++) {
-                double height = heights[h];
-                double elevation = elevations[e];
-                double expectedValue = defaultModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
-                                                              new GeodeticPoint(0.0, 0.0, height),
-                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                              null, AbsoluteDate.J2000_EPOCH).getDelay();
-                double actualValue = loadedModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
-                                                           new GeodeticPoint(0.0, 0.0, height),
-                                                           TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                           null, AbsoluteDate.J2000_EPOCH).getDelay();
-                Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
-                        FastMath.toDegrees(elevation) + " precision not met");
+        for (double v : heights) {
+            for (double value : elevations) {
+                double expectedValue = defaultModel.pathDelay(new TrackingCoordinates(0.0, value, 0.0),
+                    new GeodeticPoint(0.0, 0.0, v),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                    null, AbsoluteDate.J2000_EPOCH).getDelay();
+                double actualValue = loadedModel.pathDelay(new TrackingCoordinates(0.0, value, 0.0),
+                    new GeodeticPoint(0.0, 0.0, v),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                    null, AbsoluteDate.J2000_EPOCH).getDelay();
+                Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + v + " elevation = " +
+                    FastMath.toDegrees(value) + " precision not met");
             }
         }
     }
