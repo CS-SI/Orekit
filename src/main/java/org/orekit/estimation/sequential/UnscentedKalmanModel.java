@@ -16,13 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedEvolution;
 import org.hipparchus.filtering.kalman.unscented.UnscentedProcess;
@@ -43,6 +36,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Class defining the process model dynamics to use with a {@link UnscentedKalmanEstimator}.
  * @author Gaëtan Pierre
@@ -226,18 +226,18 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
             int i = 0;
             for (final ParameterDriver driver : orbitDrivers.getDrivers()) {
                 final Integer c = orbitalParameterColumns.get(driver.getName());
-                covarianceIndirection[k][i++] = (c == null) ? -1 : c.intValue();
+                covarianceIndirection[k][i++] = (c == null) ? -1 : c;
             }
             for (final ParameterDriver driver : parametersDrivers.getDrivers()) {
                 final Integer c = propagationParameterColumns.get(driver.getName());
                 if (c != null) {
-                    covarianceIndirection[k][i++] = c.intValue();
+                    covarianceIndirection[k][i++] = c;
                 }
             }
             for (final ParameterDriver driver : estimatedMeasurementParameters.getDrivers()) {
                 final Integer c = measurementParameterColumns.get(driver.getName());
                 if (c != null) {
-                    covarianceIndirection[k][i++] = c.intValue();
+                    covarianceIndirection[k][i++] = c;
                 }
             }
         }
@@ -484,9 +484,9 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
         // Loop on sigma points to create the propagator parallelizer
         final List<Propagator> propagators = new ArrayList<>(sigmaPoints.length);
-        for (int k = 0; k < sigmaPoints.length; ++k) {
+        for (RealVector sigmaPoint : sigmaPoints) {
             // Current sigma point
-            final double[] currentPoint = sigmaPoints[k].copy().toArray();
+            final double[] currentPoint = sigmaPoint.copy().toArray();
             // Create the corresponding orbit propagator
             final Propagator currentPropagator = createPropagator(currentPoint, index);
             // Add it to the list of propagators
@@ -494,12 +494,10 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         }
 
         // Create the propagator parallelizer and predict states
-        // (the shift is done to start a little bit before the previous measurement epoch)
         final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, interpolators -> { });
-        final List<SpacecraftState>   states       = parallelizer.propagate(previousDate.shiftedBy(-1.0e-3), currentDate);
 
-        // Return
-        return states;
+        // The shift is done to start a little bit before the previous measurement epoch
+        return parallelizer.propagate(previousDate.shiftedBy(-1.0e-3), currentDate);
 
     }
 
@@ -517,8 +515,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
                                                       copy.getMu(), copy.getFrame());
         copy.resetOrbit(orbit);
         // Create the propagator
-        final Propagator propagator = copy.buildPropagator(copy.getSelectedNormalizedParameters());
-        return propagator;
+        return copy.buildPropagator(copy.getSelectedNormalizedParameters());
     }
 
     /** Finalize estimation.

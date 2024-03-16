@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import org.hipparchus.complex.Complex;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.hipparchus.complex.Complex;
 
 /** Compute the S<sub>j</sub>(k, h) and the C<sub>j</sub>(k, h) series
  *  and their partial derivatives with respect to k and h.
@@ -50,7 +50,7 @@ public class CjSjCoefficient {
      */
     public CjSjCoefficient(final double k, final double h) {
         kih  = new Complex(k, h);
-        cjsj = new ArrayList<Complex>();
+        cjsj = new ArrayList<>();
         cjsj.add(new Complex(1, 0));
         cjsj.add(kih);
         jLast = 1;

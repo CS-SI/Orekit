@@ -16,13 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.NonLinearEvolution;
 import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
@@ -42,6 +35,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
  * @author Romain Gerbaud
@@ -221,19 +221,19 @@ public class KalmanModel implements KalmanEstimation, NonLinearProcess<Measureme
             for (final ParameterDriver driver : orbitDrivers.getDrivers()) {
                 final Integer c = orbitalParameterColumns.get(driver.getName());
                 if (c != null) {
-                    covarianceIndirection[k][i++] = c.intValue();
+                    covarianceIndirection[k][i++] = c;
                 }
             }
             for (final ParameterDriver driver : parametersDrivers.getDrivers()) {
                 final Integer c = propagationParameterColumns.get(driver.getName());
                 if (c != null) {
-                    covarianceIndirection[k][i++] = c.intValue();
+                    covarianceIndirection[k][i++] = c;
                 }
             }
             for (final ParameterDriver driver : estimatedMeasurementParameters.getDrivers()) {
                 final Integer c = measurementParameterColumns.get(driver.getName());
                 if (c != null) {
-                    covarianceIndirection[k][i++] = c.intValue();
+                    covarianceIndirection[k][i++] = c;
                 }
             }
         }
@@ -256,7 +256,7 @@ public class KalmanModel implements KalmanEstimation, NonLinearProcess<Measureme
         this.predictedSpacecraftStates = new SpacecraftState[referenceTrajectories.length];
         for (int i = 0; i < predictedSpacecraftStates.length; ++i) {
             predictedSpacecraftStates[i] = referenceTrajectories[i].getInitialState();
-        };
+        }
         this.correctedSpacecraftStates = predictedSpacecraftStates.clone();
 
         // Initialize the estimated normalized state and fill its values

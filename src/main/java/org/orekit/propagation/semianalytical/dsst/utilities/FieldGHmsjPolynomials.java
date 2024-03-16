@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 
 /** Compute the G<sub>ms</sub><sup>j</sup> and the H<sub>ms</sub><sup>j</sup>
@@ -46,9 +46,6 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     private int                   I;
 
-    /** Zero for initialization. */
-    private final T zero;
-
     /** Create a set of G<sub>ms</sub><sup>j</sup> and H<sub>ms</sub><sup>j</sup> polynomials.
      *  @param k X component of the eccentricity vector
      *  @param h Y component of the eccentricity vector
@@ -61,7 +58,6 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
                             final T alpha, final T beta,
                             final int retroFactor,
                             final Field<T> field) {
-        zero = field.getZero();
         this.cjsjKH = new FieldCjSjCoefficient<>(k, h, field);
         this.cjsjAB = new FieldCjSjCoefficient<>(alpha, beta, field);
         this.I = retroFactor;
@@ -75,7 +71,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getGmsj(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        T gms = zero;
+        final T gms;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             gms = cjsjKH.getCj(sMj).multiply(cjsjAB.getCj(mMis)).
@@ -96,7 +92,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getHmsj(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        T hms = zero;
+        final T hms;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             hms = cjsjKH.getCj(sMj).multiply(cjsjAB.getSj(mMis)).multiply(I).
@@ -117,7 +113,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getdGmsdk(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        T dGmsdk = zero;
+        final T dGmsdk;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             dGmsdk = cjsjKH.getDcjDk(sMj).multiply(cjsjAB.getCj(mMis)).
@@ -138,7 +134,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getdGmsdh(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        T dGmsdh = zero;
+        final T dGmsdh;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             dGmsdh = cjsjKH.getDcjDh(sMj).multiply(cjsjAB.getCj(mMis)).
@@ -159,7 +155,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getdGmsdAlpha(final int m, final int s, final int j) {
         final int sMj  = FastMath.abs(s - j);
-        T dGmsdAl = zero;
+        final T dGmsdAl;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             dGmsdAl = cjsjKH.getCj(sMj).multiply(cjsjAB.getDcjDk(mMis)).
@@ -180,7 +176,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getdGmsdBeta(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        T dGmsdBe = zero;
+        final T dGmsdBe;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             dGmsdBe = cjsjKH.getCj(sMj).multiply(cjsjAB.getDcjDh(mMis)).
@@ -201,7 +197,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getdHmsdk(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        T dHmsdk = zero;
+        final T dHmsdk;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             dHmsdk = cjsjKH.getDcjDk(sMj).multiply(cjsjAB.getSj(mMis)).multiply(I).
@@ -222,7 +218,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getdHmsdh(final int m,  final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        T dHmsdh = zero;
+        final T dHmsdh;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             dHmsdh = cjsjKH.getDcjDh(sMj).multiply(cjsjAB.getSj(mMis)).multiply(I).
@@ -243,7 +239,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getdHmsdAlpha(final int m, final int s, final int j) {
         final int sMj  = FastMath.abs(s - j);
-        T dHmsdAl = zero;
+        final T dHmsdAl;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             dHmsdAl = cjsjKH.getCj(sMj).multiply(cjsjAB.getDsjDk(mMis)).multiply(I).
@@ -264,7 +260,7 @@ public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
      */
     public T getdHmsdBeta(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        T dHmsdBe = zero;
+        final T dHmsdBe;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
             dHmsdBe = cjsjKH.getCj(sMj).multiply(cjsjAB.getDsjDh(mMis)).multiply(I).

@@ -38,7 +38,6 @@ public class DSSTNewtonianAttractionContext extends ForceModelContext {
      * @param parameters        values of the force model parameters
      */
     public DSSTNewtonianAttractionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
-
         super(auxiliaryElements);
         this.gm = parameters[0];
     }
