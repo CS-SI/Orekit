@@ -51,13 +51,20 @@ public class ModifiedSaastamoinenModelTest {
 
     @Test
     public void testIssue1078() {
+        Utils.setDataRoot("atmosphere");
         try {
-            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 50.0);
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
-        }
-        try {
-            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, -50.0);
+            final double altitude      = 0.0;
+            final double temperature   = 273.15 + 18;
+            final double pressure      = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
+            final double humidity      = 50;
+            final double waterPressure = ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
+                temperature,
+                humidity);
+            final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(altitude, pressure, temperature, waterPressure,
+                Double.NaN,
+                Double.NaN);
+            final PressureTemperatureHumidityProvider pthProvider = new ConstantPressureTemperatureHumidityProvider(pth);
+            new ModifiedSaastamoinenModel(pthProvider, null);
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
         }

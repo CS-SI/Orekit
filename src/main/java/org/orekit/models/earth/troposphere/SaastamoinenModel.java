@@ -18,10 +18,13 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.Wang1988;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -48,7 +51,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
      * @param r0 the humidity at the station [fraction] (50% → 0.5)
-     * @see ModifiedSaastamoinenModel#ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
+     * @see ModifiedSaastamoinenModel#ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider, String, DataProvidersManager)
      * @since 10.1
      */
     @DefaultDataContext
@@ -67,12 +70,12 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
      * @since 7.1
-     * @see ModifiedSaastamoinenModel#ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
+     * @see ModifiedSaastamoinenModel#ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider, String, DataProvidersManager)
      */
     @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0,
                              final String deltaRFileName) {
-        super(t0, p0, r0, deltaRFileName);
+        this(t0, p0, r0, deltaRFileName, DataContext.getDefault().getDataProvidersManager());
     }
 
     /** Create a new Saastamoinen model for the troposphere using the given

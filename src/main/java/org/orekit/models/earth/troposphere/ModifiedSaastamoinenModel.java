@@ -41,6 +41,7 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.Wang1988;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.InterpolationTableLoader;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
