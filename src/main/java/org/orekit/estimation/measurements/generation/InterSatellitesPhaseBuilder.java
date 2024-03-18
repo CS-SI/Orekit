@@ -60,7 +60,10 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 12.1, replaced by {@link #InterSatellitesPhaseBuilder(CorrelatedRandomVectorGenerator,
+     * ObservableSatellite, ObservableSatellite, double, double, double, AmbiguityCache)}
      */
+    @Deprecated
     public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                        final ObservableSatellite local, final ObservableSatellite remote,
                                        final double wavelength, final double sigma, final double baseWeight) {
