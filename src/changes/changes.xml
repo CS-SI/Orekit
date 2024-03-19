@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1283">
+        Restored previous API for MeasurementBuilder with SpacecraftState.
+      </action>
       <action dev="luc" type="fix" issue="1355">
         Added validity range to clock models.
       </action>
