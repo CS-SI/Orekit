@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -85,10 +86,8 @@ public class ResidualsFilteringTest {
                                                    final GroundStation groundStation,
                                                    final ObservableSatellite satellite, final double noise) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { noise });
-        MeasurementBuilder<Range> rb =
-                        new RangeBuilder(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random)),
-                                         groundStation, false, 1.0, 1.0, satellite);
-        return rb;
+        return new RangeBuilder(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random)),
+                                groundStation, false, 1.0, 1.0, satellite);
     }
 
     private ElevationDetector getElvetaionDetector(final TopocentricFrame topo, final double minElevation) {
@@ -102,11 +101,11 @@ public class ResidualsFilteringTest {
         Generator generator = new Generator();
         Propagator propagator = buildPropagator(orbit);
         generator.addPropagator(propagator);
-        RandomGenerator random = new Well19937a(0x01e226dd859c2c9dl);
+        RandomGenerator random = new Well19937a(0x01e226dd859c2c9dL);
         MeasurementBuilder<Range> builder = getBuilder(random, station, satellite, noise);
         EventDetector event = getElvetaionDetector(topo, 10.0);
         FixedStepSelector dateSelecor = new FixedStepSelector(30, TimeScalesFactory.getUTC());
-        EventBasedScheduler<Range> scheduler = new EventBasedScheduler<Range>(builder, dateSelecor, propagator, event, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE);
+        EventBasedScheduler<Range> scheduler = new EventBasedScheduler<>(builder, dateSelecor, propagator, event, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE);
         generator.addScheduler(scheduler);
         return generator;
     }
@@ -139,17 +138,17 @@ public class ResidualsFilteringTest {
         final GatheringSubscriber gatherer = new GatheringSubscriber();
         generator.addSubscriber(gatherer);
         generator.generate(date, date.shiftedBy(3600*5));
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
         final ResidualFilter<Range> filter = new ResidualFilter<>(threshold);
 
-        final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
-        for (ObservedMeasurement<?> meas : measurements) {
-            final Range range = (Range) meas;
+        final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<>();
+        for (EstimatedMeasurementBase<?> meas : measurements) {
+            final Range range = (Range) meas.getObservedMeasurement();
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
             filter.filter(range, currentSC);
-            if (meas.isEnabled()) {
-                processMeasurements.add(meas);
+            if (meas.getObservedMeasurement().isEnabled()) {
+                processMeasurements.add(meas.getObservedMeasurement());
             }
         }
         Assertions.assertEquals(processMeasurements.size(), measurements.size());
@@ -181,17 +180,17 @@ public class ResidualsFilteringTest {
         final GatheringSubscriber gatherer = new GatheringSubscriber();
         generator.addSubscriber(gatherer);
         generator.generate(date, date.shiftedBy(3600*5));
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
         final ResidualFilter<Range> filter = new ResidualFilter<>(10);
 
-        final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
-        for (ObservedMeasurement<?> meas : measurements) {
-            final Range range = (Range) meas;
+        final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<>();
+        for (EstimatedMeasurementBase<?> meas : measurements) {
+            final Range range = (Range) meas.getObservedMeasurement();
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
             filter.filter(range, currentSC);
-            if (meas.isEnabled()) {
-                processMeasurements.add(meas);
+            if (meas.getObservedMeasurement().isEnabled()) {
+                processMeasurements.add(meas.getObservedMeasurement());
             }
         }
         Assertions.assertEquals(2, measurements.size()-processMeasurements.size());

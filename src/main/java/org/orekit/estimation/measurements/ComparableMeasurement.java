@@ -33,6 +33,15 @@ public interface ComparableMeasurement extends TimeStamped, Comparable<Comparabl
      */
     double[] getObservedValue();
 
+    /** Set the observed value.
+     * <p>
+     * The observed value is the value that was measured by the instrument.
+     * </p>
+     * @param observed observed value
+     * @since 13.0
+     */
+     void setObservedValue(double[] observed);
+
     /** {@inheritDoc}
      * <p>
      * Measurements comparison is primarily chronological, but measurements

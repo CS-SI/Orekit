@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -69,7 +70,7 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      * @return generated measurement
      * @since 12.0
      */
-    T build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
+    EstimatedMeasurementBase<T> build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
     /** Generate a single measurement.<p>
      *

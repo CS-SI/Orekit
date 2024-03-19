@@ -54,7 +54,7 @@ import java.util.List;
 
 /**
  *
- * Source: http://ccar.colorado.edu/asen5050/projects/projects_2012/kemble/gibbs_derivation.htm
+ * Source: <a href="http://ccar.colorado.edu/asen5050/projects/projects_2012/kemble/gibbs_derivation.htm">gibbs_derivation</a>
  *
  * @author Joris Olympio
  * @since 7.1

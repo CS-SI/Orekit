@@ -414,7 +414,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
     public static class Observer implements KalmanObserver {
 
         /** Residuals statistics. */
-        private StreamingStatistics stats;
+        private final StreamingStatistics stats;
 
         /** Constructor. */
         public Observer() {
