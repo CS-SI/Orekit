@@ -607,7 +607,7 @@ public class KalmanEstimatorTest {
                                                                0.0, 4.0, 700.0);
 
         // Concatenate measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         measurements.addAll(rangeMeasurements);
         measurements.addAll(angularMeasurements);
         measurements.addAll(rangeRateMeasurements);
@@ -703,7 +703,7 @@ public class KalmanEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         measurements.addAll(measurementsRange);
         measurements.addAll(measurementsRangeRate);
 

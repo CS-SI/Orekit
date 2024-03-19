@@ -31,7 +31,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 import java.util.List;
 
@@ -116,11 +115,11 @@ public class FDOATest {
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(), OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate(state1 -> measurement.
+                        estimate(0, 0, new SpacecraftState[] { state1 }).
+                        getEstimatedValue(), 1, propagator.getAttitudeProvider(),
+                                                  OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).
+                        value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
