@@ -102,7 +102,7 @@ public class Generator {
         if (satellites.length == 1) {
             // this scheduler manages only one satellite
             // we can let the individual propagator handle it
-            List<Scheduler<? extends ObservedMeasurement<?>>> list =
+            final List<Scheduler<? extends ObservedMeasurement<?>>> list =
                 singleSatSchedulers.computeIfAbsent(satellites[0], k -> new ArrayList<>());
             list.add(scheduler);
         } else {

@@ -181,8 +181,8 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
      * @return dummy observed measurement
      * @since 13.0
      */
-    protected abstract T buildObserved(final AbsoluteDate date,
-                                       final Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
+    protected abstract T buildObserved(AbsoluteDate date,
+                                       Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
     /** {@inheritDoc} */
     @Override

@@ -46,8 +46,8 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
                   sigmaPosition, sigmaPosition, sigmaPosition,
                   sigmaVelocity, sigmaVelocity, sigmaVelocity
               }, new double[] {
-                baseWeight, baseWeight, baseWeight,
-                baseWeight, baseWeight, baseWeight
+                  baseWeight, baseWeight, baseWeight,
+                  baseWeight, baseWeight, baseWeight
               }, satellite);
     }
 
