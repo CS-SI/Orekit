@@ -68,7 +68,7 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      * @param date measurement date
      * @param interpolators interpolators relevant for this builder
      * @return generated measurement
-     * @since 12.0
+     * @since 13.0
      */
     EstimatedMeasurementBase<T> build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
