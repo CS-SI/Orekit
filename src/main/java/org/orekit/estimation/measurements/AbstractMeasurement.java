@@ -138,8 +138,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
     /** {@inheritDoc} */
     @Override
-    public void setObservedValue(final double[] observed) {
-        this.observed = observed.clone();
+    public void setObservedValue(final double[] newObserved) {
+        this.observed = newObserved.clone();
     }
 
     /** Add a parameter driver.
