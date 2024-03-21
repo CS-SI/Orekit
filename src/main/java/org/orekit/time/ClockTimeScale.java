@@ -34,7 +34,7 @@ public class ClockTimeScale implements TimeScale {
     private final TimeScale reference;
 
     /** Clock offset model. */
-    private final ClockModel clockModel;
+    private final transient ClockModel clockModel;
 
     /** Simple constructor.
      * @param name name of the time scale
