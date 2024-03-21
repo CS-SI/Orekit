@@ -38,6 +38,8 @@ import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockModel;
+import org.orekit.time.ClockOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -90,6 +92,34 @@ public class SP3ParserTest {
         Assertions.assertEquals(25, file.getSatellites().size());
         Assertions.assertEquals(SP3FileType.UNDEFINED, file.getHeader().getType());
         Assertions.assertNull(file.getSatellites().get(null));
+    }
+
+    @Test
+    public void testClockModel() {
+        // simple test for version sp3-a, only contains position entries
+        final String     ex         = "/sp3/gbm18432.sp3.Z";
+        final DataSource compressed = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source     = new UnixCompressFilter().filter(compressed);
+        final Frame      frame      = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        final SP3Parser  parser     = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 6, s -> frame);
+        final SP3        sp3        = parser.parse(source);
+        final TimeScale  ts         = sp3.getHeader().getTimeSystem().getTimeScale(TimeScalesFactory.getTimeScales());
+        final ClockModel clockModel = sp3.getEphemeris("C02").extractClockModel();
+
+        // points exactly on files entries
+        Assertions.assertEquals(-9.16573060e-4,
+                                clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 10, 0.0, ts)).getOffset(),
+                                1.0e-16);
+        Assertions.assertEquals(-9.16566535e-4,
+                                clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 15, 0.0, ts)).getOffset(),
+                                1.0e-16);
+
+        // intermediate point
+        final ClockOffset co = clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 12, 5.25, ts));
+        Assertions.assertEquals(-9.16570332e-04, co.getOffset(),       1.0e-12);
+        Assertions.assertEquals( 2.17288913e-11, co.getRate(),         1.0e-19);
+        Assertions.assertEquals(-4.31319472e-16, co.getAcceleration(), 1.0e-24);
+
     }
 
     @Test

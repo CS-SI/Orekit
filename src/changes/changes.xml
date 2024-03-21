@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc">
+        Allow retrieval of clock model from Rinex clock and SP3 files.
+      </action>
       <action dev="luc" type="add" issue="1352">
         Added SampledClockModel.
       </action>
