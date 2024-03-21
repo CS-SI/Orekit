@@ -21,8 +21,11 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1352">
+        Added SampledClockModel.
+      </action>
       <action dev="luc" type="add" >
-          Added {Field}ClockOffset.
+        Added {Field}ClockOffset.
       </action>
       <action dev="serrof" type="add" issue="1345">
           Added J2-only ForceModel for performance.
