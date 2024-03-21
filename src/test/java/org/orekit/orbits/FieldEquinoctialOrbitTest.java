@@ -37,6 +37,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -128,10 +130,13 @@ class FieldEquinoctialOrbitTest {
     }
 
     @Test
-    void testHyperbolic() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestHyperbolic(Binary64Field.getInstance());
-        });
+    void testHyperbolic1() {
+        doTestHyperbolic1(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testHyperbolic2() {
+        doTestHyperbolic2(Binary64Field.getInstance());
     }
 
     @Test
@@ -534,11 +539,30 @@ class FieldEquinoctialOrbitTest {
 
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestHyperbolic(Field<T> field) {
-        T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(0.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add(5.300),
-                             PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
+    private <T extends CalculusFieldElement<T>> void doTestHyperbolic1(Field<T> field) {
+        try {
+            T zero = field.getZero();
+            FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+            new FieldEquinoctialOrbit<>(zero.add(-42166712.0), zero.add(1.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add(5.300),
+                                        PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
+        }
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestHyperbolic2(Field<T> field) {
+            T zero = field.getZero();
+            FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+            FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-42166712.0), zero.add(1.9), zero.add(0.5),
+                                                            zero.add(0.01), zero.add(-0.02), zero.add(5.300),
+                                                            PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
+        try {
+            new FieldEquinoctialOrbit<>(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
+        }
     }
 
     private <T extends CalculusFieldElement<T>> void doTestToOrbitWithoutDerivatives(Field<T> field) {

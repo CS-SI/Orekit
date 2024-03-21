@@ -191,8 +191,9 @@ class CircularOrbitTest {
     @Test
     void testHyperbolic1() {
         try {
-            new CircularOrbit(42166712.0, 0.9, 0.5, 0.01, -0.02, 5.300,
+            new CircularOrbit(-42166712.0, 1.9, 0.5, 0.01, -0.02, 5.300,
                     PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, mu);
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
         }
@@ -200,10 +201,11 @@ class CircularOrbitTest {
 
     @Test
     void testHyperbolic2() {
-        Orbit orbit = new KeplerianOrbit(42166712.0, 0.9, 0.5, 0.01, -0.02, 5.300,
+        Orbit orbit = new KeplerianOrbit(-42166712.0, 1.9, 0.5, 0.01, -0.02, 5.300,
                 PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, mu);
         try {
             new CircularOrbit(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
         }

@@ -174,12 +174,12 @@ public class AbstractGlobalPressureTemperature
         final double e0 = qv * pressure / (0.622 + 0.378 * qv);
 
         // mean temperature weighted with water vapor pressure
-        final double tm = grid.hasModel(SeasonalModelType.TM) ?
+        final double tm = grid.hasModels(SeasonalModelType.TM) ?
                           interpolator.interpolate(e -> e.getModel(SeasonalModelType.TM).evaluate(dayOfYear)) :
                           Double.NaN;
 
         // water vapor decrease factor
-        final double lambda = grid.hasModel(SeasonalModelType.LAMBDA) ?
+        final double lambda = grid.hasModels(SeasonalModelType.LAMBDA) ?
                               interpolator.interpolate(e -> e.getModel(SeasonalModelType.LAMBDA).evaluate(dayOfYear)) :
                               Double.NaN;
 
@@ -196,10 +196,7 @@ public class AbstractGlobalPressureTemperature
     @Override
     public AzimuthalGradientCoefficients getGradientCoefficients(final GeodeticPoint location, final AbsoluteDate date) {
 
-        if (grid.hasModel(SeasonalModelType.GN_H) &&
-            grid.hasModel(SeasonalModelType.GE_H) &&
-            grid.hasModel(SeasonalModelType.GN_W) &&
-            grid.hasModel(SeasonalModelType.GE_W)) {
+        if (grid.hasModels(SeasonalModelType.GN_H, SeasonalModelType.GE_H, SeasonalModelType.GN_W, SeasonalModelType.GE_W)) {
             // set up interpolation parameters
             final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
             final int              dayOfYear    = date.getComponents(utc).getDate().getDayOfYear();
@@ -264,12 +261,12 @@ public class AbstractGlobalPressureTemperature
         final T e0 = pressure.multiply(qv.divide(qv.multiply(0.378).add(0.622 )));
 
         // mean temperature weighted with water vapor pressure
-        final T tm = grid.hasModel(SeasonalModelType.TM) ?
+        final T tm = grid.hasModels(SeasonalModelType.TM) ?
                      interpolator.interpolate(e -> e.getModel(SeasonalModelType.TM).evaluate(dayOfYear)) :
                      date.getField().getZero().newInstance(Double.NaN);
 
         // water vapor decrease factor
-        final T lambda = grid.hasModel(SeasonalModelType.LAMBDA) ?
+        final T lambda = grid.hasModels(SeasonalModelType.LAMBDA) ?
                          interpolator.interpolate(e -> e.getModel(SeasonalModelType.LAMBDA).evaluate(dayOfYear)) :
                          date.getField().getZero().newInstance(Double.NaN);
 
@@ -287,10 +284,7 @@ public class AbstractGlobalPressureTemperature
     public <T extends CalculusFieldElement<T>> FieldAzimuthalGradientCoefficients<T> getGradientCoefficients(final FieldGeodeticPoint<T> location,
                                                                                                              final FieldAbsoluteDate<T> date) {
 
-        if (grid.hasModel(SeasonalModelType.GN_H) &&
-                        grid.hasModel(SeasonalModelType.GE_H) &&
-                        grid.hasModel(SeasonalModelType.GN_W) &&
-                        grid.hasModel(SeasonalModelType.GE_W)) {
+        if (grid.hasModels(SeasonalModelType.GN_H, SeasonalModelType.GE_H, SeasonalModelType.GN_W, SeasonalModelType.GE_W)) {
             // set up interpolation parameters
             final FieldCellInterpolator<T> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
             final int                      dayOfYear    = date.getComponents(utc).getDate().getDayOfYear();
