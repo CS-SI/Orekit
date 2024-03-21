@@ -23,7 +23,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ClockModel;
+import org.orekit.time.ClockOffset;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldClockOffset;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.Map;
@@ -91,32 +93,29 @@ public class QuadraticClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public double getOffset(final AbsoluteDate date) {
+    public ClockOffset getOffset(final AbsoluteDate date) {
         final double dt = date.durationFrom(getSafeReference(date));
-        return (a2.getValue(date) * dt + a1.getValue(date)) * dt + a0.getValue(date);
+        final double c0 = a0.getValue(date);
+        final double c1 = a1.getValue(date);
+        final double c2 = a2.getValue(date);
+        return new ClockOffset(date,
+                               (c2 * dt + c1) * dt + c0,
+                               2 * c2 * dt + c1,
+                               2 * c2);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
         final AbsoluteDate aDate = date.toAbsoluteDate();
         final T dt = date.durationFrom(getSafeReference(aDate));
-        return dt.multiply(dt.multiply(a2.getValue(aDate)).add(a1.getValue(aDate))).add(a0.getValue(aDate));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getRate(final AbsoluteDate date) {
-        final double dt = date.durationFrom(getSafeReference(date));
-        return 2 * a2.getValue(date) * dt + a1.getValue(date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T getRate(final FieldAbsoluteDate<T> date) {
-        final AbsoluteDate aDate = date.toAbsoluteDate();
-        final T dt = date.durationFrom(getSafeReference(aDate));
-        return dt.multiply(a2.getValue(aDate)).multiply(2).add(a1.getValue(aDate));
+        final double c0 = a0.getValue(aDate);
+        final double c1 = a1.getValue(aDate);
+        final double c2 = a2.getValue(aDate);
+        return new FieldClockOffset<>(date,
+                                      dt.multiply(dt.multiply(c2).add(c1)).add(c0),
+                                      dt.multiply(c2).multiply(2).add(c1),
+                                      dt.multiply(c2).multiply(2));
     }
 
     /** Get a safe reference date.
