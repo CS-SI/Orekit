@@ -16,6 +16,8 @@
  */
 package org.orekit.models.earth.troposphere;
 
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -23,16 +25,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
 @Deprecated
 public class ViennaThreeModelTest {
 
-    private static double epsilon = 1e-6;
+    private static final double epsilon = 1e-6;
 
     @BeforeAll
     public static void setUpGlobal() {
@@ -203,6 +207,18 @@ public class ViennaThreeModelTest {
         Assertions.assertEquals(12.2124, delay.getSh(),    1.0e-4);
         Assertions.assertEquals( 0.3916, delay.getSw(),    1.0e-4);
         Assertions.assertEquals(12.6041, delay.getDelay(), 1.0e-4);
+        Assertions.assertEquals(delay.getDelay(),
+                                model.pathDelay(FastMath.toRadians(elevation),
+                                                point, model.getParameters(date), date),
+                                1.0e-10);
+        Binary64Field field = Binary64Field.getInstance();
+        Binary64 zero = field.getZero();
+        Assertions.assertEquals(delay.getDelay(),
+                                model.pathDelay(FastMath.toRadians(zero.newInstance(elevation)),
+                                                new FieldGeodeticPoint<>(field, point),
+                                                null,
+                                                new FieldAbsoluteDate<>(field, date)).getReal(),
+                                1.0e-10);
     }
 
     @Test

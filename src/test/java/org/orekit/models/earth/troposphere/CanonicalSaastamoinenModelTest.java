@@ -16,13 +16,19 @@
  */
 package org.orekit.models.earth.troposphere;
 
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
 
@@ -43,6 +49,10 @@ public class CanonicalSaastamoinenModelTest {
         final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, elevation, 0.0);
         final CanonicalSaastamoinenModel canonical = new CanonicalSaastamoinenModel();
         final ModifiedSaastamoinenModel  modified  = ModifiedSaastamoinenModel.getStandardModel();
+        Assertions.assertTrue(canonical.getParametersDrivers().isEmpty());
+        canonical.setLowElevationThreshold(0.125);
+        Assertions.assertEquals(0.125, canonical.getLowElevationThreshold(), 1.0e-12);
+        canonical.setLowElevationThreshold(CanonicalSaastamoinenModel.DEFAULT_LOW_ELEVATION_THRESHOLD);
         for (double height = 0; height < 5000; height += 100) {
             final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
             final double canonicalDelay = canonical.pathDelay(trackingCoordinates, location,
@@ -53,6 +63,15 @@ public class CanonicalSaastamoinenModelTest {
                                                              null, AbsoluteDate.J2000_EPOCH).getDelay();
             Assertions.assertTrue(modifiedDelay - canonicalDelay > minDifference);
             Assertions.assertTrue(modifiedDelay - canonicalDelay < maxDifference);
+            final Binary64Field field = Binary64Field.getInstance();
+            Assertions.assertEquals(canonicalDelay,
+                                    canonical.pathDelay(new FieldTrackingCoordinates<>(field, trackingCoordinates),
+                                                        new FieldGeodeticPoint<>(field, location),
+                                                        new FieldPressureTemperatureHumidity<>(field,
+                                                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                                                        MathArrays.buildArray(field, 0),
+                                                        FieldAbsoluteDate.getJ2000Epoch(field)).getDelay().getReal(),
+                                     1.0e-10);
         }
     }
 
