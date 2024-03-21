@@ -25,6 +25,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockOffset;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -101,7 +102,7 @@ public class InterSatellitesOneWayRangeRateMeasurementCreator
             final AbsoluteDate     date      = currentState.getDate();
             final PVCoordinates    pv        = currentState.toTransform().getInverse().
                                                transformPVCoordinates(new PVCoordinates(antennaPhaseCenter1));
-            final double           localClk  = local.getQuadraticClockModel().getOffset(date);
+            final ClockOffset      localClk  = local.getQuadraticClockModel().getOffset(date);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
@@ -122,12 +123,12 @@ public class InterSatellitesOneWayRangeRateMeasurementCreator
                             transformPVCoordinates(new PVCoordinates(antennaPhaseCenter2));
             final PVCoordinates delta = new PVCoordinates(otherAtTransit, pv);
             final double rangeRate = Vector3D.dotProduct(delta.getPosition().normalize(), delta.getVelocity()) +
-                Constants.SPEED_OF_LIGHT * (local.getQuadraticClockModel().getRate(date) -
-                                            remote.getQuadraticClockModel().getRate(transitDate));
+                Constants.SPEED_OF_LIGHT * (local.getQuadraticClockModel().getOffset(date).getRate() -
+                                            remote.getQuadraticClockModel().getOffset(transitDate).getRate());
 
             // generate measurement
             final InterSatellitesOneWayRangeRate phase = new InterSatellitesOneWayRangeRate(local, remote,
-                                                                                            date.shiftedBy(localClk),
+                                                                                            date.shiftedBy(localClk.getOffset()),
                                                                                             rangeRate,
                                                                                             1.0, 10);
             addMeasurement(phase);

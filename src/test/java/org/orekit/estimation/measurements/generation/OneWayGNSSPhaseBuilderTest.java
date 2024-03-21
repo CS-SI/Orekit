@@ -90,7 +90,7 @@ public class OneWayGNSSPhaseBuilderTest {
             new OneWayGNSSPhaseBuilder(null,
                                        new ObservableSatellite(0),
                                        new ObservableSatellite(1),
-                                       refQuadratic::getOffset,
+                                       date -> refQuadratic.getOffset(date).getOffset(),
                                        WAVELENGTH, SIGMA, 1.0);
         try {
             Field clockBuilderField = OneWayGNSSPhaseBuilder.class.getDeclaredField("clockBuilder");
@@ -100,8 +100,8 @@ public class OneWayGNSSPhaseBuilderTest {
             QuadraticClockModel rebuilt = clockBuilder.apply(AbsoluteDate.GALILEO_EPOCH);
             for (double dt = -3; dt < 3; dt += 0.01) {
                 final AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH.shiftedBy(dt);
-                Assertions.assertEquals(refQuadratic.getOffset(date),
-                                        rebuilt.getOffset(date),
+                Assertions.assertEquals(refQuadratic.getOffset(date).getOffset(),
+                                        rebuilt.getOffset(date).getOffset(),
                                         1.0e-30);
             }
 

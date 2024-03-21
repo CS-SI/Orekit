@@ -42,6 +42,8 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockModel;
+import org.orekit.time.ClockOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -382,6 +384,31 @@ public class ClockFileParserTest {
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
                               id, type, timeScale, dataEpoch, numberOfValues,
                               clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
+    }
+
+    @Test
+    public void testClockModel() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/clock/cod17381_truncated_200.clk";
+
+        final RinexClockParser parser = new RinexClockParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final RinexClock file = parser.parse(fileName);
+        final ClockModel  clockModel  = file.extractClockModel("AMC2", 2);
+
+        // points exactly on files entries
+        final ClockOffset c1 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0,  0.0, file.getTimeScale()));
+        final ClockOffset c2 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 30.0, file.getTimeScale()));
+        Assertions.assertEquals(0.192309152524E-08, c1.getOffset(), 1.0e-21);
+        Assertions.assertEquals(0.192333320310E-08, c2.getOffset(), 1.0e-21);
+
+        // intermediate point
+        final ClockOffset c = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 12.0, file.getTimeScale()));
+        Assertions.assertEquals(0.1923188196384e-08, c.getOffset(),       1.0e-21);
+        Assertions.assertEquals(8.05592866666e-15,   c.getRate(),         1.0e-26);
+        Assertions.assertEquals( 0.0,                c.getAcceleration(), 1.0e-40);
+
     }
 
     /** An example of the 2.00 RINEX clock file format. */

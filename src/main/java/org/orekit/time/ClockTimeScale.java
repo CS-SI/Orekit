@@ -49,13 +49,13 @@ public class ClockTimeScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        return reference.offsetFromTAI(date) + clockModel.getOffset(date);
+        return reference.offsetFromTAI(date) + clockModel.getOffset(date).getOffset();
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return reference.offsetFromTAI(date).add(clockModel.getOffset(date));
+        return reference.offsetFromTAI(date).add(clockModel.getOffset(date).getOffset());
     }
 
     /** {@inheritDoc} */
