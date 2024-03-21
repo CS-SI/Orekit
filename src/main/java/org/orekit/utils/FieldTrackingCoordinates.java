@@ -46,7 +46,7 @@ public class FieldTrackingCoordinates<T extends CalculusFieldElement<T>> {
         this.range     = range;
     }
 
-    /** Build a new instance from &a {@link TrackingCoordinates}.
+    /** Build a new instance from a {@link TrackingCoordinates}.
      * @param field field to which the elements belong
      * @param trackingCoordinates tracking coordinates to convert
      * @since 12.1

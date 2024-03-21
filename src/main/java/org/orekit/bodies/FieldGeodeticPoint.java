@@ -87,7 +87,7 @@ public class FieldGeodeticPoint<T extends CalculusFieldElement<T>> {
         this.altitude  = altitude;
     }
 
-    /** Build a new instance from &a {@link GeodeticPoint}.
+    /** Build a new instance from a {@link GeodeticPoint}.
      * @param field field to which the elements belong
      * @param geodeticPoint geodetic point to convert
      * @since 12.1

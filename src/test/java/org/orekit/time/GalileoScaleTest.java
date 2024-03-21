@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +49,7 @@ public class GalileoScaleTest {
     public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getGST();
-        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
@@ -64,6 +66,18 @@ public class GalileoScaleTest {
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             Assertions.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
+        }
+    }
+
+    @Test
+    public void testField() {
+        TimeScale scale = TimeScalesFactory.getGST();
+        double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+        final Binary64Field field = Binary64Field.getInstance();
+        for (double dt = -10000; dt < 10000; dt += 123.456789) {
+            FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getJ2000Epoch(field).
+                                               shiftedBy(dt * Constants.JULIAN_DAY);
+            Assertions.assertEquals(reference, scale.offsetFromTAI(date).getReal(), 1.0e-15);
         }
     }
 
