@@ -24,6 +24,9 @@
       <action dev="luc" type="fix" issue="1356">
         Fixed parsing of Rinex clock files with mixed satellite system.
       </action>
+      <action dev="serrof" type="add" issue="1283">
+        Restored previous API for MeasurementBuilder with SpacecraftState.
+      </action>
       <action dev="luc" type="fix" issue="1355">
         Added validity range to clock models.
       </action>
