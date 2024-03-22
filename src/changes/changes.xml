@@ -27,6 +27,9 @@
           </action>
       </release>
       <release version="12.1" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1354">
+          Fixed parsing of SP3 files with missing agency in header.
+        </action>
         <action dev="luc" type="add" >
           Added IGSUtils.guessFrame() to retrieve Earth frames with proper
           year and associated IERS conventions.
@@ -45,7 +48,7 @@
         </action>
         <action dev="serrof" type="add" issue="1345">
           Added J2-only ForceModel for performance.
-        </action>
+      </action>
       <action dev="serrof" type="fix" issue="1344">
           Fixed hasNonKeplerianAcceleration in FieldOrbit and improved performance.
       </action>

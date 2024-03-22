@@ -357,7 +357,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
                     pi.file.getHeader().setCoordinateSystem(scanner.next());
                     pi.file.getHeader().setOrbitTypeKey(scanner.next());
-                    pi.file.getHeader().setAgency(scanner.next());
+                    pi.file.getHeader().setAgency(scanner.hasNext() ? scanner.next() : "");
                 }
             }
 

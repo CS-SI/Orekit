@@ -206,7 +206,7 @@ public class SP3ParserTest {
 
         // 2001  8  8  0  0  0.00000000
         Assertions.assertEquals(new AbsoluteDate(2001, 8, 8, 0, 0, 0,
-                TimeScalesFactory.getGPS()), coord.getDate());
+                                                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
         // VG01  20298.880364 -18462.044804   1381.387685     -4.534317 14 14 14 191
@@ -215,6 +215,17 @@ public class SP3ParserTest {
                      coord);
         Assertions.assertEquals(0.0001891633,  coord.getClockCorrection(), 1.0e-15);
         Assertions.assertEquals(-0.0000000004534317, coord.getClockRateChange(), 1.0e-15);
+    }
+
+    @Test
+    public void testParseSP3cWithoutAgency() {
+        // simple test for version sp3-c, contains p/v entries and correlations
+        final String    ex     = "/sp3/missing-agency.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        Assertions.assertEquals('c', file.getHeader().getVersion());
+        Assertions.assertEquals("", file.getHeader().getAgency());
     }
 
     @Test
