@@ -19,9 +19,7 @@ package org.orekit.files.rinex.clock;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.io.Reader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +31,10 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
@@ -136,8 +136,7 @@ public class RinexClockParser {
      * @param timeScales   the set of time scales used for parsing dates.
      */
     public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder,
-                           final TimeScales timeScales) {
-
+                            final TimeScales timeScales) {
         this.frameBuilder = frameBuilder;
         this.timeScales   = timeScales;
     }
@@ -151,29 +150,24 @@ public class RinexClockParser {
      *
      * @param stream to read the IGS clock file from
      * @return a parsed IGS clock file
-     * @throws IOException if {@code stream} throws one
      * @see #parse(String)
      * @see #parse(BufferedReader, String)
+     * @see #parse(DataSource)
      */
-    public RinexClock parse(final InputStream stream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return parse(reader, stream.toString());
-        }
+    public RinexClock parse(final InputStream stream) {
+        return parse(new DataSource("<stream>", () -> stream));
     }
 
     /**
      * Parse an IGS clock file from a file on the local file system.
      * @param fileName file name
      * @return a parsed IGS clock file
-     * @throws IOException if one is thrown while opening or reading from {@code fileName}
      * @see #parse(InputStream)
      * @see #parse(BufferedReader, String)
+     * @see #parse(DataSource)
      */
-    public RinexClock parse(final String fileName) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
-                                                             StandardCharsets.UTF_8)) {
-            return parse(reader, fileName);
-        }
+    public RinexClock parse(final String fileName) {
+        return parse(new DataSource(Paths.get(fileName).toFile()));
     }
 
     /**
@@ -181,39 +175,57 @@ public class RinexClockParser {
      * @param reader containing the clock file
      * @param fileName file name
      * @return a parsed IGS clock file
-     * @throws IOException if {@code reader} throws one
      * @see #parse(InputStream)
      * @see #parse(String)
+     * @see #parse(DataSource)
      */
-    public RinexClock parse(final BufferedReader reader,
-                           final String fileName) throws IOException {
+    public RinexClock parse(final BufferedReader reader, final String fileName) {
+        return parse(new DataSource(fileName, () -> reader));
+    }
+
+    /** Parse an IGS clock file from a {@link DataSource}.
+     * @param source source for clock file
+     * @return a parsed IGS clock file
+     * @see #parse(InputStream)
+     * @see #parse(String)
+     * @see #parse(BufferedReader, String)
+     * @since 12.1
+     */
+    public RinexClock parse(final DataSource source) {
 
         // initialize internal data structures
         final ParseInfo pi = new ParseInfo();
 
-        int lineNumber = 0;
-        Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
-        nextLine:
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++lineNumber;
-            for (final LineParser candidate : candidateParsers) {
-                if (candidate.canHandle(line)) {
-                    try {
-                        candidate.parse(line, pi);
-                        candidateParsers = candidate.allowedNext();
-                        continue nextLine;
-                    } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
-                        throw new OrekitException(e,
-                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, fileName, line);
+        try (Reader reader = source.getOpener().openReaderOnce();
+             BufferedReader br = new BufferedReader(reader)) {
+            pi.lineNumber = 0;
+        Iterable<LineParser> candidateParsers =
+            Collections.singleton(LineParser.HEADER_VERSION);
+            nextLine:
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                ++pi.lineNumber;
+                for (final LineParser candidate : candidateParsers) {
+                    if (candidate.canHandle(line)) {
+                        try {
+                            candidate.parse(line, pi);
+                            candidateParsers = candidate.allowedNext();
+                            continue nextLine;
+                        } catch (StringIndexOutOfBoundsException |
+                            NumberFormatException | InputMismatchException e) {
+                            throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      pi.lineNumber, source.getName(), line);
+                        }
                     }
                 }
+
+                // no parsers found for this line
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          pi.lineNumber, source.getName(), line);
+
             }
 
-            // no parsers found for this line
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      lineNumber, fileName, line);
-
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
         }
 
         return pi.file;
@@ -222,6 +234,9 @@ public class RinexClockParser {
 
     /** Transient data used for parsing a clock file. */
     private class ParseInfo {
+
+        /** Current line number of the navigation message. */
+        private int lineNumber;
 
         /** Set of time scales for parsing dates. */
         private final TimeScales timeScales;
@@ -300,7 +315,9 @@ public class RinexClockParser {
                         // Record satellite system and default time system in clock file object
                         final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(satelliteSystemString);
                         pi.file.setSatelliteSystem(satelliteSystem);
-                        pi.file.setTimeScale(satelliteSystem.getObservationTimeScale().getTimeScale(pi.timeScales));
+                        if (satelliteSystem.getObservationTimeScale() != null) {
+                            pi.file.setTimeScale(satelliteSystem.getObservationTimeScale().getTimeScale(pi.timeScales));
+                        }
                     }
                     // Set time scale to UTC by default
                     if (pi.file.getTimeScale() == null) {
@@ -477,24 +494,27 @@ public class RinexClockParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
+                // First element, if present, is the related satellite system
+                final String system = line.substring(0, 1);
+                if (!" ".equals(system)) {
+                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(system);
 
-                // First element is the related satellite system
-                final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(line.substring(0, 1));
+                    // Second element is the program name
+                    final String progDCBS = line.substring(2, 20).trim();
 
-                // Second element is the program name
-                final String progDCBS = line.substring(2, 20).trim();
+                    // Third element is the source of the corrections
+                    String sourceDCBS = "";
+                    if (pi.file.getFormatVersion() < 3.04) {
+                        sourceDCBS = line.substring(19, 60).trim();
+                    } else {
+                        sourceDCBS = line.substring(22, 65).trim();
+                    }
 
-                // Third element is the source of the corrections
-                String sourceDCBS = "";
-                if (pi.file.getFormatVersion() < 3.04) {
-                    sourceDCBS = line.substring(19, 60).trim();
-                } else {
-                    sourceDCBS = line.substring(22, 65).trim();
-                }
-
-                // Check if sought fields were not actually blanks
-                if (!progDCBS.isEmpty()) {
-                    pi.file.addAppliedDCBS(new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
+                    // Check if sought fields were not actually blanks
+                    if (!progDCBS.isEmpty()) {
+                        pi.file.addAppliedDCBS(
+                            new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
+                    }
                 }
             }
 
@@ -507,23 +527,26 @@ public class RinexClockParser {
             @Override
             public void parse(final String line, final ParseInfo pi) {
 
-                // First element is the related satellite system
-                final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(line.substring(0, 1));
+                // First element, if present, is the related satellite system
+                final String system = line.substring(0, 1);
+                if (!" ".equals(system)) {
+                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(system);
 
-                // Second element is the program name
-                final String progPCVS = line.substring(2, 20).trim();
+                    // Second element is the program name
+                    final String progPCVS = line.substring(2, 20).trim();
 
-                // Third element is the source of the corrections
-                String sourcePCVS = "";
-                if (pi.file.getFormatVersion() < 3.04) {
-                    sourcePCVS = line.substring(19, 60).trim();
-                } else {
-                    sourcePCVS = line.substring(22, 65).trim();
-                }
+                    // Third element is the source of the corrections
+                    String sourcePCVS = "";
+                    if (pi.file.getFormatVersion() < 3.04) {
+                        sourcePCVS = line.substring(19, 60).trim();
+                    } else {
+                        sourcePCVS = line.substring(22, 65).trim();
+                    }
 
-                // Check if sought fields were not actually blanks
-                if (!progPCVS.isEmpty() || !sourcePCVS.isEmpty()) {
-                    pi.file.addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
+                    // Check if sought fields were not actually blanks
+                    if (!progPCVS.isEmpty() || !sourcePCVS.isEmpty()) {
+                        pi.file.addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
+                    }
                 }
             }
 
