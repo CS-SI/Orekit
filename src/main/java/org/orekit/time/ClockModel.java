@@ -24,6 +24,16 @@ import org.hipparchus.CalculusFieldElement;
  */
 public interface ClockModel {
 
+    /** Get validity start.
+     * @return model validity start
+     */
+    AbsoluteDate getValidityStart();
+
+    /** Get validity end.
+     * @return model validity end
+     */
+    AbsoluteDate getValidityEnd();
+
     /** Get the clock offset at date.
      * @param date date at which offset is requested
      * @return clock offset at specified date

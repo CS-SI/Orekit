@@ -156,6 +156,18 @@ public class SP3Ephemeris implements EphemerisFile.SatelliteEphemeris<SP3Coordin
 
             /** {@inheritDoc} */
             @Override
+            public AbsoluteDate getValidityStart() {
+                return models.getFirstTransition().getDate();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public AbsoluteDate getValidityEnd() {
+                return models.getLastTransition().getDate();
+            }
+
+            /** {@inheritDoc} */
+            @Override
             public ClockOffset getOffset(final AbsoluteDate date) {
                 return models.get(date).getOffset(date);
             }

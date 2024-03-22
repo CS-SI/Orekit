@@ -107,6 +107,13 @@ public class SP3ParserTest {
         final TimeScale  ts         = sp3.getHeader().getTimeSystem().getTimeScale(TimeScalesFactory.getTimeScales());
         final ClockModel clockModel = sp3.getEphemeris("C02").extractClockModel();
 
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2015, 5, 5, 0, 0, 0.0, ts).durationFrom(clockModel.getValidityStart()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2015, 5, 5, 23, 55, 0.0, ts).durationFrom(clockModel.getValidityEnd()),
+                                1.0e-15);
+
         // points exactly on files entries
         Assertions.assertEquals(-9.16573060e-4,
                                 clockModel.getOffset(new AbsoluteDate(2015, 5, 5, 0, 10, 0.0, ts)).getOffset(),

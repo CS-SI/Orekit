@@ -86,6 +86,42 @@ public class QuadraticClockModelTest {
     }
 
     @Test
+    public void testAcceleration() {
+        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
+        final QuadraticClockModel clock = new QuadraticClockModel(t0,
+                                                                  FastMath.scalb(1.0, -8),
+                                                                  FastMath.scalb(1.0, -9),
+                                                                  FastMath.scalb(1.0, -10));
+        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t0).getAcceleration(),                1.0e-15);
+        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t0.shiftedBy(1.0)).getAcceleration(), 1.0e-15);
+        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t0.shiftedBy(2.0)).getAcceleration(), 1.0e-15);
+    }
+
+    @Test
+    public void testAccelerationField() {
+        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
+        final QuadraticClockModel clock = new QuadraticClockModel(t0,
+                                                                  FastMath.scalb(1.0, -8),
+                                                                  FastMath.scalb(1.0, -9),
+                                                                  FastMath.scalb(1.0, -10));
+        final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
+        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t064).getAcceleration().getReal(),                1.0e-15);
+        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t064.shiftedBy(1.0)).getAcceleration().getReal(), 1.0e-15);
+        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t064.shiftedBy(2.0)).getAcceleration().getReal(), 1.0e-15);
+    }
+
+    @Test
+    public void testValidity() {
+        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
+        final QuadraticClockModel clock = new QuadraticClockModel(t0,
+                                                                  FastMath.scalb(1.0, -8),
+                                                                  FastMath.scalb(1.0, -9),
+                                                                  FastMath.scalb(1.0, -10));
+        Assertions.assertEquals(AbsoluteDate.PAST_INFINITY, clock.getValidityStart());
+        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, clock.getValidityEnd());
+    }
+
+    @Test
     public void testSafeReferenceDate() {
         final ParameterDriver a0 = new ParameterDriver("a0", 0.0, 1.0,
                                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);

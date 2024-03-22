@@ -42,6 +42,18 @@ public class SampledClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
+    public AbsoluteDate getValidityStart() {
+        return sample.getEarliest().getDate();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getValidityEnd() {
+        return sample.getLatest().getDate();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ClockOffset getOffset(final AbsoluteDate date) {
         return new ClockOffsetHermiteInterpolator(sample.getMaxNeighborsSize()).
             interpolate(date, sample.getNeighbors(date));
