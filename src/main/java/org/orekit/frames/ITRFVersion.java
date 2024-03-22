@@ -115,7 +115,7 @@ public enum ITRFVersion {
      */
     public static ITRFVersion getITRFVersion(final int year) {
 
-        final int fixedYear = (year > 87 && year < 100) ? (year + 1900) : year;
+        final int fixedYear = (year < 100) ? (year + (year > 87 ? 1900 : 2000)) : year;
 
         // loop over all predefined frames versions
         for (final ITRFVersion version : values()) {
