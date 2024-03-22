@@ -29,6 +29,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
+import org.orekit.data.FiltersManager;
+import org.orekit.data.GzipFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -60,7 +63,7 @@ public class ClockFileParserTest {
 
     /** First example given in the 3.04 RINEX clock file format. */
     @Test
-    public void testParseExple1V304() throws URISyntaxException, IOException {
+    public void testParseExple1V304() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
@@ -128,7 +131,7 @@ public class ClockFileParserTest {
      * PCVS block is not placed where it should be.
      */
     @Test
-    public void testParseExple2V304() throws URISyntaxException, IOException {
+    public void testParseExple2V304() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_2_304.clk";
@@ -198,7 +201,7 @@ public class ClockFileParserTest {
      * It embeds calibration data and misses time system ID.
      */
     @Test
-    public void testParseExpleCalibrationV304() throws URISyntaxException, IOException {
+    public void testParseExpleCalibrationV304() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/Exple_calibration_304.clk";
@@ -261,7 +264,7 @@ public class ClockFileParserTest {
      * Creation date also does not match expected format.
      */
     @Test
-    public void testParseExple1V300() throws URISyntaxException, IOException {
+    public void testParseExple1V300() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/mit19044_truncated_300.clk";
@@ -323,7 +326,7 @@ public class ClockFileParserTest {
      * PCVS block is not placed where it should be.
      */
     @Test
-    public void testParseExple2V300() throws URISyntaxException, IOException {
+    public void testParseExple2V300() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/igr21101_truncated_300.clk";
@@ -388,7 +391,7 @@ public class ClockFileParserTest {
     }
 
     @Test
-    public void testClockModel() throws URISyntaxException, IOException {
+    public void testClockModel() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/cod17381_truncated_200.clk";
@@ -414,7 +417,7 @@ public class ClockFileParserTest {
 
     /** An example of the 2.00 RINEX clock file format. */
     @Test
-    public void testParseExple1V200() throws URISyntaxException, IOException {
+    public void testParseExple1V200() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/emr10491_truncated_200.clk";
@@ -474,7 +477,7 @@ public class ClockFileParserTest {
 
     /** Another example of the 2.00 RINEX clock file format with another date time zone foramt. */
     @Test
-    public void testParseExple2V200() throws URISyntaxException, IOException {
+    public void testParseExple2V200() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/jpl11456_truncated_200.clk";
@@ -538,7 +541,7 @@ public class ClockFileParserTest {
 
     /** Another example of the 2.00 RINEX clock file format with another date time zone foramt. */
     @Test
-    public void testParseExple3V200() throws URISyntaxException, IOException {
+    public void testParseExple3V200() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/cod17381_truncated_200.clk";
@@ -600,7 +603,7 @@ public class ClockFileParserTest {
 
     /** Test parsing file with observation type continuation line. */
     @Test
-    public void testParseWithObsTypeContinuationLine() throws URISyntaxException, IOException {
+    public void testParseWithObsTypeContinuationLine() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304_more_obs_types.clk";
@@ -625,7 +628,7 @@ public class ClockFileParserTest {
 
     /** Check receiver inforamtion. */
     @Test
-    public void testParsedReceivers() throws URISyntaxException, IOException {
+    public void testParsedReceivers() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_2_304.clk";
@@ -655,7 +658,7 @@ public class ClockFileParserTest {
 
     /** Test default frame loader. */
     @Test
-    public void testDefaultFrameLoader() throws URISyntaxException, IOException {
+    public void testDefaultFrameLoader() throws URISyntaxException {
 
         // Get frames corresponding to default frame loader
         final Frame itrf1996 = FramesFactory.getITRF(ITRFVersion.ITRF_1996,
@@ -685,7 +688,7 @@ public class ClockFileParserTest {
 
     /** Test the reference clocks.  */
     @Test
-    public void testReferenceClocks() throws IOException, URISyntaxException {
+    public void testReferenceClocks() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
@@ -733,7 +736,7 @@ public class ClockFileParserTest {
 
     /** Test the satelite list.  */
     @Test
-    public void testSatelliteList() throws IOException, URISyntaxException {
+    public void testSatelliteList() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
@@ -756,7 +759,7 @@ public class ClockFileParserTest {
 
     /** Test two same receivers and satellite.  */
     @Test
-    public void testSameReceiversAndSatellites() throws IOException, URISyntaxException {
+    public void testSameReceiversAndSatellites() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/two_same_receivers_and_satellites.clk";
@@ -770,7 +773,7 @@ public class ClockFileParserTest {
 
     /** Test the clock data type list.  */
     @Test
-    public void testClockDataTypes() throws IOException, URISyntaxException {
+    public void testClockDataTypes() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/Exple_calibration_304.clk";
@@ -793,7 +796,7 @@ public class ClockFileParserTest {
 
     /** Test parsing error exception. */
     @Test
-    public void testParsingErrorException() throws IOException {
+    public void testParsingErrorException() {
         try {
             final String ex = "/gnss/clock/error_in_line_4.clk";
             final RinexClockParser parser = new RinexClockParser();
@@ -808,7 +811,7 @@ public class ClockFileParserTest {
 
     /** Test missing block error exception. */
     @Test
-    public void testMissingBlockException() throws IOException {
+    public void testMissingBlockException() {
         try {
             final String ex = "/gnss/clock/missing_block_end_of_header.clk";
             final RinexClockParser parser = new RinexClockParser();
@@ -823,7 +826,7 @@ public class ClockFileParserTest {
 
     /** Unsupported clock file version exception throwing test. */
     @Test
-    public void testUnsupportedVersion() throws IOException {
+    public void testUnsupportedVersion() {
         try {
             final String ex = "/gnss/clock/unsupported_clock_file_version.clk";
             final RinexClockParser parser = new RinexClockParser();
@@ -838,7 +841,7 @@ public class ClockFileParserTest {
 
     /** Wrong clock data type exception throwing test. */
     @Test
-    public void testWrongClockDataType() throws IOException {
+    public void testWrongClockDataType() {
         try {
             final String ex = "/gnss/clock/wrong_clock_data_type.clk";
             final RinexClockParser parser = new RinexClockParser();
@@ -853,7 +856,7 @@ public class ClockFileParserTest {
 
     /** Unknown time system exception throwing test. */
     @Test
-    public void testUnknownTimeSystem() throws IOException {
+    public void testUnknownTimeSystem() {
         try {
             final String ex = "/gnss/clock/unknown_time_system.clk";
             final RinexClockParser parser = new RinexClockParser();
@@ -892,7 +895,7 @@ public class ClockFileParserTest {
 
     /** Test parsing file of issue #845 (https://gitlab.orekit.org/orekit/orekit/-/issues/845). */
     @Test
-    public void testIssue845() throws URISyntaxException, IOException {
+    public void testIssue845() throws URISyntaxException {
 
         // Parse file
         final String ex = "/gnss/clock/issue845.clk";
@@ -905,6 +908,26 @@ public class ClockFileParserTest {
         Assertions.assertEquals("GeoForschungsZentrum Potsdam", file.getAnalysisCenterName());
         Assertions.assertEquals("GFZ", file.getAgencyName());
         Assertions.assertEquals("IGS14", file.getFrameName());
+    }
+
+    @Test
+    public void testMixedSystem() throws IOException {
+
+        // Parse file
+        final String ex = "/gnss/clock/issue1356.clk.gz";
+        final DataSource original = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final FiltersManager filtersManager = new FiltersManager();
+        filtersManager.addFilter(new GzipFilter());
+        final DataSource source = filtersManager.applyRelevantFilters(original);
+
+        final RinexClock file = new RinexClockParser().parse(source);
+
+        Assertions.assertEquals(3.0, file.getFormatVersion(), 1.0e-3);
+        Assertions.assertEquals(SatelliteSystem.MIXED, file.getSatelliteSystem());
+        Assertions.assertEquals(54, file.getSatellites().size());
+        Assertions.assertEquals(10, file.getReceivers().size());
+        Assertions.assertTrue(file.getListAppliedDCBS().isEmpty());
+        Assertions.assertTrue(file.getListAppliedPCVS().isEmpty());
     }
 
     /** Check the content of a clock file. */
@@ -955,6 +978,7 @@ public class ClockFileParserTest {
         Assertions.assertEquals(frameString, file.getFrameName());
         Assertions.assertEquals(numberOfReceivers, file.getNumberOfReceivers());
         Assertions.assertEquals(numberOfSatellites, file.getNumberOfSatellites());
+        Assertions.assertEquals(timeScale.getName(), file.getTimeScale().getName());
 
         // Check total number of data lines
         Assertions.assertEquals(numberOfDataLines, file.getTotalNumberOfDataLines());
