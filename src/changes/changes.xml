@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added IGSUtils.guessFrame() to retrieve Earth frames with proper
+        year and associated IERS conventions.
+      </action>
       <action dev="luc" type="fix" issue="1353">
         Fixed parsing of ITR## frames with post-Y2K years on two digits.
       </action>

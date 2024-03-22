@@ -38,6 +38,7 @@ import org.orekit.files.rinex.clock.RinexClock.Receiver;
 import org.orekit.files.rinex.clock.RinexClock.ReferenceClock;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
@@ -120,7 +121,7 @@ public class ClockFileParserTest {
         // In this case, time system in properlydefined, check getEpoch() methods
         // Get data line
         final ClockDataLine dataLine = file.getClockData().get(id).get(0);
-        Assertions.assertTrue(dataLine.getEpoch().equals(dataLine.getEpoch(file.getTimeScale())));
+        Assertions.assertEquals(dataLine.getEpoch(), dataLine.getEpoch(file.getTimeScale()));
     }
 
     /** Second example given in the 3.04 RINEX clock file format.
@@ -578,7 +579,7 @@ public class ClockFileParserTest {
         final String id = "AMC2";
         final ClockDataType type = ClockDataType.AR;
         final TimeScale timeScale = TimeScalesFactory.getGPS();
-        final AbsoluteDate dataEpoch = new AbsoluteDate(2013, 04, 29, 0, 0, 30.0, timeScale);
+        final AbsoluteDate dataEpoch = new AbsoluteDate(2013, 4, 29, 0, 0, 30.0, timeScale);
         final int numberOfValues = 1;
         final double clockBias = 0.192333320310E-08;
         final double clockBiasSigma = 0.0;
@@ -657,8 +658,12 @@ public class ClockFileParserTest {
     public void testDefaultFrameLoader() throws URISyntaxException, IOException {
 
         // Get frames corresponding to default frame loader
-        final Frame itrf1996 = FramesFactory.getITRF(IERSConventions.IERS_1996, false);
-        final Frame itrf2010 = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        final Frame itrf1996 = FramesFactory.getITRF(ITRFVersion.ITRF_1996,
+                                                     IERSConventions.IERS_1996,
+                                                     false);
+        final Frame itrf2014 = FramesFactory.getITRF(ITRFVersion.ITRF_2014,
+                                                     IERSConventions.IERS_2010,
+                                                     false);
 
         // Get default clock file parser
         final RinexClockParser parser = new RinexClockParser();
@@ -668,14 +673,14 @@ public class ClockFileParserTest {
         final String fileName1 = Paths.get(getClass().getResource(ex1).toURI()).toString();
         final RinexClock file1 = parser.parse(fileName1);
 
-        // Parse file with default expected frame ITRF 2010
+        // Parse file with default expected frame ITRF 2014
         final String ex2 = "/gnss/clock/Exple_analysis_2_304.clk";
         final String fileName2 = Paths.get(getClass().getResource(ex2).toURI()).toString();
         final RinexClock file2 = parser.parse(fileName2);
 
         // Check frames
-        Assertions.assertTrue(itrf1996.equals(file1.getFrame()));
-        Assertions.assertTrue(itrf2010.equals(file2.getFrame()));
+        Assertions.assertSame(itrf1996, file1.getFrame());
+        Assertions.assertSame(itrf2014, file2.getFrame());
     }
 
     /** Test the reference clocks.  */
@@ -777,7 +782,7 @@ public class ClockFileParserTest {
         final List<ClockDataType> dataTypes = file.getClockDataTypes();
 
         // Expected list
-        final List<ClockDataType> expected =  new ArrayList<ClockDataType>();
+        final List<ClockDataType> expected =  new ArrayList<>();
         expected.add(ClockDataType.CR);
         expected.add(ClockDataType.DR);
 
@@ -921,8 +926,8 @@ public class ClockFileParserTest {
 
         // Check header
         Assertions.assertEquals(version, file.getFormatVersion(), 1E-3);
-        Assertions.assertTrue(satelliteSystem == file.getSatelliteSystem());
-        Assertions.assertTrue(timeSystem == file.getTimeSystem());
+        Assertions.assertSame(satelliteSystem, file.getSatelliteSystem());
+        Assertions.assertSame(timeSystem, file.getTimeSystem());
         Assertions.assertEquals(programName, file.getProgramName());
         Assertions.assertEquals(agencyName, file.getAgencyName());
         Assertions.assertEquals(comments, file.getComments());
@@ -935,7 +940,7 @@ public class ClockFileParserTest {
         Assertions.assertEquals(creationTimeString, file.getCreationTimeString());
         Assertions.assertEquals(creationZoneString, file.getCreationTimeZoneString());
         if (null != creationDate) {
-            Assertions.assertTrue(file.getCreationDate().equals(creationDate));
+            Assertions.assertEquals(file.getCreationDate(), creationDate);
         }
         Assertions.assertEquals(numberOfLeapSeconds, file.getNumberOfLeapSeconds());
         Assertions.assertEquals(numberOfLeapSecondsGPS, file.getNumberOfLeapSecondsGNSS());
@@ -986,8 +991,8 @@ public class ClockFileParserTest {
         Assertions.assertEquals(referenceName, referenceClock.getReferenceName());
         Assertions.assertEquals(clockId, referenceClock.getClockID());
         Assertions.assertEquals(clockConstraint, referenceClock.getClockConstraint(), 1e-12);
-        Assertions.assertTrue(startDate.equals(referenceClock.getStartDate()));
-        Assertions.assertTrue(endDate.equals(referenceClock.getEndDate()));
+        Assertions.assertEquals(startDate, referenceClock.getStartDate());
+        Assertions.assertEquals(endDate, referenceClock.getEndDate());
     }
 
 }

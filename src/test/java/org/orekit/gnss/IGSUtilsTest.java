@@ -20,10 +20,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.frames.EOPBasedTransformProvider;
 import org.orekit.frames.FactoryManagedFrame;
+import org.orekit.frames.Frame;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.VersionedITRF;
+import org.orekit.utils.IERSConventions;
 
 public class IGSUtilsTest {
 
@@ -33,19 +36,41 @@ public class IGSUtilsTest {
     }
 
     @Test
-    public void testGuessFrame() {
-        Assertions.assertSame(ITRFVersion.ITRF_1996,
-                              ((VersionedITRF) IGSUtils.guessFrame("ITRF96")).getITRFVersion());
-        Assertions.assertSame(ITRFVersion.ITRF_2014,
-                              ((VersionedITRF) IGSUtils.guessFrame("IGS14")).getITRFVersion());
-        Assertions.assertSame(ITRFVersion.ITRF_2020,
-                              ((VersionedITRF) IGSUtils.guessFrame("ITR20")).getITRFVersion());
-        Assertions.assertSame(ITRFVersion.ITRF_2008,
-                              ((VersionedITRF) IGSUtils.guessFrame("SLR08")).getITRFVersion());
+    public void testItrfVersion() {
+        Assertions.assertSame(ITRFVersion.ITRF_1996, getItrfVersion("ITRF96"));
+        Assertions.assertSame(ITRFVersion.ITRF_2014, getItrfVersion("IGS14"));
+        Assertions.assertSame(ITRFVersion.ITRF_2020, getItrfVersion("ITR20"));
+        Assertions.assertSame(ITRFVersion.ITRF_2008, getItrfVersion("SLR08"));
+    }
+
+    @Test public void testUnknown() {
         Assertions.assertSame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP,
                               ((FactoryManagedFrame) IGSUtils.guessFrame("UNDEF")).getFactoryKey());
         Assertions.assertSame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP,
                               ((FactoryManagedFrame) IGSUtils.guessFrame("WGS84")).getFactoryKey());
+    }
+
+    @Test
+    public void testIersConvention() {
+        Assertions.assertSame(IERSConventions.IERS_1996,getConvention("ITRF88"));
+        Assertions.assertSame(IERSConventions.IERS_1996,getConvention("ITRF89"));
+        Assertions.assertSame(IERSConventions.IERS_1996,getConvention("ITRF96"));
+        Assertions.assertSame(IERSConventions.IERS_1996,getConvention("ITRF00"));
+        Assertions.assertSame(IERSConventions.IERS_2003,getConvention("ITRF05"));
+        Assertions.assertSame(IERSConventions.IERS_2003,getConvention("ITRF08"));
+        Assertions.assertSame(IERSConventions.IERS_2010,getConvention("ITRF14"));
+        Assertions.assertSame(IERSConventions.IERS_2010,getConvention("ITRF20"));
+    }
+
+    private ITRFVersion getItrfVersion(String key) {
+        return ((VersionedITRF) IGSUtils.guessFrame(key)).getITRFVersion();
+    }
+
+   private IERSConventions getConvention(final String key) {
+        final Frame frame = IGSUtils.guessFrame(key);
+        final EOPBasedTransformProvider provider =
+            (EOPBasedTransformProvider) frame.getTransformProvider();
+        return provider.getEOPHistory().getConventions();
     }
 
 }

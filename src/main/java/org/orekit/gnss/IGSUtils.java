@@ -19,8 +19,8 @@ package org.orekit.gnss;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.frames.ITRFVersion;
-import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.utils.IERSConventions;
 
 import java.util.regex.Matcher;
@@ -50,8 +50,8 @@ public class IGSUtils {
      *
      * <p>
      * This method uses the {@link DataContext#getDefault() default data context}.
-     * If the frame names has a form like IGS##, or ITR##, or SLR##, where ##
-     * is a two digits number, then this number will be used to build the
+     * If the frame names has a form like IGS##, or ITR##, or ITRF##, or SLR##,
+     * where ## is a two digits number, then this number will be used to build the
      * appropriate {@link ITRFVersion}. Otherwise (for example if name is
      * UNDEF or WGS84), then a default {@link
      * org.orekit.frames.Frames#getITRF(IERSConventions, boolean) ITRF}
@@ -65,13 +65,38 @@ public class IGSUtils {
      */
     @DefaultDataContext
     public static Frame guessFrame(final String name) {
-        final LazyLoadedFrames frames = DataContext.getDefault().getFrames();
+        return guessFrame(DataContext.getDefault().getFrames(), name);
+    }
+
+    /** Default string to {@link Frame} conversion for {@link org.orekit.files.sp3.SP3Parser}
+     * or {@link org.orekit.files.rinex.clock.RinexClockParser}.
+     *
+     * <p>
+     * If the frame names has a form like IGS##, or ITR##, or ITRF##, or SLR##,
+     * where ## is a two digits number, then this number will be used to build the
+     * appropriate {@link ITRFVersion}. Otherwise (for example if name is
+     * UNDEF or WGS84), then a default {@link
+     * org.orekit.frames.Frames#getITRF(IERSConventions, boolean) ITRF}
+     * will be created.
+     * </p>
+     *
+     * @param frames frames factory
+     * @param name of the frame.
+     * @return ITRF based on 2010 conventions,
+     * with tidal effects considered during EOP interpolation
+     * @since 12.1
+     */
+    public static Frame guessFrame(final Frames frames, final String name) {
         final Matcher matcher = FRAME_WITH_YEAR.matcher(name);
         if (matcher.matches()) {
             // this is a frame of the form IGS14, or ITR20, or SLR08, or similar
             final int yy = Integer.parseInt(matcher.group(1));
-            return frames.getITRF(ITRFVersion.getITRFVersion(yy),
-                                  IERSConventions.IERS_2010, false);
+            final ITRFVersion itrfVersion = ITRFVersion.getITRFVersion(yy);
+            final IERSConventions conventions =
+                itrfVersion.getYear() < 2003 ?
+                IERSConventions.IERS_1996 :
+                (itrfVersion.getYear() < 2010 ? IERSConventions.IERS_2003 : IERSConventions.IERS_2010);
+            return frames.getITRF(itrfVersion, conventions, false);
         } else {
             // unkonwn frame 'maybe UNDEF or WGS84
             // we use a default ITRF

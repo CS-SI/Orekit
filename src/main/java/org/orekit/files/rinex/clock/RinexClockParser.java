@@ -43,6 +43,7 @@ import org.orekit.files.rinex.clock.RinexClock.ClockDataType;
 import org.orekit.files.rinex.clock.RinexClock.Receiver;
 import org.orekit.files.rinex.clock.RinexClock.ReferenceClock;
 import org.orekit.frames.Frame;
+import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
@@ -51,7 +52,6 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
-import org.orekit.utils.IERSConventions;
 
 /** A parser for the clock file from the IGS.
  * This parser handles versions 2.0 to 3.04 of the RINEX clock files.
@@ -74,7 +74,7 @@ public class RinexClockParser {
     private static final List<Double> HANDLED_VERSIONS = Arrays.asList(2.00, 3.00, 3.01, 3.02, 3.04);
 
     /** Pattern for date format yyyy-mm-dd hh:mm. */
-    private static final Pattern DATE_PATTERN_1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");;
+    private static final Pattern DATE_PATTERN_1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
 
     /** Pattern for date format yyyymmdd hhmmss zone or YYYYMMDD  HHMMSS zone. */
     private static final Pattern DATE_PATTERN_2 = Pattern.compile("^[0-9]{8}\\s{1,2}[0-9]{6}.*$");
@@ -103,23 +103,22 @@ public class RinexClockParser {
     /** Set of time scales. */
     private final TimeScales timeScales;
 
-    /**
-     * Create an clock file parser using default values.
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
+    /** Create an clock file parser using default values.
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data context},
+     * and {@link IGSUtils#guessFrame}.
+     * </p>
      * @see #RinexClockParser(Function)
      */
     @DefaultDataContext
     public RinexClockParser() {
-        this(RinexClockParser::guessFrame);
+        this(IGSUtils::guessFrame);
     }
 
-    /**
-     * Create a clock file parser and specify the frame builder.
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
+    /** Create a clock file parser and specify the frame builder.
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data context}.
+     * </p>
      * @param frameBuilder is a function that can construct a frame from a clock file
      *                     coordinate system string. The coordinate system can be
      *                     any 5 character string e.g. ITR92, IGb08.
@@ -141,29 +140,6 @@ public class RinexClockParser {
 
         this.frameBuilder = frameBuilder;
         this.timeScales   = timeScales;
-    }
-
-    /**
-     * Default string to {@link Frame} conversion for {@link #CLockFileParser()}.
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param name of the frame.
-     * @return by default, return ITRF based on 2010 conventions,
-     *         with tidal effects considered during EOP interpolation.
-     * <p>If String matches to other already recorded frames, it will return the corresponding frame.</p>
-     * Already embedded frames are:
-     * <p> - ITRF96
-     */
-    @DefaultDataContext
-    private static Frame guessFrame(final String name) {
-        if (name.equals("ITRF96")) {
-            return DataContext.getDefault().getFrames()
-                              .getITRF(IERSConventions.IERS_1996, false);
-        } else {
-            return DataContext.getDefault().getFrames()
-                              .getITRF(IERSConventions.IERS_2010, false);
-        }
     }
 
     /**
@@ -251,7 +227,7 @@ public class RinexClockParser {
         private final TimeScales timeScales;
 
         /** The corresponding clock file object. */
-        private RinexClock file;
+        private final RinexClock file;
 
         /** Current satellite system for observation type parsing. */
         private SatelliteSystem currentSatelliteSystem;
@@ -320,7 +296,7 @@ public class RinexClockParser {
                     final String satelliteSystemString = line.substring(40, 45).trim();
 
                     // Check satellite if system is recorded
-                    if (!satelliteSystemString.equals("")) {
+                    if (!satelliteSystemString.isEmpty()) {
                         // Record satellite system and default time system in clock file object
                         final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(satelliteSystemString);
                         pi.file.setSatelliteSystem(satelliteSystem);
@@ -517,7 +493,7 @@ public class RinexClockParser {
                 }
 
                 // Check if sought fields were not actually blanks
-                if (!progDCBS.equals("")) {
+                if (!progDCBS.isEmpty()) {
                     pi.file.addAppliedDCBS(new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
                 }
             }
@@ -546,7 +522,7 @@ public class RinexClockParser {
                 }
 
                 // Check if sought fields were not actually blanks
-                if (!progPCVS.equals("") || !sourcePCVS.equals("")) {
+                if (!progPCVS.isEmpty() || !sourcePCVS.isEmpty()) {
                     pi.file.addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
                 }
             }
@@ -647,7 +623,7 @@ public class RinexClockParser {
                      Scanner scanner = s2.useLocale(Locale.US)) {
 
                     // Initialize current reference clock list corresponding to the period
-                    pi.currentReferenceClocks = new ArrayList<ReferenceClock>();
+                    pi.currentReferenceClocks = new ArrayList<>();
 
                     // First element is the number of reference clocks corresponding to the period
                     scanner.nextInt();
@@ -1013,7 +989,7 @@ public class RinexClockParser {
                 time = dateString.substring(9, 16).trim();
                 zone = dateString.substring(16).trim();
 
-                if (!zone.equals("")) {
+                if (!zone.isEmpty()) {
                     // Get date and time components
                     dateComponents = new DateComponents(Integer.parseInt(date.substring(0, 4)),
                                                         Integer.parseInt(date.substring(4, 6)),
