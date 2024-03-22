@@ -88,13 +88,41 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
             final SpacecraftState state = states[i];
 
             final OrekitStepInterpolator interpolator = new OrekitStepInterpolator() {
-                public OrekitStepInterpolator restrictStep(final SpacecraftState newPreviousState, final SpacecraftState newCurrentState) { return null; }
-                public boolean isPreviousStateInterpolated() { return false; }
-                public boolean isForward() { return true; }
-                public boolean isCurrentStateInterpolated() { return false; }
-                public SpacecraftState getPreviousState() { return state; }
-                public SpacecraftState getInterpolatedState(final AbsoluteDate date) { return state.shiftedBy(date.durationFrom(state)); }
-                public SpacecraftState getCurrentState() { return state; }
+                /** {@inheritDoc} */
+                @Override
+                public OrekitStepInterpolator restrictStep(final SpacecraftState newPreviousState, final SpacecraftState newCurrentState) {
+                    return null;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isPreviousStateInterpolated() {
+                    return false;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isForward() {
+                    return true;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isCurrentStateInterpolated() {
+                    return false;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getPreviousState() {
+                    return state;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getInterpolatedState(final AbsoluteDate date) {
+                    return state.shiftedBy(date.durationFrom(state));
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getCurrentState() {
+                    return state;
+                }
             };
             interpolators.put(sat, interpolator);
         }

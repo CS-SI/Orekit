@@ -199,7 +199,7 @@ public class RinexClockParser {
         try (Reader reader = source.getOpener().openReaderOnce();
              BufferedReader br = new BufferedReader(reader)) {
             pi.lineNumber = 0;
-        Iterable<LineParser> candidateParsers =
+            Iterable<LineParser> candidateParsers =
             Collections.singleton(LineParser.HEADER_VERSION);
             nextLine:
             for (String line = br.readLine(); line != null; line = br.readLine()) {
