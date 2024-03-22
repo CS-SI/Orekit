@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.function.Function;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -41,7 +40,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.ITRFVersion;
-import org.orekit.frames.LazyLoadedFrames;
+import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -70,9 +69,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
     /** String representation of the center of ephemeris coordinate system. **/
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
-    /** Pattern for frame names with year. */
-    private static final Pattern FRAME_WITH_YEAR = Pattern.compile("(?:ITR|IGS|SLR)([0-9]{2})");
-
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
 
@@ -94,10 +90,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @see #SP3Parser(double, int, Function)
+     * @see IGSUtils#guessFrame(String)
      */
     @DefaultDataContext
     public SP3Parser() {
-        this(Constants.EIGEN5C_EARTH_MU, 7, SP3Parser::guessFrame);
+        this(Constants.EIGEN5C_EARTH_MU, 7, IGSUtils::guessFrame);
     }
 
     /**
@@ -114,6 +111,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
      *                             coordinate system string. The coordinate system can be
      *                             any 5 character string e.g. ITR92, IGb08.
      * @see #SP3Parser(double, int, Function, TimeScales)
+     * @see IGSUtils#guessFrame(String)
      */
     @DefaultDataContext
     public SP3Parser(final double mu,
@@ -162,21 +160,12 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
      * @param name of the frame.
      * @return ITRF based on 2010 conventions,
      * with tidal effects considered during EOP interpolation
+     * @deprecated as of 12.1, replaced by {@link IGSUtils#guessFrame(String)}
      */
+    @Deprecated
     @DefaultDataContext
     public static Frame guessFrame(final String name) {
-        final LazyLoadedFrames frames = DataContext.getDefault().getFrames();
-        final Matcher matcher = FRAME_WITH_YEAR.matcher(name);
-        if (matcher.matches()) {
-            // this is a frame of the form IGS14, or ITR20, or SLR08, or similar
-            final int yy = Integer.parseInt(matcher.group(1));
-            return frames.getITRF(ITRFVersion.getITRFVersion(yy),
-                                  IERSConventions.IERS_2010, false);
-        } else {
-            // unkonwn frame 'maybe UNDEF or WGS84
-            // we use a default ITRF
-            return frames.getITRF(IERSConventions.IERS_2010, false);
-        }
+        return IGSUtils.guessFrame(name);
     }
 
     @Override

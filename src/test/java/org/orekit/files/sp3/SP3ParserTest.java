@@ -34,6 +34,7 @@ import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
+import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
@@ -253,12 +254,20 @@ public class SP3ParserTest {
         Assertions.assertEquals(0.00000029942, coord.getClockCorrection(), 1.0e-15);
     }
 
+    @Deprecated
+    @Test
+    public void testDeprecated() {
+        for (String name : Arrays.asList("IGS14", "ITR20", "SLR08", "UNDEF", "WGS84")) {
+            Assertions.assertSame(SP3Parser.guessFrame(name), IGSUtils.guessFrame(name));
+        }
+    }
+
     @Test
     public void testParseSP3d2() {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String      ex    = "/sp3/example-d-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3        file   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 1, SP3Parser::guessFrame).
+        final SP3        file   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 1, IGSUtils::guessFrame).
                                   parse(source);
 
         Assertions.assertEquals('d', file.getHeader().getVersion());
