@@ -93,6 +93,18 @@ public class QuadraticClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
+    public AbsoluteDate getValidityStart() {
+        return AbsoluteDate.PAST_INFINITY;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getValidityEnd() {
+        return AbsoluteDate.FUTURE_INFINITY;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ClockOffset getOffset(final AbsoluteDate date) {
         final double dt = date.durationFrom(getSafeReference(date));
         final double c0 = a0.getValue(date);
@@ -114,8 +126,8 @@ public class QuadraticClockModel implements ClockModel {
         final double c2 = a2.getValue(aDate);
         return new FieldClockOffset<>(date,
                                       dt.multiply(dt.multiply(c2).add(c1)).add(c0),
-                                      dt.multiply(c2).multiply(2).add(c1),
-                                      dt.multiply(c2).multiply(2));
+                                      dt.multiply(2 * c2).add(c1),
+                                      dt.newInstance(2 * c2));
     }
 
     /** Get a safe reference date.

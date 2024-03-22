@@ -20,33 +20,36 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-      <release version="13.0" date="TBD" description="TBD">
-          <action dev="luc" type="update" issue="1350">
-              Allow measurement generation feature to return estimated measurements,
-              with fully populated states.
-          </action>
-      </release>
-      <release version="12.1" date="TBD" description="TBD">
-        <action dev="luc" type="fix" issue="1354">
-          Fixed parsing of SP3 files with missing agency in header.
-        </action>
-        <action dev="luc" type="add" >
-          Added IGSUtils.guessFrame() to retrieve Earth frames with proper
-          year and associated IERS conventions.
-        </action>
-        <action dev="luc" type="fix" issue="1353">
-          Fixed parsing of ITR## frames with post-Y2K years on two digits.
-        </action>
-        <action dev="luc" type="add">
-          Allow retrieval of clock model from Rinex clock and SP3 files.
-        </action>
-        <action dev="luc" type="add" issue="1352">
-          Added SampledClockModel.
-        </action>
-        <action dev="luc" type="add" >
-          Added {Field}ClockOffset.
-        </action>
-        <action dev="serrof" type="add" issue="1345">
+    <release version="13.0" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1350">
+        Allow measurement generation feature to return estimated measurements,
+        with fully populated states.
+      </action>
+    </release>
+    <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1355">
+        Added validity range to clock models.
+      </action>
+      <action dev="luc" type="fix" issue="1354">
+        Fixed parsing of SP3 files with missing agency in header.
+      </action>
+      <action dev="luc" type="add" >
+        Added IGSUtils.guessFrame() to retrieve Earth frames with proper
+        year and associated IERS conventions.
+      </action>
+      <action dev="luc" type="fix" issue="1353">
+        Fixed parsing of ITR## frames with post-Y2K years on two digits.
+      </action>
+      <action dev="luc" type="add">
+        Allow retrieval of clock model from Rinex clock and SP3 files.
+      </action>
+      <action dev="luc" type="add" issue="1352">
+        Added SampledClockModel.
+      </action>
+      <action dev="luc" type="add" >
+        Added {Field}ClockOffset.
+      </action>
+      <action dev="serrof" type="add" issue="1345">
           Added J2-only ForceModel for performance.
       </action>
       <action dev="serrof" type="fix" issue="1344">
