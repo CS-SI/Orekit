@@ -31,6 +31,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -191,11 +193,27 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    void testHyperbolic() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new EquinoctialOrbit(42166712.0, 0.9, 0.5, 0.01, -0.02, 5.300,
-                    PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, mu);
-        });
+    void testHyperbolic1() {
+        try {
+            new EquinoctialOrbit(-42166712.0, 1.9, 0.5, 0.01, -0.02, 5.300,
+                                 PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, mu);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
+        }
+    }
+
+
+    @Test
+    void testHyperbolic2() {
+        Orbit orbit = new KeplerianOrbit(-42166712.0, 1.9, 0.5, 0.01, -0.02, 5.300,
+                                         PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, mu);
+        try {
+            new EquinoctialOrbit(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
+        }
     }
 
     @Test

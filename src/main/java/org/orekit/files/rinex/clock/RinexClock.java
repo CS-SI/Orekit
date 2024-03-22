@@ -32,7 +32,10 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockModel;
+import org.orekit.time.ClockOffset;
 import org.orekit.time.DateComponents;
+import org.orekit.time.SampledClockModel;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.TimeSpanMap;
@@ -125,7 +128,7 @@ public class RinexClock {
     /** Earth centered frame name as a string. */
     private String frameName;
 
-    /** Maps {@link #coordinateSystem} to a {@link Frame}. */
+    /** Maps {@link #frameName} to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
 
     /** List of the receivers in the file. */
@@ -612,6 +615,25 @@ public class RinexClock {
         return frameBuilder.apply(frameName);
     }
 
+    /** Extract the clock model.
+     * @param name receiver/satellite name
+     * @param nbInterpolationPoints number of points to use in interpolation
+     * @return extracted clock model
+     * @since 12.1
+     */
+    public ClockModel extractClockModel(final String name,
+                                        final int nbInterpolationPoints) {
+        final List<ClockOffset> sample = new ArrayList<>();
+        clockData.
+            get(name).
+            forEach(c -> {
+                final double offset       = c.clockBias;
+                final double rate         = c.numberOfValues > 2 ? c.clockRate         : Double.NaN;
+                final double acceleration = c.numberOfValues > 4 ? c.clockAcceleration : Double.NaN;
+                sample.add(new ClockOffset(c.getEpoch(), offset, rate, acceleration));
+            });
+        return new SampledClockModel(sample, nbInterpolationPoints);
+    }
 
     /** Getter for an unmodifiable map of clock data.
      * @return the clock data
@@ -671,7 +693,7 @@ public class RinexClock {
         private double clockAcceleration;
 
         /** Clock acceleration sigma (seconds^-1). */
-        private double clockAccelrerationSigma;
+        private double clockAccelerationSigma;
 
         /** Constructor.
          * @param type the clock data type
@@ -704,7 +726,7 @@ public class RinexClock {
             this.clockRate               = clockRate;
             this.clockRateSigma          = clockRateSigma;
             this.clockAcceleration       = clockAcceleration;
-            this.clockAccelrerationSigma = clockAccelerationSigma;
+            this.clockAccelerationSigma = clockAccelerationSigma;
         }
 
         /** Getter for the clock data type.
@@ -787,7 +809,7 @@ public class RinexClock {
          * @return the clock acceleration sigma in seconds^-1
          */
         public double getClockAccelerationSigma() {
-            return clockAccelrerationSigma;
+            return clockAccelerationSigma;
         }
 
     }

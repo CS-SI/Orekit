@@ -29,6 +29,9 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockModel;
+import org.orekit.time.ClockOffset;
+import org.orekit.time.SampledClockModel;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.SortedListTrimmer;
 
@@ -69,6 +72,21 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
         this.interpolationSamples = interpolationSamples;
         this.filter               = filter;
         this.coordinates          = new ArrayList<>();
+    }
+
+    /** Extract the clock model.
+     * @return extracted clock model
+     * @since 12.1
+     */
+    public ClockModel extractClockModel() {
+        final List<ClockOffset> sample = new ArrayList<>(coordinates.size());
+        coordinates.forEach(c -> {
+            final AbsoluteDate date   = c.getDate();
+            final double       offset = c.getClockCorrection();
+            final double       rate   = filter.getMaxOrder() > 0 ? c.getClockRateChange() : Double.NaN;
+            sample.add(new ClockOffset(date, offset, rate, Double.NaN));
+        });
+        return new SampledClockModel(sample, interpolationSamples);
     }
 
     /** {@inheritDoc} */

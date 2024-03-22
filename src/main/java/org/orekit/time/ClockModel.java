@@ -28,26 +28,13 @@ public interface ClockModel {
      * @param date date at which offset is requested
      * @return clock offset at specified date
      */
-    double getOffset(AbsoluteDate date);
+    ClockOffset getOffset(AbsoluteDate date);
 
     /** Get the clock offset at date.
      * @param <T> type of the field elements
      * @param date date at which offset is requested
      * @return clock offset at specified date
      */
-    <T extends CalculusFieldElement<T>> T getOffset(FieldAbsoluteDate<T> date);
-
-    /** Get the clock rate at date.
-     * @param date date at which offset is requested
-     * @return clock rate at specified date
-     */
-    double getRate(AbsoluteDate date);
-
-    /** Get the clock rate at date.
-     * @param <T> type of the field elements
-     * @param date date at which offset is requested
-     * @return clock rate at specified date
-     */
-    <T extends CalculusFieldElement<T>> T getRate(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> FieldClockOffset<T> getOffset(FieldAbsoluteDate<T> date);
 
 }

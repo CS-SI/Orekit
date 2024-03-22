@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldClockOffset;
 
 /** Quadratic clock model.
  *
@@ -58,18 +59,12 @@ public class QuadraticFieldClockModel<T extends CalculusFieldElement<T>> {
      * @param date date at which offset is requested
      * @return clock offset at specified date
      */
-    public  T getOffset(final FieldAbsoluteDate<T> date) {
+    public FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
         final T dt = date.durationFrom(referenceDate);
-        return a2.multiply(dt).add(a1).multiply(dt).add(a0);
-    }
-
-    /** Get the clock rate at date.
-     * @param date date at which offset is requested
-     * @return clock rate at specified date
-     */
-    public T getRate(final FieldAbsoluteDate<T> date) {
-        final T dt = date.durationFrom(referenceDate);
-        return a2.multiply(dt).multiply(2).add(a1);
+        return new FieldClockOffset<>(date,
+                                      a2.multiply(dt).add(a1).multiply(dt).add(a0),
+                                      a2.multiply(dt).multiply(2).add(a1),
+                                      a2.multiply(2));
     }
 
 }

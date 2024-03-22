@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,11 @@ package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
 
-/** Time scale with clock offset from another time scale.
+/** Base class for time scales with constant offset with respecto to TAI.
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class ClockTimeScale implements TimeScale {
+public class ConstantOffsetTimeScale implements TimeScale {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240321L;
@@ -30,41 +30,44 @@ public class ClockTimeScale implements TimeScale {
     /** Name of the time scale. */
     private final String name;
 
-    /** Reference time scale. */
-    private final TimeScale reference;
-
-    /** Clock offset model. */
-    private final transient ClockModel clockModel;
+    /** Offset from TAI. */
+    private final double offset;
 
     /** Simple constructor.
      * @param name name of the time scale
-     * @param reference reference time scale
-     * @param clockModel clock offset model
+     * @param offset offset from TAI
      */
-    public ClockTimeScale(final String name,
-                          final TimeScale reference,
-                          final ClockModel clockModel) {
-        this.name       = name;
-        this.reference  = reference;
-        this.clockModel = clockModel;
+    protected ConstantOffsetTimeScale(final String name, final double offset) {
+        this.name   = name;
+        this.offset = offset;
     }
 
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        return reference.offsetFromTAI(date) + clockModel.getOffset(date).getOffset();
+        return offset;
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return reference.offsetFromTAI(date).add(clockModel.getOffset(date).getOffset());
+        return date.getField().getZero().newInstance(offset);
     }
 
     /** {@inheritDoc} */
     @Override
+    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
+        return -offset;
+    }
+
+    /** {@inheritDoc} */
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    public String toString() {
+        return getName();
     }
 
 }

@@ -27,6 +27,25 @@
           </action>
       </release>
       <release version="12.1" date="TBD" description="TBD">
+        <action dev="luc" type="add" >
+          Added IGSUtils.guessFrame() to retrieve Earth frames with proper
+          year and associated IERS conventions.
+        </action>
+        <action dev="luc" type="fix" issue="1353">
+          Fixed parsing of ITR## frames with post-Y2K years on two digits.
+        </action>
+        <action dev="luc" type="add">
+          Allow retrieval of clock model from Rinex clock and SP3 files.
+        </action>
+        <action dev="luc" type="add" issue="1352">
+          Added SampledClockModel.
+        </action>
+        <action dev="luc" type="add" >
+          Added {Field}ClockOffset.
+        </action>
+        <action dev="serrof" type="add" issue="1345">
+          Added J2-only ForceModel for performance.
+        </action>
       <action dev="serrof" type="fix" issue="1344">
           Fixed hasNonKeplerianAcceleration in FieldOrbit and improved performance.
       </action>

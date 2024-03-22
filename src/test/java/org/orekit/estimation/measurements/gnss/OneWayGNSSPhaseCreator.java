@@ -90,7 +90,8 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
         try {
             final double           n         = ambiguityDriver.getValue(currentState.getDate());
             final double           localClk  = local.getClockOffsetDriver().getValue(currentState.getDate());
-            final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk.getOffset(currentState.getDate()));
+            final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk -
+                                                                           remoteClk.getOffset(currentState.getDate()).getOffset());
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
 

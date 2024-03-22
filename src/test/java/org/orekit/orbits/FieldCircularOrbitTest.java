@@ -668,8 +668,9 @@ class FieldCircularOrbitTest {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         try {
-            new FieldCircularOrbit<>(zero.add(42166712.0), zero.add(0.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
+            new FieldCircularOrbit<>(zero.add(-42166712.0), zero.add(1.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
                                      PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
         }
@@ -678,10 +679,11 @@ class FieldCircularOrbitTest {
     private <T extends CalculusFieldElement<T>>  void doTestHyperbolic2(Field<T> field) {
         T zero =  field.getZero();
        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(42166712.0), zero.add(0.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-42166712.0), zero.add(1.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
                                                         PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
         try {
             new FieldCircularOrbit<>(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
         }

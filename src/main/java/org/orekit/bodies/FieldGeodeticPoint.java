@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import java.text.NumberFormat;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.CompositeFormat;
 import org.hipparchus.util.FastMath;
@@ -61,10 +62,11 @@ public class FieldGeodeticPoint<T extends CalculusFieldElement<T>> {
     /** West direction. */
     private FieldVector3D<T> west;
 
-    /**
-     * Build a new instance. The angular coordinates will be normalized so that
+    /** Build a new instance.
+     * <p>
+     * The angular coordinates will be normalized so that
      * the latitude is between ±π/2 and the longitude is between ±π.
-     *
+     * </p>
      * @param latitude latitude of the point (rad)
      * @param longitude longitude of the point (rad)
      * @param altitude altitude of the point (m)
@@ -83,6 +85,17 @@ public class FieldGeodeticPoint<T extends CalculusFieldElement<T>> {
         this.latitude  = lat;
         this.longitude = lon;
         this.altitude  = altitude;
+    }
+
+    /** Build a new instance from a {@link GeodeticPoint}.
+     * @param field field to which the elements belong
+     * @param geodeticPoint geodetic point to convert
+     * @since 12.1
+     */
+    public FieldGeodeticPoint(final Field<T> field, final GeodeticPoint geodeticPoint) {
+        this(field.getZero().newInstance(geodeticPoint.getLatitude()),
+             field.getZero().newInstance(geodeticPoint.getLongitude()),
+             field.getZero().newInstance(geodeticPoint.getAltitude()));
     }
 
     /** Get the latitude.

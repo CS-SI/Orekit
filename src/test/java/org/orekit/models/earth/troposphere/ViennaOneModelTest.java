@@ -16,6 +16,8 @@
  */
 package org.orekit.models.earth.troposphere;
 
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -23,16 +25,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
 @Deprecated
 public class ViennaOneModelTest {
 
-    private static double epsilon = 1e-6;
+    private static final double epsilon = 1e-6;
 
     @BeforeAll
     public static void setUpGlobal() {
@@ -106,9 +110,21 @@ public class ViennaOneModelTest {
         final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
                                             point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                            model.getParameters(date), date).getDelay();
+                                            null, date).getDelay();
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+        Assertions.assertEquals(path,
+                                model.pathDelay(FastMath.toRadians(elevation),
+                                                point, model.getParameters(date), date),
+                                1.0e-10);
+        Binary64Field field = Binary64Field.getInstance();
+        Binary64 zero = field.getZero();
+        Assertions.assertEquals(path,
+                                model.pathDelay(FastMath.toRadians(zero.newInstance(elevation)),
+                                                new FieldGeodeticPoint<>(field, point),
+                                                null,
+                                                new FieldAbsoluteDate<>(field, date)).getReal(),
+                                1.0e-10);
     }
 
     @Test
