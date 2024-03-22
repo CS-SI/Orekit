@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1356">
+        Fixed parsing of Rinex clock files with mixed satellite system.
+      </action>
       <action dev="luc" type="fix" issue="1355">
         Added validity range to clock models.
       </action>
