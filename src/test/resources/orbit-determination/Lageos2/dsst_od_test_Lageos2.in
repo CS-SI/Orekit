@@ -24,16 +24,16 @@
 
 ### Orbit definition
 ## date of the orbital parameters (UTC)
-orbit.date = 2016-02-12T00:43:20.000
+orbit.date = 2016-02-13T16:00:00.000
 
 
-## Position & velocity along X, y, z in inertial frame (m) 
-orbit.cartesian.px =  -2551060.0
-orbit.cartesian.py = 9748630.0
-orbit.cartesian.pz =  -6528040.0
-orbit.cartesian.vx = -4595.0
-orbit.cartesian.vy = 1029.0
-orbit.cartesian.vz = 3382.0
+## Position & velocity along X, y, z in inertial frame (m)
+orbit.cartesian.px =  7526990.0
+orbit.cartesian.py = -9646310.0
+orbit.cartesian.pz = 1464110.0
+orbit.cartesian.vx = 3033.0
+orbit.cartesian.vy = 1715.0
+orbit.cartesian.vz = -4447.0
 
 ## Spacecraft mass (kg) [1000.]
 mass = 405.380
@@ -45,9 +45,9 @@ iers.conventions = 2010
 inertial.frame = EME2000
 
 # Propagator min step (s), max step (s), position error (m) and normalization scale (m) [0.001, 300, 10.0, 1000.0]
-propagator.min.step                  = 3600
+propagator.min.step                  = 43200.0
 propagator.max.step                  = 86400
-propagator.position.error            = 10.0
+propagator.position.error            = 0.001
 
 # body (default is a WGS-84 ellipsoid with IERS-2010 conventions and simple EOP frame)
 body.frame              = CIO/2010-based ITRF simple EOP
@@ -84,7 +84,7 @@ drag.cd.estimated = false
 drag.area = 0.28270
 
 ## Solar Radiation Pressure (true/false) [false]
-solar.radiation.pressure = false
+solar.radiation.pressure = true
 ## SRP coefficient
 solar.radiation.pressure.cr =  1.134
 ## Estimation flag for SRP coefficient (true/false) [false]
@@ -331,7 +331,7 @@ PV.measurements.velocity.sigma                  = 0.01
 # parameter x and sx is the associated scale factor
 # scaling factor for orbital parameters normalization (m)
 # if not specified, the value set for propagator.position.error will be copied
-estimator.orbital.parameters.position.scale     = 100.0
+estimator.orbital.parameters.position.scale     = 10.0
 
 # we can use either a Levenberg-Marquardt or a Gauss-Newton
 # optimization engine. Default is Levenberg-Marquardt
