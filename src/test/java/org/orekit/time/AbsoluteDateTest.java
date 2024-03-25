@@ -357,6 +357,31 @@ public class AbsoluteDateTest {
         Assertions.assertEquals(0.0, AbsoluteDate.MODIFIED_JULIAN_EPOCH.durationFrom(date), 1.0e-15);
     }
 
+    /** Test issue 1310: get a date from a JD using a pivot timescale. */
+    @Test
+    public void testIssue1310JDDateInTDB() {
+        // Given
+        // -----
+        final TDBScale TDBscale = TimeScalesFactory.getTDB();
+        final AbsoluteDate refDate = new AbsoluteDate("2023-08-01T00:00:00.000", TDBscale);
+
+        // When
+        // ----
+        final AbsoluteDate wrongDate  = AbsoluteDate.createJDDate(2460157,
+                Constants.JULIAN_DAY / 2.0d, TDBscale);
+        final AbsoluteDate properDate = AbsoluteDate.createJDDate(2460157,
+                Constants.JULIAN_DAY/2.0d, TDBscale, TimeScalesFactory.getTT());
+
+        // Then
+        // ----
+
+        // Wrong date is too far from reference date
+        Assertions.assertEquals(0.0, wrongDate.durationFrom(refDate), 1.270e-05);
+
+        // Proper date is close enough from reference date
+        Assertions.assertEquals(0.0, properDate.durationFrom(refDate), 2.132e-13);
+    }
+
     @Test
     public void testOffsets() {
         final TimeScale tai = TimeScalesFactory.getTAI();

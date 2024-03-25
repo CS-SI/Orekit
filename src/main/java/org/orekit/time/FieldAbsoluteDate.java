@@ -632,6 +632,37 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
                         TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
     }
 
+    /** Build an instance corresponding to a Julian Day date.
+     * <p>
+     * This function should be preferred to the above one when the target timescale
+     * has a non-constant offset with respect to TAI.
+     * The idea is to introduce a pivot time scale that is close to the target timescale
+     * but has a constant bias with TAI.
+     * For example, to get a date from an MJD in TDB timescale, it's advised to use the TT timescale
+     * as a pivot scale. TT is very close to TDB but has constant offset to TAI.
+     * </p>
+     * @param jd Julian day
+     * @param secondsSinceNoon seconds in the Julian day
+     * (BEWARE, Julian days start at noon, so 0.0 is noon)
+     * @param timeScale time scale in which the seconds in day are defined
+     * @param pivotTimeScale pivot timescale used as intermediate timescale
+     * @return a new instant
+     * @param <T> the type of the field elements
+     */
+    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createJDDate(final int jd, final T secondsSinceNoon,
+                                                                                        final TimeScale timeScale,
+                                                                                        final TimeScale pivotTimeScale) {
+        // Get the date in pivot timescale
+        final FieldAbsoluteDate<T> dateInPivotTimeScale = createJDDate(jd, secondsSinceNoon, pivotTimeScale);
+
+        // Compare offsets to TAI of the two time scales
+        final T offsetFromTAI = timeScale.offsetFromTAI(dateInPivotTimeScale).
+                subtract(pivotTimeScale.offsetFromTAI(dateInPivotTimeScale));
+
+        // Return date in desired timescale
+        return dateInPivotTimeScale.shiftedBy(offsetFromTAI.multiply(-1.));
+    }
+
     /** Build an instance corresponding to a Modified Julian Day date.
      * @param mjd modified Julian day
      * @param secondsInDay seconds in the day
