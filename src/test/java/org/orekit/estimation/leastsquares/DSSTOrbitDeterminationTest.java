@@ -260,7 +260,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test on statistic for the range residuals
         final long nbRange = 95;
-        final double[] RefStatRange = { -28.374, 58.622, 0.0, 14.877 };
+        final double[] RefStatRange = { -28.374, 58.620, 0.0, 14.877 };
         Assertions.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         MatcherAssert.assertThat(odLageos2.getRangeStat().getMin(),
                 Matchers.greaterThan(RefStatRange[0]));
