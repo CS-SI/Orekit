@@ -77,7 +77,7 @@ public class FieldGammaMnsFunction <T extends CalculusFieldElement<T>> {
      * @return factorial ratios
      */
     private static double[] getRatios(final int nMax, final int size) {
-        synchronized (GammaMnsFunction.class) {
+        synchronized (FieldGammaMnsFunction.class) {
             if (PRECOMPUTED_RATIOS == null || PRECOMPUTED_RATIOS.length < size) {
                 // we need to compute a larger reference array
 
