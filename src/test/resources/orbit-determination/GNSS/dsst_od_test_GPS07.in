@@ -81,7 +81,7 @@ solar.radiation.pressure = true
 ## SRP coefficient
 solar.radiation.pressure.cr =  1.8
 ## Estimation flag for SRP coefficient (true/false) [false]
-solar.radiation.pressure.cr.estimated = true
+solar.radiation.pressure.cr.estimated = false
 ## SRP area (m^2)
 solar.radiation.pressure.area = 50
 

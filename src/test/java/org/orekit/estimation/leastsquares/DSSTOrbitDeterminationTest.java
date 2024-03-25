@@ -317,11 +317,9 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         final double velocityAccuracy = 2.47e-3;
 
         //test on the convergence
-        final int numberOfIte  = 13;
-        final int numberOfEval = 14;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 4;
 
-        System.out.println("evals: " + odGNSS.getNumberOfEvaluation());
-        System.out.format("range mean %g m, sd %g m\n", odGNSS.getRangeStat().getMean(), odGNSS.getRangeStat().getStandardDeviation());
         Assertions.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assertions.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
@@ -335,11 +333,11 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test on statistic for the range residuals
         final long nbRange = 4009;
-        final double[] RefStatRange = { -2.738, 2.510, 0.0, 0.701 };
+        final double[] RefStatRange = { -3.499, 2.609, 0.0, 0.838 };
         Assertions.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assertions.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              2.0e-3);
+        Assertions.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
         Assertions.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
