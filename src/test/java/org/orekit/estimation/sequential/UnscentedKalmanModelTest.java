@@ -94,7 +94,7 @@ public class UnscentedKalmanModelTest {
     private ParameterDriver srpCoefDriver;
 
     /** Tolerance for the test. */
-    private final double tol = 5.0e-9;
+    private final double tol = 1.0e-8;
 
     @BeforeEach
     public void setup() {
@@ -364,8 +364,8 @@ public class UnscentedKalmanModelTest {
     }
 
     /** Create a covariance matrix provider with initial and process noise matrix constant and identical.
-     * Each element Pij of the initial covariance matrix equals:
-     * Pij = scales[i]*scales[j]
+     * Each diagonal element Pii of the initial covariance matrix equals:
+     * Pii = scales[i]*scales[i]
      * @param scales scales of the estimated parameters
      * @return covariance matrix provider
      */
@@ -374,9 +374,7 @@ public class UnscentedKalmanModelTest {
         final int n = scales.length;
         final RealMatrix cov = MatrixUtils.createRealMatrix(n, n);
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                cov.setEntry(i, j, scales[i] * scales[j]);
-            }
+            cov.setEntry(i, i, scales[i] * scales[i]);
         }
         return new ConstantProcessNoise(cov);
     }

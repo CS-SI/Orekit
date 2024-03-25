@@ -341,7 +341,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
             // Loop on states
             for (int i = 0; i < states.size(); ++i) {
                 if (k == 0) {
-                    predictedStates[i] = new ArrayRealVector(sigmaPoints[i].getDimension());
+                    predictedStates[i] = sigmaPoints[i].copy();
                 }
                 // Current predicted state
                 final SpacecraftState predicted = states.get(i);
