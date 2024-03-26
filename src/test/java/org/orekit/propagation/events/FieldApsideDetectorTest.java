@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -31,23 +30,23 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
+import org.orekit.propagation.events.intervals.ApsideDetectionAdaptableIntervalFactory;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
-public class FieldApsideDetectorTest {
+class FieldApsideDetectorTest {
 
     @Test
-    public void testSimple() {
+    void testSimple() {
         doTestSimple(Binary64Field.getInstance());
     }
 
@@ -78,25 +77,16 @@ public class FieldApsideDetectorTest {
     }
 
     @Test
-    public void testFixedMaxCheck() {
+    void testFixedMaxCheck() {
         doTestMaxcheck(Binary64Field.getInstance(), s -> 20.0, 4687);
     }
 
     @Test
-    public void testAnomalyAwareMaxCheck() {
-        doTestMaxcheck(Binary64Field.getInstance(),
-                       s -> {
-                           final double         baseMaxCheck             = 20.0;
-                           final KeplerianOrbit orbit                    = ((FieldKeplerianOrbit<Binary64>) OrbitType.KEPLERIAN.convertType(s.getOrbit())).toOrbit();
-                           final double         period                   = orbit.getKeplerianPeriod();
-                           final double         timeSincePreviousPerigee = MathUtils.normalizeAngle(orbit.getMeanAnomaly(), FastMath.PI) /
-                                           orbit.getKeplerianMeanMotion();
-                           final double         timeToNextPerigee        = period - timeSincePreviousPerigee;
-                           final double         timeToApogee             = FastMath.abs(0.5 * period - timeSincePreviousPerigee);
-                           final double         timeToClosestApside      = FastMath.min(timeSincePreviousPerigee,
-                                                                                        FastMath.min(timeToApogee, timeToNextPerigee));
-                           return (timeToClosestApside < 2 * baseMaxCheck) ? baseMaxCheck : timeToClosestApside - 0.5 * baseMaxCheck;
-        }, 677);
+    void testAnomalyAwareMaxCheck() {
+        final AdaptableInterval adaptableInterval = ApsideDetectionAdaptableIntervalFactory
+                .getForwardApsideDetectionAdaptableInterval();
+        doTestMaxcheck(Binary64Field.getInstance(), state -> adaptableInterval.currentInterval(state.toSpacecraftState()),
+                643);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMaxcheck(final Field<T> field,

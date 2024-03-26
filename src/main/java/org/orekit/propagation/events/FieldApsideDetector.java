@@ -65,17 +65,15 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
 
     /** Protected constructor with full parameters.
      * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
+     * This constructor is public because otherwise all accessible ones would require an orbit.
      * </p>
      * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    protected FieldApsideDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                  final int maxIter, final FieldEventHandler<T> handler) {
+    public FieldApsideDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
+                               final int maxIter, final FieldEventHandler<T> handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
