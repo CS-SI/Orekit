@@ -113,6 +113,29 @@ public class LofOffset implements AttitudeProvider {
         this.inertialFrame = inertialFrame;
     }
 
+    /**
+     * Get the local orbital frame.
+     * @return the local orbital frame.
+     */
+    public LOF getLof() {
+        return this.lof;
+    }
+
+    /**
+     * Get the rotational offset.
+     * @return the rotational offset.
+     */
+    public Rotation getOffset() {
+        return this.offset;
+    }
+
+    /**
+     * Get the inertial frame.
+     * @return the inertial frame.
+     */
+    public Frame getInertialFrame() {
+        return this.inertialFrame;
+    }
 
     /** {@inheritDoc} */
     @Override
