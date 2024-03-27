@@ -1249,6 +1249,16 @@ public class SP3ParserTest {
                                 1.0e-15);
         span = span.next();
         Assertions.assertNull(span.getData());
+
+        Assertions.assertEquals(2.4314257e-5, clockModel.getOffset(new AbsoluteDate(2017, 5, 21, 0,  4, 59.5, ts)).getOffset(), 1.0e-12);
+        Assertions.assertEquals(2.4301550e-5, clockModel.getOffset(new AbsoluteDate(2017, 5, 21, 0, 20,  0.5, ts)).getOffset(), 1.0e-12);
+        try {
+            clockModel.getOffset(new AbsoluteDate(2017, 5, 21, 0, 10, 0.0, ts));
+            Assertions.fail("an exceptions should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NO_DATA_GENERATED, oe.getSpecifier());
+        }
+
     }
 
     @Test
@@ -1292,6 +1302,18 @@ public class SP3ParserTest {
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2017, 5, 21, 0, 10, 0.0, ts).durationFrom(clockModel.getValidityEnd()),
                                 1.0e-15);
+        try {
+            clockModel.getOffset(clockModel.getValidityStart().shiftedBy(-1));
+            Assertions.fail("an exceptions should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NO_DATA_GENERATED, oe.getSpecifier());
+        }
+        try {
+            clockModel.getOffset(clockModel.getValidityEnd().shiftedBy(1));
+            Assertions.fail("an exceptions should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NO_DATA_GENERATED, oe.getSpecifier());
+        }
     }
 
     @Test
