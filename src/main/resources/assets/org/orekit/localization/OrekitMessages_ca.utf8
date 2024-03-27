@@ -867,6 +867,9 @@ HEADER_ALREADY_WRITTEN = la capçalera del fitxer {0} ja s''ha escrit
 # Cannot start the propagation from an infinitely far date
 CANNOT_START_PROPAGATION_FROM_INFINITY = La propagagació no pot començar a partir d’’una data infinita
 
+# Too long time gap between data points: {0} s
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = <MISSING TRANSLATION>
+
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = Id {0} del satél·lit invàlid
 

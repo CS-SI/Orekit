@@ -40,6 +40,13 @@ public class SampledClockModel implements ClockModel {
         this.sample = new ImmutableTimeStampedCache<>(nbInterpolationPoints, sample);
     }
 
+    /** Get the clock offsets cache.
+     * @return clock offsets cache
+     */
+    public ImmutableTimeStampedCache<ClockOffset> getCache() {
+        return sample;
+    }
+
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getValidityStart() {

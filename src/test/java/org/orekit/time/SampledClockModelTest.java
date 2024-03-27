@@ -52,6 +52,12 @@ public class SampledClockModelTest {
             Assertions.assertEquals(cDot.value(dt),    co.getRate(),                  1.0e-15);
             Assertions.assertEquals(cDotDot.value(dt), co.getAcceleration(),          1.0e-15);
         }
+
+        Assertions.assertEquals(t0, clockModel.getCache().getEarliest().getDate());
+        Assertions.assertEquals(t0.shiftedBy(9.9375), clockModel.getCache().getLatest().getDate());
+        Assertions.assertEquals(4, clockModel.getCache().getMaxNeighborsSize());
+        Assertions.assertEquals(160, clockModel.getCache().getAll().size());
+
     }
 
     @Test

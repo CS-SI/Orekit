@@ -17,12 +17,17 @@
 package org.orekit.files.rinex.clock;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
@@ -32,7 +37,7 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ClockModel;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.ClockOffset;
 import org.orekit.time.DateComponents;
 import org.orekit.time.SampledClockModel;
@@ -140,18 +145,28 @@ public class RinexClock {
     /** A map containing receiver/satellite information. */
     private Map<String, List<ClockDataLine>> clockData;
 
+    /** Earliest epoch.
+     * @since 12.1
+     */
+    private AbsoluteDate earliestEpoch;
+
+    /** Latest epoch.
+     * @since 12.1
+     */
+    private AbsoluteDate latestEpoch;
+
     /** Constructor.
      * @param frameBuilder for constructing a reference frame from the identifier
      */
     public RinexClock(final Function<? super String, ? extends Frame> frameBuilder) {
         // Initialize fields with default data
-        this.systemObservationTypes  = new HashMap<SatelliteSystem, List<ObservationType>>();
-        this.listAppliedDCBS         = new ArrayList<AppliedDCBS>();
-        this.listAppliedPCVS         = new ArrayList<AppliedPCVS>();
-        this.clockDataTypes          = new ArrayList<ClockDataType>();
-        this.receivers               = new ArrayList<Receiver>();
-        this.satellites              = new ArrayList<String>();
-        this.clockData               = new HashMap<String, List<ClockDataLine>>();
+        this.systemObservationTypes  = new HashMap<>();
+        this.listAppliedDCBS         = new ArrayList<>();
+        this.listAppliedPCVS         = new ArrayList<>();
+        this.clockDataTypes          = new ArrayList<>();
+        this.receivers               = new ArrayList<>();
+        this.satellites              = new ArrayList<>();
+        this.clockData               = new HashMap<>();
         this.agencyName              = "";
         this.analysisCenterID        = "";
         this.analysisCenterName      = "";
@@ -167,12 +182,14 @@ public class RinexClock {
         this.numberOfLeapSeconds     = 0;
         this.numberOfLeapSecondsGNSS = 0;
         this.programName             = "";
-        this.referenceClocks         = null;
+        this.referenceClocks         = new TimeSpanMap<>(null);
         this.satelliteSystem         = null;
         this.stationIdentifier       = "";
         this.stationName             = "";
         this.timeScale               = null;
         this.timeSystem              = null;
+        this.earliestEpoch           = AbsoluteDate.FUTURE_INFINITY;
+        this.latestEpoch             = AbsoluteDate.PAST_INFINITY;
     }
 
     /** Add a new satellite with a given identifier to the list of stored satellites.
@@ -386,8 +403,9 @@ public class RinexClock {
      */
     public void addSystemObservationType(final SatelliteSystem satSystem,
                                          final ObservationType observationType) {
-        systemObservationTypes.putIfAbsent(satSystem, new ArrayList<ObservationType>());
-        systemObservationTypes.get(satSystem).add(observationType);
+        systemObservationTypes.
+            computeIfAbsent(satSystem, s -> new ArrayList<>()).
+            add(observationType);
     }
 
     /** Getter for the file time system.
@@ -565,16 +583,13 @@ public class RinexClock {
         return referenceClocks;
     }
 
-    /** Add a list of reference clocks wich will be used after a specified date.
+    /** Add a list of reference clocks which will be used after a specified date.
      * If the reference map has not been already created, it will be.
      * @param referenceClockList the reference clock list
      * @param startDate the date the list will be valid after.
      */
     public void addReferenceClockList(final List<ReferenceClock> referenceClockList,
                                       final AbsoluteDate startDate) {
-        if (referenceClocks == null) {
-            referenceClocks = new TimeSpanMap<>(null);
-        }
         referenceClocks.addValidAfter(referenceClockList, startDate, false);
     }
 
@@ -592,7 +607,6 @@ public class RinexClock {
     public void setFrameName(final String frameName) {
         this.frameName = frameName;
     }
-
 
     /** Getter for the receivers.
      * @return the list of the receivers
@@ -621,8 +635,8 @@ public class RinexClock {
      * @return extracted clock model
      * @since 12.1
      */
-    public ClockModel extractClockModel(final String name,
-                                        final int nbInterpolationPoints) {
+    public SampledClockModel extractClockModel(final String name,
+                                               final int nbInterpolationPoints) {
         final List<ClockOffset> sample = new ArrayList<>();
         clockData.
             get(name).
@@ -649,8 +663,180 @@ public class RinexClock {
      */
     public void addClockData(final String id,
                              final ClockDataLine clockDataLine) {
-        clockData.putIfAbsent(id, new ArrayList<ClockDataLine>());
-        clockData.get(id).add(clockDataLine);
+        clockData.computeIfAbsent(id, i -> new ArrayList<>()).add(clockDataLine);
+        final AbsoluteDate epoch = clockDataLine.getEpoch();
+        if (epoch.isBefore(earliestEpoch)) {
+            earliestEpoch = epoch;
+        }
+        if (epoch.isAfter(latestEpoch)) {
+            latestEpoch = epoch;
+        }
+    }
+
+    /** Get earliest epoch from the {@link #getClockData() clock data}.
+     * @return earliest epoch from the {@link #getClockData() clock data},
+     * or {@link AbsoluteDate#FUTURE_INFINITY} if no data has been added
+     * @since 12.1
+     */
+    public AbsoluteDate getEarliestEpoch() {
+        return earliestEpoch;
+    }
+
+    /** Get latest epoch from the {@link #getClockData() clock data}.
+     * @return latest epoch from the {@link #getClockData() clock data},
+     * or {@link AbsoluteDate#PAST_INFINITY} if no data has been added
+     * @since 12.1
+     */
+    public AbsoluteDate getLatestEpoch() {
+        return latestEpoch;
+    }
+
+    /** Splice several Rinex clock files together.
+     * <p>
+     * Splicing Rinex clock files is intended to be used when continuous computation
+     * covering more than one file is needed. The metadata (version number, agency, …)
+     * will be retrieved from the earliest file only. Receivers and satellites
+     * will be merged from all files. Some receivers or satellites may be missing
+     * in some files… Once sorted (which is done internally), if the gap between
+     * segments from two file is larger than {@code maxGap}, then an error
+     * will be triggered.
+     * </p>
+     * <p>
+     * The spliced file only contains the receivers and satellites that were present
+     * in all files. Receivers and satellites present in some files and absent from
+     * other files are silently dropped.
+     * </p>
+     * <p>
+     * Depending on producer, successive clock files either have a gap between the last
+     * entry of one file and the first entry of the next file (for example files with
+     * a 5 minutes epoch interval may end at 23:55 and the next file start at 00:00),
+     * or both files have one point exactly at the splicing date (i.e. 24:00 one day
+     * and 00:00 next day). In the later case, the last point of the early file is dropped
+     * and the first point of the late file takes precedence, hence only one point remains
+     * in the spliced file ; this design choice is made to enforce continuity and
+     * regular interpolation.
+     * </p>
+     * @param clocks clock files to merge
+     * @param maxGap maximum time gap between files
+     * @return merged clock file
+     * @since 12.1
+     */
+    public static RinexClock splice(final Collection<RinexClock> clocks,
+                                    final double maxGap) {
+
+        // sort the files
+        final ChronologicalComparator comparator = new ChronologicalComparator();
+        final SortedSet<RinexClock> sorted =
+            new TreeSet<>((c1, c2) -> comparator.compare(c1.earliestEpoch, c2.earliestEpoch));
+        sorted.addAll(clocks);
+
+        // prepare spliced file
+        final RinexClock first   = sorted.first();
+        final RinexClock spliced = new RinexClock(first.frameBuilder);
+        spliced.setFormatVersion(first.getFormatVersion());
+        spliced.setSatelliteSystem(first.satelliteSystem);
+        spliced.setProgramName(first.getProgramName());
+        spliced.setAgencyName(first.getAgencyName());
+        spliced.setCreationDateString(first.getCreationDateString());
+        spliced.setCreationTimeString(first.getCreationTimeString());
+        spliced.setCreationTimeZoneString(first.getCreationTimeZoneString());
+        spliced.setCreationDate(first.getCreationDate());
+        spliced.addComment(first.getComments());
+        first.
+            getSystemObservationTypes().
+            forEach((s, l) -> l.forEach(o -> spliced.addSystemObservationType(s, o)));
+        spliced.setTimeSystem(first.getTimeSystem());
+        spliced.setTimeScale(first.getTimeScale());
+        spliced.setNumberOfLeapSeconds(first.getNumberOfLeapSeconds());
+        spliced.setNumberOfLeapSecondsGNSS(first.getNumberOfLeapSecondsGNSS());
+        first.getListAppliedDCBS().forEach(spliced::addAppliedDCBS);
+        first.getListAppliedPCVS().forEach(spliced::addAppliedPCVS);
+        first.getClockDataTypes().forEach(spliced::addClockDataType);
+        spliced.setStationName(first.getStationName());
+        spliced.setStationIdentifier(first.getStationIdentifier());
+        spliced.setExternalClockReference(first.getExternalClockReference());
+        spliced.setAnalysisCenterID(first.getAnalysisCenterID());
+        spliced.setAnalysisCenterName(first.getAnalysisCenterName());
+        spliced.setFrameName(first.getFrameName());
+
+        // merge reference clocks maps
+        sorted.forEach(rc -> {
+            TimeSpanMap.Span<List<ReferenceClock>> span = rc.getReferenceClocks().getFirstSpan();
+            while (span != null) {
+                if (span.getData() != null) {
+                    spliced.addReferenceClockList(span.getData(), span.getStart());
+                }
+                span = span.next();
+            }
+        });
+
+        final List<String> clockIds = new ArrayList<>();
+
+        // identify the receivers that are present in all files
+        final List<Receiver> commonReceivers = new ArrayList<>(first.receivers);
+        for (final RinexClock current : sorted) {
+            searching:
+            for (final Iterator<Receiver> iter = commonReceivers.iterator(); iter.hasNext();) {
+
+                final Receiver reference = iter.next();
+                for (final Receiver receiver : current.receivers) {
+                    if (receiver.getReceiverIdentifier().equals(reference.getReceiverIdentifier())) {
+                        // the reference receiver has been found in the current file
+                        continue searching;
+                    }
+                }
+
+                // we reached end of loop without finding the reference receiver
+                // it is not present in the current file, hence we remove it from
+                // the common receivers list
+                iter.remove();
+
+            }
+        }
+
+        // create the spliced list
+        for (final Receiver receiver : commonReceivers) {
+            spliced.addReceiver(receiver);
+            clockIds.add(receiver.getDesignator());
+        }
+
+        // identify the satellites that are present in all files
+        final List<String> commonSats = new ArrayList<>(first.satellites);
+        for (final RinexClock current : sorted) {
+            for (final Iterator<String> iter = commonSats.iterator(); iter.hasNext();) {
+                if (!current.satellites.contains(iter.next())) {
+                    iter.remove();
+                    break;
+                }
+            }
+        }
+
+        // create the spliced list
+        for (final String sat : commonSats) {
+            spliced.addSatellite(sat);
+        }
+        clockIds.addAll(commonSats);
+
+        // add the clock lines
+        for (final String clockId : clockIds) {
+            AbsoluteDate previous = null;
+            for (final RinexClock rinexClock : sorted) {
+                if (previous != null) {
+                    if (rinexClock.getEarliestEpoch().durationFrom(previous) > maxGap) {
+                        throw new OrekitException(OrekitMessages.TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS,
+                                                  rinexClock.getEarliestEpoch().durationFrom(previous));
+                    }
+                }
+                previous = rinexClock.getLatestEpoch();
+                rinexClock.
+                    getClockData().
+                    get(clockId).
+                    forEach(cd -> spliced.addClockData(clockId, cd));
+            }
+        }
+
+        return spliced;
+
     }
 
     /** Clock data for a single station.

@@ -27,6 +27,9 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1361">
+        Added splicing of Rinex clock files.
+      </action>
       <action dev="luc" type="fix" issue="1360">
         Added AggregatedClockModel.
       </action>

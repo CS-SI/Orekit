@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,7 @@ import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ClockModel;
 import org.orekit.time.ClockOffset;
+import org.orekit.time.SampledClockModel;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -792,6 +794,92 @@ public class ClockFileParserTest {
         for (int i = 0; i < dataTypes.size(); i++) {
             Assertions.assertArrayEquals(expected.toArray(), dataTypes.toArray());
         }
+    }
+
+    /** Test the reference clocks.  */
+    @Test
+    public void testSplice() throws URISyntaxException {
+
+        // Parse file&
+        final RinexClockParser parser = new RinexClockParser();
+        final String     ex1  = "/gnss/clock/part-1.clk";
+        final RinexClock clk1 = parser.parse(new DataSource(ex1, () -> getClass().getResourceAsStream(ex1)));
+        Assertions.assertEquals(0,
+                                new AbsoluteDate(2020, 9, 1, 0,  0,  0.0, clk1.getTimeScale()).durationFrom(clk1.getEarliestEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals(0,
+                                new AbsoluteDate(2020, 9, 1, 0,  4, 30.0, clk1.getTimeScale()).durationFrom(clk1.getLatestEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals(5, clk1.getNumberOfReceivers());
+        Assertions.assertEquals(6, clk1.getNumberOfSatellites());
+
+        final String     ex2  = "/gnss/clock/part-2.clk";
+        final RinexClock clk2 = parser.parse(new DataSource(ex2, () -> getClass().getResourceAsStream(ex2)));
+        Assertions.assertEquals(0,
+                                new AbsoluteDate(2020, 9, 1, 0,  5,  0.0, clk2.getTimeScale()).durationFrom(clk2.getEarliestEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals(0,
+                                new AbsoluteDate(2020, 9, 1, 0,  9, 30.0, clk2.getTimeScale()).durationFrom(clk2.getLatestEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals(4, clk2.getNumberOfReceivers());
+        Assertions.assertEquals(6, clk2.getNumberOfSatellites());
+
+        final String     ex3  = "/gnss/clock/part-3.clk";
+        final RinexClock clk3 = parser.parse(new DataSource(ex3, () -> getClass().getResourceAsStream(ex3)));
+        Assertions.assertEquals(0,
+                                new AbsoluteDate(2020, 9, 1, 0, 10,  0.0, clk3.getTimeScale()).durationFrom(clk3.getEarliestEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals(0,
+                                new AbsoluteDate(2020, 9, 1, 0, 14, 30.0, clk3.getTimeScale()).durationFrom(clk3.getLatestEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals(5, clk3.getNumberOfReceivers());
+        Assertions.assertEquals(5, clk3.getNumberOfSatellites());
+
+        // Splice all files
+        try {
+            RinexClock.splice(Arrays.asList(clk1, clk2, clk3), 10.0);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS,
+                                    oe.getSpecifier());
+            Assertions.assertEquals(30.0, (Double)oe.getParts()[0], 1.0e-10);
+        }
+
+        // we intentionally provide the files in non-chronological order for testing purposes
+        final RinexClock spliced = RinexClock.splice(Arrays.asList(clk3, clk1, clk2), 60.0);
+        Assertions.assertEquals(0,
+                                new AbsoluteDate(2020, 9, 1, 0,  0,  0.0, spliced.getTimeScale()).durationFrom(spliced.getEarliestEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals(0,
+                                new AbsoluteDate(2020, 9, 1, 0, 14, 30.0, spliced.getTimeScale()).durationFrom(spliced.getLatestEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals(4, spliced.getNumberOfReceivers());
+        Assertions.assertEquals(5, spliced.getNumberOfSatellites());
+        for (final String id : Arrays.asList("CHPI", "GLPS", "KITG", "OWMG",
+                                             "G17", "G27", "R17", "R23", "J01")) {
+            SampledClockModel cm = spliced.extractClockModel(id, 2);
+            Assertions.assertEquals(spliced.getEarliestEpoch(), cm.getValidityStart());
+            Assertions.assertEquals(spliced.getLatestEpoch(), cm.getValidityEnd());
+            Assertions.assertEquals(30, cm.getCache().getAll().size());
+        }
+
+        final AbsoluteDate middleDate = new AbsoluteDate(2020, 9, 1, 0,  4, 45.0, spliced.getTimeScale());
+        try {
+            clk1.extractClockModel("J01", 2).getOffset(middleDate);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER, oe.getSpecifier());
+        }
+        try {
+            clk2.extractClockModel("J01", 2).getOffset(middleDate);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, oe.getSpecifier());
+        }
+        Assertions.assertEquals(-1.83536264e-4,
+                                spliced.extractClockModel("J01", 2).getOffset(middleDate).getOffset(),
+                                1.0e-12);
+
     }
 
     /** Test parsing error exception. */
