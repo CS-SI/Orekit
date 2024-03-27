@@ -47,13 +47,13 @@ public class AggregatedClockModel implements ClockModel {
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getValidityStart() {
-        return models.getFirstTransition().getDate();
+        return models.getFirstNonNullSpan().getStart();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getValidityEnd() {
-        return models.getLastTransition().getDate();
+        return models.getLastNonNullSpan().getEnd();
     }
 
     /** {@inheritDoc} */

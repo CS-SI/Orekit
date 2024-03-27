@@ -20,14 +20,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.CalculusFieldElement;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.AggregatedClockModel;
 import org.orekit.time.ClockModel;
-import org.orekit.time.ClockOffset;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldClockOffset;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeSpanMap;
 
@@ -142,44 +139,23 @@ public class SP3Ephemeris implements EphemerisFile.SatelliteEphemeris<SP3Coordin
     }
 
     /** Extract the clock model.
+     * <p>
+     *  There are always 2n+1 {@link AggregatedClockModel#getModels()}
+     *  underlying clock models when there are n {@link #getSegments() segments}
+     *  in the ephemeris. This happens because there are {@link TimeSpanMap.Span
+     *  spans} with {@code null} {@link TimeSpanMap.Span#getData()} before the
+     *  first segment, between all regular segments and after last segment.
+     * </p>
      * @return extracted clock model
      * @since 12.1
      */
-    public ClockModel extractClockModel() {
-
+    public AggregatedClockModel extractClockModel() {
         // set up the map for all segments clock models
         final TimeSpanMap<ClockModel> models = new TimeSpanMap<>(null);
         segments.forEach(segment -> models.addValidBetween(segment.extractClockModel(),
                                                            segment.getStart(),
                                                            segment.getStop()));
-        return new ClockModel() {
-
-            /** {@inheritDoc} */
-            @Override
-            public AbsoluteDate getValidityStart() {
-                return models.getFirstTransition().getDate();
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public AbsoluteDate getValidityEnd() {
-                return models.getLastTransition().getDate();
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public ClockOffset getOffset(final AbsoluteDate date) {
-                return models.get(date).getOffset(date);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
-                return models.get(date.toAbsoluteDate()).getOffset(date);
-            }
-
-        };
-
+        return new AggregatedClockModel(models);
     }
 
 }

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1360">
+        Added AggregatedClockModel.
+      </action>
       <action dev="luc" type="fix" issue="1359">
         Added get{First|Last}NonNullSpan to TimeSpanMap.
       </action>
