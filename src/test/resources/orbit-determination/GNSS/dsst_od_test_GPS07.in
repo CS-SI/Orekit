@@ -81,7 +81,7 @@ solar.radiation.pressure = true
 ## SRP coefficient
 solar.radiation.pressure.cr =  1.8
 ## Estimation flag for SRP coefficient (true/false) [false]
-solar.radiation.pressure.cr.estimated = true
+solar.radiation.pressure.cr.estimated = false
 ## SRP area (m^2)
 solar.radiation.pressure.area = 50
 
@@ -97,7 +97,7 @@ general.relativity = false
 ## Attitude mode, from the following predefined list [NADIR_WITH_YAW_COMPENSATION]
 ## NADIR_POINTING_WITH_YAW_COMPENSATION, CENTER_POINTING_WITH_YAW_STEERING,
 ## LOF_ALIGNED_LVLH, LOF_ALIGNED_QSW, LOF_ALIGNED_TNW, LOF_ALIGNED_VNC, LOF_ALIGNED_VVLH
-attitude.mode = CENTER_POINTING_WITH_YAW_STEERING
+attitude.mode = DEFAULT_LAW
 
 ## Use range and range-rate measurements
 use.range.measurements = true

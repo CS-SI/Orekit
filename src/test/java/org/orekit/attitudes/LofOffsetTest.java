@@ -75,6 +75,18 @@ public class LofOffsetTest {
     CircularOrbit orbit;
     PVCoordinates pvSatEME2000;
 
+    /**
+     * Testing of the getters.
+     */
+    @Test
+    public void testGetters() {
+        final Rotation expectedRotation = new Rotation(RotationOrder.XYZ, RotationConvention.VECTOR_OPERATOR, 0, 0, 0).revert();
+        final LofOffset lofOffset = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
+        Assertions.assertEquals(LOFType.LVLH_CCSDS, lofOffset.getLof());
+        Assertions.assertEquals(orbit.getFrame(), lofOffset.getInertialFrame());
+        Assertions.assertEquals(expectedRotation.getAngle(), lofOffset.getOffset().getAngle());
+    }
+
     /** Test is the lof offset is the one expected
      */
     @Test

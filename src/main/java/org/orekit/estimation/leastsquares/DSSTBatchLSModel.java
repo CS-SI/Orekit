@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.List;
-
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
@@ -25,9 +23,10 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.semianalytical.dsst.DSSTHarvester;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.List;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem
@@ -77,17 +76,10 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
     protected Orbit configureOrbits(final MatricesHarvester harvester, final Propagator propagator) {
         // Cast
         final DSSTPropagator dsstPropagator = (DSSTPropagator) propagator;
-        final DSSTHarvester  dsstHarvester  = (DSSTHarvester) harvester;
         // Mean orbit
         final SpacecraftState initial = dsstPropagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
                        dsstPropagator.getInitialState();
-        dsstHarvester.initializeFieldShortPeriodTerms(initial);
-        // Compute short period derivatives at the beginning of the iteration
-        if (propagationType == PropagationType.OSCULATING) {
-            dsstHarvester.updateFieldShortPeriodTerms(initial);
-            dsstHarvester.setReferenceState(initial);
-        }
         // Compute short period derivatives at the beginning of the iteration
         harvester.setReferenceState(initial);
         return initial.getOrbit();

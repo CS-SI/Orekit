@@ -24,8 +24,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.KeyValueFileParser;
-import org.orekit.OrekitMatchers;
-import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
@@ -240,12 +238,12 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 76.46;
-        final double velocityAccuracy = 1.58e-1;
+        final double distanceAccuracy = 46.6;
+        final double velocityAccuracy = 1.13e-1;
 
         //test on the convergence
-        final int numberOfIte  = 6;
-        final int numberOfEval = 6;
+        final int numberOfIte  = 5;
+        final int numberOfEval = 5;
 
         Assertions.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assertions.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -254,22 +252,20 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odLageos2.getEstimatedPV().getVelocity();
 
-        // Ref position from "lageos2_cpf_160212_5441.jax"
-        final Vector3D refPos = new Vector3D(-2551060.861, 9748629.197, -6528045.767);
-        final Vector3D refVel = new Vector3D(-4595.833, 1029.893, 3382.441);
-        MatcherAssert.assertThat(estimatedPos,
-                OrekitMatchers.vectorCloseTo(refPos, distanceAccuracy));
+        // Ref position from "lageos2_cpf_160213_5451.jax"
+        final Vector3D refPos = new Vector3D(7526994.072, -9646309.832, 1464110.239);
+        final Vector3D refVel = new Vector3D(3033.794, 1715.265, -4447.659);
         Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 95;
-        final double[] RefStatRange = { -29.030, 59.098, 0.0, 14.968 };
+        final double[] RefStatRange = { -28.374, 58.620, 0.0, 14.877 };
         Assertions.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         MatcherAssert.assertThat(odLageos2.getRangeStat().getMin(),
                 Matchers.greaterThan(RefStatRange[0]));
-        Assertions.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               2.0e-2);
-        Assertions.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-2);
+        Assertions.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
+        Assertions.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
         Assertions.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
 
@@ -317,15 +313,13 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 6.97;
-        final double velocityAccuracy = 2.47e-3;
+        final double distanceAccuracy = 6.05;
+        final double velocityAccuracy = 2.48e-3;
 
         //test on the convergence
-        final int numberOfIte  = 13;
-        final int numberOfEval = 14;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 4;
 
-        System.out.println("evals: " + odGNSS.getNumberOfEvaluation());
-        System.out.format("range mean %g m, sd %g m\n", odGNSS.getRangeStat().getMean(), odGNSS.getRangeStat().getStandardDeviation());
         Assertions.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assertions.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
@@ -339,11 +333,11 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test on statistic for the range residuals
         final long nbRange = 4009;
-        final double[] RefStatRange = { -2.738, 2.510, 0.0, 0.701 };
+        final double[] RefStatRange = { -3.480, 2.609, 0.0, 0.836 };
         Assertions.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assertions.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              2.0e-3);
+        Assertions.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
         Assertions.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }

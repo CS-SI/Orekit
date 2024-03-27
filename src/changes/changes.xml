@@ -27,6 +27,15 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1360">
+        Added AggregatedClockModel.
+      </action>
+      <action dev="luc" type="fix" issue="1359">
+        Added get{First|Last}NonNullSpan to TimeSpanMap.
+      </action>
+      <action dev="tmills" type="fix" issue="1293">
+        Added getters to LofOffset.
+      </action>
       <action dev="luc" type="fix" issue="1356">
         Fixed parsing of Rinex clock files with mixed satellite system.
       </action>
