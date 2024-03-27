@@ -103,7 +103,7 @@ public class RinexClockParser {
     /** Set of time scales. */
     private final TimeScales timeScales;
 
-    /** Create an clock file parser using default values.
+    /** Create a clock file parser using default values.
      * <p>
      * This constructor uses the {@link DataContext#getDefault() default data context},
      * and {@link IGSUtils#guessFrame}.
@@ -252,8 +252,8 @@ public class RinexClockParser {
         /** Current end date for reference clocks. */
         private AbsoluteDate referenceClockEndDate;
 
-        /** Current reference clock list. */
-        private List<ReferenceClock> currentReferenceClocks;
+        /** Pending reference clocks list. */
+        private List<ReferenceClock> pendingReferenceClocks;
 
         /** Current clock data type. */
         private ClockDataType currentDataType;
@@ -277,6 +277,7 @@ public class RinexClockParser {
         protected ParseInfo () {
             this.timeScales = RinexClockParser.this.timeScales;
             this.file = new RinexClock(frameBuilder);
+            this.pendingReferenceClocks = new ArrayList<>();
         }
     }
 
@@ -511,8 +512,7 @@ public class RinexClockParser {
 
                     // Check if sought fields were not actually blanks
                     if (!progDCBS.isEmpty()) {
-                        pi.file.addAppliedDCBS(
-                            new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
+                        pi.file.addAppliedDCBS(new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
                     }
                 }
             }
@@ -644,8 +644,12 @@ public class RinexClockParser {
                      Scanner s2      = s1.useDelimiter(SPACES);
                      Scanner scanner = s2.useLocale(Locale.US)) {
 
-                    // Initialize current reference clock list corresponding to the period
-                    pi.currentReferenceClocks = new ArrayList<>();
+                    if (!pi.pendingReferenceClocks.isEmpty()) {
+                        // Modify time span map of the reference clocks to accept the pending reference clock
+                        pi.file.addReferenceClockList(pi.pendingReferenceClocks,
+                                                      pi.referenceClockStartDate);
+                        pi.pendingReferenceClocks = new ArrayList<>();
+                    }
 
                     // First element is the number of reference clocks corresponding to the period
                     scanner.nextInt();
@@ -713,10 +717,8 @@ public class RinexClockParser {
                     // Add reference clock to current reference clock list
                     final ReferenceClock referenceClock = new ReferenceClock(referenceName, clockID, clockConstraint,
                                                                              pi.referenceClockStartDate, pi.referenceClockEndDate);
-                    pi.currentReferenceClocks.add(referenceClock);
+                    pi.pendingReferenceClocks.add(referenceClock);
 
-                    // Modify time span map of the reference clocks to accept the new reference clock
-                    pi.file.addReferenceClockList(pi.currentReferenceClocks, pi.referenceClockStartDate);
                 }
             }
 
@@ -833,7 +835,10 @@ public class RinexClockParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // do nothing...
+                if (!pi.pendingReferenceClocks.isEmpty()) {
+                    // Modify time span map of the reference clocks to accept the pending reference clock
+                    pi.file.addReferenceClockList(pi.pendingReferenceClocks, pi.referenceClockStartDate);
+                }
             }
 
             /** {@inheritDoc} */
