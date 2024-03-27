@@ -867,6 +867,9 @@ HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>
 # Cannot start the propagation from an infinitely far date
 CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
 
+# Too long time gap between data points: {0} s
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = <MISSING TRANSLATION>
+
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = <MISSING TRANSLATION>
 

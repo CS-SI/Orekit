@@ -906,6 +906,9 @@ public enum OrekitMessages implements Localizable {
     /** CANNOT_START_PROPAGATION_FROM_INFINITY. */
     CANNOT_START_PROPAGATION_FROM_INFINITY("Cannot start the propagation from an infinitely far date"),
 
+    /** TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS. */
+    TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS("Too long time gap between data points: {0} s"),
+
     /** INVALID_SATELLITE_ID. */
     INVALID_SATELLITE_ID("invalid satellite id {0}"),
 
