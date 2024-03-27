@@ -39,14 +39,17 @@ import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.AggregatedClockModel;
 import org.orekit.time.ClockModel;
 import org.orekit.time.ClockOffset;
+import org.orekit.time.SampledClockModel;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeSpanMap;
 
 public class SP3ParserTest {
 
@@ -105,8 +108,18 @@ public class SP3ParserTest {
         final SP3Parser  parser     = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 6, s -> frame);
         final SP3        sp3        = parser.parse(source);
         final TimeScale  ts         = sp3.getHeader().getTimeSystem().getTimeScale(TimeScalesFactory.getTimeScales());
-        final ClockModel clockModel = sp3.getEphemeris("C02").extractClockModel();
+        final AggregatedClockModel clockModel = sp3.getEphemeris("C02").extractClockModel();
 
+        Assertions.assertEquals(3, clockModel.getModels().getSpansNumber());
+        Assertions.assertNull(clockModel.getModels().getFirstSpan().getData());
+        Assertions.assertNull(clockModel.getModels().getLastSpan().getData());
+        final ClockModel middle = clockModel.getModels().getFirstSpan().next().getData();
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2015, 5, 5, 0, 0, 0.0, ts).durationFrom(middle.getValidityStart()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2015, 5, 5, 23, 55, 0.0, ts).durationFrom(middle.getValidityEnd()),
+                                1.0e-15);
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2015, 5, 5, 0, 0, 0.0, ts).durationFrom(clockModel.getValidityStart()),
                                 1.0e-15);
@@ -1197,12 +1210,52 @@ public class SP3ParserTest {
     public void testSpliceNewSegment() {
         SP3 sp3 = splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_large_gap.sp3");
         Assertions.assertEquals(2, sp3.getEphemeris("C01").getSegments().size());
+        final TimeScale ts = sp3.getHeader().getTimeSystem().getTimeScale(TimeScalesFactory.getTimeScales());
+
+        final AggregatedClockModel clockModel = sp3.getEphemeris("C01").extractClockModel();
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2017, 5, 21, 0, 0, 0.0, ts).durationFrom(clockModel.getValidityStart()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2017, 5, 21, 0, 25, 0.0, ts).durationFrom(clockModel.getValidityEnd()),
+                                1.0e-15);
+
+        // there are 5 spans after splicing:
+        // one null    from      -∞             to 2017-05-21T00:00:00
+        // one regular from 2017-05-21T00:00:00 to 2017-05-21T00:05:00
+        // one null    from 2017-05-21T00:05:00 to 2017-05-21T00:20:00
+        // one regular from 2017-05-21T00:20:00 to 2017-05-21T00:25:00
+        // one null    from 2017-05-21T00:25:00 to        +∞
+        Assertions.assertEquals(5, clockModel.getModels().getSpansNumber());
+        TimeSpanMap.Span<ClockModel> span = clockModel.getModels().getFirstSpan();
+        Assertions.assertNull(span.getData());
+        span = span.next();
+        Assertions.assertInstanceOf(SampledClockModel.class, span.getData());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2017, 5, 21, 0, 0, 0.0, ts).durationFrom(span.getData().getValidityStart()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2017, 5, 21, 0, 5, 0.0, ts).durationFrom(span.getData().getValidityEnd()),
+                                1.0e-15);
+        span = span.next();
+        Assertions.assertNull(span.getData());
+        span = span.next();
+        Assertions.assertInstanceOf(SampledClockModel.class, span.getData());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2017, 5, 21, 0, 20, 0.0, ts).durationFrom(span.getData().getValidityStart()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2017, 5, 21, 0, 25, 0.0, ts).durationFrom(span.getData().getValidityEnd()),
+                                1.0e-15);
+        span = span.next();
+        Assertions.assertNull(span.getData());
     }
 
     @Test
     public void testSpliceDrop() {
 
         final SP3 spliced = splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_after_drop.sp3");
+        final TimeScale ts = spliced.getHeader().getTimeSystem().getTimeScale(TimeScalesFactory.getTimeScales());
 
         Assertions.assertEquals(SP3OrbitType.FIT, spliced.getHeader().getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, spliced.getHeader().getTimeSystem());
@@ -1229,6 +1282,16 @@ public class SP3ParserTest {
         Assertions.assertEquals(1.25,  spliced.getHeader().getPosVelBase(), 1.0e-15);
         Assertions.assertEquals(1.025, spliced.getHeader().getClockBase(),  1.0e-15);
 
+        // since the gap between the two files is equal to the epoch interval
+        // the segments are kept merged
+        final AggregatedClockModel clockModel = spliced.getEphemeris("R23").extractClockModel();
+        Assertions.assertEquals(3, clockModel.getModels().getSpansNumber());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2017, 5, 21, 0, 0, 0.0, ts).durationFrom(clockModel.getValidityStart()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2017, 5, 21, 0, 10, 0.0, ts).durationFrom(clockModel.getValidityEnd()),
+                                1.0e-15);
     }
 
     @Test
@@ -1278,9 +1341,9 @@ public class SP3ParserTest {
 
     private SP3 splice(final String name1, final String name2) {
         final DataSource source1 = new DataSource(name1, () -> getClass().getResourceAsStream(name1));
-        final SP3        file1   = new SP3Parser().parse(source1);
+        final SP3        file1   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 2, IGSUtils::guessFrame).parse(source1);
         final DataSource source2 = new DataSource(name2, () -> getClass().getResourceAsStream(name2));
-        final SP3        file2   = new SP3Parser().parse(source2);
+        final SP3        file2   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 2, IGSUtils::guessFrame).parse(source2);
         return SP3.splice(Arrays.asList(file1, file2));
     }
 
