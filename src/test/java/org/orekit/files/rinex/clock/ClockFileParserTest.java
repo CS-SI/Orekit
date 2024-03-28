@@ -798,7 +798,7 @@ public class ClockFileParserTest {
 
     /** Test the reference clocks.  */
     @Test
-    public void testSplice() throws URISyntaxException {
+    public void testSplice() {
 
         // Parse file&
         final RinexClockParser parser = new RinexClockParser();
