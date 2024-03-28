@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -773,70 +774,60 @@ public class RinexClock {
         final List<String> clockIds = new ArrayList<>();
 
         // identify the receivers that are present in all files
-        final List<Receiver> commonReceivers = new ArrayList<>(first.receivers);
-        for (final RinexClock current : sorted) {
-            searching:
-            for (final Iterator<Receiver> iter = commonReceivers.iterator(); iter.hasNext();) {
-
-                final Receiver reference = iter.next();
-                for (final Receiver receiver : current.receivers) {
-                    if (receiver.getReceiverIdentifier().equals(reference.getReceiverIdentifier())) {
-                        // the reference receiver has been found in the current file
-                        continue searching;
-                    }
-                }
-
-                // we reached end of loop without finding the reference receiver
-                // it is not present in the current file, hence we remove it from
-                // the common receivers list
-                iter.remove();
-
-            }
-        }
-
-        // create the spliced list
-        for (final Receiver receiver : commonReceivers) {
-            spliced.addReceiver(receiver);
-            clockIds.add(receiver.getDesignator());
-        }
+        final List<Receiver> commonReceivers = new ArrayList<>();
+        first.
+            getReceivers().
+            stream().
+            filter(r -> availableInAllFiles(r.getDesignator(), sorted)).
+            forEach(r -> {
+                commonReceivers.add(r);
+                spliced.addReceiver(r);
+                clockIds.add(r.getDesignator());
+            });
 
         // identify the satellites that are present in all files
-        final List<String> commonSats = new ArrayList<>(first.satellites);
-        for (final RinexClock current : sorted) {
-            for (final Iterator<String> iter = commonSats.iterator(); iter.hasNext();) {
-                if (!current.satellites.contains(iter.next())) {
-                    iter.remove();
-                    break;
-                }
-            }
-        }
-
-        // create the spliced list
-        for (final String sat : commonSats) {
-            spliced.addSatellite(sat);
-        }
-        clockIds.addAll(commonSats);
+        final List<String> commonSats = new ArrayList<>();
+        first.
+            getSatellites().
+            stream().
+            filter(s -> availableInAllFiles(s, sorted)).
+            forEach(s -> {
+                commonSats.add(s);
+                spliced.addSatellite(s);
+                clockIds.add(s);
+            });
 
         // add the clock lines
         for (final String clockId : clockIds) {
             AbsoluteDate previous = null;
-            for (final RinexClock rinexClock : sorted) {
+            for (final RinexClock rc : sorted) {
                 if (previous != null) {
-                    if (rinexClock.getEarliestEpoch().durationFrom(previous) > maxGap) {
+                    if (rc.getEarliestEpoch().durationFrom(previous) > maxGap) {
                         throw new OrekitException(OrekitMessages.TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS,
-                                                  rinexClock.getEarliestEpoch().durationFrom(previous));
+                                                  rc.getEarliestEpoch().durationFrom(previous));
                     }
                 }
-                previous = rinexClock.getLatestEpoch();
-                rinexClock.
-                    getClockData().
-                    get(clockId).
-                    forEach(cd -> spliced.addClockData(clockId, cd));
+                previous = rc.getLatestEpoch();
+                rc.getClockData().get(clockId).forEach(cd -> spliced.addClockData(clockId, cd));
             }
         }
 
         return spliced;
 
+    }
+
+    /** Check if clock data is available in all files.
+     * @param clockId clock id
+     * @param files clock files
+     * @return true if clock is available in all files
+     */
+    private static boolean availableInAllFiles(final String clockId, final Collection<RinexClock> files) {
+        for (final RinexClock rc : files) {
+            if (!rc.getClockData().containsKey(clockId)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Clock data for a single station.
