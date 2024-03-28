@@ -11,7 +11,7 @@ X1234A123           XX                  ZZZ                 REC # / TYPE / VERS
          .9030         .0000         .0000                  ANTENNA: DELTA H/E/N
      1     1                                                WAVELENGTH FACT L1/2
      1     2     6   G14   G15   G16   G17   G18   G19      WAVELENGTH FACT L1/2
-     0                                                      RCV CLOCK OFFS APPL
+     1                                                      RCV CLOCK OFFS APPL
      4    P1    L1    L2    P2                              # / TYPES OF OBSERV
     18.000                                                  INTERVAL
   2001     3    24    13    10   36.0000000     GPS         TIME OF FIRST OBS
