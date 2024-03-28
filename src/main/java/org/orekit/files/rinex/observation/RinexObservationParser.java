@@ -139,15 +139,6 @@ public class RinexObservationParser {
 
                 }
 
-            // fix dates in header
-            final RinexObservationHeader header = parseInfo.file.getHeader();
-            if (!header.getClockOffsetApplied()) {
-                // the epochs were expressed in receiver clock
-                // we need to convert them to absolute date
-                header.setTFirstObs(header.getTFirstObs().shiftedBy(-parseInfo.firstRcvrClkOffset));
-                header.setTLastObs(header.getTLastObs().shiftedBy(-parseInfo.rcvrClkOffset));
-            }
-
         } catch (IOException ioe) {
             throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
         }
@@ -176,8 +167,11 @@ public class RinexObservationParser {
         /** Date of the observation. */
         private AbsoluteDate tObs;
 
-        /** Firsteceiver clock offset (seconds). */
-        private double firstRcvrClkOffset;
+        /** Indicator that time of first observation was already fixed. */
+        private boolean tFirstFixed;
+
+        /** Indicator that time of last observation was already fixed. */
+        private boolean tLastFixed;
 
         /** Receiver clock offset (seconds). */
         private double rcvrClkOffset;
@@ -255,7 +249,8 @@ public class RinexObservationParser {
             this.file                   = new RinexObservation();
             this.lineNumber             = 0;
             this.tObs                   = AbsoluteDate.PAST_INFINITY;
-            this.firstRcvrClkOffset     = Double.NaN;
+            this.tFirstFixed            = false;
+            this.tLastFixed             = false;
             this.timeScale              = null;
             this.nbTypes                = -1;
             this.nbSatObs               = -1;
@@ -268,6 +263,33 @@ public class RinexObservationParser {
             this.satPhaseShift          = new ArrayList<>();
             this.typesObsScaleFactor    = new ArrayList<>();
             this.satObs                 = new ArrayList<>();
+        }
+
+        /** Set observation date, taking care of receiver/absolute time scales.
+         * @param rawDate date as parsed, prior to any time scale modification
+         */
+        private void setTObs(final AbsoluteDate rawDate) {
+            final RinexObservationHeader header = file.getHeader();
+            if (header.getClockOffsetApplied()) {
+                // date was already in an absolute time scale
+                tObs = rawDate;
+            } else {
+                // the epoch was expressed in receiver clock
+                // we need to convert it to absolute date
+                if (FastMath.abs(rawDate.durationFrom(header.getTFirstObs())) < 1.0e-6 &&
+                    !tFirstFixed) {
+                    // we need to fix the first date in the header too
+                    header.setTFirstObs(header.getTFirstObs().shiftedBy(-rcvrClkOffset));
+                    tFirstFixed = true;
+                }
+                if (FastMath.abs(rawDate.durationFrom(header.getTLastObs())) < 1.0e-6 &&
+                    !tLastFixed) {
+                    // we need to fix the last date in the header too
+                    header.setTLastObs(header.getTLastObs().shiftedBy(-rcvrClkOffset));
+                    tLastFixed = true;
+                }
+                tObs = rawDate.shiftedBy(-rcvrClkOffset);
+            }
         }
 
     }
@@ -821,9 +843,6 @@ public class RinexObservationParser {
                                    if (Double.isNaN(parseInfo.rcvrClkOffset)) {
                                        parseInfo.rcvrClkOffset = 0.0;
                                    }
-                                   if (Double.isNaN(parseInfo.firstRcvrClkOffset)) {
-                                       parseInfo.firstRcvrClkOffset = parseInfo.rcvrClkOffset;
-                                   }
 
                                } else if (parseInfo.eventFlag < 6) {
                                    // moving antenna / new site occupation / header information / external event
@@ -847,18 +866,13 @@ public class RinexObservationParser {
                                if (!parseInfo.specialRecord) {
 
                                    // observations epoch
-                                   parseInfo.tObs = new AbsoluteDate(RinexUtils.convert2DigitsYear(RinexUtils.parseInt(line, 1, 2)),
-                                                                     RinexUtils.parseInt(line,  4, 2),
-                                                                     RinexUtils.parseInt(line,  7, 2),
-                                                                     RinexUtils.parseInt(line, 10, 2),
-                                                                     RinexUtils.parseInt(line, 13, 2),
-                                                                     RinexUtils.parseDouble(line, 15, 11),
-                                                                     parseInfo.timeScale);
-                                   if (!parseInfo.file.getHeader().getClockOffsetApplied()) {
-                                       // the epoch was expressed in receiver clock
-                                       // we need to convert it to absolute date
-                                       parseInfo.tObs = parseInfo.tObs.shiftedBy(-parseInfo.rcvrClkOffset);
-                                   }
+                                   parseInfo.setTObs(new AbsoluteDate(RinexUtils.convert2DigitsYear(RinexUtils.parseInt(line, 1, 2)),
+                                                                      RinexUtils.parseInt(line,  4, 2),
+                                                                      RinexUtils.parseInt(line,  7, 2),
+                                                                      RinexUtils.parseInt(line, 10, 2),
+                                                                      RinexUtils.parseInt(line, 13, 2),
+                                                                      RinexUtils.parseDouble(line, 15, 11),
+                                                                      parseInfo.timeScale));
 
                                    // satellites list
                                    RINEX_2_DATA_SAT_LIST.parsingMethod.parse(line, parseInfo);
@@ -987,9 +1001,6 @@ public class RinexObservationParser {
                                    if (Double.isNaN(parseInfo.rcvrClkOffset)) {
                                        parseInfo.rcvrClkOffset = 0.0;
                                    }
-                                   if (Double.isNaN(parseInfo.firstRcvrClkOffset)) {
-                                       parseInfo.firstRcvrClkOffset = parseInfo.rcvrClkOffset;
-                                   }
 
                                } else if (parseInfo.eventFlag < 6) {
                                    // moving antenna / new site occupation / header information / external event
@@ -1013,18 +1024,13 @@ public class RinexObservationParser {
                                if (!parseInfo.specialRecord) {
 
                                    // observations epoch
-                                   parseInfo.tObs = new AbsoluteDate(RinexUtils.parseInt(line,  2, 4),
-                                                                     RinexUtils.parseInt(line,  7, 2),
-                                                                     RinexUtils.parseInt(line, 10, 2),
-                                                                     RinexUtils.parseInt(line, 13, 2),
-                                                                     RinexUtils.parseInt(line, 16, 2),
-                                                                     RinexUtils.parseDouble(line, 18, 11),
-                                                                     parseInfo.timeScale);
-                                   if (!parseInfo.file.getHeader().getClockOffsetApplied()) {
-                                       // the epoch was expressed in receiver clock
-                                       // we need to convert it to absolute date
-                                       parseInfo.tObs = parseInfo.tObs.shiftedBy(-parseInfo.rcvrClkOffset);
-                                   }
+                                   parseInfo.setTObs(new AbsoluteDate(RinexUtils.parseInt(line,  2, 4),
+                                                                      RinexUtils.parseInt(line,  7, 2),
+                                                                      RinexUtils.parseInt(line, 10, 2),
+                                                                      RinexUtils.parseInt(line, 13, 2),
+                                                                      RinexUtils.parseInt(line, 16, 2),
+                                                                      RinexUtils.parseDouble(line, 18, 11),
+                                                                      parseInfo.timeScale));
 
                                }
 
