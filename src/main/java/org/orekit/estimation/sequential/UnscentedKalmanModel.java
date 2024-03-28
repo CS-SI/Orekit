@@ -329,24 +329,31 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         // Loop on builders
         for (int k = 0; k < builders.size(); k++ ) {
 
-            // Sigma points for the current builder
-            final RealVector[] currentSigmaPoints = new ArrayRealVector[sigmaPoints.length];
+            // Orbit state sigma points for the current builder
             for (int i = 0; i < sigmaPoints.length; i++) {
-                currentSigmaPoints[i] = sigmaPoints[i].getSubVector(orbitsStartColumns[k], orbitsEndColumns[k] - orbitsStartColumns[k]);
-            }
+                // Extract kth orbit parts of sigma point
+                final RealVector currentOrbitPoint = sigmaPoints[i].getSubVector(orbitsStartColumns[k], orbitsEndColumns[k] - orbitsStartColumns[k]);
 
-            // Predict states
-            final List<SpacecraftState> states = predictStates(currentSigmaPoints, k);
+                // Create the propagator
+                final Orbit orbit = orbitTypes[k].mapArrayToOrbit(currentOrbitPoint.toArray(), null, angleTypes[k],
+                        builders.get(k).getInitialOrbitDate(), builders.get(k).getMu(), builders.get(k).getFrame());
+                builders.get(k).resetOrbit(orbit);
+                final Propagator propagator = builders.get(k).buildPropagator(builders.get(k).getSelectedNormalizedParameters());
 
-            // Loop on states
-            for (int i = 0; i < states.size(); ++i) {
+                // Set the propagation parameters
+                int p = allEstimatedOrbitalParameters.getNbParams();
+                for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
+                    driver.setValue(sigmaPoints[i].getEntry(p++));
+                }
+
+                // Predicted state
+                final SpacecraftState predicted = propagator.propagate(currentDate);
+
+                // Set predicted state
                 if (k == 0) {
                     predictedStates[i] = sigmaPoints[i].copy();
                 }
-                // Current predicted state
-                final SpacecraftState predicted = states.get(i);
-                // First, convert the predicted state to an array
-                final double[] predictedArray = new double[currentSigmaPoints[i].getDimension()];
+                final double[] predictedArray = new double[currentOrbitPoint.getDimension()];
                 orbitTypes[k].mapOrbitToArray(predicted.getOrbit(), angleTypes[k], predictedArray, null);
                 predictedStates[i].setSubVector(orbitsStartColumns[k], new ArrayRealVector(predictedArray));
             }
@@ -421,7 +428,8 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
             // Loop on sigma points
             for (int i = 0; i < predictedSigmaPoints.length; i++) {
-                final SpacecraftState state = new SpacecraftState(orbitTypes[k].mapArrayToOrbit(predictedSigmaPoints[i].toArray(), null,
+                final RealVector currentOrbitPoint = predictedSigmaPoints[i].getSubVector(orbitsStartColumns[k], orbitsEndColumns[k] - orbitsStartColumns[k]);
+                final SpacecraftState state = new SpacecraftState(orbitTypes[k].mapArrayToOrbit(currentOrbitPoint.toArray(), null,
                                                                                                 angleTypes[k], currentDate, builders.get(k).getMu(),
                                                                                                 builders.get(k).getFrame()));
                 statesForMeasurementEstimation[i][k] = state;
@@ -431,6 +439,13 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
         // Loop on sigma points to predict measurements
         for (int i = 0; i < predictedSigmaPoints.length; i++) {
+            // First set measurement parameters from predicted sigma point
+            int p = allEstimatedOrbitalParameters.getNbParams() + allEstimatedPropagationParameters.getNbParams();
+            for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+                driver.setValue(predictedSigmaPoints[i].getEntry(p++));
+            }
+
+            // Calculated estimated measurement from predicted sigma point
             final EstimatedMeasurement<?> estimated = estimateMeasurement(observedMeasurement, currentMeasurementNumber,
                     statesForMeasurementEstimation[i]);
             predictedMeasurements[i] = new ArrayRealVector(estimated.getEstimatedValue());
@@ -460,6 +475,12 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
         }
 
+        // Set measurement parameters from predicted state
+        //int p = allEstimatedOrbitalParameters.getNbParams() + allEstimatedPropagationParameters.getNbParams();
+        //for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+        //    driver.setValue(predictedState.getEntry(p++));
+        //}
+
         // Predicted measurement
         predictedMeasurement = estimateMeasurement(measurement.getObservedMeasurement(), currentMeasurementNumber,
                 predictedSpacecraftStates);
@@ -475,19 +496,23 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
     /**
      * Predict the predicted states for the given sigma points.
-     * @param sigmaPoints current sigma points
+     * @param orbitPoints current sigma points for orbital state
+     * @param parametersPoints current sigma points for propagation parameters
      * @param index the index corresponding to the satellite one is dealing with
      * @return predicted state for the given sigma point
      */
-    private List<SpacecraftState> predictStates(final RealVector[] sigmaPoints, final int index) {
+    private List<SpacecraftState> predictStates(final RealVector[] orbitPoints,
+                                                final RealVector[] parametersPoints,
+                                                final int index) {
 
         // Loop on sigma points to create the propagator parallelizer
-        final List<Propagator> propagators = new ArrayList<>(sigmaPoints.length);
-        for (RealVector sigmaPoint : sigmaPoints) {
-            // Current sigma point
-            final double[] currentPoint = sigmaPoint.copy().toArray();
+        final List<Propagator> propagators = new ArrayList<>(orbitPoints.length);
+        for (int k = 0; k < orbitPoints.length; ++k) {
+            // Current sigma points
+            final double[] orbitPoint = orbitPoints[k].copy().toArray();
+            final double[] parametersPoint = parametersPoints[k].copy().toArray();
             // Create the corresponding orbit propagator
-            final Propagator currentPropagator = createPropagator(currentPoint, index);
+            final Propagator currentPropagator = createPropagator(orbitPoint, parametersPoint, index);
             // Add it to the list of propagators
             propagators.add(currentPropagator);
         }
@@ -502,11 +527,12 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
     /**
      * Create a propagator for the given sigma point.
-     * @param point input sigma point
+     * @param point input sigma point for orbit state
+     * @param parameters input sigma point for propagation parameters
      * @param index the index corresponding to the satellite one is dealing with
      * @return the corresponding orbit propagator
      */
-    private Propagator createPropagator(final double[] point, final int index) {
+    private Propagator createPropagator(final double[] point, final double[] parameters, final int index) {
         // Create a new instance of the current propagator builder
         final PropagatorBuilder copy = builders.get(index).copy();
         // Convert the given sigma point to an orbit
@@ -515,7 +541,15 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         copy.resetOrbit(orbit);
 
         // Create the propagator
-        return copy.buildPropagator();
+        final Propagator propagator = copy.buildPropagator(copy.getSelectedNormalizedParameters());
+        // Set the propagation parameters
+        int p = 0;
+        for (DelegatingDriver driver: copy.getPropagationParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                driver.setValue(parameters[p++]);
+            }
+        }
+        return propagator;
     }
 
     /** Finalize estimation.
@@ -525,9 +559,13 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
     public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
                                    final ProcessEstimate estimate) {
 
+        // Update the parameters with the estimated state
+        // The min/max values of the parameters are handled by the ParameterDriver implementation
         correctedEstimate = estimate;
+        updateParameters();
 
         // Loop on builders
+        /*
         for (int k = 0; k < builders.size(); k++ ) {
 
             // Update corrected state
@@ -540,6 +578,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
             builders.get(k).resetOrbit(correctedOrbit);
 
         }
+         */
 
         // Corrected measurement
         correctedMeasurement = estimateMeasurement(observedMeasurement, currentMeasurementNumber,
@@ -566,6 +605,29 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
                 estimatedMeasurementBase.getStates(), estimatedMeasurementBase.getParticipants());
         estimatedMeasurement.setEstimatedValue(estimatedMeasurementBase.getEstimatedValue());
         return estimatedMeasurement;
+    }
+
+    /** Update the estimated parameters after the correction phase of the filter.
+     * The min/max allowed values are handled by the parameter themselves.
+     */
+    private void updateParameters() {
+        final RealVector correctedState = correctedEstimate.getState();
+        int i = 0;
+        for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setValue(correctedState.getEntry(i));
+            correctedState.setEntry(i++, driver.getValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setValue(correctedState.getEntry(i));
+            correctedState.setEntry(i++, driver.getValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setValue(correctedState.getEntry(i));
+            correctedState.setEntry(i++, driver.getValue());
+        }
     }
 
     /** Get the propagators estimated with the values set in the propagators builders.
