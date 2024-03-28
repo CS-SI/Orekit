@@ -798,7 +798,7 @@ public class ClockFileParserTest {
 
     /** Test the reference clocks.  */
     @Test
-    public void testSplice() throws URISyntaxException {
+    public void testSplice() {
 
         // Parse file&
         final RinexClockParser parser = new RinexClockParser();
@@ -811,7 +811,7 @@ public class ClockFileParserTest {
                                 new AbsoluteDate(2020, 9, 1, 0,  4, 30.0, clk1.getTimeScale()).durationFrom(clk1.getLatestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(5, clk1.getNumberOfReceivers());
-        Assertions.assertEquals(6, clk1.getNumberOfSatellites());
+        Assertions.assertEquals(7, clk1.getNumberOfSatellites());
 
         final String     ex2  = "/gnss/clock/part-2.clk";
         final RinexClock clk2 = parser.parse(new DataSource(ex2, () -> getClass().getResourceAsStream(ex2)));
@@ -822,7 +822,7 @@ public class ClockFileParserTest {
                                 new AbsoluteDate(2020, 9, 1, 0,  9, 30.0, clk2.getTimeScale()).durationFrom(clk2.getLatestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(4, clk2.getNumberOfReceivers());
-        Assertions.assertEquals(6, clk2.getNumberOfSatellites());
+        Assertions.assertEquals(7, clk2.getNumberOfSatellites());
 
         final String     ex3  = "/gnss/clock/part-3.clk";
         final RinexClock clk3 = parser.parse(new DataSource(ex3, () -> getClass().getResourceAsStream(ex3)));
@@ -833,7 +833,7 @@ public class ClockFileParserTest {
                                 new AbsoluteDate(2020, 9, 1, 0, 14, 30.0, clk3.getTimeScale()).durationFrom(clk3.getLatestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(5, clk3.getNumberOfReceivers());
-        Assertions.assertEquals(5, clk3.getNumberOfSatellites());
+        Assertions.assertEquals(6, clk3.getNumberOfSatellites());
 
         // Splice all files
         try {
