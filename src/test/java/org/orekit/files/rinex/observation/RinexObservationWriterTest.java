@@ -54,6 +54,7 @@ public class RinexObservationWriterTest {
         final RinexObservation robs = load("rinex/bbbb0000.00o");
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
+            writer.setReceiverClockModel(robs.extractClockModel(2));
             writer.prepareComments(robs.getComments());
             writer.writeHeader(robs.getHeader());
             writer.writeHeader(robs.getHeader());
@@ -69,6 +70,7 @@ public class RinexObservationWriterTest {
         final RinexObservation robs = load("rinex/aiub0000.00o");
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
+            writer.setReceiverClockModel(robs.extractClockModel(2));
             writer.writeObservationDataSet(robs.getObservationDataSets().get(0));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -79,59 +81,52 @@ public class RinexObservationWriterTest {
 
     @Test
     public void testRoundTripRinex2A() throws IOException {
-        doTestRoundTrip("rinex/aiub0000.00o", false, 0.0);
+        doTestRoundTrip("rinex/aiub0000.00o", 0.0);
     }
 
     @Test
     public void testRoundTripRinex2B() throws IOException {
-        doTestRoundTrip("rinex/cccc0000.07o", false, 0.0);
+        doTestRoundTrip("rinex/cccc0000.07o", 0.0);
     }
 
     @Test
     public void testRoundTripRinex3A() throws IOException {
-        doTestRoundTrip("rinex/bbbb0000.00o", false, 0.0);
+        doTestRoundTrip("rinex/bbbb0000.00o", 0.0);
     }
 
     @Test
     public void testRoundTripRinex3B() throws IOException {
-        doTestRoundTrip("rinex/dddd0000.01o", false, 0.0);
+        doTestRoundTrip("rinex/dddd0000.01o", 0.0);
     }
 
     @Test
     public void testRoundTripDcbs() throws IOException {
-        doTestRoundTrip("rinex/dcbs.00o", false, 0.0);
+        doTestRoundTrip("rinex/dcbs.00o", 0.0);
     }
 
     @Test
     public void testRoundTripPcvs() throws IOException {
-        doTestRoundTrip("rinex/pcvs.00o", false, 0.0);
+        doTestRoundTrip("rinex/pcvs.00o", 0.0);
     }
 
     @Test
     public void testRoundTripScaleFactor() throws IOException {
-        doTestRoundTrip("rinex/bbbb0000.00o", false, 0.0);
+        doTestRoundTrip("rinex/bbbb0000.00o", 0.0);
     }
 
     @Test
     public void testRoundTripObsScaleFactor() throws IOException {
-        doTestRoundTrip("rinex/ice12720-scaled.07o", false, 0.0);
+        doTestRoundTrip("rinex/ice12720-scaled.07o", 0.0);
     }
 
     @Test
     public void testRoundTripLeapSecond() throws IOException {
-        doTestRoundTrip("rinex/jnu10110.17o", false, 0.0);
+        doTestRoundTrip("rinex/jnu10110.17o", 0.0);
     }
 
     @Test
     public void testContinuationPhaseShift() throws IOException {
-        doTestRoundTrip("rinex/continuation-phase-shift.23o", true, 0.0);
-    }
-
-    @Test
-    public void testReceiverClock() throws IOException {
-        doTestRoundTrip("rinex/continuation-phase-shift.23o",
-                        true,
-                        FastMath.scalb(1.0, -8));
+        doTestRoundTrip("rinex/continuation-phase-shift.23o", 0.0);
     }
 
     private RinexObservation load(final String name) {
@@ -139,15 +134,14 @@ public class RinexObservationWriterTest {
         return new RinexObservationParser().parse(dataSource);
      }
 
-    private void doTestRoundTrip(final String resourceName,
-                                 final boolean applyReceiverClock,
-                                 double expectedDt) throws IOException {
+    private void doTestRoundTrip(final String resourceName, double expectedDt) throws IOException {
 
         final RinexObservation robs = load(resourceName);
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
+            writer.setReceiverClockModel(robs.extractClockModel(2));
             RinexObservation patched = load(resourceName);
-            patched.getHeader().setClockOffsetApplied(applyReceiverClock);
+            patched.getHeader().setClockOffsetApplied(robs.getHeader().getClockOffsetApplied());
             if (FastMath.abs(expectedDt) > 1.0e-15) {
                 writer.setReceiverClockModel(new QuadraticClockModel(robs.getHeader().getTFirstObs(),
                                                                      expectedDt, 0.0, 0.0));
@@ -160,7 +154,6 @@ public class RinexObservationWriterTest {
         final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
         final RinexObservation rebuilt = new RinexObservationParser().parse(source);
 
-        robs.getHeader().setClockOffsetApplied(applyReceiverClock);
         checkRinexFile(robs, rebuilt, expectedDt);
 
     }

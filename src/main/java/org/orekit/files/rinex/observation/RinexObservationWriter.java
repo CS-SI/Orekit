@@ -166,11 +166,6 @@ public class RinexObservationWriter implements AutoCloseable {
     }
 
     /** Set receiver clock model.
-     * <p>
-     * The clock model is used only when {@link
-     * RinexObservationHeader#getClockOffsetApplied() clock offset must be applied}
-     * as per Rinex header settings
-     * </p>
      * @param receiverClockModel receiver clock model
      * @since 12.1
      */
@@ -230,8 +225,10 @@ public class RinexObservationWriter implements AutoCloseable {
                                                           header.getSatelliteSystem().getObservationTimeScale() :
                                                           ObservationTimeScale.GPS;
         timeScale = observationTimeScale.getTimeScale(TimeScalesFactory.getTimeScales());
-        if (header.getClockOffsetApplied() && receiverClockModel != null) {
-            // set up a time scale corresponding to the receiver clock
+        if (!header.getClockOffsetApplied() && receiverClockModel != null) {
+            // getClockOffsetApplied returned false, which means the measurements
+            // should *NOT* be put in system time scale, and the receiver has a clock model
+            // we have to set up a time scale corresponding to this receiver clock
             timeScale = new ClockTimeScale(timeScale.getName(), timeScale, receiverClockModel);
         }
 

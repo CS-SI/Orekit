@@ -56,7 +56,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testNotFiltered() throws IOException {
+    public void testNotFiltered() {
 
         final String name = "rinex/aaaa0000.00o";
         final DataSource raw = new DataSource(name,
@@ -123,7 +123,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testRinex2MoreThan12Satellites() throws IOException, NoSuchAlgorithmException {
+    public void testRinex2MoreThan12Satellites() throws NoSuchAlgorithmException {
 
         final String name = "rinex/bogi1210.09d.Z";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -156,7 +156,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testHatanakaRinex2() throws IOException, NoSuchAlgorithmException {
+    public void testHatanakaRinex2() throws NoSuchAlgorithmException {
 
         final String name = "rinex/arol0090.01d.Z";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -213,7 +213,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testCompressedRinex3() throws IOException, NoSuchAlgorithmException {
+    public void testCompressedRinex3() throws NoSuchAlgorithmException {
 
         //Tests Rinex 3 with Hatanaka compression
         final String name = "rinex/GANP00SVK_R_20151890000_01H_10M_MO.crx.gz";
@@ -271,13 +271,13 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testClockReset() throws IOException, NoSuchAlgorithmException {
+    public void testClockReset() throws NoSuchAlgorithmException {
 
         final String name = "rinex/clckReset_U_20190320000_10M_10M_MO.crx";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(raw),
-                                         "b54f4ec3fb860a032f93f569199224e247b35ceba309bc96478779ff7120455a");
+                                         "9ab0ec7c8547110a7612ec7740d787ee1062e37428cee1092163ba9bb03afeb4");
         RinexObservationParser parser = new RinexObservationParser();
 
         List<ObservationDataSet> ods = parser.parse(digester.getDigestedSource()).getObservationDataSets();
@@ -297,7 +297,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testWith5thOrderDifferencesClockOffsetReinitialization() throws IOException, NoSuchAlgorithmException {
+    public void testWith5thOrderDifferencesClockOffsetReinitialization() throws NoSuchAlgorithmException {
 
         // the following file has several specific features with respect to Hatanaka compression
         //  - we created it using 5th order differences instead of standard 3rd order
@@ -307,7 +307,7 @@ public class HatanakaCompressFilterTest {
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
-                                         "6ac7c9160d2131581156b2ea88c0c5844b88e1369c3a03956cb77f919c5cca3e");
+                                         "623908ad1c356759fd1e88cbce802aa41c26112b08a51f2b5aa34a33add6fecd");
         RinexObservationParser parser = new RinexObservationParser();
 
         List<ObservationDataSet> ods = parser.parse(digester.getDigestedSource()).getObservationDataSets();
@@ -325,7 +325,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testSplice() throws IOException, NoSuchAlgorithmException {
+    public void testSplice() throws NoSuchAlgorithmException {
 
         final String name = "rinex/aber0440.16d.Z";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -350,7 +350,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testVerySmallValue() throws IOException, NoSuchAlgorithmException {
+    public void testVerySmallValue() throws NoSuchAlgorithmException {
 
         final String name = "rinex/abmf0440.16d.Z";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -377,7 +377,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testMultipleOf5Observations() throws IOException, NoSuchAlgorithmException {
+    public void testMultipleOf5Observations() throws NoSuchAlgorithmException {
 
         final String name = "rinex/arev0440.16d.Z";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -404,7 +404,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testSingleByteReads() throws IOException, NoSuchAlgorithmException {
+    public void testSingleByteReads() throws IOException {
 
         final String name = "rinex/arev0440.16d.Z";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -424,8 +424,8 @@ public class HatanakaCompressFilterTest {
     public void testDifferential3rdOrder() {
         doTestDifferential(15, 3, 3,
                            new long[] {
-                               40517356773l, -991203l, -38437l,
-                               3506l, -630l, 2560l
+                               40517356773L, -991203L, -38437L,
+                               3506L, -630L, 2560L
                            }, new String[] {
                                "   40517356.773", "   40516365.570", "   40515335.930",
                                "   40514271.359", "   40513171.227", "   40512038.094"
@@ -436,8 +436,8 @@ public class HatanakaCompressFilterTest {
     public void testDifferential5thOrder() {
         doTestDifferential(12, 5, 5,
                            new long[] {
-                               23439008766l, -19297641l, 30704l, 3623l, -8215l,
-                               14517l, -6644l, -2073l, 4164l, -2513l
+                               23439008766L, -19297641L, 30704L, 3623L, -8215L,
+                               14517L, -6644L, -2073L, 4164L, -2513L
                            }, new String[] {
                                "234390.08766", "234197.11125", "234004.44188", "233812.11578", "233620.08703",
                                "233428.37273", "233236.98656", "233045.91805", "232855.17422", "232664.75445"
@@ -538,7 +538,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testManyObservations() throws IOException, NoSuchAlgorithmException {
+    public void testManyObservations() throws NoSuchAlgorithmException {
 
         final String name = "rinex/THTG00PYF_R_20160440000_60S_30S_MO.crx.gz";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -565,7 +565,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testSeptentrioMissingType() throws IOException, NoSuchAlgorithmException {
+    public void testSeptentrioMissingType() throws NoSuchAlgorithmException {
 
         final String name = "rinex/TLSG00FRA_R_20160440000_30S_30S_MO.crx.gz";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -592,7 +592,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testSeptentrioPhaseShiftWithS() throws IOException, NoSuchAlgorithmException {
+    public void testSeptentrioPhaseShiftWithS() throws NoSuchAlgorithmException {
 
         final String name = "rinex/VILL00ESP_R_20160440000_01D_30S_MO.crx.gz";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -619,7 +619,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testIssue892() throws IOException, NoSuchAlgorithmException {
+    public void testIssue892() throws NoSuchAlgorithmException {
 
         //Tests Rinex 3 with Hatanaka compression
         final String name = "rinex/DJIG00DJI_R_20191820000_01D_30S_MO.crx.gz";
@@ -673,7 +673,7 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
-    public void testPrnNbObs() throws IOException, NoSuchAlgorithmException {
+    public void testPrnNbObs() throws NoSuchAlgorithmException {
 
         //Tests Rinex 3 with Hatanaka compression
         final String name = "rinex/YEBE00ESP_R_20230891800_01H_30S_MO.crx.gz";
