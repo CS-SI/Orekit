@@ -27,6 +27,13 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1363">
+        Fixed wrong datation of measurements in Rinex observation
+        files with offsets not applied.
+      </action>
+      <action dev="luc" type="fix" issue="1362">
+        Added extraction of clock models from Rinex observation files.
+      </action>
       <action dev="luc" type="fix" issue="1361">
         Added splicing of Rinex clock files.
       </action>
