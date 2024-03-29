@@ -472,6 +472,10 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         // Observed measurement
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
 
+        // Standard deviation as a vector
+        final RealVector theoreticalStandardDeviation =
+                MatrixUtils.createRealVector(observedMeasurement.getTheoreticalStandardDeviation());
+
         // Initialize arrays of predicted states and measurements
         final RealVector[] predictedMeasurements = new RealVector[predictedSigmaPoints.length];
 
@@ -511,7 +515,8 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
             // Calculated estimated measurement from predicted sigma point
             final EstimatedMeasurement<?> estimated = estimateMeasurement(observedMeasurement, currentMeasurementNumber,
                     predictedStates);
-            predictedMeasurements[i] = new ArrayRealVector(estimated.getEstimatedValue());
+            predictedMeasurements[i] = new ArrayRealVector(estimated.getEstimatedValue())
+                    .ebeDivide(theoreticalStandardDeviation);
             //System.out.println("observed " + i + ": " + Arrays.toString(observedMeasurement.getObservedValue()));
             //System.out.println("predicted " + i + ": " + Arrays.toString(estimated.getEstimatedValue()));
             //System.out.println(predictedStates[0]);
@@ -529,6 +534,10 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         // Set parameters from predicted state
         final RealVector predictedStateCopy = predictedState.copy();
         updateParameters(predictedStateCopy);
+
+        // Standard deviation as a vector
+        final RealVector theoreticalStandardDeviation =
+                MatrixUtils.createRealVector(measurement.getObservedMeasurement().getTheoreticalStandardDeviation());
 
         // Get propagators
         Propagator[] propagators = getEstimatedPropagators();
@@ -556,13 +565,14 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         // set estimated value to the predicted value by the filter
         predictedMeasurement = estimateMeasurement(measurement.getObservedMeasurement(), currentMeasurementNumber,
                 predictedStates);
-        predictedMeasurement.setEstimatedValue(predictedMeas.toArray());
+        predictedMeasurement.setEstimatedValue(predictedMeas.ebeMultiply(theoreticalStandardDeviation).toArray());
 
         // Check for outliers
         KalmanEstimatorUtil.applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
 
         // Compute the innovation vector (not normalized for unscented Kalman filter)
-        return KalmanEstimatorUtil.computeInnovationVector(predictedMeasurement);
+        return KalmanEstimatorUtil.computeInnovationVector(predictedMeasurement,
+                predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
 
 
