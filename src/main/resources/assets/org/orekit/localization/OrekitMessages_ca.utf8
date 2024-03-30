@@ -881,3 +881,6 @@ WRONG_EOP_INTERPOLATION_DEGREE = El grau de l’’interpolador EOP ha de tenir 
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
 WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
+
+# Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>

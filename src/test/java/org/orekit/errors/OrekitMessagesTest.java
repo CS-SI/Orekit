@@ -16,6 +16,7 @@
  */
 package org.orekit.errors;
 
+
 import org.hipparchus.exception.UTF8Control;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

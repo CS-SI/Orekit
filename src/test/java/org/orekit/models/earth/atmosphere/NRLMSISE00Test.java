@@ -16,6 +16,10 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -34,6 +38,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -49,10 +54,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class NRLMSISE00Test {
@@ -545,6 +548,107 @@ public class NRLMSISE00Test {
             atm = atm.withSwitch(i, random.nextInt(3) - 2);
         }
         doTestVoidMethod(atm, random, "gtd7d", 1.0e-50, 3.0e-14);
+    }
+    
+    /** Test issue 1365: NaN appears during integration due to bad computation of density. */
+    @Test
+    public void testIssue1365() {
+        
+        // GIVEN
+        // -----
+        
+        // Build the input params provider
+        @SuppressWarnings("serial")
+        final NRLMSISE00InputParameters ip = new NRLMSISE00InputParameters() {
+
+            @Override
+            public AbsoluteDate getMinDate() {
+                return new AbsoluteDate(2005, 9, 10, TimeScalesFactory.getUTC());
+            }
+            @Override
+            public AbsoluteDate getMaxDate() {
+                return new AbsoluteDate(2005, 9, 11, TimeScalesFactory.getUTC());
+            }
+            @Override
+            public double getDailyFlux(AbsoluteDate date) {
+                return 707.6;
+            }
+            @Override
+            public double getAverageFlux(AbsoluteDate date) {
+                
+                return 98.8;
+            }
+            @Override
+            public double[] getAp(AbsoluteDate date) {
+                return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25};
+            }
+        };
+        
+        // Prepare field
+        final Field<Binary64> field = Binary64Field.getInstance();
+        
+        // Build the date
+        final AbsoluteDate date = new AbsoluteDate("2005-09-10T00:26:47.232", TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(field, date);
+        
+        // Sun position at "date" in J2000
+        final CelestialBody sun = CelestialBodyFactory.getSun();
+        final Vector3D sunPosition = new Vector3D(-1.469767604504155E11, 3.030095780108449E10, 1.3136383992886505E10);
+
+        // Get Sun at date
+        @SuppressWarnings("serial")
+        final CelestialBody sunAtDate = new CelestialBody() {
+            
+            @Override
+            public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+                return new TimeStampedPVCoordinates(date, sunPosition, Vector3D.ZERO);
+            }
+            @Override
+            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+                return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
+            }
+            @Override
+            public String getName() {
+                return sun.getName();
+            }
+            @Override
+            public Frame getInertiallyOrientedFrame() {
+                return sun.getInertiallyOrientedFrame();
+            }
+            @Override
+            public double getGM() {
+                return sun.getGM();
+            }
+            @Override
+            public Frame getBodyOrientedFrame() {
+                return sun.getBodyOrientedFrame();
+            }
+        };
+
+        // Get Earth body shape
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+        // Build the model
+        final NRLMSISE00 atm = new NRLMSISE00(ip, sunAtDate, earth);
+
+        // Set the position & frame
+        final Vector3D position = new Vector3D(-2519211.5855839024, -135107.58355852086, -6238233.867025304); 
+        final FieldVector3D<Binary64> fieldPosition = new FieldVector3D<>(field, position);
+        final Frame j2000 = FramesFactory.getEME2000();
+        
+        // WHEN
+        // ----
+        
+        final double density = atm.getDensity(date, position, j2000);
+        final Binary64 fieldDensity = atm.getDensity(fieldDate, fieldPosition, j2000);
+        
+        // THEN
+        // ----
+        
+        // Check that densities are not NaN
+        Assertions.assertFalse(Double.isNaN(density));
+        Assertions.assertFalse(Double.isNaN(fieldDensity.getReal()));    
     }
 
     private void doTestDoubleMethod(NRLMSISE00 atm, RandomGenerator random, String methodName,

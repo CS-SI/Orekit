@@ -881,3 +881,6 @@ WRONG_EOP_INTERPOLATION_DEGREE = le degré d''interpolation pour les EOP devrait
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
 WALKER_INCONSISTENT_PLANES = le nombre {0} de plans est incohérent avec le nombre {1} total de satellites pour une constellation de Walker
+
+# Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+INFINITE_NRLMSISE00_DENSITY = Valeur infinie lors du calcul de la densité atmosphérique dans le modèle NRLMSISE00

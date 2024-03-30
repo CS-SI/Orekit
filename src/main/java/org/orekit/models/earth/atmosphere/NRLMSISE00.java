@@ -18,8 +18,8 @@ package org.orekit.models.earth.atmosphere;
 
 import java.util.Arrays;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -2609,7 +2609,16 @@ public class NRLMSISE00 implements Atmosphere {
             double glb   = galt(zlb);
             double gamma = xm * glb / (R_GAS * s2 * tinf);
             double expl  = (tt <= 0) ? 50. : FastMath.min(50., FastMath.exp(-s2 * gamma * zg2));
-            double densu = dlb * FastMath.pow(tlb / tt, 1.0 + alpha + gamma) * expl;
+            double densu = dlb * expl * FastMath.pow(tlb / tt, 1.0 + alpha + gamma);
+
+            // Correction for issue 1365 - protection against "densu" being infinite
+            if (!Double.isFinite(densu)) {
+                if (expl < 50.) {
+                    densu = dlb * FastMath.exp(FastMath.log(tlb / tt) * (1.0 + alpha + gamma) - s2 * gamma * zg2);
+                } else {
+                    throw new OrekitException( OrekitMessages.INFINITE_NRLMSISE00_DENSITY);
+                }
+            }
 
             /* calculate density below za */
             if (alt < ZN1[0]) {
@@ -4057,7 +4066,17 @@ public class NRLMSISE00 implements Atmosphere {
             T expl = tt.getReal() <= 0 ?
                      zero.newInstance(50) :
                      min(50.0, s2.negate().multiply(gamma).multiply(zg2).exp());
-            T densu = dlb.multiply(tlb.divide(tt).pow(gamma.add(alpha + 1))).multiply(expl);
+            T densu = dlb.multiply(expl).multiply(tlb.divide(tt).pow(gamma.add(alpha + 1)));
+
+            // Correction for issue 1365 - protection against "densu" being infinite
+            if (!Double.isFinite(densu.getReal())) {
+                if (expl.getReal() < 50.) {
+                    densu = dlb.multiply(FastMath.exp((FastMath.log(tlb.divide(tt)).multiply(gamma.add(alpha + 1))).
+                                                      subtract(s2.multiply(gamma).multiply(zg2))));;
+                } else {
+                    throw new OrekitException( OrekitMessages.INFINITE_NRLMSISE00_DENSITY);
+                }
+            }
 
             /* calculate density below za */
             if (alt.getReal() < ZN1[0]) {
