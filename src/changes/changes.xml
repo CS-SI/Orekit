@@ -21,8 +21,15 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
-      <action dev="serrof" type="add" issue="1358">
-          Added native AdaptableInterval for ApsideDetector.
+        <action dev="serrof" type="add" issue="1358">
+            Added native AdaptableInterval for ApsideDetector.
+        </action>
+      <action dev="luc" type="fix" issue="1363">
+        Fixed wrong datation of measurements in Rinex observation
+        files with offsets not applied.
+      </action>
+      <action dev="luc" type="fix" issue="1362">
+        Added extraction of clock models from Rinex observation files.
       </action>
       <action dev="luc" type="fix" issue="1361">
         Added splicing of Rinex clock files.
