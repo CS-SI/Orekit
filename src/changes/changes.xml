@@ -21,9 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
-        <action dev="serrof" type="add" issue="1358">
-            Added native AdaptableInterval for ApsideDetector.
-        </action>
+      <action dev="serrof" type="add" issue="1358">
+          Added native AdaptableInterval for ApsideDetector.
+      </action>
       <action dev="luc" type="fix" issue="1363">
         Fixed wrong datation of measurements in Rinex observation
         files with offsets not applied.
