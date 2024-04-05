@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
@@ -478,6 +479,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param elevation the elevation angle from the local horizon.
      * @param range the distance from the goedetic position.
      * @return the topocentric position.
+     * @since 12.1
      */
     private static Vector3D getTopocentricPosition(final double azimuth, final double elevation, final double range) {
         final SinCos sinCosAz = FastMath.sinCos(azimuth);
@@ -492,6 +494,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param range the distance from the geodetic position.
      * @return the topocentric position.
      * @param <T> the type of the az/el/ra coordinates.
+     * @since 12.1
      */
     private static <T extends CalculusFieldElement<T>> FieldVector3D<T> getTopocentricPosition(final T azimuth, final T elevation, final T range) {
         final FieldSinCos<T> sinCosAz = FastMath.sinCos(azimuth);
