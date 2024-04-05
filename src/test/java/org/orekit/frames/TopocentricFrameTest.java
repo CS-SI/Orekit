@@ -30,10 +30,17 @@ import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
+import org.hipparchus.util.FieldSinCos;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -751,6 +758,76 @@ public class TopocentricFrameTest {
             }
         }
 
+    }
+
+    private static Stream<Arguments> testGetTopocentricCoordinatesValues() {
+        return Stream.of(
+                Arguments.of(0,0,0),
+                Arguments.of(0, FastMath.PI / 2, 1),
+                Arguments.of(3 * FastMath.PI, FastMath.PI / 3, 100),
+                Arguments.of(-3 * FastMath.PI, FastMath.PI / 2, 100),
+                Arguments.of(-1 * FastMath.PI / 2, FastMath.PI, 500),
+                Arguments.of(16 * FastMath.PI, 3 * FastMath.PI / 2, 100)
+
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("testGetTopocentricCoordinatesValues")
+    public void testGetTopocentricCoordinates(final double az, final double el, final double r) {
+        final TrackingCoordinates coords = new TrackingCoordinates(az,el,r);
+        final Vector3D topoPos = TopocentricFrame.getTopocentricPosition(coords);
+
+        final SinCos sinCosAz = FastMath.sinCos(az);
+        final SinCos sinCosEl = FastMath.sinCos(el);
+        final double expectedX, expectedY, expectedZ;
+        expectedX = sinCosAz.sin() * sinCosEl.cos() * r;
+        expectedY = sinCosAz.cos() * sinCosEl.cos() * r;
+        expectedZ = sinCosEl.sin() * r;
+
+        Assertions.assertEquals(expectedX,topoPos.getX());
+        Assertions.assertEquals(expectedY,topoPos.getY());
+        Assertions.assertEquals(expectedZ,topoPos.getZ());
+    }
+
+    @ParameterizedTest
+    @MethodSource("testGetTopocentricCoordinatesValues")
+    public void testGetFieldTopocentricCoordinates(final double azimuth, final double elevation, final double range) {
+        final Binary64 az, el, r;
+        az = new Binary64(azimuth);
+        el = new Binary64(elevation);
+        r = new Binary64(range);
+
+        final FieldTrackingCoordinates<Binary64> coords = new FieldTrackingCoordinates<>(az, el, r);
+        final FieldVector3D<Binary64> topoPos = TopocentricFrame.getTopocentricPosition(coords);
+
+        final FieldSinCos<Binary64> sinCosAz = FastMath.sinCos(az);
+        final FieldSinCos<Binary64> sinCosEl = FastMath.sinCos(el);
+        final Binary64 expectedX, expectedY, expectedZ;
+        expectedX = r.multiply(sinCosAz.sin().multiply(sinCosEl.cos()));
+        expectedY = r.multiply(sinCosEl.cos().multiply(sinCosAz.cos()));
+        expectedZ = r.multiply(sinCosEl.sin());
+
+        Assertions.assertEquals(expectedX, topoPos.getX());
+        Assertions.assertEquals(expectedY, topoPos.getY());
+        Assertions.assertEquals(expectedZ, topoPos.getZ());
+    }
+
+    @ParameterizedTest
+    @MethodSource("testGetTopocentricCoordinatesValues")
+    public void testInverseGetTopocentricCoordinates(double az, double el, double r) {
+        final TrackingCoordinates expectedCoords = new TrackingCoordinates(az, el, r);
+
+        final Vector3D point = TopocentricFrame.getTopocentricPosition(expectedCoords);
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(0., 0., 0.);
+        final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, geodeticPoint, "geodeticPoint");
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        final TrackingCoordinates coords = topoFrame.getTrackingCoordinates(point, frame, date);
+
+        Assertions.assertEquals(expectedCoords.getAzimuth(), coords.getAzimuth());
+        Assertions.assertEquals(expectedCoords.getElevation(), coords.getElevation());
+        Assertions.assertEquals(expectedCoords.getRange(), coords.getRange());
     }
 
     @Test
