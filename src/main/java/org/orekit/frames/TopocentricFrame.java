@@ -130,8 +130,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
         final T zero = field.getZero();
         return new FieldGeodeticPoint<>(zero.newInstance(point.getLatitude()),
-                                        zero.newInstance(point.getLongitude()),
-                                        zero.newInstance(point.getAltitude()));
+                zero.newInstance(point.getLongitude()),
+                zero.newInstance(point.getAltitude()));
     }
 
     /** Get the zenith direction of topocentric frame, expressed in parent shape frame.
@@ -451,6 +451,56 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                 Vector3D.ZERO,
                 Vector3D.ZERO,
                 Vector3D.ZERO));
+    }
+
+    /** Get the topocentric position from {@link TrackingCoordinates}.
+     * @param coords The coordinates that are to be converted.
+     * @return The topocentric coordinates.
+     * @since 12.1
+     */
+    public static Vector3D getTopocentricPosition(final TrackingCoordinates coords) {
+        return getTopocentricPosition(coords.getAzimuth(), coords.getElevation(), coords.getRange());
+    }
+
+    /** Get the topocentric position from {@link FieldTrackingCoordinates}.
+     * @param coords The coordinates that are to be converted.
+     * @param <T> Type of the field coordinates.
+     * @return The topocentric coordinates.
+     * @since 12.1
+     */
+    public static <T extends CalculusFieldElement<T>> FieldVector3D<T> getTopocentricPosition(final FieldTrackingCoordinates<T> coords) {
+        return getTopocentricPosition(coords.getAzimuth(), coords.getElevation(), coords.getRange());
+    }
+
+    /**
+     * Gets the topocentric position from a set of az/el/ra coordinates.
+     * @param azimuth the angle of rotation around the vertical axis, going East.
+     * @param elevation the elevation angle from the local horizon.
+     * @param range the distance from the goedetic position.
+     * @return the topocentric position.
+     */
+    private static Vector3D getTopocentricPosition(final double azimuth, final double elevation, final double range) {
+        final SinCos sinCosAz = FastMath.sinCos(azimuth);
+        final SinCos sinCosEL = FastMath.sinCos(elevation);
+        return new Vector3D(range * sinCosEL.cos() * sinCosAz.sin(), range * sinCosEL.cos() * sinCosAz.cos(), range * sinCosEL.sin());
+    }
+
+    /**
+     * Gets the topocentric position from a set of az/el/ra coordinates.
+     * @param azimuth the angle of rotation around the vertical axis, going East.
+     * @param elevation the elevation angle from the local horizon.
+     * @param range the distance from the geodetic position.
+     * @return the topocentric position.
+     * @param <T> the type of the az/el/ra coordinates.
+     */
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> getTopocentricPosition(final T azimuth, final T elevation, final T range) {
+        final FieldSinCos<T> sinCosAz = FastMath.sinCos(azimuth);
+        final FieldSinCos<T> sinCosEl = FastMath.sinCos(elevation);
+        return new FieldVector3D<>(
+                range.multiply(sinCosEl.cos()).multiply(sinCosAz.sin()),
+                range.multiply(sinCosEl.cos()).multiply(sinCosAz.cos()),
+                range.multiply(sinCosEl.sin())
+        );
     }
 
     /** Transform point in topocentric frame.
