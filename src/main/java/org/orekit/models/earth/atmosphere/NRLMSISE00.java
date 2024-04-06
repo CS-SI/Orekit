@@ -4074,7 +4074,7 @@ public class NRLMSISE00 implements Atmosphere {
                     densu = dlb.multiply(FastMath.exp((FastMath.log(tlb.divide(tt)).multiply(gamma.add(alpha + 1))).
                                                       subtract(s2.multiply(gamma).multiply(zg2))));;
                 } else {
-                    throw new OrekitException( OrekitMessages.INFINITE_NRLMSISE00_DENSITY);
+                    throw new OrekitException(OrekitMessages.INFINITE_NRLMSISE00_DENSITY);
                 }
             }
 

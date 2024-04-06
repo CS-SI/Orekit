@@ -46,6 +46,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -552,7 +553,7 @@ public class NRLMSISE00Test {
     
     /** Test issue 1365: NaN appears during integration due to bad computation of density. */
     @Test
-    public void testIssue1365() {
+    public void testIssue1365AvoidNan1() {
         
         // GIVEN
         // -----
@@ -574,10 +575,7 @@ public class NRLMSISE00Test {
                 return 707.6;
             }
             @Override
-            public double getAverageFlux(AbsoluteDate date) {
-                
-                return 98.8;
-            }
+            public double getAverageFlux(AbsoluteDate date) { return 98.8; }
             @Override
             public double[] getAp(AbsoluteDate date) {
                 return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25};
@@ -592,7 +590,7 @@ public class NRLMSISE00Test {
         final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(field, date);
         
         // Sun position at "date" in J2000
-        final CelestialBody sun = CelestialBodyFactory.getSun();
+        final Frame j2000 = FramesFactory.getEME2000();
         final Vector3D sunPosition = new Vector3D(-1.469767604504155E11, 3.030095780108449E10, 1.3136383992886505E10);
 
         // Get Sun at date
@@ -609,19 +607,19 @@ public class NRLMSISE00Test {
             }
             @Override
             public String getName() {
-                return sun.getName();
+                return "SUN";
             }
             @Override
             public Frame getInertiallyOrientedFrame() {
-                return sun.getInertiallyOrientedFrame();
+                return j2000;
             }
             @Override
             public double getGM() {
-                return sun.getGM();
+                return Constants.JPL_SSD_SUN_GM;
             }
             @Override
             public Frame getBodyOrientedFrame() {
-                return sun.getBodyOrientedFrame();
+                return j2000;
             }
         };
 
@@ -635,7 +633,6 @@ public class NRLMSISE00Test {
         // Set the position & frame
         final Vector3D position = new Vector3D(-2519211.5855839024, -135107.58355852086, -6238233.867025304); 
         final FieldVector3D<Binary64> fieldPosition = new FieldVector3D<>(field, position);
-        final Frame j2000 = FramesFactory.getEME2000();
         
         // WHEN
         // ----
@@ -649,6 +646,178 @@ public class NRLMSISE00Test {
         // Check that densities are not NaN
         Assertions.assertFalse(Double.isNaN(density));
         Assertions.assertFalse(Double.isNaN(fieldDensity.getReal()));    
+    }
+
+    /** Test issue 1365: NaN appears during integration due to bad computation of density.
+     * Bumping in the first protection against NaNs.
+     */
+    @Test
+    public void testIssue1365AvoidNan2() {
+
+        // GIVEN
+        // -----
+
+        // Build the input params provider
+        @SuppressWarnings("serial")
+        final NRLMSISE00InputParameters ip = new NRLMSISE00InputParameters() {
+
+            @Override
+            public AbsoluteDate getMinDate() { return new AbsoluteDate(2005, 9, 10, TimeScalesFactory.getUTC()); }
+            @Override
+            public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 9, 11, TimeScalesFactory.getUTC()); }
+            @Override
+            public double getDailyFlux(AbsoluteDate date) { return 707.6; }
+            @Override
+            public double getAverageFlux(AbsoluteDate date) { return 98.8; }
+            @Override
+            public double[] getAp(AbsoluteDate date) { return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25}; }
+        };
+
+        // Prepare field
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // Build the date
+        final AbsoluteDate date = new AbsoluteDate("2005-09-10T00:00:50.000", TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(field, date);
+
+        // Sun position at "date" in J2000
+        final Frame j2000 = FramesFactory.getEME2000();
+        final Vector3D sunPosition = new Vector3D(-1.469673551020242E11, 3.0342331223223766E10, 1.3154322212769707E10);
+
+        // Get Sun at date
+        @SuppressWarnings("serial")
+        final CelestialBody sunAtDate = new CelestialBody() {
+
+            @Override
+            public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+                return new TimeStampedPVCoordinates(date, sunPosition, Vector3D.ZERO);
+            }
+            @Override
+            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+                return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
+            }
+            @Override
+            public String getName() { return "SUN"; }
+            @Override
+            public Frame getInertiallyOrientedFrame() { return j2000; }
+            @Override
+            public double getGM() { return Constants.JPL_SSD_SUN_GM; }
+            @Override
+            public Frame getBodyOrientedFrame() { return j2000; }
+        };
+
+        // Get Earth body shape
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = ReferenceEllipsoid.getWgs84(itrf);
+        // Build the model
+        final NRLMSISE00 atm = new NRLMSISE00(ip, sunAtDate, earth);
+
+        // Set the position & frame
+        final Vector3D position = new Vector3D(-2094968.638528762, 58037.02211604678, -6396195.230946325);
+        final FieldVector3D<Binary64> fieldPosition = new FieldVector3D<>(field, position);
+
+
+        // WHEN
+        // ----
+
+        final double density = atm.getDensity(date, position, j2000);
+        final Binary64 fieldDensity = atm.getDensity(fieldDate, fieldPosition, j2000);
+
+        // THEN
+        // ----
+
+        // Check that densities are not NaN
+        Assertions.assertFalse(Double.isNaN(density));
+        Assertions.assertFalse(Double.isNaN(fieldDensity.getReal()));
+    }
+
+    /** Test issue 1365: NaN appears during integration due to bad computation of density.
+     * Throwing exception for crossing 0m altitude boundary.
+     */
+    @Test
+    public void testIssue1365AvoidNanExceptionRaised() {
+
+        // GIVEN
+        // -----
+
+        // Build the input params provider
+        @SuppressWarnings("serial")
+        final NRLMSISE00InputParameters ip = new NRLMSISE00InputParameters() {
+
+            @Override
+            public AbsoluteDate getMinDate() {
+                return new AbsoluteDate(2005, 10, 30, TimeScalesFactory.getUTC());
+            }
+            @Override
+            public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 10, 31, TimeScalesFactory.getUTC()); }
+            @Override
+            public double getDailyFlux(AbsoluteDate date) { return 707.6; }
+            @Override
+            public double getAverageFlux(AbsoluteDate date) { return 98.8; }
+            @Override
+            public double[] getAp(AbsoluteDate date) { return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25}; }
+        };
+
+        // Prepare field
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // Build the date
+        final AbsoluteDate date = new AbsoluteDate("2005-10-30T06:49:10.000", TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(field, date);
+
+        // Sun position at "date" in J2000
+        final Frame j2000 = FramesFactory.getEME2000();
+        final Vector3D sunPosition = new Vector3D(-1.1883503376589482E11, -8.178200712683229E10, -3.545541568807778E10);
+
+        // Get Sun at date
+        @SuppressWarnings("serial")
+        final CelestialBody sunAtDate = new CelestialBody() {
+
+            @Override
+            public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+                return new TimeStampedPVCoordinates(date, sunPosition, Vector3D.ZERO);
+            }
+            @Override
+            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+                return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
+            }
+            @Override
+            public String getName() { return "SUN"; };
+            @Override
+            public Frame getInertiallyOrientedFrame() { return j2000; }
+            @Override
+            public double getGM() { return Constants.JPL_SSD_SUN_GM; }
+            @Override
+            public Frame getBodyOrientedFrame() { return j2000; }
+        };
+
+        // Get Earth body shape
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = ReferenceEllipsoid.getWgs84(itrf);
+
+        // Build the model
+        final NRLMSISE00 atm = new NRLMSISE00(ip, sunAtDate, earth);
+
+        // Set the dummy position & frame
+        final Vector3D position = new Vector3D(1.e49, 1.e49, 1.e49);
+        final FieldVector3D<Binary64> fieldPosition = new FieldVector3D<>(field, position);
+
+        // WHEN / THEN
+        // -----------
+
+        try {
+            atm.getDensity(date, position, j2000);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INFINITE_NRLMSISE00_DENSITY, oe.getSpecifier());
+        }
+
+        try {
+            atm.getDensity(fieldDate, fieldPosition, j2000);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INFINITE_NRLMSISE00_DENSITY, oe.getSpecifier());
+        }
     }
 
     private void doTestDoubleMethod(NRLMSISE00 atm, RandomGenerator random, String methodName,
