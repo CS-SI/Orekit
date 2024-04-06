@@ -36,7 +36,7 @@ import org.orekit.time.AbsoluteDate;
  * @since 10.0
  * @param <T> type of the field elements
  */
-public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends FieldDSSTGravityContext<T> {
 
     /** Retrograde factor I.
      *  <p>
@@ -114,13 +114,13 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
      * to selected the right value for state date or by getting the parameters for a specific date
      */
     FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                    final Frame centralBodyFrame,
-                                    final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final int maxFrequencyShortPeriodics,
-                                    final double bodyPeriod,
-                                    final T[] parameters) {
+                             final Frame centralBodyFrame,
+                             final UnnormalizedSphericalHarmonicsProvider provider,
+                             final int maxFrequencyShortPeriodics,
+                             final double bodyPeriod,
+                             final T[] parameters) {
 
-        super(auxiliaryElements);
+        super(auxiliaryElements, centralBodyFrame);
 
         final Field<T> field = auxiliaryElements.getDate().getField();
         final T zero = field.getZero();
@@ -141,7 +141,7 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
         e2 = auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc());
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        final FieldStaticTransform<T> t = centralBodyFrame.getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
+        final FieldStaticTransform<T> t = getCentralBodyToInertialTransform();
         final FieldVector3D<T> xB = t.transformVector(FieldVector3D.getPlusI(field));
         final FieldVector3D<T> yB = t.transformVector(FieldVector3D.getPlusJ(field));
         theta = FastMath.atan2(auxiliaryElements.getVectorF().dotProduct(yB).negate().add((auxiliaryElements.getVectorG().dotProduct(xB)).multiply(I)),

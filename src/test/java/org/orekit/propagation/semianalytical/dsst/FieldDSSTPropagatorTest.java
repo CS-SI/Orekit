@@ -254,7 +254,7 @@ public class FieldDSSTPropagatorTest {
                         PositionAngleType.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
         FieldSpacecraftState<T> oscuState = FieldDSSTPropagator.computeOsculatingState(state, null, forces);
-        Assertions.assertEquals(7119927.097122, oscuState.getA().getReal(), 0.001);
+        Assertions.assertEquals(7119927.148, oscuState.getA().getReal(), 0.001);
     }
 
     @Test

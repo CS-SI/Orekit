@@ -16,33 +16,35 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.StaticTransform;
-import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
 /**
  * This class is a container for the common parameters used in {@link DSSTTesseral} and {@link DSSTZonal}.
  * <p>
- * It performs parameters initialization at each integration step for the Tesseral  and Zonal contribution
+ * It performs parameters initialization at each integration step for the Tesseral and Zonal contribution
  * to the central body gravitational perturbation.
  * </p>
  * @author Maxime Journot
  * @since 12.1
  */
-public class DSSTGravityContext extends ForceModelContext {
+public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Direction cosine α. */
-    private final double alpha;
+    private final T alpha;
 
     /** Direction cosine β. */
-    private final double beta;
+    private final T beta;
 
     /** Direction cosine γ. */
-    private final double gamma;
+    private final T gamma;
 
     /** Transform from central body frame to inertial frame. */
-    private final StaticTransform centralBodyToInertialTransform;
+    private final FieldStaticTransform<T> centralBodyToInertialTransform;
 
     /**
      * Constructor.
@@ -50,8 +52,8 @@ public class DSSTGravityContext extends ForceModelContext {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param centralBodyFrame  rotating body frame
      */
-    DSSTGravityContext(final AuxiliaryElements auxiliaryElements,
-                       final Frame centralBodyFrame) {
+    FieldDSSTGravityContext(final FieldAuxiliaryElements<T> auxiliaryElements,
+                            final Frame centralBodyFrame) {
 
         super(auxiliaryElements);
 
@@ -62,39 +64,39 @@ public class DSSTGravityContext extends ForceModelContext {
         centralBodyToInertialTransform = internalCentralBodyFrame.
                         getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
 
-        final Vector3D zB = centralBodyToInertialTransform.transformVector(Vector3D.PLUS_K);
+        final FieldVector3D<T> zB = centralBodyToInertialTransform.transformVector(Vector3D.PLUS_K);
 
         // Direction cosines for central body [Eq. 2.1.9-(1)]
-        alpha = Vector3D.dotProduct(zB, auxiliaryElements.getVectorF());
-        beta  = Vector3D.dotProduct(zB, auxiliaryElements.getVectorG());
-        gamma = Vector3D.dotProduct(zB, auxiliaryElements.getVectorW());
+        alpha = FieldVector3D.dotProduct(zB, auxiliaryElements.getVectorF());
+        beta  = FieldVector3D.dotProduct(zB, auxiliaryElements.getVectorG());
+        gamma = FieldVector3D.dotProduct(zB, auxiliaryElements.getVectorW());
     }
 
     /** Getter for the alpha.
      * @return the alpha
      */
-    public double getAlpha() {
+    public T getAlpha() {
         return alpha;
     }
 
     /** Getter for the beta.
      * @return the beta
      */
-    public double getBeta() {
+    public T getBeta() {
         return beta;
     }
 
     /** Getter for the gamma.
      * @return the gamma
      */
-    public double getGamma() {
+    public T getGamma() {
         return gamma;
     }
 
     /** Getter for the centralBodyToInertialTransform.
      * @return the centralBodyToInertialTransform
      */
-    public StaticTransform getCentralBodyToInertialTransform() {
+    public FieldStaticTransform<T> getCentralBodyToInertialTransform() {
         return centralBodyToInertialTransform;
     }
 }

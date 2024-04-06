@@ -85,7 +85,7 @@ public class DSSTZonalContext extends DSSTGravityContext {
      * Constructor with central body frame potentially different than orbit frame.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param centralBodyFrame rotating body frame
+     * @param centralBodyFrame  rotating body frame
      * @param provider          provider for spherical harmonics
      * @param parameters        values of the force model parameters
      * @since 12.1
