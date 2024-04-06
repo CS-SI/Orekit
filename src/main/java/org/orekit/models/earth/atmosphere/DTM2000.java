@@ -638,7 +638,6 @@ public class DTM2000 implements Atmosphere {
             for (int i = 1; i <= 6; i++) {
                 final double gamma = MA[i] * glb;
                 final double upapg = 1.0 + ALEFA[i] + gamma;
-                // FIXME final double fzI = FastMath.pow(t120tz, upapg) * FastMath.exp(-sigzeta * gamma);
                 final double fzI = FastMath.exp(FastMath.log(t120tz) * upapg - sigzeta * gamma);
                 // concentrations of H, He, O, N2, O2, N (particles/cm³)
                 final double ccI = dbase[i] * fzI;
@@ -1103,7 +1102,7 @@ public class DTM2000 implements Atmosphere {
             for (int i = 1; i <= 6; i++) {
                 final T gamma = glb.multiply(MA[i]);
                 final T upapg = gamma.add(1.0 + ALEFA[i]);
-                final T fzI = t120tz.pow(upapg).multiply(sigzeta.negate().multiply(gamma).exp());
+                final T fzI = (t120tz.log().multiply(upapg).subtract(sigzeta.multiply(gamma))).exp();
                 // concentrations of H, He, O, N2, O2, N (particles/cm³)
                 final T ccI = dbase[i].multiply(fzI);
                 // contribution of densities of H, He, O, N2, O2, N (g/cm³)
