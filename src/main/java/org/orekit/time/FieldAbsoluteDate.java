@@ -634,12 +634,13 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
 
     /** Build an instance corresponding to a Julian Day date.
      * <p>
-     * This function should be preferred to the above one when the target timescale
+     * This function should be preferred to {@link #createJDDate(int, CalculusFieldElement, TimeScale)} when the target time scale
      * has a non-constant offset with respect to TAI.
-     * The idea is to introduce a pivot time scale that is close to the target timescale
-     * but has a constant bias with TAI.
-     * For example, to get a date from an MJD in TDB timescale, it's advised to use the TT timescale
-     * as a pivot scale. TT is very close to TDB but has constant offset to TAI.
+     * <p>
+     * The idea is to introduce a pivot time scale that is close to the target time scale but has a constant bias with TAI.
+     * <p>
+     * For example, to get a date from an MJD in TDB time scale, it's advised to use the TT time scale
+     * as a pivot scale. TT is very close to TDB and has constant offset to TAI.
      * </p>
      * @param jd Julian day
      * @param secondsSinceNoon seconds in the Julian day
