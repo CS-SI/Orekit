@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 
@@ -32,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  * @since 10.0
  * @param <T> type of the field elements
  */
-public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends FieldDSSTGravityContext<T> {
 
     // Common factors for potential computation
     /** A = sqrt(μ * a). */
@@ -87,6 +88,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * Simple constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param centralBodyFrame  rotating body frame
      * @param provider          provider for spherical harmonics
      * @param parameters        values of the force model parameters (only 1 values
      * for each parameters corresponding to state date) obtained by calling the extract
@@ -94,10 +96,11 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * to selected the right value for state date or by getting the parameters for a specific date
      */
     FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                 final UnnormalizedSphericalHarmonicsProvider provider,
-                                 final T[] parameters) {
+                          final Frame centralBodyFrame,
+                          final UnnormalizedSphericalHarmonicsProvider provider,
+                          final T[] parameters) {
 
-        super(auxiliaryElements);
+        super(auxiliaryElements, centralBodyFrame);
 
         final T mu = parameters[0];
 
@@ -149,7 +152,6 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
         x2on2a2xp1 = xon2a2.multiply(X).divide(X.add(1.));
         // B * B
         BB = auxiliaryElements.getB().multiply(auxiliaryElements.getB());
-
     }
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
