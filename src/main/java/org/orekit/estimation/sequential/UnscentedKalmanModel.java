@@ -377,6 +377,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         }
 
         // compute process noise matrix
+        // TODO: predictedSpacecraftStates are not valid here
         final RealMatrix physicalProcessNoise =
                 MatrixUtils.createRealMatrix(sigmaPoints[0].getDimension(), sigmaPoints[0].getDimension());
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
@@ -511,20 +512,19 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         propagators = getEstimatedPropagators();
 
         // Predicted states
-        final SpacecraftState[] predictedStates = new SpacecraftState[propagators.length];
         for (int k = 0; k < propagators.length; ++k) {
-            predictedStates[k] = propagators[k].getInitialState();
+            predictedSpacecraftStates[k] = propagators[k].getInitialState();
         }
 
-        // set estimated value to the predicted value by the filter
+        // set estimated value to the predicted value from the filter
         predictedMeasurement = estimateMeasurement(measurement.getObservedMeasurement(), currentMeasurementNumber,
-                predictedStates);
+                predictedSpacecraftStates);
         predictedMeasurement.setEstimatedValue(predictedMeas.ebeMultiply(theoreticalStandardDeviation).toArray());
 
         // Check for outliers
         KalmanEstimatorUtil.applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
 
-        // Compute the innovation vector (not normalized for unscented Kalman filter)
+        // Compute the innovation vector
         return KalmanEstimatorUtil.computeInnovationVector(predictedMeasurement,
                 predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
@@ -741,13 +741,28 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
     /** {@inheritDoc} */
     @Override
     public RealMatrix getPhysicalInnovationCovarianceMatrix() {
-        return correctedEstimate.getInnovationCovariance();
+        // Un-normalize the innovation covariance matrix (S) from Hipparchus and return it.
+        // S is an nxn matrix where n is the size of the measurement being processed by the filter
+        // For each element [i,j] of normalized S (Sn) the corresponding physical value is:
+        // S[i,j] = Sn[i,j] * σ[i] * σ[j]
+        return correctedEstimate.getInnovationCovariance() == null ?
+                null : KalmanEstimatorUtil.unnormalizeInnovationCovarianceMatrix(correctedEstimate.getInnovationCovariance(),
+                predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
 
     /** {@inheritDoc} */
     @Override
     public RealMatrix getPhysicalKalmanGain() {
-        return correctedEstimate.getKalmanGain();
+        // Un-normalize the Kalman gain (K) from Hipparchus and return it.
+        // K is an mxn matrix where:
+        //  - m = nbOrb + nbPropag + nbMeas is the number of estimated parameters
+        //  - n is the size of the measurement being processed by the filter
+        // For each element [i,j] of normalized K (Kn) the corresponding physical value is:
+        // K[i,j] = Kn[i,j] * scale[i] / σ[j]
+        return correctedEstimate.getKalmanGain() == null ?
+                null : KalmanEstimatorUtil.unnormalizeKalmanGainMatrix(correctedEstimate.getKalmanGain(),
+                scale,
+                correctedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
 
     /** {@inheritDoc} */
