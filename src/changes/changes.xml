@@ -21,9 +21,12 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
-        <action dev="serrof" type="add" due-to="tmills">
-            Added getTopocentricPosition from (Field)TrackingCoordinates.
-        </action>
+      <action dev="maxime" type="update" issue="1351">
+          Removed inner static class JacobiKey in JacobiPolynomials.
+      </action>
+      <action dev="serrof" type="add" due-to="tmills">
+          Added getTopocentricPosition from (Field)TrackingCoordinates.
+      </action>
       <action dev="serrof" type="add" issue="1331">
         Added (Field)RelativeDistanceDetector.
       </action>
