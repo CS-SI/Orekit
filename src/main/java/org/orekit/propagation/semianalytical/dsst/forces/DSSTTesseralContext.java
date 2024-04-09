@@ -131,7 +131,7 @@ public class DSSTTesseralContext extends DSSTGravityContext {
         e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        final StaticTransform t = getCentralBodyToInertialTransform();
+        final StaticTransform t = getBodyFixedToInertialTransform();
         final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
         final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
         theta = FastMath.atan2(-auxiliaryElements.getVectorF().dotProduct(yB) + I * auxiliaryElements.getVectorG().dotProduct(xB),
