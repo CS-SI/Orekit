@@ -21,6 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTGravityContext;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -316,25 +317,27 @@ public class AuxiliaryElements {
         return w;
     }
 
-//    /** Get direction cosine α for central body.
-//     * @return α
-//     */
-//    public double getAlpha() {
-//        return alpha;
-//    }
-//
-//    /** Get direction cosine β for central body.
-//     * @return β
-//     */
-//    public double getBeta() {
-//        return beta;
-//    }
-//
-//    /** Get direction cosine γ for central body.
-//     * @return γ
-//     */
-//    public double getGamma() {
-//        return gamma;
-//    }
+    /** Get direction cosine α for central body.
+     * @return α
+     * @deprecated since 12.1, use {@link DSSTGravityContext#getAlpha()} instead
+     */
+    public double getAlpha() {
+        return f.getZ();
+    }
 
+    /** Get direction cosine β for central body.
+     * @return β
+     * @deprecated since 12.1, use {@link DSSTGravityContext#getBeta()} instead
+     */
+    public double getBeta() {
+        return g.getZ();
+    }
+
+    /** Get direction cosine γ for central body.
+     * @return γ
+     * @deprecated since 12.1, use {@link DSSTGravityContext#getGamma()} instead
+     */
+    public double getGamma() {
+        return w.getZ();
+    }
 }

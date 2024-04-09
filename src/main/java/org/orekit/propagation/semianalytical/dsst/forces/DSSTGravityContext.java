@@ -70,22 +70,22 @@ public class DSSTGravityContext extends ForceModelContext {
         gamma = Vector3D.dotProduct(zB, auxiliaryElements.getVectorW());
     }
 
-    /** Getter for the alpha.
-     * @return the alpha
+    /** Get direction cosine α for central body.
+     * @return α
      */
     public double getAlpha() {
         return alpha;
     }
 
-    /** Getter for the beta.
-     * @return the beta
+    /** Get direction cosine β for central body.
+     * @return β
      */
     public double getBeta() {
         return beta;
     }
 
-    /** Getter for the gamma.
-     * @return the gamma
+    /** Get direction cosine γ for central body.
+     * @return γ
      */
     public double getGamma() {
         return gamma;
