@@ -72,22 +72,22 @@ public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends 
         gamma = FieldVector3D.dotProduct(zB, auxiliaryElements.getVectorW());
     }
 
-    /** Getter for the alpha.
-     * @return the alpha
+    /** Get direction cosine α for central body.
+     * @return α
      */
     public T getAlpha() {
         return alpha;
     }
 
-    /** Getter for the beta.
-     * @return the beta
+    /** Get direction cosine β for central body.
+     * @return β
      */
     public T getBeta() {
         return beta;
     }
 
-    /** Getter for the gamma.
-     * @return the gamma
+    /** Get direction cosine γ for central body.
+     * @return the γ
      */
     public T getGamma() {
         return gamma;
