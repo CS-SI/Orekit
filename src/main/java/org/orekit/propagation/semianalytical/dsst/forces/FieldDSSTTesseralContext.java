@@ -141,7 +141,7 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
         e2 = auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc());
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        final FieldStaticTransform<T> t = getCentralBodyToInertialTransform();
+        final FieldStaticTransform<T> t = getBodyFixedToInertialTransform();
         final FieldVector3D<T> xB = t.transformVector(FieldVector3D.getPlusI(field));
         final FieldVector3D<T> yB = t.transformVector(FieldVector3D.getPlusJ(field));
         theta = FastMath.atan2(auxiliaryElements.getVectorF().dotProduct(yB).negate().add((auxiliaryElements.getVectorG().dotProduct(xB)).multiply(I)),

@@ -41,8 +41,8 @@ public class DSSTGravityContext extends ForceModelContext {
     /** Direction cosine γ. */
     private final double gamma;
 
-    /** Transform from central body frame to inertial frame. */
-    private final StaticTransform centralBodyToInertialTransform;
+    /** Transform from body-fixed frame to inertial frame. */
+    private final StaticTransform bodyFixedToInertialTransform;
 
     /**
      * Constructor.
@@ -58,11 +58,11 @@ public class DSSTGravityContext extends ForceModelContext {
         // If (centralBodyFrame == null), then centralBodyFrame = orbit frame (see DSSTZonal constructors for more on this).
         final Frame internalCentralBodyFrame = centralBodyFrame == null ? auxiliaryElements.getFrame() : centralBodyFrame;
 
-        // Central body rotation angle from equation 2.7.1-(3)(4).
-        centralBodyToInertialTransform = internalCentralBodyFrame.
+        // Transform from body-fixed frame (typically ITRF) to inertial frame
+        bodyFixedToInertialTransform = internalCentralBodyFrame.
                         getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
 
-        final Vector3D zB = centralBodyToInertialTransform.transformVector(Vector3D.PLUS_K);
+        final Vector3D zB = bodyFixedToInertialTransform.transformVector(Vector3D.PLUS_K);
 
         // Direction cosines for central body [Eq. 2.1.9-(1)]
         alpha = Vector3D.dotProduct(zB, auxiliaryElements.getVectorF());
@@ -91,10 +91,10 @@ public class DSSTGravityContext extends ForceModelContext {
         return gamma;
     }
 
-    /** Getter for the centralBodyToInertialTransform.
-     * @return the centralBodyToInertialTransform
+    /** Getter for the bodyFixedToInertialTransform.
+     * @return the bodyFixedToInertialTransform
      */
-    public StaticTransform getCentralBodyToInertialTransform() {
-        return centralBodyToInertialTransform;
+    public StaticTransform getBodyFixedToInertialTransform() {
+        return bodyFixedToInertialTransform;
     }
 }

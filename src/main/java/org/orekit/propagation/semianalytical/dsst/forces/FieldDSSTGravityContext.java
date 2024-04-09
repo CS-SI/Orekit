@@ -43,8 +43,8 @@ public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends 
     /** Direction cosine γ. */
     private final T gamma;
 
-    /** Transform from central body frame to inertial frame. */
-    private final FieldStaticTransform<T> centralBodyToInertialTransform;
+    /** Transform from body-fixed frame to inertial frame. */
+    private final FieldStaticTransform<T> bodyFixedToInertialTransform;
 
     /**
      * Constructor.
@@ -60,11 +60,11 @@ public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends 
         // If (centralBodyFrame == null), then centralBodyFrame = orbit frame (see DSSTZonal constructors for more on this).
         final Frame internalCentralBodyFrame = centralBodyFrame == null ? auxiliaryElements.getFrame() : centralBodyFrame;
 
-        // Central body rotation angle from equation 2.7.1-(3)(4).
-        centralBodyToInertialTransform = internalCentralBodyFrame.
+        // Transform from body-fixed frame (typically ITRF) to inertial frame
+        bodyFixedToInertialTransform = internalCentralBodyFrame.
                         getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
 
-        final FieldVector3D<T> zB = centralBodyToInertialTransform.transformVector(Vector3D.PLUS_K);
+        final FieldVector3D<T> zB = bodyFixedToInertialTransform.transformVector(Vector3D.PLUS_K);
 
         // Direction cosines for central body [Eq. 2.1.9-(1)]
         alpha = FieldVector3D.dotProduct(zB, auxiliaryElements.getVectorF());
@@ -93,10 +93,10 @@ public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends 
         return gamma;
     }
 
-    /** Getter for the centralBodyToInertialTransform.
-     * @return the centralBodyToInertialTransform
+    /** Getter for the bodyFixedToInertialTransform.
+     * @return the bodyFixedToInertialTransform
      */
-    public FieldStaticTransform<T> getCentralBodyToInertialTransform() {
-        return centralBodyToInertialTransform;
+    public FieldStaticTransform<T> getBodyFixedToInertialTransform() {
+        return bodyFixedToInertialTransform;
     }
 }
