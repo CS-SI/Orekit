@@ -21,6 +21,10 @@ package org.orekit.propagation;
  * This class is a specialized implementation of {@link AdditionalStateProvider}
  * with a name set to the empty string and returning a null additional state.
  * </p>
+ * <p>
+ * Beware that changing the state undercover from the propagator may have
+ * many side effects. Using this class should therefore be done cautiously.
+ * </p>
  * @see Propagator
  * @see AdditionalStateProvider
  * @author Luc Maisonobe
