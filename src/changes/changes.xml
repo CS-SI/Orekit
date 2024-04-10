@@ -27,6 +27,22 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1369">
+        Allow {Field}AdditionalStateProvider to modify the basic
+        components of main state (orbit, attitude and mass).
+      </action>
+      <action dev="maxime" type="update" issue="1351">
+        Removed inner static class JacobiKey in JacobiPolynomials.
+      </action>
+      <action dev="serrof" type="add" due-to="tmills">
+        Added getTopocentricPosition from (Field)TrackingCoordinates.
+      </action>
+      <action dev="serrof" type="add" issue="1331">
+        Added (Field)RelativeDistanceDetector.
+      </action>
+      <action dev="serrof" type="add" issue="1358">
+        Added native AdaptableInterval for ApsideDetector.
+      </action>
       <action dev="luc" type="fix" issue="1363">
         Fixed wrong datation of measurements in Rinex observation
         files with offsets not applied.

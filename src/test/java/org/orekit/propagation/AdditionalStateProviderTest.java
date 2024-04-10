@@ -16,13 +16,16 @@
  */
 package org.orekit.propagation;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.FramesFactory;
@@ -37,7 +40,6 @@ import org.orekit.utils.PVCoordinates;
 
 public class AdditionalStateProviderTest {
 
-    private double                     mu;
     private AbsoluteDate               initDate;
     private SpacecraftState            initialState;
     private AdaptiveStepsizeIntegrator integrator;
@@ -46,7 +48,7 @@ public class AdditionalStateProviderTest {
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
-        mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
+        final double mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         initDate = AbsoluteDate.J2000_EPOCH;
@@ -56,6 +58,31 @@ public class AdditionalStateProviderTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
         integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
+    }
+
+    @Test
+    public void testModifyMainState() {
+
+        // Create propagator
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setInitialState(initialState);
+
+        // Create state modifier
+        final MainStateModifier modifier = new MainStateModifier();
+
+        // Add the provider to the propagator
+        propagator.addAdditionalStateProvider(modifier);
+
+        // Propagate
+        final double dt = 600.0;
+        final SpacecraftState propagated = propagator.propagate(initDate.shiftedBy(dt));
+
+        // Verify
+        Assertions.assertEquals(2 * SpacecraftState.DEFAULT_MASS, propagated.getMass(), 1.0e-12);
+        Assertions.assertEquals(FastMath.PI,
+                                propagated.getAttitude().getRotation().getAngle(),
+                                1.0e-15);
+
     }
 
     @Test
@@ -133,9 +160,23 @@ public class AdditionalStateProviderTest {
 
     }
 
+    private static class MainStateModifier extends AbstractStateModifier {
+        /** {@inheritDoc} */
+        @Override
+        public SpacecraftState change(final SpacecraftState state) {
+            return new SpacecraftState(state.getOrbit(),
+                                       new Attitude(state.getDate(),
+                                                    state.getFrame(),
+                                                    new Rotation(0, 0, 0, 1, false),
+                                                    Vector3D.ZERO,
+                                                    Vector3D.ZERO),
+                                       2 * SpacecraftState.DEFAULT_MASS);
+        }
+    }
+
     private static class TimeDifferenceProvider implements AdditionalStateProvider {
 
-        private String  name;
+        private final String  name;
         private boolean called;
         private double  dt;
 

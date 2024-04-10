@@ -18,14 +18,14 @@ package org.orekit.propagation;
 
 import org.orekit.time.AbsoluteDate;
 
-/** This interface represents providers for additional state data beyond {@link SpacecraftState}.
+/** This interface allows to modify {@link SpacecraftState} and set up additional state data.
  * <p>
  * {@link Propagator Propagators} generate {@link SpacecraftState states} that contain at
  * least orbit, attitude, and mass. These states may however also contain {@link
  * SpacecraftState#addAdditionalState(String, double...) additional states}. Instances of classes
- * implementing this interface are intended to be registered to propagators so they can add these
- * additional states incrementally after having computed the basic components
- * (orbit, attitude and mass).
+ * implementing this interface are intended to be registered to propagators so they can either
+ * modify the basic components (orbit, attitude and mass) or add additional states incrementally
+ * after having computed the basic components.
  * </p>
  * <p>
  * Some additional states may depend on previous additional states to
@@ -33,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  * of these additional states at some time if they depend on conditions that are fulfilled only
  * after propagation as started or some event has occurred. As the propagator builds the complete
  * state incrementally, looping over the registered providers, it must call their {@link
- * #getAdditionalState(SpacecraftState) getAdditionalState} methods in an order that fulfill these dependencies that
+ * #update(SpacecraftState) update} methods in an order that fulfill these dependencies that
  * may be time-dependent and are not related to the order in which the providers are registered to
  * the propagator. This reordering is performed each time the complete state is built, using a yield
  * mechanism. The propagator first pushes all providers in a stack and then empty the stack, one provider
@@ -51,8 +51,8 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * <p>
  * It is possible that at some stages in the propagation, a subset of the providers registered to a
- * propagator all yield and cannot {@link #getAdditionalState(SpacecraftState) retrieve} their additional
- * state. This happens for example during the initialization phase of a propagator that
+ * propagator all yield and cannot {@link #update(SpacecraftState) update} the state. This happens
+ * for example during the initialization phase of a propagator that
  * computes State Transition Matrices or Jacobian matrices. These features are managed as secondary equations
  * in the ODE integrator, and initialized after the primary equations (which correspond to orbit) have
  * been initialized. So when the primary equation are initialized, the providers that depend on the secondary
@@ -69,11 +69,17 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * @see org.orekit.propagation.Propagator
  * @see org.orekit.propagation.integration.AdditionalDerivativesProvider
+ * @see AbstractStateModifier
  * @author Luc Maisonobe
  */
 public interface AdditionalStateProvider {
 
     /** Get the name of the additional state.
+     * <p>
+     * If a provider just modifies one of the basic elements (orbit, attitude
+     * or mass) without adding any new state, it should return the empty string
+     * as its name.
+     * </p>
      * @return name of the additional state (names containing "orekit"
      * with any case are reserved for the library internal use)
      */
@@ -119,5 +125,14 @@ public interface AdditionalStateProvider {
      * @return additional state corresponding to spacecraft state
      */
     double[] getAdditionalState(SpacecraftState state);
+
+    /** Update a state.
+     * @param state spacecraft state to update
+     * @return updated state
+     * @since 12.1
+     */
+    default SpacecraftState update(final SpacecraftState state) {
+        return state.addAdditionalState(getName(), getAdditionalState(state));
+    }
 
 }

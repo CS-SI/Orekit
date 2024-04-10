@@ -61,11 +61,9 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
               DEFAULT_MAX_ITER, new StopOnIncreasing());
     }
 
-    /** Protected constructor with full parameters.
+    /** Public constructor with full parameters.
      * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
+     * This constructor is public because otherwise all accessible ones would require an orbit.
      * </p>
      * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
@@ -73,8 +71,8 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @param handler event handler to call at event occurrences
      * @since 6.1
      */
-    protected ApsideDetector(final AdaptableInterval maxCheck, final double threshold,
-                             final int maxIter, final EventHandler handler) {
+    public ApsideDetector(final AdaptableInterval maxCheck, final double threshold,
+                          final int maxIter, final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 

@@ -47,7 +47,7 @@ import org.orekit.utils.FieldTimeSpanMap;
 public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>> implements FieldPropagator<T> {
 
     /** Multiplexer for step handlers. */
-    private FieldStepHandlerMultiplexer<T> multiplexer;
+    private final FieldStepHandlerMultiplexer<T> multiplexer;
 
     /** Start date. */
     private FieldAbsoluteDate<T> startDate;
@@ -198,7 +198,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
                 }
             } else {
                 // we can use this provider right now
-                updated    = updated.addAdditionalState(provider.getName(), provider.getAdditionalState(updated));
+                updated    = provider.update(updated);
                 yieldCount = 0;
             }
         }
