@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1370">
+        Fixed wrong attitude overriding in AggregateBoundedPropagator.
+      </action>
       <action dev="luc" type="add" issue="1369">
         Allow {Field}AdditionalStateProvider to modify the basic
         components of main state (orbit, attitude and mass).

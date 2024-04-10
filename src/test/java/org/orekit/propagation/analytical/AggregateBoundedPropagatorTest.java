@@ -25,9 +25,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -36,12 +39,12 @@ import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.TimeSpanMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -95,10 +98,14 @@ public class AggregateBoundedPropagatorTest {
                 actual.propagate(date.shiftedBy(20)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(20)).getPVCoordinates(), ulps));
 
-        Assertions.assertEquals(2, actual.getPropagators().size());
-        for (final Map.Entry<AbsoluteDate, ? extends BoundedPropagator> entry : actual.getPropagators().entrySet()) {
-            Assertions.assertEquals(entry.getKey(), entry.getValue().getMinDate());
+        for (TimeSpanMap.Span<BoundedPropagator> span = actual.getPropagatorsMap().getFirstNonNullSpan();
+             span != null;
+             span = span.next()) {
+            Assertions.assertEquals(span.getStart(), span.getData().getMinDate());
         }
+
+        // test deprecated method
+        Assertions.assertEquals(2, actual.getPropagators().size());
 
     }
 
@@ -314,9 +321,39 @@ public class AggregateBoundedPropagatorTest {
         double gm = Constants.EGM96_EARTH_MU;
         KeplerianPropagator propagator = new KeplerianPropagator(new KeplerianOrbit(
                 6778137, 0, 0, 0, 0, v, PositionAngleType.TRUE, frame, start, gm));
+        propagator.setAttitudeProvider(new LofOffset(frame, LOFType.LVLH_CCSDS));
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(start, end);
         return generator.getGeneratedEphemeris();
+    }
+
+    @Test
+    void testAttitude() {
+        AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        AbsoluteDate end = date.shiftedBy(20);
+        BoundedPropagator p1 = createPropagator(date, end, 0);
+        BoundedPropagator p2 = createPropagator(date.shiftedBy(10), end, 0);
+        final BoundedPropagator actual = new AggregateBoundedPropagator(Arrays.asList(p1, p2));
+
+        // using the attitude providers from the underlying propagator
+        final SpacecraftState s0 = actual.propagate(date.shiftedBy(15));
+        Assertions.assertEquals(0,
+                                Vector3D.angle(s0.getPosition(),
+                                               s0.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
+                                3.0e-16);
+
+        // overriding explicitly the global attitude provider
+        actual.setAttitudeProvider(new FrameAlignedProvider(p1.getInitialState().getFrame()));
+        final SpacecraftState s1 = actual.propagate(date.shiftedBy(15));
+        Assertions.assertEquals(0,
+                                Vector3D.angle(Vector3D.MINUS_K,
+                                               s1.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
+                                3.0e-16);
+        Assertions.assertEquals(1.570796,
+                                Vector3D.angle(s1.getPosition(),
+                                               s1.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
+                                1.0e-6);
+
     }
 
     @Test
