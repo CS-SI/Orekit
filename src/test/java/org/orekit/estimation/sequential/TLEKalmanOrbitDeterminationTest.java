@@ -205,7 +205,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final boolean print = false;
 
         // input in resources directory
-        final String inputPath = SequentialNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -319,7 +319,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final boolean print = false;
 
         // input in resources directory
-        final String inputPath = SequentialNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();
+        final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
