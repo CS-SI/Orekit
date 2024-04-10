@@ -19,14 +19,14 @@ package org.orekit.propagation;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** This interface represents providers for additional state data beyond {@link SpacecraftState}.
+/** This interface allows to modify {@link FieldSpacecraftState} and set up additional state data.
  * <p>
  * {@link FieldPropagator Propagators} generate {@link FieldSpacecraftState states} that contain at
  * least orbit, attitude, and mass. These states may however also contain {@link
- * FieldSpacecraftState#addAdditionalState(String, CalculusFieldElement...) additional states}. Instances of classes
- * implementing this interface are intended to be registered to propagators so they can add these
- * additional states incrementally after having computed the basic components
- * (orbit, attitude and mass).
+ * FieldSpacecraftState#addAdditionalState(String, CalculusFieldElement...) additional states}.
+ * Instances of classes implementing this interface are intended to be registered to propagators
+ * so they can either modify the basic components (orbit, attitude and mass) or add additional
+ * states incrementally after having computed the basic components.
  * </p>
  * <p>
  * Some additional states may depend on previous additional states to
@@ -34,7 +34,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * of these additional states at some time if they depend on conditions that are fulfilled only
  * after propagation as started or some event has occurred. As the propagator builds the complete
  * state incrementally, looping over the registered providers, it must call their {@link
- * #getAdditionalState(FieldSpacecraftState) getAdditionalState} methods in an order that fulfill these dependencies that
+ * #update(FieldSpacecraftState) update} methods in an order that fulfill these dependencies that
  * may be time-dependent and are not related to the order in which the providers are registered to
  * the propagator. This reordering is performed each time the complete state is built, using a yield
  * mechanism. The propagator first pushes all providers in a stack and then empty the stack, one provider
@@ -52,8 +52,8 @@ import org.orekit.time.FieldAbsoluteDate;
  * </p>
  * <p>
  * It is possible that at some stages in the propagation, a subset of the providers registered to a
- * propagator all yield and cannot {@link #getAdditionalState(FieldSpacecraftState) retrieve} their additional
- * state. This happens for example during the initialization phase of a propagator that
+ * propagator all yield and cannot {@link #update(FieldSpacecraftState) update} the state.
+ * This happens for example during the initialization phase of a propagator that
  * computes State Transition Matrices or Jacobian matrices. These features are managed as secondary equations
  * in the ODE integrator, and initialized after the primary equations (which correspond to orbit) have
  * been initialized. So when the primary equation are initialized, the providers that depend on the secondary
@@ -70,13 +70,20 @@ import org.orekit.time.FieldAbsoluteDate;
  * </p>
  * @see org.orekit.propagation.FieldPropagator
  * @see org.orekit.propagation.integration.FieldAdditionalDerivativesProvider
+ * @see FieldAbstractStateModifier
  * @author Luc Maisonobe
  * @param <T> type of the field elements
  */
 public interface FieldAdditionalStateProvider<T extends CalculusFieldElement<T>> {
 
     /** Get the name of the additional state.
-     * @return name of the additional state
+     * <p>
+     * If a provider just modifies one of the basic elements (orbit, attitude
+     * or mass) without adding any new state, it should return the empty string
+     * as its name.
+     * </p>
+     * @return name of the additional state (names containing "orekit"
+     * with any case are reserved for the library internal use)
      */
     String getName();
 
@@ -120,5 +127,14 @@ public interface FieldAdditionalStateProvider<T extends CalculusFieldElement<T>>
      * @return additional state corresponding to spacecraft state
      */
     T[] getAdditionalState(FieldSpacecraftState<T> state);
+
+    /** Update a state.
+     * @param state spacecraft state to update
+     * @return updated state
+     * @since 12.1
+     */
+    default FieldSpacecraftState<T> update(final FieldSpacecraftState<T> state) {
+        return state.addAdditionalState(getName(), getAdditionalState(state));
+    }
 
 }

@@ -18,15 +18,18 @@ package org.orekit.propagation;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.FramesFactory;
@@ -67,6 +70,37 @@ public class FieldAdditionalStateProviderTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince54FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         return integrator;
+    }
+
+    @Test
+    public void testModifyMainState() {
+        doTestModifyMainState(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestModifyMainState(final Field<T> field) {
+
+        // Create propagator
+        final FieldSpacecraftState<T> state = createState(field);
+        final AdaptiveStepsizeFieldIntegrator<T> integrator = createIntegrator(field, state);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setInitialState(state);
+
+        // Create state modifier
+        final MainStateModifier<T> modifier = new MainStateModifier<>();
+
+        // Add the provider to the propagator
+        propagator.addAdditionalStateProvider(modifier);
+
+        // Propagate
+        final double dt = 600.0;
+        final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(dt));
+
+        // Verify
+        Assertions.assertEquals(2 * SpacecraftState.DEFAULT_MASS, propagated.getMass().getReal(), 1.0e-12);
+        Assertions.assertEquals(FastMath.PI,
+                                propagated.getAttitude().getRotation().getAngle().getReal(),
+                                1.0e-15);
+
     }
 
     @Test
@@ -136,6 +170,25 @@ public class FieldAdditionalStateProviderTest {
         doTestIssue900BrouwerLyddane(Binary64Field.getInstance());
     }
 
+    private static class MainStateModifier<T extends CalculusFieldElement<T>> extends FieldAbstractStateModifier<T> {
+        /** {@inheritDoc} */
+        @Override
+        public FieldSpacecraftState<T> change(final FieldSpacecraftState<T> state) {
+            final Field<T> field = state.getDate().getField();
+            return new FieldSpacecraftState<>(state.getOrbit(),
+                                              new FieldAttitude<>(state.getDate(),
+                                                                  state.getFrame(),
+                                                                  new FieldRotation<>(field.getZero(),
+                                                                                      field.getZero(),
+                                                                                      field.getZero(),
+                                                                                      field.getOne(),
+                                                                                      false),
+                                                                  FieldVector3D.getZero(field),
+                                                                  FieldVector3D.getZero(field)),
+                                              field.getZero().newInstance(2 * SpacecraftState.DEFAULT_MASS));
+        }
+    }
+
     private <T extends CalculusFieldElement<T>> void doTestIssue900BrouwerLyddane(final Field<T> field) {
 
         // Create propagator
@@ -163,10 +216,10 @@ public class FieldAdditionalStateProviderTest {
 
     private static class TimeDifferenceProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalStateProvider<T> {
 
-        private String   name;
+        private final String   name;
         private boolean  called;
         private T        dt;
-        private Field<T> field;
+        private final Field<T> field;
 
         public TimeDifferenceProvider(final String name, final Field<T> field) {
             this.name   = name;

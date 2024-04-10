@@ -45,7 +45,7 @@ import org.orekit.utils.TimeSpanMap;
 public abstract class AbstractPropagator implements Propagator {
 
     /** Multiplexer for step handlers. */
-    private StepHandlerMultiplexer multiplexer;
+    private final StepHandlerMultiplexer multiplexer;
 
     /** Start date. */
     private AbsoluteDate startDate;
@@ -228,7 +228,7 @@ public abstract class AbstractPropagator implements Propagator {
                 }
             } else {
                 // we can use this provider right now
-                updated    = updated.addAdditionalState(provider.getName(), provider.getAdditionalState(updated));
+                updated    = provider.update(updated);
                 yieldCount = 0;
             }
         }
