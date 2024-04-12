@@ -27,6 +27,9 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1371">
+        Added PerfectClockModel.
+      </action>
       <action dev="luc" type="add" issue="1370">
         Fixed wrong attitude overriding in AggregateBoundedPropagator.
       </action>
