@@ -134,7 +134,7 @@
           Removed redundant code to create FieldOrbit from Orbit.
       </action>
       <action dev="serrof" type="update" issue="1201">
-          Changed default PositionAngleType in (Field)NumericalPropagator to ECCENTRIC.
+          Improved performance with PositionAngleType in (Field)NumericalPropagator.
       </action>
       <action dev="serrof" type="update" issue="1307">
           Removed unnecessary calls to (Field)Transform in (Field)ShortTermEncounter2DDefinition.
