@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1340">
+        Made dependsOnlyOnPosition check RadiationSensitive in SolarRadiationPressure.
+      </action>
       <action dev="luc" type="add" issue="1371">
         Added PerfectClockModel.
       </action>
