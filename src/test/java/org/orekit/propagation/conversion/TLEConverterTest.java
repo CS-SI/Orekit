@@ -60,7 +60,7 @@ public class TLEConverterTest {
         final TLEPropagatorBuilder propagatorBuilderError = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.,
                                                                                      new FixedPointTleGenerationAlgorithm());
         try {
-            propagatorBuilderError.buildPropagator(propagatorBuilderError.getSelectedNormalizedParameters());
+            propagatorBuilderError.buildPropagator();
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_TLE, oe.getSpecifier());
         }

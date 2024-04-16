@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -50,10 +54,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /** Utility class for orbit determination tests. */
 public class KeplerianEstimationTestUtils {
@@ -116,7 +116,7 @@ public class KeplerianEstimationTestUtils {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
         }
 
-        return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        return propagatorBuilder.buildPropagator();
 
     }
 

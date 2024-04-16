@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
@@ -39,18 +43,14 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeSpanMap.Span;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /** Test class for Kalman model.
  * This class is deeply entangled with KalmanEstimator class. Thus it is difficult to test as a stand-alone.
@@ -229,8 +229,7 @@ public class KalmanModelTest {
 
         // Get the estimated propagator from Kalman filter and propagate it to
         // range measurement date
-        NumericalPropagator propagator =
-                        propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator propagator = propagatorBuilder.buildPropagator();
 
         // Set derivatives computation for the propagator
         final String equationName = KalmanEstimator.class.getName() + "-derivatives-";
