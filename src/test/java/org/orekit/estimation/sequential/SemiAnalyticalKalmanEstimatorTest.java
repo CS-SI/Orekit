@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.List;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.MatrixUtils;
@@ -51,8 +53,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.List;
 
 public class SemiAnalyticalKalmanEstimatorTest {
 
@@ -160,8 +160,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -250,8 +249,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         propagatorBuilder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -481,8 +479,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         propagatorBuilder.addForceModel(zonal);
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -588,8 +585,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         propagatorBuilder.addForceModel(zonal);
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.

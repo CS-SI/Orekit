@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
+import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -35,13 +37,12 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 public class BrouwerLyddanePropagatorBuilderTest {
 
@@ -77,7 +78,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
                                                                                       1.0,
                                                                                       BrouwerLyddanePropagator.M2);
 
-        final BrouwerLyddanePropagator prop = builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        final Propagator prop = builder.buildPropagator();
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(60000)).getOrbit();
 
         // Verify
@@ -121,7 +122,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
         }
 
         // Build the propagator
-        final BrouwerLyddanePropagator prop = builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        final BrouwerLyddanePropagator prop = (BrouwerLyddanePropagator) builder.buildPropagator();
 
         // Verify
         Assertions.assertEquals(M2, prop.getM2(), Double.MIN_VALUE);

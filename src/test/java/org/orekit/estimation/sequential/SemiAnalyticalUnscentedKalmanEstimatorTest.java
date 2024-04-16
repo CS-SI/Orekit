@@ -42,7 +42,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
@@ -148,8 +147,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -233,8 +231,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         propagatorBuilder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -326,8 +323,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                 gravityField.getMaxDegree(), gravityField.getMaxOrder(), FastMath.min(4, gravityField.getMaxDegree() - 2)));
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.

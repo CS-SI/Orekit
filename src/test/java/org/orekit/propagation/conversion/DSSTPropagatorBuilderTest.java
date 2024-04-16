@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
+import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.Assertions;
@@ -52,8 +54,6 @@ import org.orekit.utils.ParameterDriver;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
-
-import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 public class DSSTPropagatorBuilderTest {
 
@@ -214,7 +214,7 @@ public class DSSTPropagatorBuilderTest {
         builder.addForceModel(moon);
         builder.setMass(1000.);
 
-        final DSSTPropagator prop = builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        final DSSTPropagator prop = (DSSTPropagator) builder.buildPropagator();
 
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(600)).getOrbit();
 
@@ -242,7 +242,7 @@ public class DSSTPropagatorBuilderTest {
         // Verify that there is no Newtonian attraction force model
         Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
         // Build the DSST propagator (not used here)
-        builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        builder.buildPropagator();
         // Verify the addition of the Newtonian attraction force model
         Assertions.assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
         // Add a new force model to ensure the Newtonian attraction stay at the last position
@@ -298,7 +298,7 @@ public class DSSTPropagatorBuilderTest {
 
         try {
             // Build the propagator
-            builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            builder.buildPropagator();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);

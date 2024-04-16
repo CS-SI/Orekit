@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="maxime" type="update" issue="1374">
+        Added method build() in PropagatorBuilder.
+      </action>
       <action dev="serrof" type="update" issue="1340">
         Made dependsOnlyOnPosition check RadiationSensitive in SolarRadiationPressure.
       </action>

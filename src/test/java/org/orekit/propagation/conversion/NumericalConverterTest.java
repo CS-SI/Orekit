@@ -82,7 +82,7 @@ public class NumericalConverterTest {
         // Verify that there is no Newtonian attraction force model
         Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
         // Build the Numerical propagator (not used here)
-        builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        builder.buildPropagator();
         // Verify the addition of the Newtonian attraction force model
         Assertions.assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
         // Add a new force model to ensure the Newtonian attraction stay at the last position
@@ -255,7 +255,7 @@ public class NumericalConverterTest {
 
         try {
             // Build the numerical propagator
-            builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            builder.buildPropagator();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
