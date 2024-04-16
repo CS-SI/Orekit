@@ -288,12 +288,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         }
         estimated.setEstimatedValue(range.getValue());
 
-        // Range partial derivatives with respect to states
+        // Range first order derivatives with respect to states
         final double[] derivatives = range.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0,  6));
         estimated.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 6, 12));
 
-        // Set partial derivatives with respect to parameters
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());

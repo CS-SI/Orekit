@@ -185,12 +185,12 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
 
         estimatedPhase.setEstimatedValue(phase.getValue());
 
-        // Range partial derivatives with respect to states
+        // Range first order derivatives with respect to states
         final double[] derivatives = phase.getGradient();
         estimatedPhase.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0,  6));
         estimatedPhase.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 6, 12));
 
-        // Set partial derivatives with respect to parameters
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 

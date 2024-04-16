@@ -210,11 +210,11 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
                                           add(ambiguity);
         final double[] phaseDerivatives = phase.getGradient();
 
-        // Set value and state derivatives of the estimated measurement
+        // Set value and state first order derivatives of the estimated measurement
         estimatedPhase.setEstimatedValue(phase.getValue());
         estimatedPhase.setStateDerivatives(0, Arrays.copyOfRange(phaseDerivatives, 0,  6));
 
-        // Set partial derivatives with respect to parameters
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
             for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 

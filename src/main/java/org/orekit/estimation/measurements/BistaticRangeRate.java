@@ -224,12 +224,11 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
                 .add(FieldVector3D.dotProduct(emitterDirection, emitterVelocity));
         estimated.setEstimatedValue(rangeRate.getValue());
 
-        // Range partial derivatives with respect to state
+        // Range first order derivatives with respect to state
         final double[] derivatives = rangeRate.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = common.getIndices().get(span.getData());

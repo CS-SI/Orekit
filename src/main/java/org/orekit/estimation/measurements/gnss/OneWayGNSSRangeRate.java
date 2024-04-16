@@ -151,11 +151,11 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSSMeasurement<OneWayGNS
                                    add(common.getLocalRate().subtract(common.getRemoteRate()).multiply(Constants.SPEED_OF_LIGHT));
         final double[] rangeRateDerivatives = rangeRate.getGradient();
 
-        // Set value and state derivatives of the estimated measurement
+        // Set value and state first order derivatives of the estimated measurement
         estimatedRangeRate.setEstimatedValue(rangeRate.getValue());
         estimatedRangeRate.setStateDerivatives(0, Arrays.copyOfRange(rangeRateDerivatives, 0,  6));
 
-        // Set partial derivatives with respect to parameters
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver measurementDriver : getParametersDrivers()) {
             for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 

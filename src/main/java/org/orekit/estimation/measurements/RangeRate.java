@@ -331,12 +331,11 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
 
         estimated.setEstimatedValue(rangeRate.getValue());
 
-        // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates
+        // compute first order derivatives of (rr) with respect to spacecraft state Cartesian coordinates
         final double[] derivatives = rangeRate.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());
