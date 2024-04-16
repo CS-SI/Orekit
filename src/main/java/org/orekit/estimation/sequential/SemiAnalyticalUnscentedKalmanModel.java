@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedEvolution;
 import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
@@ -46,6 +42,10 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /** Class defining the process model dynamics to use with a {@link SemiAnalyticalUnscentedKalmanEstimator}.
  * @author Gaëtan Pierre

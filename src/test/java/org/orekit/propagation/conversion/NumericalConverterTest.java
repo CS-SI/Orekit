@@ -16,10 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -54,6 +50,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
 
 public class NumericalConverterTest {
 

@@ -19,9 +19,6 @@ package org.orekit.propagation.conversion;
 
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -39,6 +36,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit tests for {@link EphemerisPropagatorBuilder}.

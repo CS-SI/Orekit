@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
@@ -51,6 +47,10 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /** Test class for Kalman model.
  * This class is deeply entangled with KalmanEstimator class. Thus it is difficult to test as a stand-alone.
