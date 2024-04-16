@@ -258,7 +258,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
         this.predictedSpacecraftStates = new SpacecraftState[propagatorBuilders.size()];
         for (int i = 0; i < propagatorBuilders.size(); i++) {
-            predictedSpacecraftStates[i] = propagatorBuilders.get(i).buildPropagator(propagatorBuilders.get(i).getSelectedNormalizedParameters()).getInitialState();
+            predictedSpacecraftStates[i] = propagatorBuilders.get(i).buildPropagator().getInitialState();
         }
         this.correctedSpacecraftStates = predictedSpacecraftStates.clone();
 
@@ -514,8 +514,9 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         final Orbit orbit = orbitTypes[index].mapArrayToOrbit(point, null, angleTypes[index], copy.getInitialOrbitDate(),
                                                       copy.getMu(), copy.getFrame());
         copy.resetOrbit(orbit);
+
         // Create the propagator
-        return copy.buildPropagator(copy.getSelectedNormalizedParameters());
+        return copy.buildPropagator();
     }
 
     /** Finalize estimation.
@@ -555,7 +556,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         // Return propagators built with current instantiation of the propagator builders
         final Propagator[] propagators = new Propagator[builders.size()];
         for (int k = 0; k < builders.size(); ++k) {
-            propagators[k] = builders.get(k).buildPropagator(builders.get(k).getSelectedNormalizedParameters());
+            propagators[k] = builders.get(k).buildPropagator();
         }
         return propagators;
     }

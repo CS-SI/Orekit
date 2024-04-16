@@ -136,11 +136,11 @@ import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.ionosphere.SingleLayerModelMappingFunction;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
-import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
 import org.orekit.models.earth.troposphere.MendesPavlisModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.TimeSpanEstimatedModel;
+import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
@@ -149,9 +149,6 @@ import org.orekit.models.earth.weather.PressureTemperature;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
-import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
-import org.orekit.models.earth.troposphere.TimeSpanEstimatedTroposphericModel;
-import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -973,9 +970,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
          }
 
          // Build the reference propagator
-         final Propagator propagator =
-                         propagatorBuilder.buildPropagator(propagatorBuilder.
-                                                           getSelectedNormalizedParameters());
+         final Propagator propagator = propagatorBuilder.buildPropagator();
 
          // Propagate until last date and return the orbit
          return propagator.propagate(finalDate).getOrbit();

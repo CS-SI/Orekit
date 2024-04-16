@@ -39,9 +39,9 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -229,8 +229,7 @@ public class KalmanModelTest {
 
         // Get the estimated propagator from Kalman filter and propagate it to
         // range measurement date
-        NumericalPropagator propagator =
-                        propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator propagator = propagatorBuilder.buildPropagator();
 
         // Set derivatives computation for the propagator
         final String equationName = KalmanEstimator.class.getName() + "-derivatives-";
