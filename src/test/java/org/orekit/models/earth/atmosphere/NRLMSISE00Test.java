@@ -16,10 +16,6 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -58,13 +54,17 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 
 public class NRLMSISE00Test {
 
     @Test
     public void testLegacy() throws
-                                    NoSuchMethodException, SecurityException, InstantiationException,
-                                    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    NoSuchMethodException, SecurityException, InstantiationException,
+    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         // Build the model
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -194,9 +194,9 @@ public class NRLMSISE00Test {
 
     @Test
     public void testDensity() throws
-                              InstantiationException, IllegalAccessException,
-                              IllegalArgumentException, InvocationTargetException,
-                              NoSuchMethodException, SecurityException {
+    InstantiationException, IllegalAccessException,
+    IllegalArgumentException, InvocationTargetException,
+    NoSuchMethodException, SecurityException {
         // Build the input params provider
         final InputParams ip = new InputParams();
         // Get Sun
@@ -292,8 +292,8 @@ public class NRLMSISE00Test {
 
         final double    rho = atm.getDensity(date, pos, itrf);
         final Binary64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
-                                               new FieldVector3D<>(field.getOne(), pos),
-                                               itrf);
+                                              new FieldVector3D<>(field.getOne(), pos),
+                                              itrf);
 
         Assertions.assertEquals(rho, rho64.getReal(), rho * 2.0e-13);
 
@@ -356,22 +356,22 @@ public class NRLMSISE00Test {
         Field<DerivativeStructure> field = factory3.getDerivativeField();
         final DerivativeStructure rhoDS = atm.getDensity(new FieldAbsoluteDate<>(field, date),
                                                          new FieldVector3D<>(factory3.variable(0, pos.getX()),
-                                                                             factory3.variable(1, pos.getY()),
-                                                                             factory3.variable(2, pos.getZ())),
+                                                                         factory3.variable(1, pos.getY()),
+                                                                         factory3.variable(2, pos.getZ())),
                                                          itrf);
 
         Assertions.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-13);
         Assertions.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-13);
         Assertions.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-13);
         Assertions.assertEquals(rhoX.getPartialDerivative(1),
-                            rhoDS.getPartialDerivative(1, 0, 0),
-                            FastMath.abs(2.0e-10 * rhoX.getPartialDerivative(1)));
+                                rhoDS.getPartialDerivative(1, 0, 0),
+                                FastMath.abs(2.0e-10 * rhoX.getPartialDerivative(1)));
         Assertions.assertEquals(rhoY.getPartialDerivative(1),
-                            rhoDS.getPartialDerivative(0, 1, 0),
-                            FastMath.abs(2.0e-10 * rhoY.getPartialDerivative(1)));
+                                rhoDS.getPartialDerivative(0, 1, 0),
+                                FastMath.abs(2.0e-10 * rhoY.getPartialDerivative(1)));
         Assertions.assertEquals(rhoZ.getPartialDerivative(1),
-                            rhoDS.getPartialDerivative(0, 0, 1),
-                            FastMath.abs(2.0e-10 * rhoY.getPartialDerivative(1)));
+                                rhoDS.getPartialDerivative(0, 0, 1),
+                                FastMath.abs(2.0e-10 * rhoY.getPartialDerivative(1)));
 
     }
 
@@ -550,78 +550,30 @@ public class NRLMSISE00Test {
         }
         doTestVoidMethod(atm, random, "gtd7d", 1.0e-50, 3.0e-14);
     }
-    
+
     /** Test issue 1365: NaN appears during integration due to bad computation of density. */
     @Test
     public void testIssue1365AvoidNan1() {
-        
+
         // GIVEN
         // -----
-        
-        // Build the input params provider
-        @SuppressWarnings("serial")
-        final NRLMSISE00InputParameters ip = new NRLMSISE00InputParameters() {
 
-            @Override
-            public AbsoluteDate getMinDate() {
-                return new AbsoluteDate(2005, 9, 10, TimeScalesFactory.getUTC());
-            }
-            @Override
-            public AbsoluteDate getMaxDate() {
-                return new AbsoluteDate(2005, 9, 11, TimeScalesFactory.getUTC());
-            }
-            @Override
-            public double getDailyFlux(AbsoluteDate date) {
-                return 707.6;
-            }
-            @Override
-            public double getAverageFlux(AbsoluteDate date) { return 98.8; }
-            @Override
-            public double[] getAp(AbsoluteDate date) {
-                return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25};
-            }
-        };
-        
+        // Build the input params provider
+        final NRLMSISE00InputParameters ip = new InputParamsIssue1365AvoidNan1();
+
         // Prepare field
         final Field<Binary64> field = Binary64Field.getInstance();
-        
+
         // Build the date
         final AbsoluteDate date = new AbsoluteDate("2005-09-10T00:26:47.232", TimeScalesFactory.getUTC());
         final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(field, date);
-        
+
         // Sun position at "date" in J2000
         final Frame j2000 = FramesFactory.getEME2000();
         final Vector3D sunPosition = new Vector3D(-1.469767604504155E11, 3.030095780108449E10, 1.3136383992886505E10);
 
         // Get Sun at date
-        @SuppressWarnings("serial")
-        final CelestialBody sunAtDate = new CelestialBody() {
-            
-            @Override
-            public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-                return new TimeStampedPVCoordinates(date, sunPosition, Vector3D.ZERO);
-            }
-            @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
-                return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
-            }
-            @Override
-            public String getName() {
-                return "SUN";
-            }
-            @Override
-            public Frame getInertiallyOrientedFrame() {
-                return j2000;
-            }
-            @Override
-            public double getGM() {
-                return Constants.JPL_SSD_SUN_GM;
-            }
-            @Override
-            public Frame getBodyOrientedFrame() {
-                return j2000;
-            }
-        };
+        final CelestialBody sunAtDate = new SunPositionIssue1365AvoidNan(sunPosition, j2000);
 
         // Get Earth body shape
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -633,16 +585,16 @@ public class NRLMSISE00Test {
         // Set the position & frame
         final Vector3D position = new Vector3D(-2519211.5855839024, -135107.58355852086, -6238233.867025304); 
         final FieldVector3D<Binary64> fieldPosition = new FieldVector3D<>(field, position);
-        
+
         // WHEN
         // ----
-        
+
         final double density = atm.getDensity(date, position, j2000);
         final Binary64 fieldDensity = atm.getDensity(fieldDate, fieldPosition, j2000);
-        
+
         // THEN
         // ----
-        
+
         // Check that densities are not NaN
         Assertions.assertFalse(Double.isNaN(density));
         Assertions.assertFalse(Double.isNaN(fieldDensity.getReal()));    
@@ -658,20 +610,7 @@ public class NRLMSISE00Test {
         // -----
 
         // Build the input params provider
-        @SuppressWarnings("serial")
-        final NRLMSISE00InputParameters ip = new NRLMSISE00InputParameters() {
-
-            @Override
-            public AbsoluteDate getMinDate() { return new AbsoluteDate(2005, 9, 10, TimeScalesFactory.getUTC()); }
-            @Override
-            public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 9, 11, TimeScalesFactory.getUTC()); }
-            @Override
-            public double getDailyFlux(AbsoluteDate date) { return 707.6; }
-            @Override
-            public double getAverageFlux(AbsoluteDate date) { return 98.8; }
-            @Override
-            public double[] getAp(AbsoluteDate date) { return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25}; }
-        };
+        final NRLMSISE00InputParameters ip = new InputParamsIssue1365AvoidNan2();
 
         // Prepare field
         final Field<Binary64> field = Binary64Field.getInstance();
@@ -685,26 +624,7 @@ public class NRLMSISE00Test {
         final Vector3D sunPosition = new Vector3D(-1.469673551020242E11, 3.0342331223223766E10, 1.3154322212769707E10);
 
         // Get Sun at date
-        @SuppressWarnings("serial")
-        final CelestialBody sunAtDate = new CelestialBody() {
-
-            @Override
-            public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-                return new TimeStampedPVCoordinates(date, sunPosition, Vector3D.ZERO);
-            }
-            @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
-                return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
-            }
-            @Override
-            public String getName() { return "SUN"; }
-            @Override
-            public Frame getInertiallyOrientedFrame() { return j2000; }
-            @Override
-            public double getGM() { return Constants.JPL_SSD_SUN_GM; }
-            @Override
-            public Frame getBodyOrientedFrame() { return j2000; }
-        };
+        final CelestialBody sunAtDate = new SunPositionIssue1365AvoidNan(sunPosition, j2000);
 
         // Get Earth body shape
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -741,22 +661,7 @@ public class NRLMSISE00Test {
         // -----
 
         // Build the input params provider
-        @SuppressWarnings("serial")
-        final NRLMSISE00InputParameters ip = new NRLMSISE00InputParameters() {
-
-            @Override
-            public AbsoluteDate getMinDate() {
-                return new AbsoluteDate(2005, 10, 30, TimeScalesFactory.getUTC());
-            }
-            @Override
-            public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 10, 31, TimeScalesFactory.getUTC()); }
-            @Override
-            public double getDailyFlux(AbsoluteDate date) { return 707.6; }
-            @Override
-            public double getAverageFlux(AbsoluteDate date) { return 98.8; }
-            @Override
-            public double[] getAp(AbsoluteDate date) { return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25}; }
-        };
+        final NRLMSISE00InputParameters ip = new InputParamsIssue1365AvoidNanExceptionRaised();
 
         // Prepare field
         final Field<Binary64> field = Binary64Field.getInstance();
@@ -770,26 +675,7 @@ public class NRLMSISE00Test {
         final Vector3D sunPosition = new Vector3D(-1.1883503376589482E11, -8.178200712683229E10, -3.545541568807778E10);
 
         // Get Sun at date
-        @SuppressWarnings("serial")
-        final CelestialBody sunAtDate = new CelestialBody() {
-
-            @Override
-            public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-                return new TimeStampedPVCoordinates(date, sunPosition, Vector3D.ZERO);
-            }
-            @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
-                return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
-            }
-            @Override
-            public String getName() { return "SUN"; };
-            @Override
-            public Frame getInertiallyOrientedFrame() { return j2000; }
-            @Override
-            public double getGM() { return Constants.JPL_SSD_SUN_GM; }
-            @Override
-            public Frame getBodyOrientedFrame() { return j2000; }
-        };
+        final CelestialBody sunAtDate = new SunPositionIssue1365AvoidNan(sunPosition, j2000);
 
         // Get Earth body shape
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -822,7 +708,7 @@ public class NRLMSISE00Test {
 
     private void doTestDoubleMethod(NRLMSISE00 atm, RandomGenerator random, String methodName,
                                     double absTolerance, double relTolerance)
-        {
+    {
         try {
             // Common data for all cases
             final int doy = 172;
@@ -869,7 +755,7 @@ public class NRLMSISE00Test {
 
     private void doTestVoidMethod(NRLMSISE00 atm, RandomGenerator random, String methodName,
                                   double temperatureRelativeTolerance, double densityRelativeTolerance)
-        {
+    {
         try {
 
             // Common data for all cases
@@ -955,7 +841,7 @@ public class NRLMSISE00Test {
 
             return cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
-                 IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                        IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             Assertions.fail(e.getLocalizedMessage());
             return null;
         }
@@ -965,12 +851,12 @@ public class NRLMSISE00Test {
     private double getOutputDensity(Object o, int index) {
         try {
             Method getDensity = getOutputClass().
-                                    getDeclaredMethod("getDensity", Integer.TYPE);
+                            getDeclaredMethod("getDensity", Integer.TYPE);
             getDensity.setAccessible(true);
             return ((Double) getDensity.invoke(o, index)).doubleValue();
         } catch (NoSuchMethodException | SecurityException |
-                 IllegalAccessException | IllegalArgumentException |
-                 InvocationTargetException e) {
+                        IllegalAccessException | IllegalArgumentException |
+                        InvocationTargetException e) {
             Assertions.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
@@ -981,8 +867,8 @@ public class NRLMSISE00Test {
             java.lang.reflect.Field temperaturesField = getOutputClass().getDeclaredField("temperatures");
             temperaturesField.setAccessible(true);
             return ((double[]) temperaturesField.get(o))[index];
-         } catch (NoSuchFieldException | SecurityException |
-                 IllegalAccessException | IllegalArgumentException e) {
+        } catch (NoSuchFieldException | SecurityException |
+                        IllegalAccessException | IllegalArgumentException e) {
             Assertions.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
@@ -999,12 +885,12 @@ public class NRLMSISE00Test {
     }
 
     private <T extends CalculusFieldElement<T>> Object createFieldOutput(Field<T>field,
-                                                                     final NRLMSISE00 atm,
-                                                                     final int doy, final double sec,
-                                                                     final double lat, final double lon,
-                                                                     final double hl,
-                                                                     final double f107a, final double f107,
-                                                                     final double[] ap) {
+                                                                         final NRLMSISE00 atm,
+                                                                         final int doy, final double sec,
+                                                                         final double lat, final double lon,
+                                                                         final double hl,
+                                                                         final double f107a, final double f107,
+                                                                         final double[] ap) {
         try {
             Class<?> fieldOutputClass = getFieldOutputClass();
             Constructor<?> cons = fieldOutputClass.getDeclaredConstructor(NRLMSISE00.class,
@@ -1024,7 +910,7 @@ public class NRLMSISE00Test {
                                     field.getZero().add(hl),
                                     f107a, f107, ap);
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
-                 IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                        IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             Assertions.fail(e.getLocalizedMessage());
             return null;
         }
@@ -1034,12 +920,12 @@ public class NRLMSISE00Test {
     private double getFieldOutputDensity(Object o, int index) {
         try {
             Method getDensity = getFieldOutputClass().
-                                    getDeclaredMethod("getDensity", Integer.TYPE);
+                            getDeclaredMethod("getDensity", Integer.TYPE);
             getDensity.setAccessible(true);
             return ((CalculusFieldElement<?>) getDensity.invoke(o, index)).getReal();
         } catch (NoSuchMethodException | SecurityException |
-                 IllegalAccessException | IllegalArgumentException |
-                 InvocationTargetException e) {
+                        IllegalAccessException | IllegalArgumentException |
+                        InvocationTargetException e) {
             Assertions.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
@@ -1051,7 +937,7 @@ public class NRLMSISE00Test {
             temperaturesField.setAccessible(true);
             return ((CalculusFieldElement[]) temperaturesField.get(o))[index].getReal();
         } catch (NoSuchFieldException | SecurityException |
-                 IllegalAccessException | IllegalArgumentException e) {
+                        IllegalAccessException | IllegalArgumentException e) {
             Assertions.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
@@ -1059,62 +945,62 @@ public class NRLMSISE00Test {
     }
 
     private void checkLegacy(final int nb, final Object out, final boolean print)
-        throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final double[] tInfRef = {1.250540E+03, 1.166754E+03, 1.239892E+03, 1.027318E+03,
-                                  1.212396E+03, 1.220146E+03, 1.116385E+03, 1.031247E+03,
-                                  1.306052E+03, 1.361868E+03, 1.027318E+03, 1.027318E+03,
-                                  1.027318E+03, 1.027318E+03, 1.027318E+03, 1.426412E+03,
-                                  1.027318E+03};
+            1.212396E+03, 1.220146E+03, 1.116385E+03, 1.031247E+03,
+            1.306052E+03, 1.361868E+03, 1.027318E+03, 1.027318E+03,
+            1.027318E+03, 1.027318E+03, 1.027318E+03, 1.426412E+03,
+            1.027318E+03};
         final double[] tAltRef = {1.241416E+03, 1.161710E+03, 1.239891E+03, 2.068878E+02,
-                                  1.208135E+03, 1.212712E+03, 1.112999E+03, 1.024848E+03,
-                                  1.293374E+03, 1.347389E+03, 2.814648E+02, 2.274180E+02,
-                                  2.374389E+02, 2.795551E+02, 2.190732E+02, 1.408608E+03,
-                                  1.934071E+02};
+            1.208135E+03, 1.212712E+03, 1.112999E+03, 1.024848E+03,
+            1.293374E+03, 1.347389E+03, 2.814648E+02, 2.274180E+02,
+            2.374389E+02, 2.795551E+02, 2.190732E+02, 1.408608E+03,
+            1.934071E+02};
         final double[] dHeRef  = {6.665177E+05, 3.407293E+06, 1.123767E+05, 5.411554E+07,
-                                  1.851122E+06, 8.673095E+05, 5.776251E+05, 3.740304E+05,
-                                  6.748339E+05, 5.528601E+05, 1.375488E+14, 4.427443E+13,
-                                  2.127829E+12, 1.412184E+11, 1.254884E+10, 5.196477E+05,
-                                  4.260860E+07};
+            1.851122E+06, 8.673095E+05, 5.776251E+05, 3.740304E+05,
+            6.748339E+05, 5.528601E+05, 1.375488E+14, 4.427443E+13,
+            2.127829E+12, 1.412184E+11, 1.254884E+10, 5.196477E+05,
+            4.260860E+07};
         final double[] dORef   = {1.138806E+08, 1.586333E+08, 6.934130E+04, 1.918893E+11,
-                                  1.476555E+08, 1.278862E+08, 6.979139E+07, 4.782720E+07,
-                                  1.245315E+08, 1.198041E+08, 0.000000E+00, 0.000000E+00,
-                                  0.000000E+00, 0.000000E+00, 0.000000E+00, 1.274494E+08,
-                                  1.241342E+11};
+            1.476555E+08, 1.278862E+08, 6.979139E+07, 4.782720E+07,
+            1.245315E+08, 1.198041E+08, 0.000000E+00, 0.000000E+00,
+            0.000000E+00, 0.000000E+00, 0.000000E+00, 1.274494E+08,
+            1.241342E+11};
         final double[] dN2Ref  = {1.998211E+07, 1.391117E+07, 4.247105E+01, 6.115826E+12,
-                                  1.579356E+07, 1.822577E+07, 1.236814E+07, 5.240380E+06,
-                                  2.369010E+07, 3.495798E+07, 2.049687E+19, 6.597567E+18,
-                                  3.170791E+17, 2.104370E+16, 1.874533E+15, 4.850450E+07,
-                                  4.929562E+12};
+            1.579356E+07, 1.822577E+07, 1.236814E+07, 5.240380E+06,
+            2.369010E+07, 3.495798E+07, 2.049687E+19, 6.597567E+18,
+            3.170791E+17, 2.104370E+16, 1.874533E+15, 4.850450E+07,
+            4.929562E+12};
         final double[] dO2Ref  = {4.022764E+05, 3.262560E+05, 1.322750E-01, 1.225201E+12,
-                                  2.633795E+05, 2.922214E+05, 2.492868E+05, 1.759875E+05,
-                                  4.911583E+05, 9.339618E+05, 5.498695E+18, 1.769929E+18,
-                                  8.506280E+16, 5.645392E+15, 4.923051E+14, 1.720838E+06,
-                                  1.048407E+12};
+            2.633795E+05, 2.922214E+05, 2.492868E+05, 1.759875E+05,
+            4.911583E+05, 9.339618E+05, 5.498695E+18, 1.769929E+18,
+            8.506280E+16, 5.645392E+15, 4.923051E+14, 1.720838E+06,
+            1.048407E+12};
         final double[] dARRef  = {3.557465E+03, 1.559618E+03, 2.618848E-05, 6.023212E+10,
-                                  1.588781E+03, 2.402962E+03, 1.405739E+03, 5.501649E+02,
-                                  4.578781E+03, 1.096255E+04, 2.451733E+17, 7.891680E+16,
-                                  3.792741E+15, 2.517142E+14, 2.239685E+13, 2.354487E+04,
-                                  4.993465E+10};
+            1.588781E+03, 2.402962E+03, 1.405739E+03, 5.501649E+02,
+            4.578781E+03, 1.096255E+04, 2.451733E+17, 7.891680E+16,
+            3.792741E+15, 2.517142E+14, 2.239685E+13, 2.354487E+04,
+            4.993465E+10};
         final double[] dHRef   = {3.475312E+04, 4.854208E+04, 2.016750E+04, 1.059880E+07,
-                                  5.816167E+04, 3.686389E+04, 5.291986E+04, 8.896776E+04,
-                                  3.244595E+04, 2.686428E+04, 0.000000E+00, 0.000000E+00,
-                                  0.000000E+00, 0.000000E+00, 0.000000E+00, 2.500078E+04,
-                                  8.831229E+06};
+            5.816167E+04, 3.686389E+04, 5.291986E+04, 8.896776E+04,
+            3.244595E+04, 2.686428E+04, 0.000000E+00, 0.000000E+00,
+            0.000000E+00, 0.000000E+00, 0.000000E+00, 2.500078E+04,
+            8.831229E+06};
         final double[] dNRef   = {4.095913E+06, 4.380967E+06, 5.741256E+03, 2.615737E+05,
-                                  5.478984E+06, 3.897276E+06, 1.069814E+06, 1.979741E+06,
-                                  5.370833E+06, 4.889974E+06, 0.000000E+00, 0.000000E+00,
-                                  0.000000E+00, 0.000000E+00, 0.000000E+00, 6.279210E+06,
-                                  2.252516E+05};
+            5.478984E+06, 3.897276E+06, 1.069814E+06, 1.979741E+06,
+            5.370833E+06, 4.889974E+06, 0.000000E+00, 0.000000E+00,
+            0.000000E+00, 0.000000E+00, 0.000000E+00, 6.279210E+06,
+            2.252516E+05};
         final double[] dAnORef = {2.667273E+04, 6.956682E+03, 2.374394E+04, 2.819879E-42,
-                                  1.264446E+03, 2.667273E+04, 2.667273E+04, 9.121815E+03,
-                                  2.667273E+04, 2.805445E+04, 0.000000E+00, 0.000000E+00,
-                                  0.000000E+00, 0.000000E+00, 0.000000E+00, 2.667273E+04,
-                                  2.415246E-42};
+            1.264446E+03, 2.667273E+04, 2.667273E+04, 9.121815E+03,
+            2.667273E+04, 2.805445E+04, 0.000000E+00, 0.000000E+00,
+            0.000000E+00, 0.000000E+00, 0.000000E+00, 2.667273E+04,
+            2.415246E-42};
         final double[] rhoRef  = {4.074714E-15, 5.001846E-15, 2.756772E-18, 3.584426E-10,
-                                  4.809630E-15, 4.355866E-15, 2.470651E-15, 1.571889E-15,
-                                  4.564420E-15, 4.974543E-15, 1.261066E-03, 4.059139E-04,
-                                  1.950822E-05, 1.294709E-06, 1.147668E-07, 5.881940E-15,
-                                  2.914304E-10};
+            4.809630E-15, 4.355866E-15, 2.470651E-15, 1.571889E-15,
+            4.564420E-15, 4.974543E-15, 1.261066E-03, 4.059139E-04,
+            1.950822E-05, 1.294709E-06, 1.147668E-07, 5.881940E-15,
+            2.914304E-10};
         final double deltaT = 1.e-2;
         final double deltaD = 5.e-7;
         final int id = nb - 1;
@@ -1186,5 +1072,87 @@ public class NRLMSISE00Test {
         public double[] getAp(AbsoluteDate date) {
             return new double[] {4., 100., 100., 100., 100., 100., 100.};
         }
+    }
+
+    /** NRLMSISE00 solar activity input parameters for testIssue1365AvoidNan1. */
+    @SuppressWarnings("serial")
+    private static class InputParamsIssue1365AvoidNan1 implements NRLMSISE00InputParameters {
+
+        @Override
+        public AbsoluteDate getMinDate() { return new AbsoluteDate(2005, 9, 10, TimeScalesFactory.getUTC()); }
+        @Override
+        public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 9, 11, TimeScalesFactory.getUTC()); }
+        @Override
+        public double getDailyFlux(AbsoluteDate date) { return 707.6; }
+        @Override
+        public double getAverageFlux(AbsoluteDate date) { return 98.8; }
+        @Override
+        public double[] getAp(AbsoluteDate date) { return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25}; }
+    }
+
+    /** NRLMSISE00 solar activity input parameters for testIssue1365AvoidNan2. */
+    @SuppressWarnings("serial")
+    private static class InputParamsIssue1365AvoidNan2 implements NRLMSISE00InputParameters {
+
+        @Override
+        public AbsoluteDate getMinDate() { return new AbsoluteDate(2005, 9, 10, TimeScalesFactory.getUTC()); }
+        @Override
+        public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 9, 11, TimeScalesFactory.getUTC()); }
+        @Override
+        public double getDailyFlux(AbsoluteDate date) { return 707.6; }
+        @Override
+        public double getAverageFlux(AbsoluteDate date) { return 98.8; }
+        @Override
+        public double[] getAp(AbsoluteDate date) { return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25}; }
+    }
+    
+    /** NRLMSISE00 solar activity input parameters for testIssue1365AvoidNanExceptionRaised. */
+    @SuppressWarnings("serial")
+    private static class InputParamsIssue1365AvoidNanExceptionRaised implements NRLMSISE00InputParameters {
+
+        @Override
+        public AbsoluteDate getMinDate() { return new AbsoluteDate(2005, 10, 30, TimeScalesFactory.getUTC()); }
+        @Override
+        public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 10, 31, TimeScalesFactory.getUTC()); }
+        @Override
+        public double getDailyFlux(AbsoluteDate date) { return 707.6; }
+        @Override
+        public double getAverageFlux(AbsoluteDate date) { return 98.8; }
+        @Override
+        public double[] getAp(AbsoluteDate date) { return new double[] {33.0, 9.0, 18.0, 32.0, 32.0, 8.875, 7.25}; }
+    }
+    
+    /** Sun position for testIssue1365xxx. */
+    @SuppressWarnings("serial")
+    private static class SunPositionIssue1365AvoidNan implements CelestialBody {
+        
+        private final Vector3D sunPosition;
+        private final Frame j2000;
+
+        /** Constructor.
+         * @param sunPosition
+         * @param j2000
+         */
+        private SunPositionIssue1365AvoidNan(Vector3D sunPosition,
+                                     Frame j2000) {
+            this.sunPosition = sunPosition;
+            this.j2000 = j2000;
+        }
+        @Override
+        public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+            return new TimeStampedPVCoordinates(date, sunPosition, Vector3D.ZERO);
+        }
+        @Override
+        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+            return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
+        }
+        @Override
+        public String getName() { return "SUN"; }
+        @Override
+        public Frame getInertiallyOrientedFrame() { return j2000; }
+        @Override
+        public double getGM() { return Constants.JPL_SSD_SUN_GM; }
+        @Override
+        public Frame getBodyOrientedFrame() { return j2000; }
     }
 }

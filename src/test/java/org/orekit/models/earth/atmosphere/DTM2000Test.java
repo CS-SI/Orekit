@@ -16,8 +16,6 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-import java.util.TimeZone;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -48,6 +46,8 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.TimeZone;
 
 public class DTM2000Test {
 
@@ -209,22 +209,7 @@ public class DTM2000Test {
         // -----
 
         // Build the input params provider
-        @SuppressWarnings("serial")
-        final DTM2000InputParameters ip = new DTM2000InputParameters() {
-
-            @Override
-            public AbsoluteDate getMinDate() { return new AbsoluteDate(2005, 9, 8, TimeScalesFactory.getUTC()); }
-            @Override
-            public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 9, 9, TimeScalesFactory.getUTC()); }
-            @Override
-            public double getInstantFlux(AbsoluteDate date) { return 587.9532986111111; }
-            @Override
-            public double getMeanFlux(AbsoluteDate date) { return 99.5; }
-            @Override
-            public double getThreeHourlyKP(AbsoluteDate date) { return 1.7; }
-            @Override
-            public double get24HoursKp(AbsoluteDate date) { return 1.5875; }
-        };
+        final DTM2000InputParameters ip = new InputParamsIssue1365();
 
         // Prepare field
         final Field<Binary64> field = Binary64Field.getInstance();
@@ -235,30 +220,10 @@ public class DTM2000Test {
 
         // Sun position at "date" in J2000
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        final CelestialBody sun = CelestialBodyFactory.getSun();
         final Vector3D sunPositionItrf = new Vector3D(-5.230565928624774E10, -1.4059879929943967E11, 1.4263029155223734E10);
 
         // Get Sun at date
-        @SuppressWarnings("serial")
-        final CelestialBody sunAtDate = new CelestialBody() {
-
-            @Override
-            public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-                return new TimeStampedPVCoordinates(date, sunPositionItrf, Vector3D.ZERO);
-            }
-            @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
-                return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
-            }
-            @Override
-            public String getName() { return sun.getName(); }
-            @Override
-            public Frame getInertiallyOrientedFrame() { return itrf; }
-            @Override
-            public double getGM() { return sun.getGM(); }
-            @Override
-            public Frame getBodyOrientedFrame() { return itrf; }
-        };
+        final CelestialBody sunAtDate = new SunPositionIssue1365(sunPositionItrf, itrf);
 
         // Get Earth body shape
 
@@ -332,4 +297,55 @@ public class DTM2000Test {
         Utils.setDataRoot("regular-data");
     }
 
+    /** DTM2000 solar activity input parameters for testIssue1365. */
+    @SuppressWarnings("serial")
+    private static class InputParamsIssue1365 implements DTM2000InputParameters {
+        @Override
+        public AbsoluteDate getMinDate() { return new AbsoluteDate(2005, 9, 8, TimeScalesFactory.getUTC()); }
+        @Override
+        public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 9, 9, TimeScalesFactory.getUTC()); }
+        @Override
+        public double getInstantFlux(AbsoluteDate date) { return 587.9532986111111; }
+        @Override
+        public double getMeanFlux(AbsoluteDate date) { return 99.5; }
+        @Override
+        public double getThreeHourlyKP(AbsoluteDate date) { return 1.7; }
+        @Override
+        public double get24HoursKp(AbsoluteDate date) { return 1.5875; }
+    }
+    
+    /** Sun position for testIssue1365. */
+    @SuppressWarnings("serial")
+    private static class SunPositionIssue1365 implements CelestialBody {
+        
+        private final Vector3D sunPositionItrf;
+        private final Frame itrf;
+
+        /** Constructor.
+         * @param sunPositionItrf
+         * @param itrf
+         */
+        private SunPositionIssue1365(Vector3D sunPositionItrf,
+                                     Frame itrf) {
+            this.sunPositionItrf = sunPositionItrf;
+            this.itrf = itrf;
+        }
+        
+        @Override
+        public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+            return new TimeStampedPVCoordinates(date, sunPositionItrf, Vector3D.ZERO);
+        }
+        @Override
+        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+            return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
+        }
+        @Override
+        public String getName() { return "SUN"; }
+        @Override
+        public Frame getInertiallyOrientedFrame() { return itrf; }
+        @Override
+        public double getGM() { return Constants.JPL_SSD_SUN_GM; }
+        @Override
+        public Frame getBodyOrientedFrame() { return itrf; }
+    }
 }
