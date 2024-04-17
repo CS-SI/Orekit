@@ -165,14 +165,12 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
         estimated.setEstimatedValue(rightAscension.getValue(), declination.getValue());
 
         // Partial derivatives of right ascension/declination in reference frame with respect to state
-        // (beware element at index 0 is the value, not a derivative)
         final double[] raDerivatives  = rightAscension.getGradient();
         final double[] decDerivatives = declination.getGradient();
         estimated.setStateDerivatives(0,
                                       Arrays.copyOfRange(raDerivatives, 0, 6), Arrays.copyOfRange(decDerivatives, 0, 6));
 
         // Partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = common.getIndices().get(span.getData());

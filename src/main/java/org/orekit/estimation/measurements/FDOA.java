@@ -243,12 +243,11 @@ public class FDOA extends GroundReceiverMeasurement<FDOA> {
         final Gradient fdoa = rangeRateDifference.multiply(rangeRateToHz);
         estimated.setEstimatedValue(fdoa.getValue());
 
-        // Range partial derivatives with respect to state
+        // Range first order derivatives with respect to state
         final double[] derivatives = fdoa.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = common.getIndices().get(span.getData());
