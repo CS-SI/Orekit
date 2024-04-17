@@ -41,8 +41,8 @@ import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.PositionMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -55,7 +55,6 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -104,8 +103,7 @@ public class KalmanEstimatorTest {
                                                                new PVMeasurementCreator(),
                                                                0.0, 3.0, 300.0);
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -174,8 +172,7 @@ public class KalmanEstimatorTest {
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -271,8 +268,7 @@ public class KalmanEstimatorTest {
         }
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -355,8 +351,7 @@ public class KalmanEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -435,8 +430,7 @@ public class KalmanEstimatorTest {
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -514,8 +508,7 @@ public class KalmanEstimatorTest {
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -614,8 +607,7 @@ public class KalmanEstimatorTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = measPropagatorBuilder.
-                        buildPropagator(measPropagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = measPropagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -708,8 +700,7 @@ public class KalmanEstimatorTest {
         measurements.addAll(measurementsRangeRate);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -842,12 +833,8 @@ public class KalmanEstimatorTest {
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
-            propagatorBuilder1.
-            buildPropagator(propagatorBuilder1.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
-            propagatorBuilder2.
-            buildPropagator(propagatorBuilder2.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
         };
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
@@ -1055,12 +1042,8 @@ public class KalmanEstimatorTest {
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
-            propagatorBuilder1.
-            buildPropagator(propagatorBuilder1.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
-            propagatorBuilder2.
-            buildPropagator(propagatorBuilder2.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
         };
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },

@@ -255,7 +255,7 @@ public class UnscentedEstimationTestUtils {
 			propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
 		}
 
-		return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+		return propagatorBuilder.buildPropagator();
 
 	}
 

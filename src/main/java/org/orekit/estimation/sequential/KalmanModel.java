@@ -895,7 +895,7 @@ public class KalmanModel implements KalmanEstimation, NonLinearProcess<Measureme
         // Return propagators built with current instantiation of the propagator builders
         final Propagator[] propagators = new Propagator[getBuilders().size()];
         for (int k = 0; k < getBuilders().size(); ++k) {
-            propagators[k] = getBuilders().get(k).buildPropagator(getBuilders().get(k).getSelectedNormalizedParameters());
+            propagators[k] = getBuilders().get(k).buildPropagator();
         }
         return propagators;
     }

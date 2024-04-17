@@ -118,6 +118,21 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         this.spacecraft = spacecraft;
     }
 
+    /**
+     * Getter for radiation-sensitive spacecraft.
+     * @return radiation-sensitive model
+     * @since 12.1
+     */
+    public RadiationSensitive getRadiationSensitiveSpacecraft() {
+        return spacecraft;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnPositionOnly() {
+        return spacecraft instanceof IsotropicRadiationClassicalConvention || spacecraft instanceof IsotropicRadiationCNES95Convention || spacecraft instanceof IsotropicRadiationSingleCoefficient;
+    }
+
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {

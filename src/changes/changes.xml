@@ -27,6 +27,12 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="maxime" type="update" issue="1374">
+        Added method build() in PropagatorBuilder.
+      </action>
+      <action dev="serrof" type="update" issue="1340">
+        Made dependsOnlyOnPosition check RadiationSensitive in SolarRadiationPressure.
+      </action>
       <action dev="luc" type="add" issue="1371">
         Added PerfectClockModel.
       </action>
@@ -140,7 +146,7 @@
           Removed redundant code to create FieldOrbit from Orbit.
       </action>
       <action dev="serrof" type="update" issue="1201">
-          Changed default PositionAngleType in (Field)NumericalPropagator to ECCENTRIC.
+          Improved performance with PositionAngleType in (Field)NumericalPropagator.
       </action>
       <action dev="serrof" type="update" issue="1307">
           Removed unnecessary calls to (Field)Transform in (Field)ShortTermEncounter2DDefinition.

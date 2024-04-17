@@ -224,7 +224,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngleType.ECCENTRIC);
+        setPositionAngleType(PositionAngleType.TRUE);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.

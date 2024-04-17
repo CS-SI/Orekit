@@ -202,7 +202,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         setMu(field.getZero().add(Double.NaN));
         clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngleType.ECCENTRIC);
+        setPositionAngleType(PositionAngleType.TRUE);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.

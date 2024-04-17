@@ -40,8 +40,8 @@ import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -54,7 +54,6 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -126,8 +125,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -202,8 +200,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                0.0, 1.0, 300.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -276,8 +273,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -349,8 +345,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -426,8 +421,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -514,8 +508,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                0.0, 1.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -603,8 +596,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                0.0, 1.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -746,12 +738,8 @@ public class UnscentedKalmanEstimatorTest {
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
-            propagatorBuilder1.
-            buildPropagator(propagatorBuilder1.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
-            propagatorBuilder2.
-            buildPropagator(propagatorBuilder2.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
         };
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },

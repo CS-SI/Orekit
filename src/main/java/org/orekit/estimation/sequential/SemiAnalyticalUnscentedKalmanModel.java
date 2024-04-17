@@ -287,7 +287,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
      */
     public DSSTPropagator getEstimatedPropagator() {
         // Return propagator built with current instantiation of the propagator builder
-        return builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        return (DSSTPropagator) builder.buildPropagator();
     }
 
     /** {@inheritDoc} */

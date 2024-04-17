@@ -1558,7 +1558,7 @@ public class NumericalPropagatorTest {
                                            eme2000,
                                            date, Constants.EIGEN5C_EARTH_MU);
         NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit, new DormandPrince853IntegratorBuilder(0.02, 0.2, 1.), PositionAngleType.TRUE, 10);
-        NumericalPropagator propagator = builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        NumericalPropagator propagator = (NumericalPropagator) builder.buildPropagator();
 
         IntStream.
         range(0, 2).
