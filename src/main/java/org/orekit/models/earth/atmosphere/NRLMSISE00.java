@@ -16,8 +16,6 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-import java.util.Arrays;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -42,6 +40,8 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.util.Arrays;
 
 
 /** This class implements the mathematical representation of the 2001
@@ -997,6 +997,9 @@ public class NRLMSISE00 implements Atmosphere {
         2.61000e+02, 2.64000e+02, 2.29000e+02, 2.17000e+02, 2.17000e+02,
         2.23000e+02, 2.86760e+02, -2.93940e+00, 2.50000e+00, 0.00000e+00
     };
+
+    /** NRLMSISE-00 minimum temperature, used in many cases in density computation. */
+    private static final double MIN_TEMP = 50.;
 
     // Fields
 
@@ -2484,7 +2487,7 @@ public class NRLMSISE00 implements Atmosphere {
 
                 /* Integrate temperature profile */
                 final double yi = splini(xs, ys, y2out, x);
-                final double expl = FastMath.min(50., gamm * yi);
+                final double expl = FastMath.min(MIN_TEMP, gamm * yi);
 
                 /* Density at altitude */
                 densm *= (t1 / tz) * FastMath.exp(-expl);
@@ -2530,7 +2533,7 @@ public class NRLMSISE00 implements Atmosphere {
 
                 /* Integrate temperature profile */
                 final double yi = splini(xs, ys, y2out, x);
-                final double expl = FastMath.min(50., gamm * yi);
+                final double expl = FastMath.min(MIN_TEMP, gamm * yi);
 
                 /* Density at altitude */
                 densm *= (t1 / tz) * FastMath.exp(-expl);
@@ -2608,12 +2611,12 @@ public class NRLMSISE00 implements Atmosphere {
             /* calculate density above za */
             double glb   = galt(zlb);
             double gamma = xm * glb / (R_GAS * s2 * tinf);
-            double expl  = (tt <= 0) ? 50. : FastMath.min(50., FastMath.exp(-s2 * gamma * zg2));
+            double expl  = (tt <= 0) ? MIN_TEMP : FastMath.min(MIN_TEMP, FastMath.exp(-s2 * gamma * zg2));
             double densu = dlb * expl * FastMath.pow(tlb / tt, 1.0 + alpha + gamma);
 
             // Correction for issue 1365 - protection against "densu" being infinite
             if (!Double.isFinite(densu)) {
-                if (expl < 50.) {
+                if (expl < MIN_TEMP) {
                     densu = dlb * FastMath.exp(FastMath.log(tlb / tt) * (1.0 + alpha + gamma) - s2 * gamma * zg2);
                 } else {
                     throw new OrekitException( OrekitMessages.INFINITE_NRLMSISE00_DENSITY);
@@ -2625,7 +2628,7 @@ public class NRLMSISE00 implements Atmosphere {
                 glb   = galt(ZN1[0]);
                 gamma = xm * glb * zgdif / R_GAS;
                 /* integrate spline temperatures */
-                expl  = (tz <= 0) ? 50.0 : FastMath.min(50., gamma * splini(xs, ys, y2out, x));
+                expl  = (tz <= 0) ? MIN_TEMP : FastMath.min(MIN_TEMP, gamma * splini(xs, ys, y2out, x));
                 /* correct density at altitude */
                 densu *= FastMath.pow(meso_tn1[0] / tz, 1.0 + alpha) * FastMath.exp(-expl);
             }
@@ -3938,7 +3941,7 @@ public class NRLMSISE00 implements Atmosphere {
 
                 /* Integrate temperature profile */
                 final T yi = splini(xs, ys, y2out, x);
-                final T expl = min(50., gamm.multiply(yi));
+                final T expl = min(MIN_TEMP, gamm.multiply(yi));
 
                 /* Density at altitude */
                 densm = densm.multiply(t1.divide(tz).multiply(expl.negate().exp()));
@@ -3984,7 +3987,7 @@ public class NRLMSISE00 implements Atmosphere {
 
                 /* Integrate temperature profile */
                 final T yi = splini(xs, ys, y2out, x);
-                final T expl = min(50., gamm.multiply(yi));
+                final T expl = min(MIN_TEMP, gamm.multiply(yi));
 
                 /* Density at altitude */
                 densm = densm.multiply(t1.divide(tz).multiply(expl.negate().exp()));
@@ -4064,13 +4067,13 @@ public class NRLMSISE00 implements Atmosphere {
             T glb   = galt(zero.newInstance(zlb));
             T gamma = glb.divide(s2.multiply(tinf)).multiply(xm / R_GAS);
             T expl = tt.getReal() <= 0 ?
-                     zero.newInstance(50) :
-                     min(50.0, s2.negate().multiply(gamma).multiply(zg2).exp());
+                     zero.newInstance(MIN_TEMP) :
+                     min(MIN_TEMP, s2.negate().multiply(gamma).multiply(zg2).exp());
             T densu = dlb.multiply(expl).multiply(tlb.divide(tt).pow(gamma.add(alpha + 1)));
 
             // Correction for issue 1365 - protection against "densu" being infinite
             if (!Double.isFinite(densu.getReal())) {
-                if (expl.getReal() < 50.) {
+                if (expl.getReal() < MIN_TEMP) {
                     densu = dlb.multiply(FastMath.exp((FastMath.log(tlb.divide(tt)).multiply(gamma.add(alpha + 1))).
                                                       subtract(s2.multiply(gamma).multiply(zg2))));;
                 } else {
@@ -4084,8 +4087,8 @@ public class NRLMSISE00 implements Atmosphere {
                 gamma = glb.multiply(zgdif).multiply(xm / R_GAS);
                 /* integrate spline temperatures */
                 expl = tz.getReal() <= 0 ?
-                       zero.newInstance(50.0) :
-                       min(50.0, gamma.multiply(splini(xs, ys, y2out, x)));
+                       zero.newInstance(MIN_TEMP) :
+                       min(MIN_TEMP, gamma.multiply(splini(xs, ys, y2out, x)));
                 /* correct density at altitude */
                 densu = densu.multiply(meso_tn1[0].divide(tz).pow(alpha + 1).multiply(expl.negate().exp()));
             }
