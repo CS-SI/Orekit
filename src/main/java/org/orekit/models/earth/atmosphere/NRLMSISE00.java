@@ -3416,8 +3416,10 @@ public class NRLMSISE00 implements Atmosphere {
             // F10.7 effect
             final double df  = f107  - f107a;
             final double dfa = f107a - FLUX_REF;
-            t[0] = zero.newInstance(p[19] * df * (1.0 + p[59] * dfa) + p[20] * df * df +
-                    p[21] * dfa + p[29] * dfa * dfa);
+            t[0] = zero.newInstance(p[19] * df * (1.0 + p[59] * dfa) +
+                                    p[20] * df * df +
+                                    p[21] * dfa +
+                                    p[29] * dfa * dfa);
 
             final double f1 = 1.0 + (p[47] * dfa + p[19] * df + p[20] * df * df) * swc[1];
             final double f2 = 1.0 + (p[49] * dfa + p[19] * df + p[20] * df * df) * swc[1];
