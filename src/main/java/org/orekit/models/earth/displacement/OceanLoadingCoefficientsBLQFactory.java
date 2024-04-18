@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.orekit.annotation.DefaultDataContext;
@@ -129,13 +128,11 @@ public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoade
         loadsIfNeeded();
 
         // extract sites names from the map
-        final List<String> sites = coefficients.stream()
+        return coefficients.stream()
                 .map(OceanLoadingCoefficients::getSiteName)
                 // sort to ensure we have a reproducible order
                 .sorted(String::compareToIgnoreCase)
                 .collect(Collectors.toList());
-
-        return sites;
 
     }
 

@@ -18,28 +18,17 @@ package org.orekit.models.earth.displacement;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.data.AbstractSelfFeedingLoader;
-import org.orekit.data.DataContext;
-import org.orekit.data.DataLoader;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIOException;
 import org.orekit.errors.OrekitMessages;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Parser for ocean loading coefficients, using Onsala Space Observatory files in BLQ format.
@@ -65,7 +54,7 @@ import java.util.stream.Collectors;
 public class OceanLoadingCoefficientsBlqParser {
 
     /** Pattern for fields with real type. */
-    private static final String  REAL_TYPE_PATTERN = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+    private static final String  REAL_TYPE_PATTERN = "[-+]?(?:\\p{Digit}+(?:\\.\\p{Digit}*)?|\\.\\p{Digit}+)(?:[eE][-+]?\\p{Digit}+)?";
 
     /** Pattern for extracted real fields. */
     private static final String  REAL_FIELD_PATTERN = "\\p{Space}*(" + REAL_TYPE_PATTERN + ")";
