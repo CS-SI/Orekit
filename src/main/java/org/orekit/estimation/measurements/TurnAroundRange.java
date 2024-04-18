@@ -462,12 +462,11 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
         final Gradient turnAroundRange = (tauLeg2.add(tauLeg1)).multiply(cOver2);
         estimated.setEstimatedValue(turnAroundRange.getValue());
 
-        // Turn-around range partial derivatives with respect to state
+        // Turn-around range first order derivatives with respect to state
         final double[] derivatives = turnAroundRange.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());

@@ -147,15 +147,13 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl> {
         // azimuth - elevation values
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());
 
-        // Partial derivatives of azimuth/elevation with respect to state
-        // (beware element at index 0 is the value, not a derivative)
+        // First order derivatives of azimuth/elevation with respect to state
         final double[] azDerivatives = azimuth.getGradient();
         final double[] elDerivatives = elevation.getGradient();
         estimated.setStateDerivatives(0,
                                       Arrays.copyOfRange(azDerivatives, 0, 6), Arrays.copyOfRange(elDerivatives, 0, 6));
 
-        // Set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives of azimuth/elevation with respect to state
         for (final ParameterDriver driver : getParametersDrivers()) {
 
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
