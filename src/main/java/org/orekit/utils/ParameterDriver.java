@@ -103,7 +103,7 @@ import org.orekit.utils.TimeSpanMap.Transition;
 public class ParameterDriver {
 
     /** Name of the parameter.*/
-    private String SPAN = "Span";
+    public static final String SPAN = "Span";
 
     /** Name of the parameter. */
     private String name;
