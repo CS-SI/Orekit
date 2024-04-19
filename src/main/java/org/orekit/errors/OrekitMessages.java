@@ -879,6 +879,9 @@ public enum OrekitMessages implements Localizable {
     /** DATES_MISMATCH. */
     DATES_MISMATCH("first date {0} does not match second date {1}"),
 
+    /** WRONG ELEMENTS FOR AVERAGING THEORY. */
+    WRONG_ELEMENTS_FOR_AVERAGING_THEORY("unexpected type of orbital elements for required averaging theory"),
+
     /** ORBITS_MUS_MISMATCH. */
     ORBITS_MUS_MISMATCH("first orbit mu {0} does not match second orbit mu {1}"),
 
