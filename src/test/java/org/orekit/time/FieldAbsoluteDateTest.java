@@ -186,6 +186,35 @@ public class FieldAbsoluteDateTest {
         doTestJDDate(Binary64Field.getInstance());
     }
 
+    /** Test issue 1310: get a date from a JD using a pivot timescale. */
+    @Test
+    public void testIssue1310JDDateInTDB() {
+
+        // Given
+        // -----
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        final TDBScale TDBscale = TimeScalesFactory.getTDB();
+        final FieldAbsoluteDate<Binary64> refDate = new FieldAbsoluteDate<>(field,
+                new AbsoluteDate("2023-08-01T00:00:00.000", TDBscale));
+
+        // When
+        // ----
+        final FieldAbsoluteDate<Binary64> wrongDate  = FieldAbsoluteDate.createJDDate(2460157,
+                field.getOne().multiply(Constants.JULIAN_DAY / 2.0d), TDBscale);
+        final FieldAbsoluteDate<Binary64> properDate = FieldAbsoluteDate.createJDDate(2460157,
+                field.getOne().multiply(Constants.JULIAN_DAY / 2.0d), TDBscale, TimeScalesFactory.getTT());
+
+        // Then
+        // ----
+
+        // Wrong date is too far from reference date
+        Assertions.assertEquals(0.0, wrongDate.durationFrom(refDate).getReal(), 1.270e-05);
+
+        // Proper date is close enough from reference date
+        Assertions.assertEquals(0.0, properDate.durationFrom(refDate).getReal(), 2.132e-13);
+    }
+
     @Test
     public void testOffsets() {
         doTestOffsets(Binary64Field.getInstance());

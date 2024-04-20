@@ -726,9 +726,38 @@ public class AbsoluteDate
      * @return a new instant
      */
     public static AbsoluteDate createJDDate(final int jd, final double secondsSinceNoon,
-                                             final TimeScale timeScale) {
+                                            final TimeScale timeScale) {
         return new AbsoluteDate(new DateComponents(DateComponents.JULIAN_EPOCH, jd),
-                                TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
+                TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
+    }
+
+    /** Build an instance corresponding to a Julian Day date.
+     * <p>
+     * This function should be preferred to {@link #createMJDDate(int, double, TimeScale)} when the target time scale
+     * has a non-constant offset with respect to TAI.
+     * <p>
+     * The idea is to introduce a pivot time scale that is close to the target time scale but has a constant bias with TAI.
+     * <p>
+     * For example, to get a date from an MJD in TDB time scale, it's advised to use the TT time scale
+     * as a pivot scale. TT is very close to TDB and has constant offset to TAI.
+     * @param jd Julian day
+     * @param secondsSinceNoon seconds in the Julian day
+     * (BEWARE, Julian days start at noon, so 0.0 is noon)
+     * @param timeScale timescale in which the seconds in day are defined
+     * @param pivotTimeScale pivot timescale used as intermediate timescale
+     * @return a new instant
+     */
+    public static AbsoluteDate createJDDate(final int jd, final double secondsSinceNoon,
+                                            final TimeScale timeScale,
+                                            final TimeScale pivotTimeScale) {
+        // Get the date in pivot timescale
+        final AbsoluteDate dateInPivotTimeScale = createJDDate(jd, secondsSinceNoon, pivotTimeScale);
+
+        // Compare offsets to TAI of the two time scales
+        final double offsetFromTAI = timeScale.offsetFromTAI(dateInPivotTimeScale) -  pivotTimeScale.offsetFromTAI(dateInPivotTimeScale);
+
+        // Return date in desired timescale
+        return dateInPivotTimeScale.shiftedBy(-offsetFromTAI);
     }
 
     /** Build an instance corresponding to a Modified Julian Day date.
@@ -765,7 +794,6 @@ public class AbsoluteDate
         return new AbsoluteDate(dc, tc, timeScale);
 
     }
-
 
     /** Build an instance corresponding to a Julian Epoch (JE).
      * <p>According to Lieske paper: <a
