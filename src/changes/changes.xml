@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="1386">
+        Removed measurement Jacobian computation in UKF.
+      </action>
+      <action dev="serrof" type="add" issue="1383">
+        Add simpler signature for estimateWithoutDerivatives.
+      </action>
       <action dev="vincent" type="fix" issue="1282">
         Fixed mismatch between LOFType.EQW javadoc and code.
       </action>
@@ -70,7 +76,7 @@
         Add wrapper for back and forth conversions from osculating elements for averaging theories.
       </action>
       <action dev="maxime" type="fix" issue="1310">
-        Fixed creating an AbsoluteDate from JD in TDB timescale.
+        Fixed creating an AbsoluteDate from JD in TDB timescale. 
       </action>
       <action dev="luc" type="update" issue="1380">
         Allow parsing of ocean loading coefficients (BLQ files) from a DataSource.

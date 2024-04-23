@@ -26,6 +26,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -365,11 +366,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                                     currentDate, builder.getMu(), builder.getFrame());
 
             // Then, estimate the measurement
-            final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber,
-                                                                                   currentMeasurementNumber,
-                                                                                   new SpacecraftState[] {
-                                                                                       new SpacecraftState(osculatingOrbit)
-                                                                                   });
+            final EstimatedMeasurement<?> estimated = estimateMeasurement(observedMeasurement, currentMeasurementNumber,
+                new SpacecraftState[] { new SpacecraftState(osculatingOrbit) });
             predictedMeasurements[k] = new ArrayRealVector(estimated.getEstimatedValue());
 
         }
@@ -392,7 +390,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
                                                                 currentDate, builder.getMu(), builder.getFrame());
         predictedSpacecraftState = new SpacecraftState(osculatingOrbit);
-        predictedMeasurement = measurement.getObservedMeasurement().estimate(currentMeasurementNumber, currentMeasurementNumber, getPredictedSpacecraftStates());
+        predictedMeasurement = estimateMeasurement(measurement.getObservedMeasurement(), currentMeasurementNumber,
+            getPredictedSpacecraftStates());
         predictedMeasurement.setEstimatedValue(predictedMeas.toArray());
 
         // Apply the dynamic outlier filter, if it exists
@@ -424,13 +423,35 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Compute the corrected measurements
         correctedSpacecraftState = new SpacecraftState(osculatingOrbit);
-        correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
-                                                            currentMeasurementNumber,
-                                                            getCorrectedSpacecraftStates());
+        correctedMeasurement = estimateMeasurement(observedMeasurement, currentMeasurementNumber,
+            getCorrectedSpacecraftStates());
+
         // Call the observer if the user add one
         if (observer != null) {
             observer.evaluationPerformed(this);
         }
+    }
+
+    /**
+     * Estimate measurement (without derivatives).
+     * @param <T> measurement type
+     * @param observedMeasurement observed measurement
+     * @param measurementNumber measurement number
+     * @param spacecraftStates states
+     * @return estimated measurements
+     * @since 12.1
+     */
+    private static <T extends ObservedMeasurement<T>> EstimatedMeasurement<?> estimateMeasurement(final ObservedMeasurement<T> observedMeasurement,
+                                                                                                  final int measurementNumber,
+                                                                                                  final SpacecraftState[] spacecraftStates) {
+        final EstimatedMeasurementBase<T> estimatedMeasurementBase = observedMeasurement.
+                estimateWithoutDerivatives(measurementNumber, measurementNumber,
+                        KalmanEstimatorUtil.filterRelevant(observedMeasurement, spacecraftStates));
+        final EstimatedMeasurement<T> estimatedMeasurement = new EstimatedMeasurement<>(estimatedMeasurementBase.getObservedMeasurement(),
+                estimatedMeasurementBase.getIteration(), estimatedMeasurementBase.getCount(),
+                estimatedMeasurementBase.getStates(), estimatedMeasurementBase.getParticipants());
+        estimatedMeasurement.setEstimatedValue(estimatedMeasurementBase.getEstimatedValue());
+        return estimatedMeasurement;
     }
 
     /** Get the state transition matrix used to predict the filter correction.

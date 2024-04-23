@@ -188,7 +188,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assertions.assertEquals(0.0, observer.getMeanResidual(), 4.99e-8);
+        Assertions.assertEquals(0.0, observer.getMeanResidual(), 5.08e-8);
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
         Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
