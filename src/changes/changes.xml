@@ -27,6 +27,9 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="1310">
+        Fixed creating an AbsoluteDate from JD in TDB timescale. 
+      </action>
       <action dev="luc" type="update" issue="1380">
         Allow parsing of ocean loading coefficients (BLQ files) from a DataSource.
       </action>
