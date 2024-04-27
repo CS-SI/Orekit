@@ -185,8 +185,7 @@ public class OneWayGNSSPhaseTest {
 
                     // Values of the phase & errors
                     final double phaseObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                         new SpacecraftState[] {
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                              state,
                                                                                                              ephemeris.propagate(state.getDate())
                                                                                                          });
@@ -329,7 +328,7 @@ public class OneWayGNSSPhaseTest {
                     jacobianRef = Differentiation.differentiate(state -> {
                         final SpacecraftState[] s = states.clone();
                         s[index] = state;
-                        return measurement.estimateWithoutDerivatives(0, 0, s).getEstimatedValue();
+                        return measurement.estimateWithoutDerivatives(s).getEstimatedValue();
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 8.0, 5).value(states[index]);
 
@@ -491,7 +490,7 @@ public class OneWayGNSSPhaseTest {
                                                 @Override
                                                 public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                     return measurement.
-                                                           estimateWithoutDerivatives(0, 0, states).
+                                                           estimateWithoutDerivatives(states).
                                                            getEstimatedValue()[0];
                                                 }
                                             }, 5, 10.0 * drivers[i].getScale());

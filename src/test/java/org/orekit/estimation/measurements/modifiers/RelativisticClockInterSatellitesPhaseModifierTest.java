@@ -55,7 +55,7 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
                                                                     wavelength, 1.0, 1.0);
 
         // Inter-satellites phase before applying the modifier
-        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
 
         // Inter-satellites phase after applying the modifier
         final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticClockInterSatellitesPhaseModifier();
@@ -81,7 +81,7 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
                                                                     new AmbiguityCache());
 
         // Inter-satellites phase before applying the modifier
-        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
 
         // Inter-satellites phase after applying the modifier
         final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticClockInterSatellitesPhaseModifier();

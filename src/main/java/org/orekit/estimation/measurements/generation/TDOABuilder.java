@@ -90,7 +90,7 @@ public class TDOABuilder extends AbstractMeasurementBuilder<TDOA> {
         }
 
         // estimate the perfect value of the measurement
-        double tdoa = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
+        double tdoa = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();

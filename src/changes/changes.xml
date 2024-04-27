@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1383">
+        Add simpler signature for estimateWithoutDerivatives.
+      </action>
       <action dev="serrof" type="add" issue="1375">
         Add wrapper for back and forth conversions from osculating elements for averaging theories.
       </action>

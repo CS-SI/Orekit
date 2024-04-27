@@ -118,7 +118,7 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         }
 
         // estimate the perfect value of the measurement
-        double phase = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
+        double phase = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();

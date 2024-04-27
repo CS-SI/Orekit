@@ -172,8 +172,7 @@ public class InterSatellitesRangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                         new SpacecraftState[] {
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                              state,
                                                                                                              ephemeris.propagate(state.getDate())
                                                                                                          });
@@ -330,7 +329,7 @@ public class InterSatellitesRangeTest {
                         public double[] value(final SpacecraftState state) {
                             final SpacecraftState[] s = states.clone();
                             s[index] = state;
-                            return measurement.estimateWithoutDerivatives(0, 0, s).getEstimatedValue();
+                            return measurement.estimateWithoutDerivatives(s).getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
@@ -518,7 +517,7 @@ public class InterSatellitesRangeTest {
                                                 @Override
                                                 public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                     return measurement.
-                                                           estimateWithoutDerivatives(0, 0, states).
+                                                           estimateWithoutDerivatives(states).
                                                            getEstimatedValue()[0];
                                                 }
                                             }, 3, 20.0 * drivers[i].getScale());

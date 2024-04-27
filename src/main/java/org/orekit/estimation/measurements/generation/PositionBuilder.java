@@ -77,7 +77,7 @@ public class PositionBuilder extends AbstractMeasurementBuilder<Position> {
         }
 
         // estimate the perfect value of the measurement
-        final double[] position = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue();
+        final double[] position = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue();
 
         // add the noise
         final double[] noise = getNoise();

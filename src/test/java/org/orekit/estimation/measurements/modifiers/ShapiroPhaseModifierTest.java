@@ -95,7 +95,7 @@ public class ShapiroPhaseModifierTest {
                 found = found || existing == modifier;
             }
             Assertions.assertTrue(found);
-            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(0, 0,  new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives( new SpacecraftState[] { refstate });
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 

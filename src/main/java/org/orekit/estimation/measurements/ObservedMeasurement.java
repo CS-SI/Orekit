@@ -124,6 +124,19 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * The estimated value is the <em>combination</em> of the raw estimated
      * value and all the modifiers that apply to the measurement.
      * </p>
+     * @param states orbital states corresponding to {@link #getSatellites()} at measurement date
+     * @return estimated measurement
+     * @since 12.1
+     */
+    default EstimatedMeasurementBase<T> estimateWithoutDerivatives(SpacecraftState[] states) {
+        return estimateWithoutDerivatives(0, 0, states);
+    }
+
+    /** Estimate the theoretical value of the measurement, without derivatives. For use in orbit determination.
+     * <p>
+     * The estimated value is the <em>combination</em> of the raw estimated
+     * value and all the modifiers that apply to the measurement.
+     * </p>
      * @param iteration iteration number
      * @param evaluation evaluations number
      * @param states orbital states corresponding to {@link #getSatellites()} at measurement date

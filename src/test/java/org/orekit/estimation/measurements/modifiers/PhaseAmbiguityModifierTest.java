@@ -80,12 +80,12 @@ public class PhaseAmbiguityModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             Phase phase = (Phase) measurement;
-            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
 
             // add modifier
             phase.addModifier(modifier);
-            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             Assertions.assertEquals(ambiguity2, eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 

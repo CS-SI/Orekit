@@ -93,7 +93,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             Range range = (Range) measurement;
-            EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
 
             // add modifier
@@ -137,7 +137,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             Range range = (Range) measurement;
-            EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             final GroundStation                  stationParameter = ((Range) measurement).getStation();
@@ -150,7 +150,7 @@ public class TropoModifierTest {
             parameterDriver.setSelected(true);
             parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
             range.addModifier(modifier);
-            EstimatedMeasurementBase<Range> eval = range.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Range> eval = range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
@@ -201,12 +201,12 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             Phase phase = (Phase) measurement;
-            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
 
             // add modifier
             phase.addModifier(modifier);
-            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
 
@@ -248,7 +248,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             Phase phase = (Phase) measurement;
-            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
 
             // add modifier
@@ -262,7 +262,7 @@ public class TropoModifierTest {
             parameterDriver.setSelected(true);
             parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
             phase.addModifier(modifier);
-            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
 
@@ -310,7 +310,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             TurnAroundRange turnAroundRange = (TurnAroundRange) measurement;
-            EstimatedMeasurementBase<TurnAroundRange> evalNoMod = turnAroundRange.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<TurnAroundRange> evalNoMod = turnAroundRange.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             turnAroundRange.addModifier(modifier);
@@ -360,15 +360,13 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(biRange.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurementBase<BistaticRange> evalNoMod = biRange.estimateWithoutDerivatives(0, 0,
-                                                                                                   new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<BistaticRange> evalNoMod = biRange.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             biRange.addModifier(modifier);
 
             // Estimate with modifier
-            EstimatedMeasurementBase<BistaticRange> eval = biRange.estimateWithoutDerivatives(0, 0,
-                                                                                              new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<BistaticRange> eval = biRange.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
@@ -411,15 +409,13 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(biRangeRate.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurementBase<BistaticRangeRate> evalNoMod = biRangeRate.estimateWithoutDerivatives(0, 0,
-                                                                                                           new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<BistaticRangeRate> evalNoMod = biRangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             biRangeRate.addModifier(modifier);
 
             // Estimate with modifier
-            EstimatedMeasurementBase<BistaticRangeRate> eval = biRangeRate.estimateWithoutDerivatives(0, 0,
-                                                                                                      new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<BistaticRangeRate> eval = biRangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
@@ -460,8 +456,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(biRangeRate.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurementBase<BistaticRangeRate> evalNoMod = biRangeRate.estimateWithoutDerivatives(0, 0,
-                                                                                                           new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<BistaticRangeRate> evalNoMod = biRangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             final NiellMappingFunctionModel mappingFunc = new NiellMappingFunctionModel();
@@ -477,8 +472,7 @@ public class TropoModifierTest {
             biRangeRate.addModifier(modifier);
 
             // Estimate with modifier
-            EstimatedMeasurementBase<BistaticRangeRate> eval = biRangeRate.estimateWithoutDerivatives(0, 0,
-                                                                                                      new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<BistaticRangeRate> eval = biRangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
@@ -523,13 +517,13 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(tdoa.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurementBase<TDOA> evalNoMod = tdoa.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<TDOA> evalNoMod = tdoa.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             tdoa.addModifier(modifier);
 
             // Estimate with modifier
-            EstimatedMeasurementBase<TDOA> eval = tdoa.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<TDOA> eval = tdoa.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
@@ -571,7 +565,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(tdoa.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurementBase<TDOA> evalNoMod = tdoa.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<TDOA> evalNoMod = tdoa.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             final NiellMappingFunctionModel     mappingFunct = new NiellMappingFunctionModel();
@@ -629,7 +623,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             RangeRate rangeRate = (RangeRate) measurement;
-            EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             rangeRate.addModifier(modifier);
@@ -669,7 +663,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             RangeRate rangeRate = (RangeRate) measurement;
-            EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             final GroundStation                      stationParameter = ((RangeRate) measurement).getStation();
@@ -684,7 +678,7 @@ public class TropoModifierTest {
             rangeRate.addModifier(modifier);
 
             //
-            EstimatedMeasurementBase<RangeRate> eval = rangeRate.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<RangeRate> eval = rangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
@@ -726,13 +720,12 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             AngularAzEl angular = (AngularAzEl) measurement;
-            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(0, 0,
-                                                                                                 new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
@@ -771,7 +764,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             AngularAzEl angular = (AngularAzEl) measurement;
-            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             final GroundStation                    stationParameter = ((AngularAzEl) measurement).getStation();
@@ -785,8 +778,7 @@ public class TropoModifierTest {
             parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
             angular.addModifier(modifier);
             //
-            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(0, 0,
-                                                                                            new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
@@ -828,7 +820,7 @@ public class TropoModifierTest {
             final SpacecraftState refState = propagator.propagate(date);
 
             AngularAzEl angular = (AngularAzEl) measurement;
-            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // get the altitude of the station (in kilometers)
             final double altitude = angular.getStation().getBaseFrame().getPoint().getAltitude() / 1000.;
@@ -837,7 +829,7 @@ public class TropoModifierTest {
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold

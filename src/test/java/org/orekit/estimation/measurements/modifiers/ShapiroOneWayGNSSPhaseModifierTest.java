@@ -102,7 +102,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
             };
             EstimatedMeasurementBase<OneWayGNSSPhase>
                 evalNoMod =
-                sr.estimateWithoutDerivatives(0, 0, states);
+                sr.estimateWithoutDerivatives(states);
 
             // add modifier
             sr.addModifier(modifier);
@@ -113,7 +113,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
             Assertions.assertTrue(found);
             EstimatedMeasurementBase<OneWayGNSSPhase>
                 eval =
-                sr.estimateWithoutDerivatives(0, 0, states);
+                sr.estimateWithoutDerivatives(states);
 
             stat.addValue(
                 eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);

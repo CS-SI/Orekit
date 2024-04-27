@@ -162,8 +162,7 @@ public class WindUpTest {
         for (ObservedMeasurement<?> m : measurements) {
             Phase phase = (Phase) m;
             @SuppressWarnings("unchecked")
-            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.estimateWithoutDerivatives(0, 0,
-                                                                                                                       new SpacecraftState[] {
+            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                                            propagator.propagate(phase.getDate()) 
                                                                                                                        });
             final double original = estimated.getEstimatedValue()[0];

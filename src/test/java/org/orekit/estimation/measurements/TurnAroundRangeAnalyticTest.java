@@ -395,7 +395,7 @@ public class TurnAroundRangeAnalyticTest {
                 jacobianRef = Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
                         return measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -598,7 +598,7 @@ public class TurnAroundRangeAnalyticTest {
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                             return measurement.
-                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                    getEstimatedValue()[0];
                                         }
                                     }, 3, 20.0 * drivers[i].getScale());
