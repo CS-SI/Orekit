@@ -56,7 +56,7 @@ public class RelativisticClockInterSatellitesOneWayRangeRateModifierTest {
                                                                                         1.0, 1.0);
 
         // Inter-satellites range rate before applying the modifier
-        final EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> estimatedBefore = range.estimateWithoutDerivatives(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> estimatedBefore = range.estimateWithoutDerivatives(states);
 
         // Inter-satellites range rate before applying the modifier
         final EstimationModifier<InterSatellitesOneWayRangeRate> modifier =

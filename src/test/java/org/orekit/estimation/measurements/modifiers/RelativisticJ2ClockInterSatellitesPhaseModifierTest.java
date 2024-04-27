@@ -72,7 +72,7 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
                                                                     new AmbiguityCache());
 
         // Inter-satellites phase before applying the modifier
-        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
 
         // Inter-satellites phase after applying the modifier
         final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticJ2ClockInterSatellitesPhaseModifier(Constants.WGS84_EARTH_MU,
@@ -101,7 +101,7 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
                                                                     cache);
 
         // Inter-satellites phase before applying the modifier
-        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
 
         // Inter-satellites phase after applying the modifier
         final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticJ2ClockInterSatellitesPhaseModifier(Constants.WGS84_EARTH_MU,

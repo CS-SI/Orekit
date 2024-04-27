@@ -72,7 +72,7 @@ public class AngularAzElTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             azDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -150,7 +150,7 @@ public class AngularAzElTest {
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
                         return measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
@@ -260,7 +260,7 @@ public class AngularAzElTest {
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                             return measurement.
-                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                    getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());

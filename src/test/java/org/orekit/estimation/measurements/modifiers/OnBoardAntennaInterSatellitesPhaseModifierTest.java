@@ -171,8 +171,7 @@ public class OnBoardAntennaInterSatellitesPhaseModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             InterSatellitesPhase sr = (InterSatellitesPhase) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<InterSatellitesPhase> estimated = sr.estimateWithoutDerivatives(0, 0,
-                                                                                                     new SpacecraftState[] {
+            EstimatedMeasurementBase<InterSatellitesPhase> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                          p3.propagate(sr.getDate()),
                                                                                                          ephemeris.propagate(sr.getDate())
                                                                                                      });

@@ -100,7 +100,7 @@ public class ShapiroRangeModifierTest {
                 found = found || existing == modifier;
             }
             Assertions.assertTrue(found);
-            EstimatedMeasurementBase<Range> eval = range.estimateWithoutDerivatives(0, 0,  new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<Range> eval = range.estimateWithoutDerivatives( new SpacecraftState[] { refstate });
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 

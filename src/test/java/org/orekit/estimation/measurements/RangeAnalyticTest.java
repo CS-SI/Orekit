@@ -392,7 +392,7 @@ public class RangeAnalyticTest {
                         jacobianRef = Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) {
                                 return measurement.
-                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                        getEstimatedValue();
                             }
                         }, measurement.getDimension(), propagator.getAttitudeProvider(),

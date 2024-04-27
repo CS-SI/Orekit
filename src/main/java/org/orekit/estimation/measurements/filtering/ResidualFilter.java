@@ -51,7 +51,7 @@ public class ResidualFilter<T extends ObservedMeasurement<T>> implements Measure
 
         // Computation of the estimated value of the measurement
         final SpacecraftState[]           sc             = new SpacecraftState[] {state};
-        final EstimatedMeasurementBase<T> estimated      = measurement.estimateWithoutDerivatives(0, 0, sc);
+        final EstimatedMeasurementBase<T> estimated      = measurement.estimateWithoutDerivatives(sc);
         final double[]                    estimatedValue = estimated.getEstimatedValue();
 
         // Observed parameters (i.e. value and standard deviation)

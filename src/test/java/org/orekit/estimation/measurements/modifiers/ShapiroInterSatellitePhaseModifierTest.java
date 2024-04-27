@@ -100,7 +100,7 @@ public class ShapiroInterSatellitePhaseModifierTest {
                 p3.propagate(sr.getDate()),
                 ephemeris.propagate(sr.getDate())
             };
-            EstimatedMeasurementBase<InterSatellitesPhase> evalNoMod = sr.estimateWithoutDerivatives(0, 0, states);
+            EstimatedMeasurementBase<InterSatellitesPhase> evalNoMod = sr.estimateWithoutDerivatives(states);
 
             // add modifier
             sr.addModifier(modifier);
@@ -109,7 +109,7 @@ public class ShapiroInterSatellitePhaseModifierTest {
                 found = found || existing == modifier;
             }
             Assertions.assertTrue(found);
-            EstimatedMeasurementBase<InterSatellitesPhase> eval = sr.estimateWithoutDerivatives(0, 0, states);
+            EstimatedMeasurementBase<InterSatellitesPhase> eval = sr.estimateWithoutDerivatives(states);
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 

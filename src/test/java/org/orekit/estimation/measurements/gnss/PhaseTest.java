@@ -199,8 +199,7 @@ public class PhaseTest {
 
                     // Values of the Phase & errors
                     final double phaseObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                         new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
@@ -337,7 +336,7 @@ public class PhaseTest {
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(
                         state1 -> measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] {
+                               estimateWithoutDerivatives(new SpacecraftState[] {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -509,7 +508,7 @@ public class PhaseTest {
                                             @Override
                                             public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.
-                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                        getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
@@ -650,7 +649,7 @@ public class PhaseTest {
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(
                         state1 -> measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] {
+                               estimateWithoutDerivatives(new SpacecraftState[] {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -813,7 +812,7 @@ public class PhaseTest {
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(
                         state1 -> measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] {
+                               estimateWithoutDerivatives(new SpacecraftState[] {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),

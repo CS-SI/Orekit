@@ -52,7 +52,7 @@ public class RelativisticClockOneWayGNSSPhaseModifierTest {
                                                           wavelength, 1.0, 1.0, new ObservableSatellite(0));
 
         // One-way GNSS phase before applying the modifier
-        final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(0, 0, states);
+        final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
 
         // One-way GNSS phase before applying the modifier
         final EstimationModifier<OneWayGNSSPhase> modifier = new RelativisticClockOneWayGNSSPhaseModifier();

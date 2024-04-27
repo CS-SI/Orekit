@@ -158,8 +158,7 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             InterSatellitesRange sr = (InterSatellitesRange) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<InterSatellitesRange> estimated = sr.estimateWithoutDerivatives(0, 0,
-                                                                                                     new SpacecraftState[] {
+            EstimatedMeasurementBase<InterSatellitesRange> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                          p3.propagate(sr.getDate()),
                                                                                                          ephemeris.propagate(sr.getDate())
                                                                                                      });

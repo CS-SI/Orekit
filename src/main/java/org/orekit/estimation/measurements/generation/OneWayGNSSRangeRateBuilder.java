@@ -85,7 +85,7 @@ public class OneWayGNSSRangeRateBuilder
         }
 
         // estimate the perfect value of the measurement
-        double rangeRate = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
+        double rangeRate = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();

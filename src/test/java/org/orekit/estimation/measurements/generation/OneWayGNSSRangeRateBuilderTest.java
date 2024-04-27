@@ -142,8 +142,7 @@ public class OneWayGNSSRangeRateBuilderTest {
                 }
             }
             previous = date;
-            double[] e = measurement.estimateWithoutDerivatives(0, 0,
-                                                                new SpacecraftState[] {
+            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                     propagator1.propagate(date),
                                                                     propagator2.propagate(date)
                                                                 }).getEstimatedValue();

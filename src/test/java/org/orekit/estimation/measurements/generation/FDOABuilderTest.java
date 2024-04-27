@@ -132,7 +132,7 @@ public class FDOABuilderTest {
             }
             previous = date;
             SpacecraftState state = propagator.propagate(date);
-            double[] e = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state }).getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }

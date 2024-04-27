@@ -84,7 +84,7 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
         }
 
         // estimate the perfect value of the measurement
-        final double[] pv = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue();
+        final double[] pv = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue();
 
         // add the noise
         final double[] noise = getNoise();
