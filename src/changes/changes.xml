@@ -21,8 +21,8 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
-      <action dev="serrof" type="add" issue="1383">
-        Add simpler signature for estimateWithoutDerivatives.
+      <action dev="serrof" type="fix" issue="1292">
+        Switched to (Field)UnivariateDerivative1 instead of 1 in (Field)BrouwerLyddanePropagator.
       </action>
       <action dev="serrof" type="add" issue="1375">
         Add wrapper for back and forth conversions from osculating elements for averaging theories.
