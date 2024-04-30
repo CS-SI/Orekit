@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
+import java.util.concurrent.TimeUnit;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -464,6 +465,22 @@ public class FieldAbsoluteDateTest {
         final FieldAbsoluteDate<FieldUnivariateDerivative2<Binary64>> fu2Date = new FieldAbsoluteDate<>(fu2.getField());
         Assertions.assertFalse(fu2Date.hasZeroField());
     }
+
+    @Test
+    public void testDurationFromWithTimeUnit() {
+        doTestDurationFromWithTimeUnit(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void testConstructWithTimeUnitOffset() {
+        doTestConstructWithTimeUnitOffset(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void testShiftedByWithTimeUnit() {
+        doTestShiftedByWithTimeUnit(Binary64Field.getInstance());
+    }
+
 
     private <T extends CalculusFieldElement<T>> void doTestStandardEpoch(final Field<T> field) {
 
@@ -1425,6 +1442,159 @@ public class FieldAbsoluteDateTest {
             Assertions.assertEquals(Precision.EPSILON, after.durationFrom(shifted).getReal(), 1.0e-20);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
             Assertions.fail(e.getLocalizedMessage());
+        }
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestDurationFromWithTimeUnit(final Field<T> field) {
+        FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2023, 1, 1, 12, 13, 59.12334567, utc);
+        for (TimeUnit timeUnit : TimeUnit.values()) {
+            Assertions.assertEquals(field.getZero(), reference.durationFrom(reference, timeUnit));
+
+            long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+            for (int i = 1; i <= 365; i++) {
+                FieldAbsoluteDate<T> minusDays = reference.shiftedBy(-i * Constants.JULIAN_DAY);
+                FieldAbsoluteDate<T> plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
+
+
+                Assertions.assertEquals(field.getZero().add(i * dayInTimeUnit), reference.durationFrom(minusDays, timeUnit));
+
+                Assertions.assertEquals(field.getZero().add(-i * dayInTimeUnit), reference.durationFrom(plusDays, timeUnit));
+
+                AbsoluteDate minusDaysA = minusDays.toAbsoluteDate();
+                AbsoluteDate plusDaysA = plusDays.toAbsoluteDate();
+
+                Assertions.assertEquals(field.getZero().add(i * dayInTimeUnit), reference.durationFrom(minusDaysA, timeUnit));
+
+                Assertions.assertEquals(field.getZero().add(-i * dayInTimeUnit), reference.durationFrom(plusDaysA, timeUnit));
+            }
+
+            for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
+                FieldAbsoluteDate<T> minus = reference.shiftedBy(-1e-9 * ns);
+                FieldAbsoluteDate<T> plus = reference.shiftedBy(1e-9 * ns);
+
+                double deltaInTimeUnit = ns / (double) timeUnit.toNanos(1);
+                Assertions.assertEquals(field.getZero().add(FastMath.round(deltaInTimeUnit)), reference.durationFrom(minus, timeUnit),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+
+                Assertions.assertEquals(field.getZero().add(FastMath.round(-deltaInTimeUnit)), reference.durationFrom(plus, timeUnit),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+
+                AbsoluteDate minusA = minus.toAbsoluteDate();
+                AbsoluteDate plusA = plus.toAbsoluteDate();
+
+                Assertions.assertEquals(field.getZero().add(FastMath.round(deltaInTimeUnit)), reference.durationFrom(minusA, timeUnit),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+
+                Assertions.assertEquals(field.getZero().add(FastMath.round(-deltaInTimeUnit)), reference.durationFrom(plusA, timeUnit),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+            }
+
+
+        }
+    }
+
+    public <T extends CalculusFieldElement<T>> void doTestConstructWithTimeUnitOffset(final Field<T> field) {
+        FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2023, 1, 1, 12, 13, 59.12334567, utc);
+
+        for (TimeUnit timeUnit : TimeUnit.values()) {
+            Assertions.assertEquals(0,
+                FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(reference, 0, timeUnit)).getReal()), 1e-10);
+
+            long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+            for (int i = 1; i <= 365; i++) {
+                FieldAbsoluteDate<T> minusDays = reference.shiftedBy(-i * Constants.JULIAN_DAY);
+                FieldAbsoluteDate<T> plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
+
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(minusDays, i * dayInTimeUnit, timeUnit)).getReal()),
+                    1e-10,
+                    String.format("TimeUnit: %s", timeUnit));
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(plusDays, -i * dayInTimeUnit, timeUnit)).getReal()),
+                    1e-10,
+                    String.format("TimeUnit: %s", timeUnit));
+
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(minusDays.toAbsoluteDate(), i * dayInTimeUnit, timeUnit, field)).getReal()),
+                    1e-10,
+                    String.format("TimeUnit: %s", timeUnit));
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(plusDays.toAbsoluteDate(), -i * dayInTimeUnit, timeUnit, field)).getReal()),
+                    1e-10,
+                    String.format("TimeUnit: %s", timeUnit));
+            }
+
+            for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
+                if (timeUnit.convert(1, TimeUnit.SECONDS) < 1) {
+                    //Skip everything larger than one second
+                    continue;
+                }
+                FieldAbsoluteDate<T> minus = reference.shiftedBy(-1e-9 * ns);
+                FieldAbsoluteDate<T> plus = reference.shiftedBy(1e-9 * ns);
+
+                double deltaInTimeUnit =  ns / (double) timeUnit.toNanos(1);
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(minus, FastMath.round(deltaInTimeUnit), timeUnit)).getReal()),
+                    1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(plus, FastMath.round(-deltaInTimeUnit), timeUnit)).getReal()),
+                    1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(minus.toAbsoluteDate(), FastMath.round(deltaInTimeUnit), timeUnit, field)).getReal()),
+                    1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(plus.toAbsoluteDate(), FastMath.round(-deltaInTimeUnit), timeUnit, field)).getReal()),
+                    1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+            }
+        }
+    }
+
+    public <T extends CalculusFieldElement<T>> void doTestShiftedByWithTimeUnit(final Field<T> field) {
+        FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2023, 1, 1, 12, 13, 59.12334567, utc);
+
+        for (TimeUnit timeUnit : TimeUnit.values()) {
+            Assertions.assertEquals(0,
+                FastMath.abs(reference.durationFrom(reference.shiftedBy(0, timeUnit)).getReal()), 1e-10);
+
+            long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+            for (int i = 1; i <= 365; i++) {
+                FieldAbsoluteDate<T> minusDays = reference.shiftedBy(-i * Constants.JULIAN_DAY);
+                FieldAbsoluteDate<T> plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
+
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(minusDays.shiftedBy( i * dayInTimeUnit, timeUnit)).getReal()),
+                    1e-10,
+                    String.format("TimeUnit: %s", timeUnit));
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(plusDays.shiftedBy( -i * dayInTimeUnit, timeUnit)).getReal()),
+                    1e-10,
+                    String.format("TimeUnit: %s", timeUnit));
+
+            }
+
+            for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
+                if (timeUnit.convert(1, TimeUnit.SECONDS) < 1) {
+                    //Skip everything larger than one second
+                    continue;
+                }
+                FieldAbsoluteDate<T> minus = reference.shiftedBy(-1e-9 * ns);
+                FieldAbsoluteDate<T> plus = reference.shiftedBy(1e-9 * ns);
+
+                double deltaInTimeUnit =  ns / (double) timeUnit.toNanos(1);
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(minus.shiftedBy(FastMath.round(deltaInTimeUnit), timeUnit)).getReal()),
+                    1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(plus.shiftedBy(FastMath.round(-deltaInTimeUnit), timeUnit)).getReal()),
+                    1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+            }
         }
     }
 

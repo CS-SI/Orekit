@@ -16,11 +16,13 @@
  */
 package org.orekit.time;
 
+import java.util.concurrent.TimeUnit;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.utils.Constants;
 
 
 public class DateTimeComponentsTest {
@@ -213,6 +215,39 @@ public class DateTimeComponentsTest {
         MatcherAssert.assertThat(dtc.toStringWithoutUtcOffset(60, 3), CoreMatchers.is("2000-12-31T23:59:59.900"));
         MatcherAssert.assertThat(dtc.toStringWithoutUtcOffset(60, 0), CoreMatchers.is("2001-01-01T00:00:00"));
         MatcherAssert.assertThat(dtc.toStringWithoutUtcOffset(60, 14), CoreMatchers.is("2000-12-31T23:59:59.90000000000000"));
+    }
+
+    @Test
+    public void testOffsetFromWithTimeUnit() {
+        DateTimeComponents reference = new DateTimeComponents(2023, 1, 1, 23, 13, 59.12334567);
+        for (TimeUnit timeUnit : TimeUnit.values()) {
+            Assertions.assertEquals(0, reference.offsetFrom(reference, timeUnit));
+
+            long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+            for (int i = 1; i <= 365; i++) {
+                DateTimeComponents minusDays = new DateTimeComponents(reference, -i, TimeUnit.DAYS);
+                DateTimeComponents plusDays = new DateTimeComponents(reference,i, TimeUnit.DAYS);
+
+
+                Assertions.assertEquals(i * dayInTimeUnit, reference.offsetFrom(minusDays, timeUnit));
+
+                Assertions.assertEquals(-i * dayInTimeUnit, reference.offsetFrom(plusDays, timeUnit));
+            }
+
+            for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
+                DateTimeComponents minus =  new DateTimeComponents(reference,-ns, TimeUnit.NANOSECONDS);
+                DateTimeComponents plus =  new DateTimeComponents(reference,ns, TimeUnit.NANOSECONDS);
+
+                double deltaInTimeUnit = ns / (double) timeUnit.toNanos(1);
+                Assertions.assertEquals(FastMath.round(deltaInTimeUnit), reference.offsetFrom(minus, timeUnit),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+
+                Assertions.assertEquals(FastMath.round(-deltaInTimeUnit), reference.offsetFrom(plus, timeUnit),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+            }
+
+
+        }
     }
 
 }

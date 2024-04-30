@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import java.util.concurrent.TimeUnit;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.util.FastMath;
@@ -1406,17 +1407,17 @@ public class AbsoluteDateTest {
         // Check equality is as expected for FUTURE INFINITY
         final AbsoluteDate date5 = AbsoluteDate.FUTURE_INFINITY;
         final AbsoluteDate date6 = new AbsoluteDate(AbsoluteDate.FUTURE_INFINITY, 0);
-        Assertions.assertEquals(date5, date6); 
+        Assertions.assertEquals(date5, date6);
 
         // Check inequality is as expected
         final AbsoluteDate date7 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
         final AbsoluteDate date8 = new AbsoluteDate(AbsoluteDate.FUTURE_INFINITY, 0);
-        Assertions.assertNotEquals(date7, date8); 
+        Assertions.assertNotEquals(date7, date8);
 
         // Check inequality is as expected
         final AbsoluteDate date9 = new AbsoluteDate(AbsoluteDate.ARBITRARY_EPOCH.getEpoch(), Double.POSITIVE_INFINITY);
         final AbsoluteDate date10 = new AbsoluteDate(AbsoluteDate.ARBITRARY_EPOCH.getEpoch(), Double.POSITIVE_INFINITY);
-        Assertions.assertEquals(date9, date10); 
+        Assertions.assertEquals(date9, date10);
     }
 
     public void testNegativeOffsetConstructor() {
@@ -1454,6 +1455,127 @@ public class AbsoluteDateTest {
             Assertions.assertEquals(Precision.EPSILON, after.durationFrom(shifted), 1.0e-20);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
             Assertions.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void testDurationFromWithTimeUnit() {
+        AbsoluteDate reference = new AbsoluteDate(2023, 1, 1, 12, 13, 59.12334567, utc);
+        for (TimeUnit timeUnit : TimeUnit.values()) {
+            Assertions.assertEquals(0, reference.durationFrom(reference, timeUnit));
+
+            long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+            for (int i = 1; i <= 365; i++) {
+              AbsoluteDate minusDays = reference.shiftedBy(-i * Constants.JULIAN_DAY);
+              AbsoluteDate plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
+
+
+              Assertions.assertEquals(i * dayInTimeUnit, reference.durationFrom(minusDays, timeUnit));
+
+              Assertions.assertEquals(-i * dayInTimeUnit, reference.durationFrom(plusDays, timeUnit));
+            }
+
+            for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
+              AbsoluteDate minus = reference.shiftedBy(-1e-9 * ns);
+              AbsoluteDate plus = reference.shiftedBy(1e-9 * ns);
+
+              double deltaInTimeUnit = ns / (double) timeUnit.toNanos(1);
+              Assertions.assertEquals(FastMath.round(deltaInTimeUnit), reference.durationFrom(minus, timeUnit),
+                  String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+
+              Assertions.assertEquals(FastMath.round(-deltaInTimeUnit), reference.durationFrom(plus, timeUnit),
+                  String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+            }
+
+
+        }
+    }
+
+    @Test
+    public void testConstructWithTimeUnitOffset() {
+      AbsoluteDate reference = new AbsoluteDate(2023, 1, 1, 12, 13, 59.12334567, utc);
+
+      for (TimeUnit timeUnit : TimeUnit.values()) {
+        Assertions.assertEquals(0,
+            FastMath.abs(reference.durationFrom(new AbsoluteDate(reference, 0, timeUnit))), 1e-10);
+
+        long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+        for (int i = 1; i <= 365; i++) {
+          AbsoluteDate minusDays = reference.shiftedBy(-i * Constants.JULIAN_DAY);
+          AbsoluteDate plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
+
+          Assertions.assertEquals(0,
+              FastMath.abs(reference.durationFrom(new AbsoluteDate(minusDays, i * dayInTimeUnit, timeUnit))),
+              1e-10,
+              String.format("TimeUnit: %s", timeUnit));
+          Assertions.assertEquals(0,
+              FastMath.abs(reference.durationFrom(new AbsoluteDate(plusDays, -i * dayInTimeUnit, timeUnit))),
+              1e-10,
+              String.format("TimeUnit: %s", timeUnit));
+        }
+
+        for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
+          if (timeUnit.convert(1, TimeUnit.SECONDS) < 1) {
+            //Skip everything larger than one second
+            continue;
+          }
+          AbsoluteDate minus = reference.shiftedBy(-1e-9 * ns);
+          AbsoluteDate plus = reference.shiftedBy(1e-9 * ns);
+
+          double deltaInTimeUnit =  ns / (double) timeUnit.toNanos(1);
+          Assertions.assertEquals(0,
+              FastMath.abs(reference.durationFrom(new AbsoluteDate(minus, FastMath.round(deltaInTimeUnit), timeUnit))),
+              1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+              String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+          Assertions.assertEquals(0,
+              FastMath.abs(reference.durationFrom(new AbsoluteDate(plus, FastMath.round(-deltaInTimeUnit), timeUnit))),
+              1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+              String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+        }
+      }
+    }
+
+    @Test
+    public void testShiftedByWithTimeUnit() {
+        AbsoluteDate reference = new AbsoluteDate(2023, 1, 1, 12, 13, 59.12334567, utc);
+
+        for (TimeUnit timeUnit : TimeUnit.values()) {
+            Assertions.assertEquals(0,
+                FastMath.abs(reference.durationFrom(reference.shiftedBy( 0, timeUnit))), 1e-10);
+
+            long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+            for (int i = 1; i <= 365; i++) {
+                AbsoluteDate minusDays = reference.shiftedBy(-i * Constants.JULIAN_DAY);
+                AbsoluteDate plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
+
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(minusDays.shiftedBy(i * dayInTimeUnit, timeUnit))),
+                    1e-10,
+                    String.format("TimeUnit: %s", timeUnit));
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(plusDays.shiftedBy(-i * dayInTimeUnit, timeUnit))),
+                    1e-10,
+                    String.format("TimeUnit: %s", timeUnit));
+            }
+
+            for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
+                if (timeUnit.convert(1, TimeUnit.SECONDS) < 1) {
+                    //Skip everything larger than one second
+                    continue;
+                }
+                AbsoluteDate minus = reference.shiftedBy(-1e-9 * ns);
+                AbsoluteDate plus = reference.shiftedBy(1e-9 * ns);
+
+                double deltaInTimeUnit =  ns / (double) timeUnit.toNanos(1);
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(minus.shiftedBy(FastMath.round(deltaInTimeUnit), timeUnit))),
+                    1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+                Assertions.assertEquals(0,
+                    FastMath.abs(reference.durationFrom(plus.shiftedBy(FastMath.round(-deltaInTimeUnit), timeUnit))),
+                    1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
+                    String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
+            }
         }
     }
 

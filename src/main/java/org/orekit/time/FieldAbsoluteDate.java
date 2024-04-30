@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
+import java.util.concurrent.TimeUnit;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
@@ -356,6 +357,19 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         this(since.epoch, elapsedDuration, since.offset);
     }
 
+    /** Build an instance from an elapsed duration since to another instant.
+     * <p>It is important to note that the elapsed duration is <em>not</em>
+     * the difference between two readings on a time scale.
+     * @param since start instant of the measured duration
+     * @param elapsedDuration physically elapsed duration from the <code>since</code>
+     * instant, as measured in a regular time scale
+     * @param timeUnit {@link TimeUnit} of the elapsed duration
+     * @since 12.1
+     */
+    public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final long elapsedDuration, final TimeUnit timeUnit) {
+        this(since.epoch, elapsedDuration, timeUnit, since.offset);
+    }
+
 
     /** Build an instance from an elapsed duration since to another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
@@ -366,6 +380,37 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public FieldAbsoluteDate(final AbsoluteDate since, final T elapsedDuration) {
         this(since.getEpoch(), since.getOffset(), elapsedDuration);
+    }
+
+    /** Build an instance from an elapsed duration since to another instant.
+     * <p>It is important to note that the elapsed duration is <em>not</em>
+     * the difference between two readings on a time scale.
+     * @param since start instant of the measured duration
+     * @param elapsedDuration physically elapsed duration from the <code>since</code>
+     * instant, as measured in a regular time scale
+     * @param timeUnit {@link TimeUnit} of the elapsed duration
+     * @param field field utilized by default
+     * @since 12.1
+     */
+    public FieldAbsoluteDate(final AbsoluteDate since,  final long elapsedDuration, final TimeUnit timeUnit, final Field<T> field) {
+        this.field = field;
+
+        final long elapsedDurationNanoseconds = TimeUnit.NANOSECONDS.convert(elapsedDuration, timeUnit);
+        final long deltaEpoch = elapsedDurationNanoseconds / TimeUnit.SECONDS.toNanos(1);
+        final double deltaOffset = (elapsedDurationNanoseconds - (deltaEpoch * TimeUnit.SECONDS.toNanos(1))) / (double) TimeUnit.SECONDS.toNanos(1);
+        final T newOffset = field.getZero().add(since.getOffset()).add(deltaOffset);
+
+        if (newOffset.getReal() >= 1.0) {
+            // newOffset is in [1.0, 2.0]
+            this.epoch = since.getEpoch() + deltaEpoch + 1L;
+            this.offset = newOffset.subtract(1.0);
+        } else if (newOffset.getReal() < 0) {
+            this.epoch = since.getEpoch() + deltaEpoch - 1L;
+            this.offset = newOffset.add(1.0);
+        } else {
+            this.epoch = since.getEpoch() + deltaEpoch;
+            this.offset = newOffset;
+        }
     }
 
     /** Build an instance from an apparent clock offset with respect to another
@@ -417,6 +462,34 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
                 this.offset = regularOffset.add(1.0);
                 this.epoch  = epoch + dl - 1;
             }
+        }
+    }
+
+    /** Build an instance from mixed double and field raw components.
+     * @param epoch reference epoch in seconds from 2000-01-01T12:00:00 TAI
+     * @param tA numeric part of offset since reference epoch
+     * @param tATimeUnit {@link TimeUnit} for tA
+     * @param tB field part of offset since reference epoch
+     * @since 12.1
+     */
+    private FieldAbsoluteDate(final long epoch, final long tA, final TimeUnit tATimeUnit, final T tB) {
+        this.field = tB.getField();
+
+        final long elapsedDurationNanoseconds = TimeUnit.NANOSECONDS.convert(tA, tATimeUnit);
+        final long deltaEpoch = elapsedDurationNanoseconds / TimeUnit.SECONDS.toNanos(1);
+        final double deltaOffset = (elapsedDurationNanoseconds - (deltaEpoch * TimeUnit.SECONDS.toNanos(1))) / (double) TimeUnit.SECONDS.toNanos(1);
+        final T newOffset = field.getZero().add(tB).add(deltaOffset);
+
+        if (newOffset.getReal() >= 1.0) {
+            // newOffset is in [1.0, 2.0]
+            this.epoch = epoch + deltaEpoch + 1L;
+            offset = newOffset.subtract(1.0);
+        } else if (newOffset.getReal() < 0) {
+            this.epoch = epoch + deltaEpoch - 1L;
+            offset = newOffset.add(1.0);
+        } else {
+            this.epoch = epoch + deltaEpoch;
+            offset = newOffset;
         }
     }
 
@@ -1186,6 +1259,35 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
      * double)} constructor.</p>
      * @param instant instant to subtract from the instance
+     * @param timeUnit {@link TimeUnit} precision for the offset
+     * @return offset in seconds between the two instants (positive
+     * if the instance is posterior to the argument)
+     * @see #offsetFrom(FieldAbsoluteDate, TimeScale)
+     * @see #FieldAbsoluteDate(FieldAbsoluteDate, double)
+     */
+    public T durationFrom(final FieldAbsoluteDate<T> instant, final TimeUnit timeUnit) {
+        final long deltaEpoch = timeUnit.convert(epoch - instant.epoch, TimeUnit.SECONDS);
+
+        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
+        final T deltaOffset = offset.getField().getZero().add(offset.subtract(instant.offset).multiply(multiplier).round());
+
+        return deltaOffset.add(deltaEpoch);
+    }
+
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the number of seconds physically
+     * elapsed between the two instants, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * <p>This method gives the same result (with less computation)
+     * as calling {@link #offsetFrom(FieldAbsoluteDate, TimeScale)}
+     * with a second argument set to one of the regular scales cited
+     * above.</p>
+     * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
+     * double)} constructor.</p>
+     * @param instant instant to subtract from the instance
      * @return offset in seconds between the two instants (positive
      * if the instance is posterior to the argument)
      * @see #offsetFrom(FieldAbsoluteDate, TimeScale)
@@ -1193,6 +1295,35 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public T durationFrom(final AbsoluteDate instant) {
         return offset.subtract(instant.getOffset()).add(epoch - instant.getEpoch());
+    }
+
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the number of seconds physically
+     * elapsed between the two instants, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * <p>This method gives the same result (with less computation)
+     * as calling {@link #offsetFrom(FieldAbsoluteDate, TimeScale)}
+     * with a second argument set to one of the regular scales cited
+     * above.</p>
+     * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
+     * double)} constructor.</p>
+     * @param instant instant to subtract from the instance
+     * @param timeUnit {@link TimeUnit} precision for the offset
+     * @return offset in the given timeunit between the two instants (positive
+     * if the instance is posterior to the argument), rounded to the nearest integer {@link TimeUnit}
+     * @see #FieldAbsoluteDate(FieldAbsoluteDate, long, TimeUnit)
+     * @since 12.1
+     */
+    public T durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
+        final long deltaEpoch = timeUnit.convert(epoch - instant.getEpoch(), TimeUnit.SECONDS);
+
+        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
+        final T deltaOffset = offset.getField().getZero().add(offset.subtract(instant.getOffset()).multiply(multiplier).round());
+
+        return deltaOffset.add(deltaEpoch);
     }
 
     /** Compute the apparent clock offset between two instant <em>in the
@@ -1642,6 +1773,23 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @Override
     public FieldAbsoluteDate<T> shiftedBy(final double dt) {
         return new FieldAbsoluteDate<>(this, dt);
+    }
+
+    /** Get a time-shifted date.
+     * <p>
+     * Calling this method is equivalent to call <code>new FieldAbsoluteDate(this, dt, timeUnit)</code>.
+     * </p>
+     * @param dt time shift in time units
+     * @param timeUnit {@link TimeUnit} for dt
+     * @return a new date, shifted with respect to instance (which is immutable)
+     * @see org.orekit.utils.FieldPVCoordinates#shiftedBy(double)
+     * @see org.orekit.attitudes.FieldAttitude#shiftedBy(double)
+     * @see org.orekit.orbits.FieldOrbit#shiftedBy(double)
+     * @see org.orekit.propagation.FieldSpacecraftState#shiftedBy(double)
+     * @since 12.1
+     */
+    public FieldAbsoluteDate<T> shiftedBy(final long dt, final TimeUnit timeUnit) {
+        return new FieldAbsoluteDate<>(this, dt, timeUnit);
     }
 
 
