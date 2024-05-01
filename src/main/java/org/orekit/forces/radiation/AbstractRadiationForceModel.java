@@ -30,7 +30,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -47,7 +46,7 @@ import org.orekit.utils.OccultationEngine;
  * @see ECOM2
  * @since 10.2
  */
-public abstract class AbstractRadiationForceModel implements ForceModel {
+public abstract class AbstractRadiationForceModel implements RadiationForceModel {
 
     /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
     private static final double ANGULAR_MARGIN = 1.0e-10;
@@ -84,12 +83,6 @@ public abstract class AbstractRadiationForceModel implements ForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public boolean dependsOnPositionOnly() {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Stream<EventDetector> getEventDetectors() {
         final EventDetector[] detectors = new EventDetector[2 * occultingBodies.size()];
         for (int i = 0; i < occultingBodies.size(); ++i) {
@@ -109,7 +102,7 @@ public abstract class AbstractRadiationForceModel implements ForceModel {
         }
         // Fusion between Date detector for parameter driver span change and
         // Detector for umbra / penumbra events
-        return Stream.concat(Stream.of(detectors), ForceModel.super.getEventDetectors());
+        return Stream.concat(Stream.of(detectors), RadiationForceModel.super.getEventDetectors());
     }
 
     /** {@inheritDoc} */
@@ -134,7 +127,7 @@ public abstract class AbstractRadiationForceModel implements ForceModel {
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
-        return Stream.concat(Stream.of(detectors), ForceModel.super.getFieldEventDetectors(field));
+        return Stream.concat(Stream.of(detectors), RadiationForceModel.super.getFieldEventDetectors(field));
     }
 
     /**
