@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="1263">
+        Removed support for Ant.
+      </action>
       <action dev="serrof" type="add" issue="1392">
         Add event handler remembering last occurrence.
       </action>
