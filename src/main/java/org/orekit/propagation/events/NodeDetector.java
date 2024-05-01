@@ -67,7 +67,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @since 10.3
      */
     public NodeDetector(final Frame frame) {
-        this(s -> DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(AdaptableInterval.of(DEFAULT_MAX_CHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing(), frame);
     }
 

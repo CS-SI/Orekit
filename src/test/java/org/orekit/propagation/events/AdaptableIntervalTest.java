@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,34 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.orekit.propagation.events;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 
-/** This interface represents an event checking interval that depends on state.
-*
-* @see EventDetector
-* @author Luc Maisonobe
-* @since 12.0
-*
-*/
-@FunctionalInterface
-public interface AdaptableInterval {
+class AdaptableIntervalTest {
 
-    /** Get the current value of maximal time interval between events handler checks.
-     * @param state current state
-     * @return current value of maximal time interval between events handler checks
-     */
-    double currentInterval(SpacecraftState state);
-
-    /**
-     * Method creating a constant interval provider.
-     * @param constantInterval value of constant interval
-     * @return adaptable interval ready to be added to an event detector
-     * @since 12.1
-     */
-    static AdaptableInterval of(final double constantInterval) {
-        return state -> constantInterval;
+    @Test
+    void testOf() {
+        // GIVEN
+        final double expectedValue = 1.;
+        // WHEN
+        final AdaptableInterval adaptableInterval = AdaptableInterval.of(expectedValue);
+        // THEN
+        final double actualValue = adaptableInterval.currentInterval(Mockito.mock(SpacecraftState.class));
+        Assertions.assertEquals(expectedValue, actualValue);
     }
+
 }

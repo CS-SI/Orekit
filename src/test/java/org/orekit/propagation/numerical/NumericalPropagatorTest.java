@@ -789,7 +789,7 @@ public class NumericalPropagatorTest {
     private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
 
         public AdditionalStateLinearDetector(double maxCheck, double threshold) {
-            this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent());
+            this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnEvent());
         }
 
         private AdditionalStateLinearDetector(AdaptableInterval maxCheck, double threshold, int maxIter, EventHandler handler) {

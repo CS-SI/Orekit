@@ -90,7 +90,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
                                  final T threshold,
                                  final T altitude,
                                  final BodyShape bodyShape) {
-        this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<T>(),
+        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<T>(),
              altitude, bodyShape);
     }
 

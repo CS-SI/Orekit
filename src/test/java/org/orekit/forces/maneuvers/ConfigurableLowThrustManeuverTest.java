@@ -170,7 +170,7 @@ public class ConfigurableLowThrustManeuverTest {
         public PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngleType type,
                 final EventHandler handler) {
 
-            super(halfArcLength, type, s -> maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
+            super(halfArcLength, type, AdaptableInterval.of(maxCheck), maxThreshold, DEFAULT_MAX_ITER, handler);
         }
 
         @Override
@@ -203,7 +203,7 @@ public class ConfigurableLowThrustManeuverTest {
         }
 
         public ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngleType type, final EventHandler handler) {
-            super(halfArcLength, type, s -> maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
+            super(halfArcLength, type, AdaptableInterval.of(maxCheck), maxThreshold, DEFAULT_MAX_ITER, handler);
         }
 
         @Override
@@ -232,7 +232,7 @@ public class ConfigurableLowThrustManeuverTest {
         private final AbsoluteDate endDate;
 
         public DateIntervalDetector(final AbsoluteDate startDate, final AbsoluteDate endDate) {
-            this(startDate, endDate, s -> DateDetector.DEFAULT_MAX_CHECK, DateDetector.DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(startDate, endDate, AdaptableInterval.of(DateDetector.DEFAULT_MAX_CHECK), DateDetector.DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                     new StopOnEvent());
         }
 
@@ -281,7 +281,7 @@ public class ConfigurableLowThrustManeuverTest {
 
         public DateIntervalFieldDetector(final FieldAbsoluteDate<T> startDate, final FieldAbsoluteDate<T> endDate) {
             this(startDate, endDate,
-                 s -> DateDetector.DEFAULT_MAX_CHECK,
+                 FieldAdaptableInterval.of(DateDetector.DEFAULT_MAX_CHECK),
                  startDate.getField().getZero().newInstance(DateDetector.DEFAULT_THRESHOLD),
                  DEFAULT_MAX_ITER, new FieldStopOnEvent<>());
         }

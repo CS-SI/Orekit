@@ -103,7 +103,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                     final OneAxisEllipsoid body,
                                     final SphericalPolygonsSet zone,
                                     final double samplingStep) {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing(),
              fov, body, zone, samplingStep, sample(body, zone, samplingStep));
     }

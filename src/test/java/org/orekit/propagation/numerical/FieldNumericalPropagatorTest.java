@@ -994,7 +994,7 @@ public class FieldNumericalPropagatorTest {
         extends FieldAbstractDetector<AdditionalStateLinearDetector<T>, T> {
 
         public AdditionalStateLinearDetector(T maxCheck, T threshold) {
-            this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<>());
+            this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<>());
         }
 
         private AdditionalStateLinearDetector(FieldAdaptableInterval<T> maxCheck, T threshold, int maxIter,

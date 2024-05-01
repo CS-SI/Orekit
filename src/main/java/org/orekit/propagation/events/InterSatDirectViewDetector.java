@@ -85,7 +85,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param secondary provider for the secondary satellite
      */
     public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider secondary) {
-        this(body, 0.0, secondary, s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(body, 0.0, secondary, AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new ContinueOnEvent());
     }
 

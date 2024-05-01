@@ -63,7 +63,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
                                      final TopocentricFrame topo) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              topo);
     }
 

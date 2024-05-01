@@ -58,7 +58,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     public AngularSeparationFromSatelliteDetector(final PVCoordinatesProvider primaryObject,
                                                   final PVCoordinatesProvider secondaryObject,
                                                   final double proximityAngle) {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing(),
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing(),
              primaryObject, secondaryObject, proximityAngle);
     }
 

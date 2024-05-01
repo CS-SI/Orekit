@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1391">
+        Add method to create constant (Field)AdaptableInterval.
+      </action>
       <action dev="serrof" type="add" issue="1389">
         Add eclipse detector for cylindrical shadow model.
       </action>

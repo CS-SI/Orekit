@@ -72,7 +72,7 @@ class ApsideDetectorTest {
 
     @Test
     void testFixedMaxCheck() {
-        doTestMaxcheck(s -> 20.0, 4738);
+        doTestMaxcheck(AdaptableInterval.of(20.0), 4738);
     }
 
     @Test

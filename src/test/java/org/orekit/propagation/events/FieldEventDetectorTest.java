@@ -204,7 +204,7 @@ public class FieldEventDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, step));
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit));
-        GCallsCounter<T> counter = new GCallsCounter<>(s -> 100000.0, zero.add(1.0e-6), 20,
+        GCallsCounter<T> counter = new GCallsCounter<>(FieldAdaptableInterval.of(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(step.multiply(n)));
@@ -231,7 +231,7 @@ public class FieldEventDetectorTest {
         final T step = zero.add(60.0);
         final int    n    = 100;
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
-        GCallsCounter<T> counter = new GCallsCounter<>(s -> 100000.0, zero.add(1.0e-6), 20,
+        GCallsCounter<T> counter = new GCallsCounter<>(FieldAdaptableInterval.of(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
@@ -302,11 +302,11 @@ public class FieldEventDetectorTest {
                                                                                                                         zero.add(1920.6332221785074),
                                                                                                                         zero.add(-5172.2177085540500))),
                                                              eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
-        k2.addEventDetector(new FieldCloseApproachDetector<>(s -> 2015.243454166727, zero.add(0.0001), 100,
+        k2.addEventDetector(new FieldCloseApproachDetector<>(FieldAdaptableInterval.of(2015.243454166727), zero.add(0.0001), 100,
                                                              new FieldContinueOnEvent<T>(),
                                                              k1));
         k2.addEventDetector(new FieldDateDetector<>(field, interruptDates).
-                            withMaxCheck(s -> Constants.JULIAN_DAY).
+                            withMaxCheck(FieldAdaptableInterval.of(Constants.JULIAN_DAY)).
                             withThreshold(field.getZero().newInstance(1.0e-6)));
         FieldSpacecraftState<T> s = k2.propagate(startDate, targetDate);
         Assertions.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
@@ -407,7 +407,7 @@ public class FieldEventDetectorTest {
 
             @Override
             public FieldAdaptableInterval<T> getMaxCheckInterval() {
-                return s -> 60;
+                return FieldAdaptableInterval.of(60.);
             }
 
             @Override

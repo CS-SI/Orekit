@@ -125,10 +125,10 @@ public class FieldAndDetectorTest {
     public void testInit() {
         // setup
         FieldEventDetector<Binary64> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(s -> AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
         Mockito.when(a.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
         FieldEventDetector<Binary64> b = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(b.getMaxCheckInterval()).thenReturn(s -> AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(b.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
         Mockito.when(b.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
         FieldEventHandler<Binary64> c = Mockito.mock(FieldEventHandler.class);
         FieldBooleanDetector<Binary64> and = FieldBooleanDetector.andCombine(a, b).withHandler(c);
@@ -181,7 +181,7 @@ public class FieldAndDetectorTest {
 
         @Override
         public FieldAdaptableInterval<Binary64> getMaxCheckInterval() {
-            return s -> AbstractDetector.DEFAULT_MAXCHECK;
+            return FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK);
         }
 
         @Override

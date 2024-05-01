@@ -81,7 +81,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                final VisibilityTrigger trigger, final FieldOfView fov) {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing(),
              pvTarget, radiusTarget, trigger, fov);
     }

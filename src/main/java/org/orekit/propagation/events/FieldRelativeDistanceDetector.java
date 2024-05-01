@@ -69,7 +69,7 @@ public class FieldRelativeDistanceDetector<T extends CalculusFieldElement<T>>
      */
     public FieldRelativeDistanceDetector(final FieldPVCoordinatesProvider<T> secondaryPVProvider,
                                          final T distanceThreshold) {
-        this(s -> DEFAULT_MAXCHECK, distanceThreshold.getField().getZero().newInstance(DEFAULT_THRESHOLD),
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), distanceThreshold.getField().getZero().newInstance(DEFAULT_THRESHOLD),
                 DEFAULT_MAX_ITER, new FieldStopOnEvent<>(), secondaryPVProvider, distanceThreshold);
     }
 
