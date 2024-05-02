@@ -89,7 +89,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     @SafeVarargs
     public FieldDateDetector(final Field<T> field, final FieldTimeStamped<T>... dates) {
-        this(s -> DEFAULT_MAX_CHECK, field.getZero().newInstance(DEFAULT_THRESHOLD),
+        this(FieldAdaptableInterval.of(DEFAULT_MAX_CHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER, new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
     }
 

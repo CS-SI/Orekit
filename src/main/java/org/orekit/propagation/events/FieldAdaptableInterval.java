@@ -36,4 +36,14 @@ public interface FieldAdaptableInterval<T extends CalculusFieldElement<T>> {
      */
     double currentInterval(FieldSpacecraftState<T> state);
 
+    /**
+     * Method creating a constant interval provider.
+     * @param <T> field type
+     * @param constantInterval value of constant interval
+     * @return adaptable interval ready to be added to an event detector
+     * @since 12.1
+     */
+    static <T extends CalculusFieldElement<T>> FieldAdaptableInterval<T> of(final double constantInterval) {
+        return state -> constantInterval;
+    }
 }

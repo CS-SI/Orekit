@@ -32,7 +32,7 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
      * @param threshold convergence threshold (s)
      */
     public HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER,
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER,
              new StopOnIncreasing());
     }
 

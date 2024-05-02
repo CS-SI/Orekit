@@ -69,7 +69,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public FieldElevationDetector(final Field<T> field, final TopocentricFrame topo) {
-        this(s -> DEFAULT_MAXCHECK,
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
              field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
              new FieldStopOnDecreasing<>(),
              0.0, null, null, topo);
@@ -86,7 +86,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public FieldElevationDetector(final T maxCheck, final T threshold, final TopocentricFrame topo) {
-        this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER,
+        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER,
              new FieldStopOnDecreasing<>(),
              0.0, null, null, topo);
     }

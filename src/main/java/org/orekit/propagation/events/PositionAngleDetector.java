@@ -93,7 +93,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
                                  final OrbitType orbitType, final PositionAngleType positionAngleType,
                                  final double angle)
         throws OrekitIllegalArgumentException {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnEvent(),
              orbitType, positionAngleType, angle);
     }
 

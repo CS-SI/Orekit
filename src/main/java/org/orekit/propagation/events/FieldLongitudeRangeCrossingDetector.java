@@ -67,7 +67,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      * @param toLongitude   longitude to be crossed, upper range boundary
      */
     public FieldLongitudeRangeCrossingDetector(final Field<T> field, final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        this(s -> DEFAULT_MAXCHECK,
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
             field.getZero().add(DEFAULT_THRESHOLD),
             DEFAULT_MAX_ITER,
             new FieldStopOnIncreasing<>(),
@@ -87,7 +87,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      */
     public FieldLongitudeRangeCrossingDetector(final T maxCheck, final T threshold,
                                                final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        this(s -> maxCheck.getReal(),
+        this(FieldAdaptableInterval.of(maxCheck.getReal()),
             threshold,
             DEFAULT_MAX_ITER,
             new FieldStopOnIncreasing<>(),

@@ -118,7 +118,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 12.0
      */
     public D withMaxCheck(final double newMaxCheck) {
-        return withMaxCheck(s -> newMaxCheck);
+        return withMaxCheck(FieldAdaptableInterval.of(newMaxCheck));
     }
 
     /**

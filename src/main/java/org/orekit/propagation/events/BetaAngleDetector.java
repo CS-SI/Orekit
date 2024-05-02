@@ -68,7 +68,7 @@ public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
      */
     public BetaAngleDetector(final double betaAngleThreshold, final PVCoordinatesProvider celestialBodyProvider,
             final Frame inertialFrame) {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(),
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(),
                 betaAngleThreshold, celestialBodyProvider, inertialFrame);
     }
 

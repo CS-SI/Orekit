@@ -62,7 +62,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      */
     public LongitudeCrossingDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body, final double longitude) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, longitude);
     }
 

@@ -67,7 +67,7 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
      */
     public LatitudeRangeCrossingDetector(final double maxCheck, final double threshold,
                                          final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
              body, fromLatitude, toLatitude);
     }
 
