@@ -759,7 +759,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                     try {
                         final double[] value = storedInitialState.getAdditionalState(name);
                         updatedState = updatedState.addAdditionalState(name, value);
-                    } catch (final Exception ignored) {
+                    } catch (final OrekitException ignored) {
                         // ignored
                     }
                 }

@@ -54,7 +54,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.*;
+import org.orekit.propagation.FieldAbstractPropagator;
+import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
@@ -772,7 +776,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                     try {
                         final T[] value = storedInitialState.getAdditionalState(name);
                         updatedState = updatedState.addAdditionalState(name, value);
-                    } catch (final Exception ignored) {
+                    } catch (final OrekitException ignored) {
                         // ignored
                     }
                 }
