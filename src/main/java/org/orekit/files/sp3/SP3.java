@@ -57,7 +57,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
     private final Frame frame;
 
     /** A map containing satellite information. */
-    private Map<String, SP3Ephemeris> satellites;
+    private final Map<String, SP3Ephemeris> satellites;
 
     /**
      * Create a new SP3 file object.
@@ -67,7 +67,21 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
      * @param frame                reference frame
      */
     public SP3(final double mu, final int interpolationSamples, final Frame frame) {
-        this.header               = new SP3Header();
+        this(new SP3Header(), mu, interpolationSamples, frame);
+    }
+
+    /**
+     * Create a new SP3 file object.
+     *
+     * @param header header
+     * @param mu                   is the standard gravitational parameter in m³ / s².
+     * @param interpolationSamples number of samples to use in interpolation.
+     * @param frame                reference frame
+     * @since 12.1
+     */
+    public SP3(final SP3Header header,
+               final double mu, final int interpolationSamples, final Frame frame) {
+        this.header               = header;
         this.mu                   = mu;
         this.interpolationSamples = interpolationSamples;
         this.frame                = frame;
