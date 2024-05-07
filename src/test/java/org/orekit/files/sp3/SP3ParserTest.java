@@ -30,10 +30,10 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Predefined;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.VersionedITRF;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.BoundedPropagator;
@@ -63,8 +63,8 @@ public class SP3ParserTest {
         Assertions.assertEquals('a', file.getHeader().getVersion());
         Assertions.assertEquals(SP3OrbitType.FIT, file.getHeader().getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getHeader().getTimeSystem());
-        Assertions.assertSame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP,
-                          ((FactoryManagedFrame) file.getSatellites().get("1").getFrame()).getFactoryKey());
+        Assertions.assertEquals(ITRFVersion.ITRF_1992,
+                                ((VersionedITRF) file.getSatellites().get("1").getFrame()).getITRFVersion());
 
         Assertions.assertEquals(25, file.getSatelliteCount());
 
@@ -104,8 +104,7 @@ public class SP3ParserTest {
         final String     ex         = "/sp3/gbm18432.sp3.Z";
         final DataSource compressed = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource source     = new UnixCompressFilter().filter(compressed);
-        final Frame      frame      = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-        final SP3Parser  parser     = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 6, s -> frame);
+        final SP3Parser  parser     = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 6, IGSUtils::guessFrame);
         final SP3        sp3        = parser.parse(source);
         final TimeScale  ts         = sp3.getHeader().getTimeSystem().getTimeScale(TimeScalesFactory.getTimeScales());
         final AggregatedClockModel clockModel = sp3.getEphemeris("C02").extractClockModel();
@@ -348,10 +347,10 @@ public class SP3ParserTest {
         final Frame frame = file.getSatellites().get("G01").getFrame();
         Assertions.assertEquals(0.0,
                                 Vector3D.distance(coord.getPosition(), s.getPVCoordinates(frame).getPosition()),
-                                2.4e-8);
+                                4.2e-8);
         Assertions.assertEquals(0.0,
                                 Vector3D.distance(coord.getVelocity(), s.getPVCoordinates(frame).getVelocity()),
-                                2.1e-12);
+                                3.9e-12);
         Assertions.assertEquals(coord.getClockCorrection(),
                                 s.getAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE)[0],
                                 1.0e-18);
@@ -392,8 +391,7 @@ public class SP3ParserTest {
         final String     ex         = "/sp3/gbm18432.sp3.Z";
         final DataSource compressed = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource source     = new UnixCompressFilter().filter(compressed);
-        final Frame      frame      = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-        final SP3Parser  parser     = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 2, s -> frame);
+        final SP3Parser  parser     = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 2, IGSUtils::guessFrame);
 
         // action
         final SP3 file = parser.parse(source);
@@ -402,6 +400,7 @@ public class SP3ParserTest {
         TimeScale gps = TimeScalesFactory.getGPS();
         Assertions.assertNull(file.getSatellites().get("XYZ"));
         SP3Ephemeris ephemeris = file.getSatellites().get("C03");
+        Frame frame = ephemeris.getFrame();
         BoundedPropagator propagator = ephemeris.getPropagator();
         Assertions.assertEquals(propagator.getMinDate(), new AbsoluteDate(2015, 5, 5, gps));
         Assertions.assertEquals(propagator.getMaxDate(), new AbsoluteDate(2015, 5, 5, 23, 55, 0, gps));
@@ -457,7 +456,7 @@ public class SP3ParserTest {
         Assertions.assertEquals(0.0,
                                 Vector3D.distance(propagator.propagate(propagator.getMaxDate()).getPVCoordinates(frame).getPosition(),
                                                   expected.getPosition()),
-                                3.0e-8);
+                                3.1e-8);
     }
 
     @Test
@@ -516,8 +515,7 @@ public class SP3ParserTest {
         try {
             final String    ex     = "/sp3/truncated-line.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            final Frame     frame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
             parser.parse(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -533,8 +531,7 @@ public class SP3ParserTest {
         final String    ex     = "/sp3/missing-eof.sp3";
         try {
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
             parser.parse(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -550,8 +547,7 @@ public class SP3ParserTest {
     public void testMissingStandardDeviation() {
         final String    ex     = "/sp3/missing-standard-deviation.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-        final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
         final SP3 sp3 = parser.parse(source);
         Assertions.assertEquals(32, sp3.getSatelliteCount());
         List<SP3Coordinate> coordinates06 = sp3.getEphemeris("G06").getSegments().get(0).getCoordinates();
@@ -574,8 +570,7 @@ public class SP3ParserTest {
         try {
             final String    ex     = "/sp3/wrong-line-identifier.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
             parser.parse(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -588,8 +583,7 @@ public class SP3ParserTest {
 
     @Test
     public void testBHN() {
-        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
         final String      ex           = "/sp3/esaBHN.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
@@ -600,8 +594,7 @@ public class SP3ParserTest {
 
     @Test
     public void testPRO() {
-        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
         final String      ex           = "/sp3/esaPRO.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
@@ -612,8 +605,7 @@ public class SP3ParserTest {
 
     @Test
     public void testUnknownType() {
-        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
         final String      ex           = "/sp3/unknownType.sp3.Z";
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
@@ -627,8 +619,7 @@ public class SP3ParserTest {
         try {
             final String    ex     = "/sp3/unsupported-version.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
             parser.parse(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -644,8 +635,7 @@ public class SP3ParserTest {
         try {
             final String    ex     = "/sp3/wrong-number-of-epochs.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
             parser.parse(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -662,8 +652,7 @@ public class SP3ParserTest {
         try {
             final String    ex     = "/sp3/inconsistent-sampling-dates.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, IGSUtils::guessFrame);
             parser.parse(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

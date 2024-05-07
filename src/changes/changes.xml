@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1394">
+        Fixed ignored coordinates system in SP3 parser.
+      </action>
       <action dev="serrof" type="add" issue="1391">
         Add method to create constant (Field)AdaptableInterval.
       </action>
@@ -40,7 +43,7 @@
         Add wrapper for back and forth conversions from osculating elements for averaging theories.
       </action>
       <action dev="maxime" type="fix" issue="1310">
-        Fixed creating an AbsoluteDate from JD in TDB timescale. 
+        Fixed creating an AbsoluteDate from JD in TDB timescale.
       </action>
       <action dev="luc" type="update" issue="1380">
         Allow parsing of ocean loading coefficients (BLQ files) from a DataSource.
