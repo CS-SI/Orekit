@@ -331,7 +331,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     scanner.skip("#");
                     final String v = scanner.next();
 
-                    SP3Header header = new SP3Header();
+                    final SP3Header header = new SP3Header();
                     header.setVersion(v.substring(0, 1).toLowerCase().charAt(0));
 
                     pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
