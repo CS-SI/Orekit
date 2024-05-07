@@ -118,7 +118,7 @@ public class MultiplexedMeasurementBuilder implements MeasurementBuilder<Multipl
                 states[measurement.getMultiplexedStateIndex(i, j)] = statesI[j];
             }
         }
-        return measurement.estimateWithoutDerivatives(0, 0, states);
+        return measurement.estimateWithoutDerivatives(states);
 
     }
 

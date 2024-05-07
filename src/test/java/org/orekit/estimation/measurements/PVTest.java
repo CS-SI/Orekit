@@ -73,7 +73,7 @@ public class PVTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the PV value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             for (int i = 0; i < 6; i++) {

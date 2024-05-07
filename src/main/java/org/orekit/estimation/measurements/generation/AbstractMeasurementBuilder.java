@@ -210,7 +210,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         }
 
         // estimate the perfect value of the measurement
-        final EstimatedMeasurementBase<T> estimated = observed.estimateWithoutDerivatives(0, 0, relevant);
+        final EstimatedMeasurementBase<T> estimated = observed.estimateWithoutDerivatives(relevant);
         final double[] value = estimated.getEstimatedValue();
 
         // add the noise

@@ -381,13 +381,11 @@ public class RangeTest {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            return measurement.
-                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                                   getEstimatedValue();
-                        }
-                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                    jacobianRef = Differentiation.differentiate(state1 ->
+                                                                    measurement.
+                                                                        estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                                        getEstimatedValue(),
+                                                                measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
@@ -554,7 +552,7 @@ public class RangeTest {
                                             @Override
                                             public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.
-                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                        getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
@@ -696,7 +694,7 @@ public class RangeTest {
                                             @Override
                                             public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.
-                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                        getEstimatedValue()[0];
                                             }
                                         }, 3, 0.1 * drivers[i].getScale());

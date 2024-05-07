@@ -116,13 +116,12 @@ public class TDOATest {
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                           getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(), OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate(state1 ->
+                                                      measurement.
+                                                          estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                          getEstimatedValue(),
+                                                  1, propagator.getAttitudeProvider(),
+                                                  OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -182,13 +181,11 @@ public class TDOATest {
             final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                           getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
+                    Differentiation.differentiate(state1 ->
+                                                  measurement.
+                                                      estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                      getEstimatedValue(),
+                                                  1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
@@ -279,7 +276,7 @@ public class TDOATest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
@@ -368,7 +365,7 @@ public class TDOATest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
