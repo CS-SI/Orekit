@@ -52,7 +52,7 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      */
     public LatitudeExtremumDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body);
     }
 

@@ -157,6 +157,9 @@ TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordine troppo elevato (m = {0}, l''ordine ma
 # no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
 WRONG_DEGREE_OR_ORDER = nessun termine ({0}, {1}) nella decomposizione armonica sferica {2}x{3}
 
+# wrong orbital elements for averaging theory
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY = <MISSING TRANSLATION>
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = sono state trovate varie date di riferimento ({0} e {1} differenti di {3,number,0.0##############E0} s) nel file del campo gravitazionale {2}
 

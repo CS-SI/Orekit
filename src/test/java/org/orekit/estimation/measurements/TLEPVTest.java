@@ -70,7 +70,7 @@ public class TLEPVTest {
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(state1 -> measurement.
-                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state1 }).
+                       estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
                        getEstimatedValue(), measurement.getDimension(),
                                               propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                                               PositionAngleType.TRUE, 1.0, 3).value(state);

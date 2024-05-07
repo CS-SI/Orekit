@@ -192,8 +192,7 @@ public class InterSatellitesWindUpTest {
             EstimatedMeasurementBase<InterSatellitesPhase> estimated =
             (EstimatedMeasurementBase<InterSatellitesPhase>) m.
                 getObservedMeasurement().
-                estimateWithoutDerivatives(0, 0,
-                                           new SpacecraftState[] {
+                estimateWithoutDerivatives(new SpacecraftState[] {
                                                receiverPropagator.propagate(phase.getDate()),
                                                emitterPropagator.propagate(phase.getDate())
                                            });

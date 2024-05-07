@@ -2169,7 +2169,7 @@ public abstract class CloseEventsAbstractTest {
          * @param eventTs event times past epoch.
          */
         public TimeDetector(double... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                  new StopOnEvent(), toDates(eventTs));
         }
 
@@ -2179,7 +2179,7 @@ public abstract class CloseEventsAbstractTest {
          * @param eventTs event times past epoch.
          */
         public TimeDetector(AbsoluteDate... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                  new StopOnEvent(), Arrays.asList(eventTs));
         }
 
@@ -2228,12 +2228,12 @@ public abstract class CloseEventsAbstractTest {
         private final EventDetector g;
 
         public FlatDetector(double... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                  new StopOnEvent(), new TimeDetector(eventTs));
         }
 
         public FlatDetector(AbsoluteDate... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                  new StopOnEvent(), new TimeDetector(eventTs));
         }
 
@@ -2268,7 +2268,7 @@ public abstract class CloseEventsAbstractTest {
         private final List<AbsoluteDate> eventTs;
 
         public ContinuousDetector(double... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                  new StopOnEvent(), toDates(eventTs));
         }
 
@@ -2400,7 +2400,7 @@ public abstract class CloseEventsAbstractTest {
         int count;
 
         public ResetChangesSignGenerator(final AbsoluteDate t0, final double y1, final double y2, final double change) {
-            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                  new ContinueOnEvent(), t0, y1, y2, change);
         }
 

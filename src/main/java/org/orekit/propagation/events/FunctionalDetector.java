@@ -48,7 +48,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      * ContinueOnEvent}, and a g function that is identically unity.
      */
     public FunctionalDetector() {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new ContinueOnEvent(),
              (ToDoubleFunction<SpacecraftState>) value -> 1.0);
     }

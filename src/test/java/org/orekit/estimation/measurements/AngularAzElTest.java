@@ -35,6 +35,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 
 public class AngularAzElTest {
 
@@ -71,8 +72,7 @@ public class AngularAzElTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurementBase<?> estimated = measurement.
-                estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             azDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -86,8 +86,7 @@ public class AngularAzElTest {
         Assertions.assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
 
         // Test measurement type
-        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE,
-                                measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -142,17 +141,20 @@ public class AngularAzElTest {
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
-            final EstimatedMeasurement<?> estimated = measurement.
-                                                      estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
             Assertions.assertEquals(2, estimated.getParticipants().length);
             final double[][]   jacobian  = estimated.getStateDerivatives(0);
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
-                Differentiation.differentiate(state1 -> measurement.
-                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state1 }).
-                       getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                                              PositionAngleType.TRUE, 250.0, 4).value(state);
+                Differentiation.differentiate(new StateFunction() {
+                    public double[] value(final SpacecraftState state) {
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
+                    }
+                }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
+                   PositionAngleType.TRUE, 250.0, 4).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -247,9 +249,7 @@ public class AngularAzElTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.
-                    estimate(0, 0, new SpacecraftState[] { state }).
-                    getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assertions.assertEquals(2, measurement.getDimension());
                 Assertions.assertEquals(2, gradient.length);
 

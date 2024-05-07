@@ -83,7 +83,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                  final double dawnDuskElevation,
                                  final AtmosphericRefractionModel refractionModel) {
         this(groundLocation, sun, dawnDuskElevation, refractionModel,
-             s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new ContinueOnEvent());
     }
 

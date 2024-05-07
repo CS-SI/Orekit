@@ -87,8 +87,7 @@ class AngularRaDecTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the RADEC value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                 new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             raDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -162,7 +161,7 @@ class AngularRaDecTest {
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(state1 -> measurement.
-                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] {
+                       estimateWithoutDerivatives(new SpacecraftState[] {
                                                   state1
                                               }).
                        getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
@@ -275,7 +274,7 @@ class AngularRaDecTest {
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                             return measurement.
-                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                    getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());

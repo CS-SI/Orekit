@@ -137,7 +137,7 @@ public class PVBuilderTest {
             SpacecraftState state = propagator.propagate(date);
             double[] e = measurement.
                 getObservedMeasurement().
-                estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                estimateWithoutDerivatives(new SpacecraftState[] { state }).
                 getEstimatedValue();
             for (int i = 0; i < 3; ++i) {
                 maxErrorP = FastMath.max(maxErrorP, FastMath.abs(e[i] - m[i]));

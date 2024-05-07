@@ -35,4 +35,13 @@ public interface AdaptableInterval {
      */
     double currentInterval(SpacecraftState state);
 
+    /**
+     * Method creating a constant interval provider.
+     * @param constantInterval value of constant interval
+     * @return adaptable interval ready to be added to an event detector
+     * @since 12.1
+     */
+    static AdaptableInterval of(final double constantInterval) {
+        return state -> constantInterval;
+    }
 }

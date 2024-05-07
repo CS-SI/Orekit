@@ -155,8 +155,7 @@ public class PhaseCentersPhaseModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Phase sr = (Phase) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<Phase> estimated = sr.estimateWithoutDerivatives(0, 0,
-                                                                                      new SpacecraftState[] { p3.propagate(sr.getDate()) });
+            EstimatedMeasurementBase<Phase> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.1e-5);

@@ -71,7 +71,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      */
     public FieldElevationExtremumDetector(final T maxCheck, final T threshold,
                                           final TopocentricFrame topo) {
-        this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
+        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              topo);
     }
 

@@ -89,7 +89,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      *                            approach.
      */
     public ExtremumApproachDetector(final PVCoordinatesProvider secondaryPVProvider) {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing(), secondaryPVProvider);
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing(), secondaryPVProvider);
     }
 
     /**

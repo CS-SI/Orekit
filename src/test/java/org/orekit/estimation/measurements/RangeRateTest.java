@@ -75,7 +75,7 @@ public class RangeRateTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -172,10 +172,14 @@ public class RangeRateTest {
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(state1 -> measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state1 }).
-                           getEstimatedValue(), 1, propagator.getAttitudeProvider(),
-                                                  OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate(new StateFunction() {
+                public double[] value(final SpacecraftState state) {
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
+                }
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -234,10 +238,14 @@ public class RangeRateTest {
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(state1 -> measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state1 }).
-                           getEstimatedValue(), 1, propagator.getAttitudeProvider(),
-                                                  OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate(new StateFunction() {
+                public double[] value(final SpacecraftState state) {
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
+                }
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);

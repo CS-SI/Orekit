@@ -208,7 +208,7 @@ public class TurnAroundRangeTest {
 
             // Values of the TAR & errors
             final double TARobserved  = measurement.getObservedValue()[0];
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
             final double TARestimated = estimated.getEstimatedValue()[0];
 
             final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
@@ -329,10 +329,14 @@ public class TurnAroundRangeTest {
             final double[][] jacobianRef;
 
             // Compute a reference value using finite differences
-            jacobianRef = Differentiation.differentiate(state1 -> measurement.
-                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state1 }).
-                   getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
-                                                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+            jacobianRef = Differentiation.differentiate(new StateFunction() {
+                public double[] value(final SpacecraftState state) {
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
+                }
+            }, measurement.getDimension(), propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
             Assertions.assertEquals(jacobianRef.length, jacobian.length);
             Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);

@@ -94,15 +94,13 @@ public class InterSatellitesPhaseAmbiguityModifierTest {
             final SpacecraftState localRefState  = p2.propagate(sr.getDate());
             final SpacecraftState remoteRefState = ephemeris.propagate(sr.getDate());
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<InterSatellitesPhase> evalNoMod = sr.estimateWithoutDerivatives(0, 0,
-                                                                                                     new SpacecraftState[] {
+            EstimatedMeasurementBase<InterSatellitesPhase> evalNoMod = sr.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                          localRefState,
                                                                                                          remoteRefState
                                                                                                      });
             // add modifier
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<InterSatellitesPhase> eval = sr.estimateWithoutDerivatives(0, 0,
-                                                                                                new SpacecraftState[] {
+            EstimatedMeasurementBase<InterSatellitesPhase> eval = sr.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                     localRefState,
                                                                                                     remoteRefState
                                                                                                 });

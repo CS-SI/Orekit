@@ -76,7 +76,7 @@ public class RelativeDistanceDetector extends AbstractDetector<RelativeDistanceD
      */
     public RelativeDistanceDetector(final PVCoordinatesProvider secondaryPVProvider,
                                     final double distanceThreshold) {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(), secondaryPVProvider,
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(), secondaryPVProvider,
                 distanceThreshold);
     }
 

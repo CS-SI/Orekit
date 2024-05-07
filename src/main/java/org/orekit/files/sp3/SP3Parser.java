@@ -66,7 +66,10 @@ import org.orekit.utils.IERSConventions;
  */
 public class SP3Parser implements EphemerisFileParser<SP3> {
 
-    /** String representation of the center of ephemeris coordinate system. **/
+    /** String representation of the center of ephemeris coordinate system.
+     * @deprecated as of 12.1 not used anymore
+     */
+    @Deprecated
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
     /** Spaces delimiters. */
@@ -179,7 +182,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             }
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(source.getName());
+            final ParseInfo pi = new ParseInfo(source.getName(), this);
 
             int lineNumber = 0;
             Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
@@ -223,18 +226,18 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
      * <p><b>Note</b>: The class intentionally does not provide accessor
      * methods, as it is only used internally for parsing a SP3 file.</p>
      */
-    private class ParseInfo {
+    private static class ParseInfo {
 
         /** File name.
          * @since 12.0
          */
         private final String fileName;
 
-        /** Set of time scales for parsing dates. */
-        private final TimeScales timeScales;
+        /** Englobing parser. */
+        private final SP3Parser parser;
 
         /** The corresponding SP3File object. */
-        private final SP3 file;
+        private SP3 file;
 
         /** The latest epoch as read from the SP3 file. */
         private AbsoluteDate latestEpoch;
@@ -295,17 +298,18 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
         /** Create a new {@link ParseInfo} object.
          * @param fileName file name
+         * @param parser englobing parser
          */
-        protected ParseInfo(final String fileName) {
+        protected ParseInfo(final String fileName,
+                            final SP3Parser parser) {
             this.fileName      = fileName;
-            this.timeScales    = SP3Parser.this.timeScales;
-            file               = new SP3(mu, interpolationSamples, frameBuilder.apply(SP3_FRAME_CENTER_STRING));
+            this.parser        = parser;
             latestEpoch        = null;
             latestPosition     = null;
             latestClock        = 0.0;
             hasVelocityEntries = false;
             epoch              = DateTimeComponents.JULIAN_EPOCH;
-            timeScale          = timeScales.getGPS();
+            timeScale          = parser.timeScales.getGPS();
             maxSatellites      = 0;
             nbAccuracies       = 0;
             done               = false;
@@ -327,12 +331,13 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     scanner.skip("#");
                     final String v = scanner.next();
 
-                    pi.file.getHeader().setVersion(v.substring(0, 1).toLowerCase().charAt(0));
+                    final SP3Header header = new SP3Header();
+                    header.setVersion(v.substring(0, 1).toLowerCase().charAt(0));
 
                     pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
-                    pi.file.getHeader().setFilter(pi.hasVelocityEntries ?
-                                                  CartesianDerivativesFilter.USE_PV :
-                                                  CartesianDerivativesFilter.USE_P);
+                    header.setFilter(pi.hasVelocityEntries ?
+                                     CartesianDerivativesFilter.USE_PV :
+                                     CartesianDerivativesFilter.USE_P);
 
                     final int    year   = Integer.parseInt(v.substring(2));
                     final int    month  = scanner.nextInt();
@@ -345,19 +350,21 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                       hour, minute, second);
 
                     final int numEpochs = scanner.nextInt();
-                    pi.file.getHeader().setNumberOfEpochs(numEpochs);
+                    header.setNumberOfEpochs(numEpochs);
 
                     // data used indicator
                     final String fullSpec = scanner.next();
                     final List<DataUsed> dataUsed = new ArrayList<>();
                     for (final String specifier : fullSpec.split("\\+")) {
-                        dataUsed.add(DataUsed.parse(specifier, pi.fileName, pi.file.getHeader().getVersion()));
+                        dataUsed.add(DataUsed.parse(specifier, pi.fileName, header.getVersion()));
                     }
-                    pi.file.getHeader().setDataUsed(dataUsed);
+                    header.setDataUsed(dataUsed);
 
-                    pi.file.getHeader().setCoordinateSystem(scanner.next());
-                    pi.file.getHeader().setOrbitTypeKey(scanner.next());
-                    pi.file.getHeader().setAgency(scanner.hasNext() ? scanner.next() : "");
+                    header.setCoordinateSystem(scanner.next());
+                    header.setOrbitTypeKey(scanner.next());
+                    header.setAgency(scanner.hasNext() ? scanner.next() : "");
+                    pi.file = new SP3(header, pi.parser.mu, pi.parser.interpolationSamples,
+                                      pi.parser.frameBuilder.apply(header.getCoordinateSystem()));
                 }
             }
 
@@ -483,7 +490,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                         ts = TimeSystem.parseTimeSystem(tsStr);
                     }
                     pi.file.getHeader().setTimeSystem(ts);
-                    pi.timeScale = ts.getTimeScale(pi.timeScales);
+                    pi.timeScale = ts.getTimeScale(pi.parser.timeScales);
 
                     // now we know the time scale used, we can set the file epoch
                     pi.file.getHeader().setEpoch(new AbsoluteDate(pi.epoch, pi.timeScale));

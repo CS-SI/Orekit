@@ -133,7 +133,7 @@ public class TurnAroundRangeBuilderTest {
             SpacecraftState state = propagator.propagate(date);
             double[] e = measurement.
                 getObservedMeasurement().
-                estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                estimateWithoutDerivatives(new SpacecraftState[] { state }).
                 getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));

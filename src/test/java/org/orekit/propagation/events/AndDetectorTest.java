@@ -119,10 +119,10 @@ public class AndDetectorTest {
     public void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(s-> AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
         Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         EventDetector b = Mockito.mock(EventDetector.class);
-        Mockito.when(b.getMaxCheckInterval()).thenReturn(s-> AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(b.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
         Mockito.when(b.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         EventHandler c = Mockito.mock(EventHandler.class);
         BooleanDetector and = BooleanDetector.andCombine(a, b).withHandler(c);
@@ -175,7 +175,7 @@ public class AndDetectorTest {
 
         @Override
         public AdaptableInterval getMaxCheckInterval() {
-            return s -> AbstractDetector.DEFAULT_MAXCHECK;
+            return AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK);
         }
 
         @Override

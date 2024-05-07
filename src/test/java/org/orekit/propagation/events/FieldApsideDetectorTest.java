@@ -78,7 +78,7 @@ class FieldApsideDetectorTest {
 
     @Test
     void testFixedMaxCheck() {
-        doTestMaxcheck(Binary64Field.getInstance(), s -> 20.0, 4687);
+        doTestMaxcheck(Binary64Field.getInstance(), FieldAdaptableInterval.of(20.), 4687);
     }
 
     @Test

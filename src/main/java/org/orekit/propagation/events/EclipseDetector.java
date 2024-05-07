@@ -83,7 +83,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 12.0
      */
     public EclipseDetector(final OccultationEngine occultationEngine) {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing(),
              occultationEngine, 0.0, true);
     }

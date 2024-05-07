@@ -73,7 +73,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
     public AlignmentDetector(final double maxCheck, final double threshold,
                              final PVCoordinatesProvider body,
                              final double alignAngle) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER,
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER,
              new StopOnIncreasing(),
              body, alignAngle);
     }

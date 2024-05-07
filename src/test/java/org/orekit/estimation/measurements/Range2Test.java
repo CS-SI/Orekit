@@ -212,8 +212,7 @@ public class Range2Test {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                         new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
@@ -354,7 +353,7 @@ public class Range2Test {
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) {
                             return measurement.
-                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                    getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -524,7 +523,7 @@ public class Range2Test {
                                             @Override
                                             public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.
-                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                        getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());

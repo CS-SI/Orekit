@@ -83,7 +83,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @since 12.0
      */
     public DateDetector(final TimeStamped... dates) {
-        this(s -> DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(), DEFAULT_MIN_GAP, dates);
+        this(AdaptableInterval.of(DEFAULT_MAX_CHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(), DEFAULT_MIN_GAP, dates);
     }
 
     /** Protected constructor with full parameters.

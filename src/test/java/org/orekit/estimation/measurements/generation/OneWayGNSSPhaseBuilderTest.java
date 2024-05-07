@@ -151,8 +151,7 @@ public class OneWayGNSSPhaseBuilderTest {
             previous = date;
             double[] e = measurement.
                 getObservedMeasurement().
-                estimateWithoutDerivatives(0, 0,
-                                           new SpacecraftState[] {
+                estimateWithoutDerivatives(new SpacecraftState[] {
                                                propagator1.propagate(date),
                                                propagator2.propagate(date)
                                            }).

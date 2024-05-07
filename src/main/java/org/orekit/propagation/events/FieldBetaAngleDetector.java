@@ -75,7 +75,7 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
     public FieldBetaAngleDetector(final Field<T> field, final T betaAngleThreshold,
             final FieldPVCoordinatesProvider<T> celestialBodyProvider,
             final Frame inertialFrame) {
-        this(s -> DEFAULT_MAXCHECK, field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                 new FieldStopOnEvent<>(), betaAngleThreshold, celestialBodyProvider, inertialFrame);
     }
 

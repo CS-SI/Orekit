@@ -97,7 +97,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
      */
     public FieldParameterDrivenDateIntervalDetector(final Field<T> field, final String prefix,
                                                     final AbsoluteDate refStart, final AbsoluteDate refStop) {
-        this(s -> DEFAULT_MAXCHECK,
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
              field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER,
              new FieldStopOnEvent<>(),

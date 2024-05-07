@@ -27,8 +27,29 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1394">
+        Fixed ignored coordinates system in SP3 parser.
+      </action>
+      <action dev="serrof" type="add" issue="1391">
+        Add method to create constant (Field)AdaptableInterval.
+      </action>
+      <action dev="serrof" type="add" issue="1389">
+        Add eclipse detector for cylindrical shadow model.
+      </action>
+      <action dev="bryan" type="update" issue="1263">
+        Removed support for Ant.
+      </action>
+      <action dev="serrof" type="add" issue="1392">
+        Add event handler remembering last occurrence.
+      </action>
+      <action dev="serrof" type="fix" issue="1292">
+        Switched to (Field)UnivariateDerivative1 instead of 1 in (Field)BrouwerLyddanePropagator.
+      </action>
+      <action dev="serrof" type="add" issue="1375">
+        Add wrapper for back and forth conversions from osculating elements for averaging theories.
+      </action>
       <action dev="maxime" type="fix" issue="1310">
-        Fixed creating an AbsoluteDate from JD in TDB timescale. 
+        Fixed creating an AbsoluteDate from JD in TDB timescale.
       </action>
       <action dev="luc" type="update" issue="1380">
         Allow parsing of ocean loading coefficients (BLQ files) from a DataSource.

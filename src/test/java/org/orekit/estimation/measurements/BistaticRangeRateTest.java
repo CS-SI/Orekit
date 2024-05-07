@@ -71,7 +71,7 @@ public class BistaticRangeRateTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the measurement value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -119,7 +119,7 @@ public class BistaticRangeRateTest {
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
                     return measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
                            getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -184,7 +184,7 @@ public class BistaticRangeRateTest {
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
                     return measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
                            getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -275,7 +275,7 @@ public class BistaticRangeRateTest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
@@ -364,7 +364,7 @@ public class BistaticRangeRateTest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());

@@ -104,7 +104,7 @@ public abstract class AbstractIodTest {
         final AngularAzEl azEl = new AngularAzEl(observer, date, new double[] { 0.0, 0.0 },
                                                  new double[] { 1.0, 1.0 }, new double[] { 1.0, 1.0 },
                                                  satellite);
-        EstimatedMeasurementBase<AngularAzEl> estimated = azEl.estimateWithoutDerivatives(0, 0, new SpacecraftState[] {prop.propagate(date)});
+        EstimatedMeasurementBase<AngularAzEl> estimated = azEl.estimateWithoutDerivatives(new SpacecraftState[] {prop.propagate(date)});
         return new AngularAzEl(observer, date, estimated.getEstimatedValue(), azEl.getBaseWeight(),
                                azEl.getTheoreticalStandardDeviation(), satellite);
     }
@@ -135,7 +135,7 @@ public abstract class AbstractIodTest {
         final TimeStampedPVCoordinates satPV       = pvProvider.getPVCoordinates(date, outputFrame);
         final AbsolutePVCoordinates    satPVInGCRF = new AbsolutePVCoordinates(outputFrame, satPV);
         final SpacecraftState[]        satState    = new SpacecraftState[] { new SpacecraftState(satPVInGCRF) };
-        final double[]                 angular     = raDec.estimateWithoutDerivatives(0, 0, satState).getEstimatedValue();
+        final double[]                 angular     = raDec.estimateWithoutDerivatives(satState).getEstimatedValue();
 
         // Rotate LOS from RADEC reference frame to output frame
         return raDec.getReferenceFrame().getStaticTransformTo(outputFrame, date)

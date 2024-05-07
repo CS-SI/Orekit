@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
+import java.util.concurrent.TimeUnit;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.MathUtils.SumAndResidual;
@@ -466,6 +467,41 @@ public class AbsoluteDate
         }
     }
 
+    /** Build an instance from an elapsed duration since to another instant.
+     * <p>It is important to note that the elapsed duration is <em>not</em>
+     * the difference between two readings on a time scale. As an example,
+     * the duration between the two instants leading to the readings
+     * 2005-12-31T23:59:59 and 2006-01-01T00:00:00 in the {@link UTCScale UTC}
+     * time scale is <em>not</em> 1 second, but a stop watch would have measured
+     * an elapsed duration of 2 seconds between these two instances because a leap
+     * second was introduced at the end of 2005 in this time scale.</p>
+     * <p>This constructor is the reverse of the {@link #durationFrom(AbsoluteDate, TimeUnit)}
+     * method.</p>
+     * @param since start instant of the measured duration
+     * @param elapsedDuration physically elapsed duration from the <code>since</code>
+     * instant, as measured in a regular time scale
+     * @param timeUnit {@link TimeUnit} of the elapsedDuration
+     * @see #durationFrom(AbsoluteDate, TimeUnit)
+     * @since 12.1
+     */
+    public AbsoluteDate(final AbsoluteDate since, final long elapsedDuration, final TimeUnit timeUnit) {
+        final long elapsedDurationNanoseconds = TimeUnit.NANOSECONDS.convert(elapsedDuration, timeUnit);
+        final long deltaEpoch = elapsedDurationNanoseconds / TimeUnit.SECONDS.toNanos(1);
+        final double deltaOffset = (elapsedDurationNanoseconds - (deltaEpoch * TimeUnit.SECONDS.toNanos(1))) / (double) TimeUnit.SECONDS.toNanos(1);
+        final double newOffset = since.offset + deltaOffset;
+        if (newOffset >= 1.0) {
+            // newOffset is in [1.0, 2.0]
+            epoch = since.epoch + deltaEpoch + 1L;
+            offset = newOffset - 1.0;
+        } else if (newOffset < 0) {
+            epoch = since.epoch + deltaEpoch - 1L;
+            offset = 1.0 + newOffset;
+        } else {
+            epoch = since.epoch + deltaEpoch;
+            offset = newOffset;
+        }
+    }
+
     /** Build an instance from an apparent clock offset with respect to another
      * instant <em>in the perspective of a specific {@link TimeScale time scale}</em>.
      * <p>It is important to note that the apparent clock offset <em>is</em> the
@@ -860,6 +896,19 @@ public class AbsoluteDate
         return new AbsoluteDate(this, dt);
     }
 
+    /** Get a time-shifted date.
+     * <p>
+     * Calling this method is equivalent to call <code>new AbsoluteDate(this, shift, timeUnit)</code>.
+     * </p>
+     * @param dt time shift in time units
+     * @param timeUnit {@link TimeUnit} of the shift
+     * @return a new date, shifted with respect to instance (which is immutable)
+     * @since 12.1
+     */
+    public AbsoluteDate shiftedBy(final long dt, final TimeUnit timeUnit) {
+        return new AbsoluteDate(this, dt, timeUnit);
+    }
+
     /** Compute the physically elapsed duration between two instants.
      * <p>The returned duration is the number of seconds physically
      * elapsed between the two instants, measured in a regular time
@@ -881,6 +930,31 @@ public class AbsoluteDate
      */
     public double durationFrom(final AbsoluteDate instant) {
         return (epoch - instant.epoch) + (offset - instant.offset);
+    }
+
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the duration physically
+     * elapsed between the two instants, using the given time unit and rounded to the nearest integer, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * <p>This method is the reverse of the {@link #AbsoluteDate(AbsoluteDate,
+     * long, TimeUnit)} constructor.</p>
+     * @param instant instant to subtract from the instance
+     * @param timeUnit {@link TimeUnit} precision for the offset
+     * @return offset in the given timeunit between the two instants (positive
+     * if the instance is posterior to the argument), rounded to the nearest integer {@link TimeUnit}
+     * @see #AbsoluteDate(AbsoluteDate, long, TimeUnit)
+     * @since 12.1
+     */
+    public long durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
+        final long deltaEpoch = timeUnit.convert(epoch - instant.epoch, TimeUnit.SECONDS);
+
+        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
+        final long deltaOffset = FastMath.round((offset - instant.offset) * multiplier);
+
+        return deltaEpoch + deltaOffset;
     }
 
     /** Compute the apparent clock offset between two instant <em>in the

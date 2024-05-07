@@ -110,8 +110,7 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             TurnAroundRange sr = (TurnAroundRange) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<TurnAroundRange> estimated = sr.estimateWithoutDerivatives(0, 0,
-                                                                                                new SpacecraftState[] { p3.propagate(sr.getDate()) });
+            EstimatedMeasurementBase<TurnAroundRange> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             TurnAroundRange ar = (TurnAroundRange) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 5.0e-7);

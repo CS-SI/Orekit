@@ -171,8 +171,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             OneWayGNSSPhase sr = (OneWayGNSSPhase) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<OneWayGNSSPhase> estimated = sr.estimateWithoutDerivatives(0, 0,
-                                                                                                new SpacecraftState[] { p3.propagate(sr.getDate()) });
+            EstimatedMeasurementBase<OneWayGNSSPhase> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             OneWayGNSSPhase ar = (OneWayGNSSPhase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0] * FREQUENCY.getWavelength(), estimated.getEstimatedValue()[0] * FREQUENCY.getWavelength(), 6.0e-5);

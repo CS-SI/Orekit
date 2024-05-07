@@ -75,7 +75,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 12.0
      */
     public FieldEclipseDetector(final Field<T> field, final OccultationEngine occultationEngine) {
-        this(s -> DEFAULT_MAXCHECK, field.getZero().newInstance(DEFAULT_THRESHOLD),
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              occultationEngine, field.getZero(), true);
     }

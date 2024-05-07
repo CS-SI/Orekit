@@ -61,7 +61,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      */
     protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter,
                                final EventHandler handler) {
-        this(s -> maxCheck, threshold, maxIter, handler);
+        this(AdaptableInterval.of(maxCheck), threshold, maxIter, handler);
     }
 
     /** Build a new instance.
@@ -133,7 +133,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 6.1
      */
     public T withMaxCheck(final double newMaxCheck) {
-        return withMaxCheck(s -> newMaxCheck);
+        return withMaxCheck(AdaptableInterval.of(newMaxCheck));
     }
 
     /**
