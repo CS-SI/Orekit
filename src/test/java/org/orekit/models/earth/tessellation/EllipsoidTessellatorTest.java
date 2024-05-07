@@ -17,11 +17,14 @@
 package org.orekit.models.earth.tessellation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.partitioning.Region;
 import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.geometry.partitioning.RegionFactory;
+import org.hipparchus.geometry.spherical.twod.Edge;
 import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.Vertex;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,8 +44,12 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 
 public class EllipsoidTessellatorTest {
 
@@ -365,6 +372,258 @@ public class EllipsoidTessellatorTest {
         });
         doTestSampleAroundPole(aoi, new DivertedSingularityAiming(aoi), 993);
     }
+
+    @Test
+    public void testIssue1388() throws IOException {
+
+        // Step 1 : define the coordinates :
+        //      a. format is [lat, lon]
+        //      b. order is clockWise
+        //      c. the first coordinates != the last one
+
+        double[][] shapeCoordinates1 = {
+            { 18.602585205425896, -76.96276018365842 },
+            { 18.57249082100609, -76.80620195239239 },
+            { 18.408750874895002, -76.84101662269072 },
+            { 18.3331742522667, -76.85707550881591 },
+            { 18.257597934434987, -76.87312403715188 },
+            { 18.182031502555215, -76.88916022728444 },
+            { 18.106414929680927, -76.90519686376611 },
+            { 18.030855567607098, -76.92121123297645 },
+            { 17.955280973332677, -76.93721874766547 },
+            { 17.87969526622326, -76.95321858415689 },
+            { 17.80416324015021, -76.96919708557023 },
+            { 17.728574326965138, -76.98517769352242 },
+            { 17.588661518962343, -77.01473903648854 },
+            { 17.49650619905315, -77.0342031192472 },
+            { 17.526779103104783, -77.1897823275402 },
+            { 17.5485398681768, -77.18520934447962 },
+            { 17.624293265977183, -77.16928381433733 },
+            { 17.67571798336192, -77.15846791369165 },
+            { 17.747659863099422, -77.14334087084347 },
+            { 17.769418792522664, -77.13876029654094 },
+            { 17.84516581113023, -77.12280827309398 },
+            { 17.92091192468999, -77.10684680260262 },
+            { 17.99665712514784, -77.09087584010511 },
+            { 18.072401410187016, -77.0748953260324 },
+            { 18.148144771769385, -77.05890521550272 },
+            { 18.223887203723567, -77.04290545732495 },
+            { 18.299628701801268, -77.02689599675749 },
+            { 18.375369256045143, -77.01087679277504 },
+            { 18.451108862175584, -76.99484778988442 },
+            { 18.52684751402596, -76.97880893719434 },
+        };
+
+        double[][] shapeCoordinates2 = {
+            { 18.405527980074993, -78.25707065080552 },
+            { 18.451136227912485, -78.00708862903122 },
+            { 18.496732365966466, -77.705828243816 },
+            { 18.4541763474828, -77.28598664314421 },
+            { 18.405527980074993, -76.97831646249921 },
+            { 18.33861403170316, -76.85653034932697 },
+            { 18.22601854027039, -76.63218750927341 },
+            { 18.155989976776553, -76.32451732862788 },
+            { 17.93049065091843, -76.23478019260665 },
+            { 17.863394719203555, -76.35015651034861 },
+            { 17.869495397388064, -76.54886016868198 },
+            { 17.94268718313505, -76.6898756681441 },
+            { 17.954882874700132, -76.84371075846688 },
+            { 17.854243309397717, -76.9302429967729 },
+            { 17.869495404611797, -77.14497115377101 },
+            { 17.790170276013725, -77.14817605148616 },
+            { 17.71386286451302, -77.12253686976543 },
+            { 17.72607423578937, -77.23470828979222 },
+            { 17.875595873376014, -77.38213358468467 },
+            { 17.854243316622103, -77.57442744758828 },
+            { 17.857293838883137, -77.73787723105598 },
+            { 18.006705181057598, -77.85325354879791 },
+            { 18.07679345301507, -77.95901517339438 },
+            { 18.20775293886321, -78.0711865934217 },
+            { 18.195574802144037, -78.24425107003432 },
+            { 18.338614038907608, -78.37885677406668 },
+        };
+
+        double[][] shapeCoordinates3 = {
+            {18.52684751402596,-76.97880893719434},
+            {18.451108862175584,-76.99484778988442},
+            {18.375369256045143,-77.01087679277504},
+            {18.299628701801268,-77.02689599675749},
+            {18.223887203723567,-77.04290545732495},
+            {18.148144771769385,-77.05890521550272},
+            {18.072401410187016,-77.0748953260324},
+            {17.99665712514784,-77.09087584010511},
+            {17.92091192468999,-77.10684680260262},
+            {17.84516581113023,-77.12280827309398},
+            {17.769418792522664,-77.13876029654094},
+            {17.747659863099422,-77.14334087084347},
+            {17.67571798336192,-77.15846791369165},
+            {17.624293265977183,-77.16928381433733},
+            {17.5485398681768,-77.18520934447962},
+            {17.526779103104783,-77.1897823275402},
+            {17.49650619905315,-77.0342031192472},
+            {17.588661518962343,-77.01473903648854},
+            {17.728574326965138,-76.98517769352242},
+            {17.80416324015021,-76.96919708557023},
+            {17.87969526622326,-76.95321858415689},
+            {17.955280973332677,-76.93721874766547},
+            {18.030855567607098,-76.92121123297645},
+            {18.106414929680927,-76.90519686376611},
+            {18.182031502555215,-76.88916022728444},
+            {18.257597934434987,-76.87312403715188},
+            {18.3331742522667,-76.85707550881591},
+            {18.408750874895002,-76.84101662269072},
+            {18.57249082100609,-76.80620195239239},
+            {18.602585205425896,-76.96276018365842}
+        };
+
+        double[][] shapeCoordinates4 = {
+            {18.338614038907608,-78.37885677406668},
+            {18.195574802144037,-78.24425107003432},
+            {18.20775293886321,-78.0711865934217},
+            {18.07679345301507,-77.95901517339438},
+            {18.006705181057598,-77.85325354879791},
+            {17.857293838883137,-77.73787723105598},
+            {17.854243316622103,-77.57442744758828},
+            {17.875595873376014,-77.38213358468467},
+            {17.72607423578937,-77.23470828979222},
+            {17.71386286451302,-77.12253686976543},
+            {17.790170276013725,-77.14817605148616},
+            {17.869495404611797,-77.14497115377101},
+            {17.854243309397717,-76.9302429967729},
+            {17.954882874700132,-76.84371075846688},
+            {17.94268718313505,-76.6898756681441},
+            {17.869495397388064,-76.54886016868198},
+            {17.863394719203555,-76.35015651034861},
+            {17.93049065091843,-76.23478019260665},
+            {18.155989976776553,-76.32451732862788},
+            {18.22601854027039,-76.63218750927341},
+            {18.33861403170316,-76.85653034932697},
+            {18.405527980074993,-76.97831646249921},
+            {18.4541763474828,-77.28598664314421},
+            {18.496732365966466,-77.705828243816},
+            {18.451136227912485,-78.00708862903122},
+            {18.405527980074993,-78.25707065080552}
+        };
+
+        // Step 2 : Order them in clockwise order
+        shapeCoordinates2 = reverseOrderFirstToLast(shapeCoordinates2);
+        shapeCoordinates1 = reverseOrderFirstToLast(shapeCoordinates1);
+
+        // Step 3 : Build the SphericalPolygonsSet
+        SphericalPolygonsSet
+            shape1 =
+            EllipsoidTessellator.buildSimpleZone(1e-10, coordinatesToRadians(
+                shapeCoordinates1));
+        SphericalPolygonsSet
+            shape2 =
+            EllipsoidTessellator.buildSimpleZone(1e-10, coordinatesToRadians(
+                shapeCoordinates2));
+        SphericalPolygonsSet
+            shape3 =
+            EllipsoidTessellator.buildSimpleZone(1e-10, coordinatesToRadians(
+                shapeCoordinates3));
+        SphericalPolygonsSet
+            shape4 =
+            EllipsoidTessellator.buildSimpleZone(1e-10, coordinatesToRadians(
+                shapeCoordinates4));
+
+        // Step 4 : Make the intersection
+        Region<Sphere2D>
+            intersection =
+            new RegionFactory<Sphere2D>().intersection(shape2, shape1);
+        Region<Sphere2D>
+            intersection2 =
+            new RegionFactory<Sphere2D>().intersection(shape3, shape4);
+
+        // Step 5 : Generate the geojson for shape1, shape2 and the intersection between shape1 and shape2 to shows the issue
+        final ProcessBuilder pb = new ProcessBuilder("gnuplot").
+            redirectOutput(ProcessBuilder.Redirect.INHERIT).
+            redirectError(ProcessBuilder.Redirect.INHERIT);
+        pb.environment().remove("XDG_SESSION_TYPE");
+        final String output = null;// = "/tmp";
+        final Process gnuplot = pb.start();
+        try (PrintStream out = new PrintStream(gnuplot.getOutputStream(), false, StandardCharsets.UTF_8.name())) {
+            final File outputFile;
+            if (output == null) {
+                out.format(Locale.US, "set terminal qt size %d, %d title 'issue 1388'%n", 1000, 1000);
+                outputFile = null;
+            } else {
+                out.format(Locale.US, "set terminal pngcairo size %d, %d%n", 1000, 1000);
+                outputFile = new File(output, "issue-1388.png");
+                out.format(Locale.US, "set output '%s'%n", outputFile.getAbsolutePath());
+            }
+            out.format(Locale.US, "set xlabel 'longitude'%n");
+            out.format(Locale.US, "set ylabel 'latitude'%n");
+            print(out, "$shape1", shape3);
+            print(out, "$shape2", shape4);
+            print(out, "$intersection", (SphericalPolygonsSet) intersection2);
+            out.format(Locale.US, "plot $shape1 using 1:2 with lines title 'shape1',\\%n");
+            out.format(Locale.US, "     $shape2 using 1:2 with lines title 'shape2',\\%n");
+            out.format(Locale.US, "     $intersection using 1:2 with linespoints lw 2 title 'intersection'%n");
+            if (output == null) {
+                out.format(Locale.US, "pause mouse close%n");
+            } else {
+                System.out.println(outputFile + " written");
+            }
+        }
+
+    }
+    private void print(final PrintStream out, final String dataName, final SphericalPolygonsSet shape) {
+        out.format(Locale.US, "%s <<EOD%n", dataName);
+        List<Vertex> loops = shape.getBoundaryLoops();
+        boolean following = false;
+        for (Vertex first : shape.getBoundaryLoops()) {
+            if (following) {
+                out.format(Locale.US, "%n%n");
+            }
+            int count = 0;
+            for (Vertex v = first; count == 0 || v != first;
+                 v = v.getOutgoing().getEnd()) {
+                ++count;
+                Edge e = v.getIncoming();
+                out.format(Locale.US, "%.3f %.3f%n",
+                           FastMath.toDegrees(v.getLocation().getTheta()),
+                           90.0 - FastMath.toDegrees(v.getLocation().getPhi()));
+            }
+            out.format(Locale.US, "%.3f %.3f%n",
+                       FastMath.toDegrees(first.getLocation().getTheta()),
+                       90.0 - FastMath.toDegrees(first.getLocation().getPhi()));
+            following = true;
+        }
+        out.format(Locale.US, "EOD%n");
+    }
+
+            /**
+             * Converts coordinates from degrees to radians.
+             *
+             * @param coordinates The coordinates in degrees.
+             * @return The coordinates in radians.
+             */
+            private static double[][] coordinatesToRadians(double[][] coordinates) {
+                // Convert coordinates to radians
+                double[][] coordinatesRadian = new double[coordinates.length][2];
+                for (int i = 0; i < coordinates.length; i++) {
+                    coordinatesRadian[i][0] = FastMath.toRadians(coordinates[i][0]);
+                    coordinatesRadian[i][1] = FastMath.toRadians(coordinates[i][1]);
+                }
+                return coordinatesRadian;
+            }
+
+            /**
+             * Reverses the order of coordinates from first to last.
+             *
+             * @param coordinates The array of coordinates in the format [[lat1, lon1], [lat2, lon2], ...].
+             * @return The array of coordinates with reversed order.
+             */
+            public static double[][] reverseOrderFirstToLast(double[][] coordinates) {
+                int length = coordinates.length;
+                for (int i = 0; i < length / 2; i++) {
+                    double[] temp = coordinates[i];
+                    coordinates[i] = coordinates[length - 1 - i];
+                    coordinates[length - 1 - i] = temp;
+                }
+                return coordinates;
+            }
 
     private void doTestSampleAroundPole(final SphericalPolygonsSet aoi, final TileAiming aiming, final int expectedNodes) {
         EllipsoidTessellator tessellator = new EllipsoidTessellator(ellipsoid, aiming, 1);
