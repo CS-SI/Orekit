@@ -756,12 +756,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             if (storedInitialState != null && stateMapper.mapDateToDouble(storedInitialState.getDate()) == originalTime) {
                 for (final AdditionalDerivativesProvider provider: additionalDerivativesProviders) {
                     final String name = provider.getName();
-                    try {
-                        final double[] value = storedInitialState.getAdditionalState(name);
-                        updatedState = updatedState.addAdditionalState(name, value);
-                    } catch (final OrekitException ignored) {
-                        // ignored
-                    }
+                    final double[] value = storedInitialState.getAdditionalState(name);
+                    updatedState = updatedState.addAdditionalState(name, value);
                 }
             }
             return updatedState;

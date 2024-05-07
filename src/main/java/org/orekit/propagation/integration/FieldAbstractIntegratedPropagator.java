@@ -773,12 +773,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             if (storedInitialState != null && stateMapper.mapDateToDouble(storedInitialState.getDate()).subtract(originalTime).isZero()) {
                 for (final FieldAdditionalDerivativesProvider<T> provider: additionalDerivativesProviders) {
                     final String name = provider.getName();
-                    try {
-                        final T[] value = storedInitialState.getAdditionalState(name);
-                        updatedState = updatedState.addAdditionalState(name, value);
-                    } catch (final OrekitException ignored) {
-                        // ignored
-                    }
+                    final T[] value = storedInitialState.getAdditionalState(name);
+                    updatedState = updatedState.addAdditionalState(name, value);
                 }
             }
             return updatedState;
