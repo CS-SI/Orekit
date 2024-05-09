@@ -240,8 +240,10 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         final DoubleArrayDictionary accelerationPartials = new DoubleArrayDictionary();
 
         // evaluate contribution of all force models
-        final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(state, STATE_DIMENSION, attitudeProvider);
+        final boolean isThereAnyForceNotDependingOnlyOnPosition = forceModels.stream().anyMatch(force -> !force.dependsOnPositionOnly());
         final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, SPACE_DIMENSION, attitudeProvider);
+        final NumericalGradientConverter fullConverter = isThereAnyForceNotDependingOnlyOnPosition ?
+            new NumericalGradientConverter(state, STATE_DIMENSION, attitudeProvider) : posOnlyConverter;
 
         for (final ForceModel forceModel : forceModels) {
 
