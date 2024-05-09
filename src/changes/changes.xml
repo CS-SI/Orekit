@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="1395">
+        Retrieve states from derivative providers in init of (Field)AbstractIntegratedIntegrator.
+      </action>
       <action dev="serrof" type="update" issue="1396">
         Improved performance of STM when there is no force model not dependent on position only.
       </action>
@@ -46,7 +49,7 @@
         Add wrapper for back and forth conversions from osculating elements for averaging theories.
       </action>
       <action dev="maxime" type="fix" issue="1310">
-        Fixed creating an AbsoluteDate from JD in TDB timescale.
+        Fixed creating an AbsoluteDate from JD in TDB timescale. 
       </action>
       <action dev="luc" type="update" issue="1380">
         Allow parsing of ocean loading coefficients (BLQ files) from a DataSource.
