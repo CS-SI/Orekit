@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1396">
+        Improved performance of STM when there is no force model not dependent on position only.
+      </action>
       <action dev="luc" type="fix" issue="1394">
         Fixed ignored coordinates system in SP3 parser.
       </action>
