@@ -31,7 +31,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final FieldCylindricalShadowEclipseDetector<Complex> eclipseDetector = new FieldCylindricalShadowEclipseDetector<>(sun,
                 getComplexEarthRadius(), new FieldContinueOnEvent<>());
-        final FieldAdaptableInterval<Complex> adaptableInterval = state -> 1;
+        final FieldAdaptableInterval<Complex> adaptableInterval = FieldAdaptableInterval.of(1.);
         final Complex expectedThreshold = new Complex(0.1);
         final int expectedMaxIter = 10;
         // WHEN
