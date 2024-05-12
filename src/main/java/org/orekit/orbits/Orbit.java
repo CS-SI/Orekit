@@ -463,6 +463,12 @@ public abstract class Orbit
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate otherDate, final Frame otherFrame) {
+        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
+    }
+
     /** Get the position in a specified frame.
      * @param outputFrame frame in which the position coordinates shall be computed
      * @return position in the specified output frame
