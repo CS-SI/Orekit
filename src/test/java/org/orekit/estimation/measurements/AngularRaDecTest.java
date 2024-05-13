@@ -203,7 +203,7 @@ class AngularRaDecTest {
         Assertions.assertEquals(0.0, new Median().evaluate(RaerrorsV), 2.2e-5);
 
         // median errors on declination
-        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsP), 1.9e-11);
+        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsP), 2.2e-11);
         Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsV), 9.0e-6);
 
         // Test measurement type

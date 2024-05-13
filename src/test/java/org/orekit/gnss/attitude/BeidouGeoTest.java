@@ -19,45 +19,45 @@ package org.orekit.gnss.attitude;
 import org.junit.jupiter.api.Test;
 
 
-public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
+class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta()  {
+    void testPatchedLargeNegativeBeta()  {
         doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2G.txt", 6.6e-15, 7.8e-16, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 8.0e-15, 8.3e-16, false);
+    void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 8.0e-15, 9.3e-16, false);
     }
 
     @Test
-    public void testPatchedCrossingBeta() {
+    void testPatchedCrossingBeta() {
         doTestAxes("patched-eclips/beta-crossing-BEIDOU-2G.txt", 6.2e-15, 8.6e-16, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
+    void testPatchedSmallPositiveBeta() {
         doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2G.txt", 7.9e-15, 7.1e-16, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta()  {
+    void testOriginalLargeNegativeBeta()  {
         doTestAxes("original-eclips/beta-large-negative-BEIDOU-2G.txt", 7.6e-4, 7.8e-16, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2G.txt", 5.0e-4, 8.6e-16, false);
+    void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2G.txt", 5.0e-4, 9.3e-16, false);
     }
 
     @Test
-    public void testOriginalCrossingBeta() {
+    void testOriginalCrossingBeta() {
         doTestAxes("original-eclips/beta-crossing-BEIDOU-2G.txt", 9.0e-4, 8.6e-16, false);
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
+    void testOriginalSmallPositiveBeta() {
         doTestAxes("original-eclips/beta-small-positive-BEIDOU-2G.txt", 9.4e-4, 7.1e-16, false);
     }
 

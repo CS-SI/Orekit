@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1401">
+        Added public, light-weight routines for Keplerian motion with Cartesian coordinates.
+      </action>
       <action dev="luc" type="update" issue="1404">
         Added support for parsing/writing SP3 files in inertial frames.
       </action>
