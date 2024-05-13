@@ -27,7 +27,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.FieldAbsoluteDate;
@@ -114,12 +113,6 @@ class FieldOrbitTest {
         // THEN
         final boolean expectedValue = aIn > 0.;
         Assertions.assertEquals(expectedValue, actualValue);
-    }
-
-    private static Frame mockInertialFrame() {
-        final Frame frame = Mockito.mock(Frame.class);
-        Mockito.when(frame.isPseudoInertial()).thenReturn(true);
-        return frame;
     }
 
     private static class TestFieldOrbit extends FieldOrbit<Complex> {
