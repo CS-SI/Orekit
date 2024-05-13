@@ -1523,7 +1523,15 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             // Take into consideration station eccentricities if not null
             if (sinexEcc != null) {
                 final Station stationEcc = sinexEcc.getStation(stationNames[i]);
-                final Vector3D eccentricities = stationEcc.getEccentricities(refDate);
+                final Vector3D eccentricities;
+                if (stationEcc.getEccRefSystem() == Station.ReferenceSystem.UNE) {
+                    eccentricities = stationEcc.getEccentricities(refDate);
+                } else {
+                    final Vector3D xyz = stationEcc.getEccentricities(refDate);
+                    eccentricities = new Vector3D(Vector3D.dotProduct(xyz, position.getZenith()),
+                                                  Vector3D.dotProduct(xyz, position.getNorth()),
+                                                  Vector3D.dotProduct(xyz, position.getEast()));
+                }
                 station.getZenithOffsetDriver().setValue(eccentricities.getX());
                 station.getZenithOffsetDriver().setReferenceValue(eccentricities.getX());
                 station.getNorthOffsetDriver().setValue(eccentricities.getY());

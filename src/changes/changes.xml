@@ -21,8 +21,11 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1400">
+        Fixed station eccentricity reference system in tests.
+      </action>
       <action dev="luc" type="fix" issue="1394">
-        Fixed ignored coordinates system in SP3 parser.
+         Fixed ignored coordinates system in SP3 parser.
       </action>
       <action dev="serrof" type="add" issue="1391">
         Add method to create constant (Field)AdaptableInterval.
