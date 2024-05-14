@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="vincent" type="fix" issue="1316">
+        Fixed regression in EphemerisPropagatorBuilder API.
+      </action>
       <action dev="luc" type="fix" issue="1400">
         Fixed station eccentricity reference system in tests.
       </action>
