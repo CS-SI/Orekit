@@ -249,7 +249,7 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
 
         // Definition of the reference parameters for the tests
         
-        final double distanceAccuracy = 1.71;
+        final double distanceAccuracy = 1.711;
         final double velocityAccuracy = 2.71e-3;
         final double[] RefStatRange = { -1.698412, 1.529126, 0.029547, 0.338275 };
 

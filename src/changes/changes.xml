@@ -27,8 +27,45 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1403">
+        Added Post Seismic Deformation models, and parse ITRF2020 PSD sinex files
+        to retrieve their parameters.
+      </action>
+      <action dev="serrof" type="fix" issue="1386">
+        Removed measurement Jacobian computation in UKF.
+      </action>
+      <action dev="serrof" type="add" issue="1383">
+        Add simpler signature for estimateWithoutDerivatives.
+      </action>
+      <action dev="vincent" type="fix" issue="1282">
+        Fixed mismatch between LOFType.EQW javadoc and code.
+      </action>
+      <action dev="vincent" type="fix" issue="1316">
+        Fixed regression in EphemerisPropagatorBuilder API.
+      </action>
+      <action dev="vincent" type="add" issue="1330">
+        Added FieldExtremumApproachDetector and improved detector efficiency.
+      </action>
+      <action dev="luc" type="fix" issue="1400">
+        Fixed station eccentricity reference system in tests.
+      </action>
+      <action dev="serrof" type="update" issue="1398">
+        Change cached angle type in (Field)KeplerianPropagator.
+      </action>
+      <action dev="serrof" type="update" issue="1397">
+        Override getPosition in (Field)Orbit.
+      </action>
+      <action dev="serrof" type="add" issue="1391">
+        Add SRP with cylindrical shadow.
+      </action>
+      <action dev="serrof" type="fix" issue="1395">
+        Retrieve states from derivative providers in init of (Field)AbstractIntegratedIntegrator.
+      </action>
+      <action dev="serrof" type="update" issue="1396">
+        Improved performance of STM when there is no force model not dependent on position only.
+      </action>
       <action dev="luc" type="fix" issue="1394">
-        Fixed ignored coordinates system in SP3 parser.
+         Fixed ignored coordinates system in SP3 parser.
       </action>
       <action dev="serrof" type="add" issue="1391">
         Add method to create constant (Field)AdaptableInterval.

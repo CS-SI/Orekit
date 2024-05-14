@@ -1649,6 +1649,67 @@ public class NumericalPropagatorTest {
         Assertions.assertEquals(expectedName, actualName);
     }
 
+    @Test
+    void testIssue1395() {
+        // GIVEN
+        final Orbit initialOrbit = createEllipticOrbit();
+        final ClassicalRungeKuttaIntegrator rungeKuttaIntegrator = new ClassicalRungeKuttaIntegrator(10);
+        final NumericalPropagator numericalPropagator = new NumericalPropagator(rungeKuttaIntegrator);
+        final SpacecraftState state = new SpacecraftState(initialOrbit);
+        final String name = "test";
+        numericalPropagator.setInitialState(state.addAdditionalState(name, 0.));
+        numericalPropagator.addAdditionalDerivativesProvider(mockDerivativeProvider(name));
+        numericalPropagator.addForceModel(createForceModelBasedOnAdditionalState(name));
+        // WHEN & THEN
+        final AbsoluteDate epoch = initialOrbit.getDate();
+        final SpacecraftState propagateState = Assertions.assertDoesNotThrow(() ->
+                numericalPropagator.propagate(epoch.shiftedBy(10.)));
+        Assertions.assertNotEquals(epoch, propagateState.getDate());
+    }
+
+    private static AdditionalDerivativesProvider mockDerivativeProvider(final String name) {
+        final AdditionalDerivativesProvider mockedProvider = Mockito.mock(AdditionalDerivativesProvider.class);
+        final int dimension = 1;
+        Mockito.when(mockedProvider.getDimension()).thenReturn(dimension);
+        Mockito.when(mockedProvider.getName()).thenReturn(name);
+        final double[] yDot = new double[dimension];
+        final CombinedDerivatives combinedDerivatives = new CombinedDerivatives(yDot, null);
+        Mockito.when(mockedProvider.combinedDerivatives(Mockito.any(SpacecraftState.class)))
+                .thenReturn(combinedDerivatives);
+        return mockedProvider;
+    }
+
+    private static ForceModel createForceModelBasedOnAdditionalState(final String name) {
+        return new ForceModel() {
+
+            @Override
+            public void init(SpacecraftState initialState, AbsoluteDate target) {
+                ForceModel.super.init(initialState, target);
+                initialState.getAdditionalState(name);
+            }
+
+            @Override
+            public boolean dependsOnPositionOnly() {
+                return false;
+            }
+
+            @Override
+            public Vector3D acceleration(SpacecraftState s, double[] parameters) {
+                return Vector3D.ZERO;
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
+                return null; // not used
+            }
+
+            @Override
+            public List<ParameterDriver> getParametersDrivers() {
+                return new ArrayList<>();
+            }
+        };
+    }
+
     /** Record the dates treated by the handler.
      *  If they are out of an interval defined by a start and final date.
      */

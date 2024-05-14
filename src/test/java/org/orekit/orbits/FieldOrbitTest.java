@@ -20,14 +20,15 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -36,6 +37,19 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 class FieldOrbitTest {
+
+    @Test
+    void testGetPosition() {
+        // GIVEN
+        final TestFieldOrbit testFieldOrbit = new TestFieldOrbit(1.);
+        final FieldAbsoluteDate<Complex> date = testFieldOrbit.getDate().shiftedBy(0.);
+        final Frame frame = testFieldOrbit.getFrame();
+        // WHEN
+        final FieldVector3D<Complex> actualPosition = testFieldOrbit.getPosition(date, frame);
+        // THEN
+        final FieldVector3D<Complex> expectedPosition = testFieldOrbit.getPVCoordinates(date, frame).getPosition();
+        Assertions.assertEquals(expectedPosition, actualPosition);
+    }
 
     @Test
     void testHasNonKeplerianAccelerationDerivative() {
@@ -101,20 +115,13 @@ class FieldOrbitTest {
         Assertions.assertEquals(expectedValue, actualValue);
     }
 
-    private static Frame mockInertialFrame() {
-        final Frame frame = Mockito.mock(Frame.class);
-        Mockito.when(frame.isPseudoInertial()).thenReturn(true);
-        return frame;
-    }
-
-    @SuppressWarnings("unchecked")
     private static class TestFieldOrbit extends FieldOrbit<Complex> {
 
         final Complex a;
 
         protected TestFieldOrbit(final double aIn)
                 throws IllegalArgumentException {
-            super(mockInertialFrame(), Mockito.mock(FieldAbsoluteDate.class), Complex.ONE);
+            super(FramesFactory.getGCRF(), FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance()), Complex.ONE);
             a = new Complex(aIn, 0.);
         }
 
@@ -235,22 +242,24 @@ class FieldOrbitTest {
 
         @Override
         protected FieldVector3D<Complex> initPosition() {
-            return null;
+            return new FieldVector3D<>(getField(), new Vector3D(a.getReal(), 0., 0.));
         }
 
         @Override
         protected TimeStampedFieldPVCoordinates<Complex> initPVCoordinates() {
-            return null;
+            final FieldPVCoordinates<Complex> fieldPVCoordinates = new FieldPVCoordinates<>(initPosition(),
+                    FieldVector3D.getZero(getField()));
+            return new TimeStampedFieldPVCoordinates<>(getDate(), fieldPVCoordinates);
         }
 
         @Override
         public FieldOrbit<Complex> shiftedBy(Complex dt) {
-            return null;
+            return shiftedBy(dt.getReal());
         }
 
         @Override
         public FieldOrbit<Complex> shiftedBy(double dt) {
-            return null;
+            return new TestFieldOrbit(a.getReal());
         }
 
         @Override
@@ -273,10 +282,6 @@ class FieldOrbitTest {
 
         }
 
-        @Override
-        public FieldVector3D<Complex> getPosition(FieldAbsoluteDate<Complex> date, Frame frame) {
-            return super.getPosition(date, frame);
-        }
     }
     
 }

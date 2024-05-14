@@ -24,6 +24,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -430,9 +431,8 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
         // Loop on sigma points to predict measurements
         for (int i = 0; i < predictedSigmaPoints.length; i++) {
-            final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber, currentMeasurementNumber,
-                                                                                   KalmanEstimatorUtil.filterRelevant(observedMeasurement,
-                                                                                                                      statesForMeasurementEstimation[i]));
+            final EstimatedMeasurement<?> estimated = estimateMeasurement(observedMeasurement, currentMeasurementNumber,
+                    statesForMeasurementEstimation[i]);
             predictedMeasurements[i] = new ArrayRealVector(estimated.getEstimatedValue());
         }
 
@@ -461,9 +461,8 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         }
 
         // Predicted measurement
-        predictedMeasurement = measurement.getObservedMeasurement().estimate(currentMeasurementNumber, currentMeasurementNumber,
-                                                                             KalmanEstimatorUtil.filterRelevant(measurement.getObservedMeasurement(),
-                                                                                                                predictedSpacecraftStates));
+        predictedMeasurement = estimateMeasurement(measurement.getObservedMeasurement(), currentMeasurementNumber,
+                predictedSpacecraftStates);
         predictedMeasurement.setEstimatedValue(predictedMeas.toArray());
 
         // set estimated value to the predicted value by the filter
@@ -543,10 +542,30 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         }
 
         // Corrected measurement
-        correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
-                                                            currentMeasurementNumber,
-                                                            KalmanEstimatorUtil.filterRelevant(observedMeasurement,
-                                                                                               getCorrectedSpacecraftStates()));
+        correctedMeasurement = estimateMeasurement(observedMeasurement, currentMeasurementNumber,
+                getCorrectedSpacecraftStates());
+    }
+
+    /**
+     * Estimate measurement (without derivatives).
+     * @param <T> measurement type
+     * @param observedMeasurement observed measurement
+     * @param measurementNumber measurement number
+     * @param spacecraftStates states
+     * @return estimated measurement
+     * @since 12.1
+     */
+    private static <T extends ObservedMeasurement<T>> EstimatedMeasurement<T> estimateMeasurement(final ObservedMeasurement<T> observedMeasurement,
+                                                                                                  final int measurementNumber,
+                                                                                                  final SpacecraftState[] spacecraftStates) {
+        final EstimatedMeasurementBase<T> estimatedMeasurementBase = observedMeasurement.
+                estimateWithoutDerivatives(measurementNumber, measurementNumber,
+                KalmanEstimatorUtil.filterRelevant(observedMeasurement, spacecraftStates));
+        final EstimatedMeasurement<T> estimatedMeasurement = new EstimatedMeasurement<>(estimatedMeasurementBase.getObservedMeasurement(),
+                estimatedMeasurementBase.getIteration(), estimatedMeasurementBase.getCount(),
+                estimatedMeasurementBase.getStates(), estimatedMeasurementBase.getParticipants());
+        estimatedMeasurement.setEstimatedValue(estimatedMeasurementBase.getEstimatedValue());
+        return estimatedMeasurement;
     }
 
     /** Get the propagators estimated with the values set in the propagators builders.

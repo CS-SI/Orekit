@@ -70,7 +70,7 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
      */
     public FieldCylindricalShadowEclipseDetector(final ExtendedPVCoordinatesProvider sun,
                                                  final T occultingBodyRadius, final FieldEventHandler<T> handler) {
-        this(sun, occultingBodyRadius, state -> DEFAULT_MAXCHECK, occultingBodyRadius.getField().getZero().newInstance(DEFAULT_THRESHOLD),
+        this(sun, occultingBodyRadius, FieldAdaptableInterval.of(DEFAULT_MAXCHECK), occultingBodyRadius.getField().getZero().newInstance(DEFAULT_THRESHOLD),
             DEFAULT_MAX_ITER, handler);
     }
 
@@ -89,10 +89,10 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
         final FieldVector3D<T> position = s.getPosition();
         final T dotProduct = position.dotProduct(sunDirection);
         if (dotProduct.getReal() >= 0.) {
-            return position.getNorm();
+            return position.getNorm().divide(occultingBodyRadius);
         } else {
             final T distanceToCylinderAxis = (position.subtract(sunDirection.scalarMultiply(dotProduct))).getNorm();
-            return distanceToCylinderAxis.subtract(occultingBodyRadius);
+            return distanceToCylinderAxis.divide(occultingBodyRadius).subtract(1.);
         }
     }
 

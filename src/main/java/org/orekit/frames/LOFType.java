@@ -577,7 +577,7 @@ public enum LOFType implements LOF {
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             final Vector3D m = pv.getMomentum();
             return new Rotation(new Vector3D(-m.getY(), m.getX(), 0), m,
-                                Vector3D.PLUS_I, Vector3D.PLUS_J);
+                                Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
 
         /** {@inheritDoc} */
@@ -588,7 +588,7 @@ public enum LOFType implements LOF {
             return new FieldRotation<>(new FieldVector3D<>(m.getY().negate(), m.getX(), field.getZero()),
                                        m,
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
-                                       new FieldVector3D<>(field, Vector3D.PLUS_J));
+                                       new FieldVector3D<>(field, Vector3D.PLUS_K));
         }
 
         /** {@inheritDoc} */
@@ -690,7 +690,7 @@ public enum LOFType implements LOF {
     /** {@inheritDoc} */
     public String getName() {
         return this.name();
-    };
+    }
 
     /**
      * Get the rotation from input to output {@link LOFType local orbital frame}.

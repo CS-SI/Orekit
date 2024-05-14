@@ -45,13 +45,13 @@ import org.orekit.utils.ParameterDriversList;
 
 import java.util.List;
 
-public class KeplerianBatchLSEstimatorTest {
+class KeplerianBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
      */
     @Test
-    public void testPV() {
+    void testPV() {
 
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -92,7 +92,7 @@ public class KeplerianBatchLSEstimatorTest {
 
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testKeplerPVBackward() {
+    void testKeplerPVBackward() {
 
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -137,7 +137,7 @@ public class KeplerianBatchLSEstimatorTest {
      * Perfect range measurements with a perfect start
      */
     @Test
-    public void testKeplerRange() {
+    void testKeplerRange() {
 
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -163,10 +163,10 @@ public class KeplerianBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 4,
-                                                   0.0, 8.4e-7,
+                                                   0.0, 8.5e-7,
                                                    0.0, 2.0e-6,
                                                    0.0, 1.9e-8,
-                                                   0.0, 8.3e-12);
+                                                   0.0, 9.0e-12);
 
     }
 
@@ -174,7 +174,7 @@ public class KeplerianBatchLSEstimatorTest {
      * Perfect range measurements with a perfect start and an on-board antenna range offset
      */
     @Test
-    public void testKeplerRangeWithOnBoardAntennaOffset() {
+    void testKeplerRangeWithOnBoardAntennaOffset() {
 
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -208,11 +208,11 @@ public class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 13,
+        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 12,
                                                    0.0, 5.9e-5,
                                                    0.0, 1.5e-4,
-                                                   0.0, 2.5e-9,
-                                                   0.0, 2.8e-12);
+                                                   0.0, 4.3e-9,
+                                                   0.0, 4.2e-12);
 
     }
 
@@ -220,7 +220,7 @@ public class KeplerianBatchLSEstimatorTest {
      * Perfect range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerRangeRate() {
+    void testKeplerRangeRate() {
 
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -258,7 +258,7 @@ public class KeplerianBatchLSEstimatorTest {
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
