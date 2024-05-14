@@ -24,6 +24,9 @@
       <action dev="vincent" type="fix" issue="1316">
         Fixed regression in EphemerisPropagatorBuilder API.
       </action>
+      <action dev="vincent" type="add" issue="1330">
+        Added FieldExtremumApproachDetector and improved detector efficiency.
+      </action>
       <action dev="luc" type="fix" issue="1400">
         Fixed station eccentricity reference system in tests.
       </action>

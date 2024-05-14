@@ -55,7 +55,7 @@ public class ElevationExtremumDetectorTest {
                 withThreshold(1.e-6).
                 withHandler(new ContinueOnEvent());
         final EventSlopeFilter<ElevationExtremumDetector> maxElevationDetector =
-                new EventSlopeFilter<ElevationExtremumDetector>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
+                new EventSlopeFilter<>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
 
         Assertions.assertEquals(60.0, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-6, raw.getThreshold(), 1.0e-15);
@@ -106,4 +106,3 @@ public class ElevationExtremumDetectorTest {
     }
 
 }
-
