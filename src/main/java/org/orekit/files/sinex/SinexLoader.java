@@ -50,6 +50,7 @@ import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
+import org.orekit.models.earth.displacement.PsdCorrection;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
@@ -79,6 +80,96 @@ import org.orekit.utils.units.Unit;
  * @since 10.3
  */
 public class SinexLoader implements EopHistoryLoader {
+
+    /** Station X position coordinate.
+     * @since 12.1
+     */
+    private static final String STAX = "STAX";
+
+    /** Station Y position coordinate.
+     * @since 12.1
+     */
+    private static final String STAY = "STAY";
+
+    /** Station Z position coordinate.
+     * @since 12.1
+     */
+    private static final String STAZ = "STAZ";
+
+    /** Station X velocity coordinate.
+     * @since 12.1
+     */
+    private static final String VELX = "VELX";
+
+    /** Station Y velocity coordinate.
+     * @since 12.1
+     */
+    private static final String VELY = "VELY";
+
+    /** Station Z velocity coordinate.
+     * @since 12.1
+     */
+    private static final String VELZ = "VELZ";
+
+    /** Post-Seismic Deformation amplitude for exponential correction along East direction.
+     * @since 12.1
+     */
+    private static final String AEXP_E = "AEXP_E";
+
+    /** Post-Seismic Deformation relaxation time for exponential correction along East direction.
+     * @since 12.1
+     */
+    private static final String TEXP_E = "TEXP_E";
+
+    /** Post-Seismic Deformation amplitude for logarithmic correction along East direction.
+     * @since 12.1
+     */
+    private static final String ALOG_E = "ALOG_E";
+
+    /** Post-Seismic Deformation relaxation time for logarithmic correction along East direction.
+     * @since 12.1
+     */
+    private static final String TLOG_E = "TLOG_E";
+
+    /** Post-Seismic Deformation amplitude for exponential correction along North direction.
+     * @since 12.1
+     */
+    private static final String AEXP_N = "AEXP_N";
+
+    /** Post-Seismic Deformation relaxation time for exponential correction along North direction.
+     * @since 12.1
+     */
+    private static final String TEXP_N = "TEXP_N";
+
+    /** Post-Seismic Deformation amplitude for logarithmic correction along North direction.
+     * @since 12.1
+     */
+    private static final String ALOG_N = "ALOG_N";
+
+    /** Post-Seismic Deformation relaxation time for logarithmic correction along North direction.
+     * @since 12.1
+     */
+    private static final String TLOG_N = "TLOG_N";
+
+    /** Post-Seismic Deformation amplitude for exponential correction along up direction.
+     * @since 12.1
+     */
+    private static final String AEXP_U = "AEXP_U";
+
+    /** Post-Seismic Deformation relaxation time for exponential correction along up direction.
+     * @since 12.1
+     */
+    private static final String TEXP_U = "TEXP_U";
+
+    /** Post-Seismic Deformation amplitude for logarithmic correction along up direction.
+     * @since 12.1
+     */
+    private static final String ALOG_U = "ALOG_U";
+
+    /** Post-Seismic Deformation relaxation time for logarithmic correction along up direction.
+     * @since 12.1
+     */
+    private static final String TLOG_U = "TLOG_U";
 
     /** Length of day. */
     private static final String LOD = "LOD";
@@ -155,7 +246,7 @@ public class SinexLoader implements EopHistoryLoader {
     private final DcbDescription dcbDescription;
 
     /** Data set. */
-    private Map<AbsoluteDate, SinexEopEntry> eop;
+    private final Map<AbsoluteDate, SinexEopEntry> eop;
 
     /** ITRF Version used for EOP parsing. */
     private ITRFVersion itrfVersionEop;
@@ -364,6 +455,64 @@ public class SinexLoader implements EopHistoryLoader {
         /** Start character of a comment line. */
         private static final String COMMENT = "*";
 
+        /** Station x position coordinate.
+         * @since 12.1
+         */
+        private double px;
+
+        /** Station y position coordinate.
+         * @since 12.1
+         */
+        private double py;
+
+        /** Station z position coordinate.
+         * @since 12.1
+         */
+        private double pz;
+
+        /** Station x velocity coordinate.
+         * @since 12.1
+         */
+        private double vx;
+
+        /** Station y velocity coordinate.
+         * @since 12.1
+         */
+        private double vy;
+
+        /** Station z velocity coordinate.
+         * @since 12.1
+         */
+        private double vz;
+
+        /** Correction axis.
+         * @since 12.1
+         */
+        private PsdCorrection.Axis axis;
+
+        /** Correction time evolution.
+         * @since 12.1
+         */
+        private PsdCorrection.TimeEvolution evolution;
+
+        /** Correction amplitude.
+         * @since 12.1
+         */
+        private double amplitude;
+
+        /** Correction relaxation time.
+         * @since 12.1
+         */
+        private double relaxationTime;
+
+        /** Simple constructor.
+         */
+        Parser() {
+            resetPosition();
+            resetVelocity();
+            resetPsdCorrection();
+        }
+
         /** {@inheritDoc} */
         @Override
         public boolean stillAcceptsData() {
@@ -386,11 +535,10 @@ public class SinexLoader implements EopHistoryLoader {
             boolean inEcc             = false;
             boolean inEpoch           = false;
             boolean inEstimate        = false;
-            Vector3D position         = Vector3D.ZERO;
-            Vector3D velocity         = Vector3D.ZERO;
             String startDateString    = "";
             String endDateString      = "";
             String creationDateString = "";
+
 
             // According to Sinex standard, the epochs are given in UTC scale.
             // Except for DCB files for which a TIME_SYSTEM key is present.
@@ -552,47 +700,119 @@ public class SinexLoader implements EopHistoryLoader {
                                         if (station != null || EOP_TYPES.contains(dataType)) {
                                             // switch on coordinates data
                                             switch (dataType) {
-                                                case "STAX":
+                                                case STAX:
                                                     // station X coordinate
-                                                    final double x = parseDouble(line, 47, 22);
-                                                    position = new Vector3D(x, position.getY(), position.getZ());
-                                                    station.setPosition(position);
+                                                    px = parseDouble(line, 47, 22);
+                                                    finalizePositionIfComplete(station, currentDate);
                                                     break;
-                                                case "STAY":
+                                                case STAY:
                                                     // station Y coordinate
-                                                    final double y = parseDouble(line, 47, 22);
-                                                    position = new Vector3D(position.getX(), y, position.getZ());
-                                                    station.setPosition(position);
+                                                    py = parseDouble(line, 47, 22);
+                                                    finalizePositionIfComplete(station, currentDate);
                                                     break;
-                                                case "STAZ":
+                                                case STAZ:
                                                     // station Z coordinate
-                                                    final double z = parseDouble(line, 47, 22);
-                                                    position = new Vector3D(position.getX(), position.getY(), z);
-                                                    station.setPosition(position);
-                                                    // set the reference epoch (identical for all coordinates)
-                                                    station.setEpoch(currentDate);
-                                                    // reset position vector
-                                                    position = Vector3D.ZERO;
+                                                    pz = parseDouble(line, 47, 22);
+                                                    finalizePositionIfComplete(station, currentDate);
                                                     break;
-                                                case "VELX":
+                                                case VELX:
                                                     // station X velocity (value is in m/y)
-                                                    final double vx = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
-                                                    velocity = new Vector3D(vx, velocity.getY(), velocity.getZ());
-                                                    station.setVelocity(velocity);
+                                                    vx = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
+                                                    finalizeVelocityIfComplete(station);
                                                     break;
-                                                case "VELY":
+                                                case VELY:
                                                     // station Y velocity (value is in m/y)
-                                                    final double vy = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
-                                                    velocity = new Vector3D(velocity.getX(), vy, velocity.getZ());
-                                                    station.setVelocity(velocity);
+                                                    vy = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
+                                                    finalizeVelocityIfComplete(station);
                                                     break;
-                                                case "VELZ":
+                                                case VELZ:
                                                     // station Z velocity (value is in m/y)
-                                                    final double vz = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
-                                                    velocity = new Vector3D(velocity.getX(), velocity.getY(), vz);
-                                                    station.setVelocity(velocity);
-                                                    // reset position vector
-                                                    velocity = Vector3D.ZERO;
+                                                    vz = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
+                                                    finalizeVelocityIfComplete(station);
+                                                    break;
+                                                case AEXP_E:
+                                                    // amplitude of exponential correction for Post-Seismic Deformation
+                                                    evolution = PsdCorrection.TimeEvolution.EXP;
+                                                    axis      = PsdCorrection.Axis.EAST;
+                                                    amplitude = parseDouble(line, 47, 22);
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case TEXP_E:
+                                                    // relaxation toime of exponential correction for Post-Seismic Deformation
+                                                    evolution = PsdCorrection.TimeEvolution.EXP;
+                                                    axis           = PsdCorrection.Axis.EAST;
+                                                    relaxationTime = parseDouble(line, 47, 22) * Constants.JULIAN_YEAR;
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case ALOG_E:
+                                                    // amplitude of exponential correction for Post-Seismic Deformation
+                                                    evolution = PsdCorrection.TimeEvolution.LOG;
+                                                    axis      = PsdCorrection.Axis.EAST;
+                                                    amplitude = parseDouble(line, 47, 22);
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case TLOG_E:
+                                                    // relaxation toime of exponential correction for Post-Seismic Deformation
+                                                    evolution      = PsdCorrection.TimeEvolution.LOG;
+                                                    axis           = PsdCorrection.Axis.EAST;
+                                                    relaxationTime = parseDouble(line, 47, 22) * Constants.JULIAN_YEAR;
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case AEXP_N:
+                                                    // amplitude of exponential correction for Post-Seismic Deformation
+                                                    evolution = PsdCorrection.TimeEvolution.EXP;
+                                                    axis      = PsdCorrection.Axis.NORTH;
+                                                    amplitude = parseDouble(line, 47, 22);
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case TEXP_N:
+                                                    // relaxation toime of exponential correction for Post-Seismic Deformation
+                                                    evolution      = PsdCorrection.TimeEvolution.EXP;
+                                                    axis           = PsdCorrection.Axis.NORTH;
+                                                    relaxationTime = parseDouble(line, 47, 22) * Constants.JULIAN_YEAR;
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case ALOG_N:
+                                                    // amplitude of exponential correction for Post-Seismic Deformation
+                                                    evolution = PsdCorrection.TimeEvolution.LOG;
+                                                    axis      = PsdCorrection.Axis.NORTH;
+                                                    amplitude = parseDouble(line, 47, 22);
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case TLOG_N:
+                                                    // relaxation toime of exponential correction for Post-Seismic Deformation
+                                                    evolution      = PsdCorrection.TimeEvolution.LOG;
+                                                    axis           = PsdCorrection.Axis.NORTH;
+                                                    relaxationTime = parseDouble(line, 47, 22) * Constants.JULIAN_YEAR;
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case AEXP_U:
+                                                    // amplitude of exponential correction for Post-Seismic Deformation
+                                                    evolution = PsdCorrection.TimeEvolution.EXP;
+                                                    axis      = PsdCorrection.Axis.UP;
+                                                    amplitude = parseDouble(line, 47, 22);
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case TEXP_U:
+                                                    // relaxation toime of exponential correction for Post-Seismic Deformation
+                                                    evolution      = PsdCorrection.TimeEvolution.EXP;
+                                                    axis           = PsdCorrection.Axis.UP;
+                                                    relaxationTime = parseDouble(line, 47, 22) * Constants.JULIAN_YEAR;
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case ALOG_U:
+                                                    // amplitude of exponential correction for Post-Seismic Deformation
+                                                    evolution = PsdCorrection.TimeEvolution.LOG;
+                                                    axis      = PsdCorrection.Axis.UP;
+                                                    amplitude = parseDouble(line, 47, 22);
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
+                                                    break;
+                                                case TLOG_U:
+                                                    // relaxation toime of exponential correction for Post-Seismic Deformation
+                                                    evolution      = PsdCorrection.TimeEvolution.LOG;
+                                                    axis           = PsdCorrection.Axis.UP;
+                                                    relaxationTime = parseDouble(line, 47, 22) * Constants.JULIAN_YEAR;
+                                                    finalizePsdCorrectionIfComplete(station, currentDate);
                                                     break;
                                                 case XPO:
                                                     // X polar motion
@@ -694,23 +914,21 @@ public class SinexLoader implements EopHistoryLoader {
                                         final double valueDcb = unitDcb.toSI(Double.parseDouble(parseString(line, 70, 21)));
 
                                         // Verifying if present
-                                        if (siteCode.equals("")) {
-                                            final String id = satellitePrn;
-                                            DcbSatellite dcbSatellite = getDcbSatellite(id);
+                                        if (siteCode.isEmpty()) {
+                                            DcbSatellite dcbSatellite = getDcbSatellite(satellitePrn);
                                             if (dcbSatellite == null) {
-                                                dcbSatellite = new DcbSatellite(id);
+                                                dcbSatellite = new DcbSatellite(satellitePrn);
                                                 dcbSatellite.setDescription(dcbDescription);
                                             }
                                             final Dcb dcb = dcbSatellite.getDcbData();
                                             // Add the data to the DCB object.
                                             dcb.addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
                                             // Adding the object to the HashMap if not present.
-                                            addDcbSatellite(dcbSatellite, id);
+                                            addDcbSatellite(dcbSatellite, satellitePrn);
                                         } else {
-                                            final String id = siteCode;
-                                            DcbStation dcbStation = getDcbStation(id);
+                                            DcbStation dcbStation = getDcbStation(siteCode);
                                             if (dcbStation == null) {
-                                                dcbStation = new DcbStation(id);
+                                                dcbStation = new DcbStation(siteCode);
                                                 dcbStation.setDescription(dcbDescription);
                                             }
                                             final SatelliteSystem satSystem = SatelliteSystem.parseSatelliteSystem(satellitePrn);
@@ -721,7 +939,7 @@ public class SinexLoader implements EopHistoryLoader {
                                             }
                                             dcbStation.getDcbData(satSystem).addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
                                             // Adding the object to the HashMap if not present.
-                                            addDcbStation(dcbStation, id);
+                                            addDcbStation(dcbStation, siteCode);
                                         }
 
                                     } else {
@@ -772,6 +990,74 @@ public class SinexLoader implements EopHistoryLoader {
                                            final int startDouble, final int lengthDouble) {
             final Unit unit = Unit.parse(parseString(line, startUnit, lengthUnit));
             return unit.toSI(parseDouble(line, startDouble, lengthDouble));
+        }
+
+        /** Finalize station position if complete.
+         * @param station station
+         * @param epoch coordinates epoch
+         * @since 12.1
+         */
+        private void finalizePositionIfComplete(final Station station, final AbsoluteDate epoch) {
+            if (!Double.isNaN(px + py + pz)) {
+                // all coordinates are available, position is complete
+                station.setPosition(new Vector3D(px, py, pz));
+                station.setEpoch(epoch);
+                resetPosition();
+            }
+        }
+
+        /** Reset position.
+         * @since 12.1
+         */
+        private void resetPosition() {
+            px = Double.NaN;
+            py = Double.NaN;
+            pz = Double.NaN;
+        }
+
+        /** Finalize station velocity if complete.
+         * @param station station
+         * @since 12.1
+         */
+        private void finalizeVelocityIfComplete(final Station station) {
+            if (!Double.isNaN(vx + vy + vz)) {
+                // all coordinates are available, velocity is complete
+                station.setVelocity(new Vector3D(vx, vy, vz));
+                resetVelocity();
+            }
+        }
+
+        /** Reset velocity.
+         * @since 12.1
+         */
+        private void resetVelocity() {
+            vx = Double.NaN;
+            vy = Double.NaN;
+            vz = Double.NaN;
+        }
+
+        /** Finalize a Post-Seismic Deformation correction model if complete.
+         * @param station station
+         * @param epoch coordinates epoch
+         * @since 12.1
+         */
+        private void finalizePsdCorrectionIfComplete(final Station station, final AbsoluteDate epoch) {
+            if (!Double.isNaN(amplitude + relaxationTime)) {
+                // both amplitude and relaxation time are available, correction is complete
+                final PsdCorrection correction = new PsdCorrection(axis, evolution, epoch, amplitude, relaxationTime);
+                station.addPsdCorrectionValidAfter(correction, epoch);
+                resetPsdCorrection();
+            }
+        }
+
+        /** Reset Post-Seismic Deformation correction model.
+         * @since 12.1
+         */
+        private void resetPsdCorrection() {
+            axis           = null;
+            evolution      = null;
+            amplitude      = Double.NaN;
+            relaxationTime = Double.NaN;
         }
 
     }
@@ -825,9 +1111,7 @@ public class SinexLoader implements EopHistoryLoader {
      */
     private void addStation(final Station station) {
         // Check if the station already exists
-        if (stations.get(station.getSiteCode()) == null) {
-            stations.put(station.getSiteCode(), station);
-        }
+        stations.putIfAbsent(station.getSiteCode(), station);
     }
 
     /**
@@ -838,9 +1122,7 @@ public class SinexLoader implements EopHistoryLoader {
      */
     private void addDcbStation(final DcbStation dcb, final String siteCode) {
         // Check if the DCB for the current station already exists
-        if (dcbStations.get(siteCode) == null) {
-            dcbStations.put(siteCode, dcb);
-        }
+        dcbStations.putIfAbsent(siteCode, dcb);
     }
 
     /**
@@ -850,9 +1132,7 @@ public class SinexLoader implements EopHistoryLoader {
      * @since 12.0
      */
     private void addDcbSatellite(final DcbSatellite dcb, final String prn) {
-        if (dcbSatellites.get(prn) == null) {
-            dcbSatellites.put(prn, dcb);
-        }
+        dcbSatellites.putIfAbsent(prn, dcb);
     }
 
     /**

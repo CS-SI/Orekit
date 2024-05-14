@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1403">
+        Added Post Seismic Deformation models, and parse ITRF2020 PSD sinex files
+        to retrieve their parameters.
+      </action>
       <action dev="luc" type="fix" issue="1400">
         Fixed station eccentricity reference system in tests.
       </action>
