@@ -24,6 +24,21 @@
       <action dev="luc" type="fix" issue="1400">
         Fixed station eccentricity reference system in tests.
       </action>
+      <action dev="serrof" type="update" issue="1398">
+        Change cached angle type in (Field)KeplerianPropagator.
+      </action>
+      <action dev="serrof" type="update" issue="1397">
+        Override getPosition in (Field)Orbit.
+      </action>
+      <action dev="serrof" type="add" issue="1391">
+        Add SRP with cylindrical shadow.
+      </action>
+      <action dev="serrof" type="fix" issue="1395">
+        Retrieve states from derivative providers in init of (Field)AbstractIntegratedIntegrator.
+      </action>
+      <action dev="serrof" type="update" issue="1396">
+        Improved performance of STM when there is no force model not dependent on position only.
+      </action>
       <action dev="luc" type="fix" issue="1394">
          Fixed ignored coordinates system in SP3 parser.
       </action>

@@ -137,8 +137,9 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
                                              final FieldArrayDictionary<T> additionalStatesderivatives) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
-        type.mapOrbitToArray(orbit, PositionAngleType.TRUE, stateVector, null);
-        final FieldOrbit<T> fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+        type.mapOrbitToArray(orbit, positionAngleType, stateVector, null);
+        final FieldOrbit<T> fixedOrbit = type.mapArrayToOrbit(stateVector, null, positionAngleType,
                                                               orbit.getDate(), mu, orbit.getFrame());
         FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
         if (additionalStates != null) {

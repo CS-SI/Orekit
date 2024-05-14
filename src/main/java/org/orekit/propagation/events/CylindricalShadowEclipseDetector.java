@@ -67,7 +67,7 @@ public class CylindricalShadowEclipseDetector extends AbstractDetector<Cylindric
      */
     public CylindricalShadowEclipseDetector(final PVCoordinatesProvider sun,
                                             final double occultingBodyRadius, final EventHandler handler) {
-        this(sun, occultingBodyRadius, state -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, handler);
+        this(sun, occultingBodyRadius, AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, handler);
     }
 
     /**
@@ -85,10 +85,10 @@ public class CylindricalShadowEclipseDetector extends AbstractDetector<Cylindric
         final Vector3D position = s.getPosition();
         final double dotProduct = position.dotProduct(sunDirection);
         if (dotProduct >= 0.) {
-            return position.getNorm();
+            return position.getNorm() / occultingBodyRadius;
         } else {
             final double distanceToCylinderAxis = (position.subtract(sunDirection.scalarMultiply(dotProduct))).getNorm();
-            return distanceToCylinderAxis - occultingBodyRadius;
+            return distanceToCylinderAxis / occultingBodyRadius - 1.;
         }
     }
 

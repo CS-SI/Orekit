@@ -26,7 +26,7 @@ class CylindricalShadowEclipseDetectorTest {
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final CylindricalShadowEclipseDetector eclipseDetector = new CylindricalShadowEclipseDetector(sun,
                 Constants.EGM96_EARTH_EQUATORIAL_RADIUS, new ContinueOnEvent());
-        final AdaptableInterval adaptableInterval = state -> 1;
+        final AdaptableInterval adaptableInterval = AdaptableInterval.of(1.);
         final double expectedThreshold = 0.1;
         final int expectedMaxIter = 10;
         // WHEN
