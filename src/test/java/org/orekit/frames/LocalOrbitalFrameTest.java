@@ -48,6 +48,21 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class LocalOrbitalFrameTest {
 
     @Test
+    public void testIssue1282() {
+        // GIVEN
+        final Vector3D position = new Vector3D(0,0,1);
+        final Vector3D velocity = new Vector3D(0,1,0);
+        final PVCoordinates pvCoordinates  = new PVCoordinates(position, velocity);
+
+        // WHEN
+        final Rotation actualRotation = LOFType.EQW.rotationFromInertial(pvCoordinates);
+
+        // THEN
+        final Rotation expectedRotation = new Rotation(Vector3D.MINUS_J,Vector3D.MINUS_I, Vector3D.PLUS_I, Vector3D.PLUS_K);
+        Assertions.assertArrayEquals(expectedRotation.getMatrix(), actualRotation.getMatrix());
+    }
+
+    @Test
     public void testIssue977() {
         LOFType type = LOFType.TNW;
         LocalOrbitalFrame lof = new LocalOrbitalFrame(FramesFactory.getGCRF(), type, provider, type.name());

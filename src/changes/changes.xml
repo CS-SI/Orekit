@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="vincent" type="fix" issue="1282">
+        Fixed mismatch between LOFType.EQW javadoc and code.
+      </action>
       <action dev="vincent" type="fix" issue="1316">
         Fixed regression in EphemerisPropagatorBuilder API.
       </action>
