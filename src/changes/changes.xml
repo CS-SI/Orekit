@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="1365">
+        Fixed NaN appearing in atmospheric models.
+      </action>
       <action dev="luc" type="fix" issue="1403">
         Added Post Seismic Deformation models, and parse ITRF2020 PSD sinex files
         to retrieve their parameters.
