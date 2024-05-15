@@ -16,27 +16,36 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.SolarInputs97to05;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.TimeZone;
 
@@ -192,6 +201,55 @@ public class DTM2000Test {
 
     }
 
+    /** Test issue 1365: NaN appears during integration due to bad computation of density. */
+    @Test
+    public void testIssue1365() {
+
+        // GIVEN
+        // -----
+
+        // Build the input params provider
+        final DTM2000InputParameters ip = new InputParamsIssue1365();
+
+        // Prepare field
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // Build the date
+        final AbsoluteDate date = new AbsoluteDate("2005-09-08T19:19:10.000", TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(field, date);
+
+        // Sun position at "date" in J2000
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final Vector3D sunPositionItrf = new Vector3D(-5.230565928624774E10, -1.4059879929943967E11, 1.4263029155223734E10);
+
+        // Get Sun at date
+        final CelestialBody sunAtDate = new SunPositionIssue1365(sunPositionItrf, itrf);
+
+        // Get Earth body shape
+
+        final OneAxisEllipsoid earth = ReferenceEllipsoid.getWgs84(itrf);
+        // Build the model
+        final DTM2000 atm = new DTM2000(ip, sunAtDate, earth);
+
+        // Set the position & frame
+        final Vector3D position = new Vector3D(4355380.654425714, 2296727.21938809, -4575242.76838552);
+        final FieldVector3D<Binary64> fieldPosition = new FieldVector3D<>(field, position);
+        final Frame j2000 = FramesFactory.getEME2000();
+
+        // WHEN
+        // ----
+
+        final double density = atm.getDensity(date, position, j2000);
+        final Binary64 fieldDensity = atm.getDensity(fieldDate, fieldPosition, j2000);
+
+        // THEN
+        // ----
+
+        // Check that densities are not NaN
+        Assertions.assertFalse(Double.isNaN(density));
+        Assertions.assertFalse(Double.isNaN(fieldDensity.getReal()));
+    }
+
     /** Test issue 539. Density computation should be independent of user's default time zone.
      * See <a href="https://gitlab.orekit.org/orekit/orekit/issues/539"> issue 539 on Orekit forge.</a>
      */
@@ -239,4 +297,55 @@ public class DTM2000Test {
         Utils.setDataRoot("regular-data");
     }
 
+    /** DTM2000 solar activity input parameters for testIssue1365. */
+    @SuppressWarnings("serial")
+    private static class InputParamsIssue1365 implements DTM2000InputParameters {
+        @Override
+        public AbsoluteDate getMinDate() { return new AbsoluteDate(2005, 9, 8, TimeScalesFactory.getUTC()); }
+        @Override
+        public AbsoluteDate getMaxDate() { return new AbsoluteDate(2005, 9, 9, TimeScalesFactory.getUTC()); }
+        @Override
+        public double getInstantFlux(AbsoluteDate date) { return 587.9532986111111; }
+        @Override
+        public double getMeanFlux(AbsoluteDate date) { return 99.5; }
+        @Override
+        public double getThreeHourlyKP(AbsoluteDate date) { return 1.7; }
+        @Override
+        public double get24HoursKp(AbsoluteDate date) { return 1.5875; }
+    }
+    
+    /** Sun position for testIssue1365. */
+    @SuppressWarnings("serial")
+    private static class SunPositionIssue1365 implements CelestialBody {
+        
+        private final Vector3D sunPositionItrf;
+        private final Frame itrf;
+
+        /** Constructor.
+         * @param sunPositionItrf
+         * @param itrf
+         */
+        private SunPositionIssue1365(Vector3D sunPositionItrf,
+                                     Frame itrf) {
+            this.sunPositionItrf = sunPositionItrf;
+            this.itrf = itrf;
+        }
+        
+        @Override
+        public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+            return new TimeStampedPVCoordinates(date, sunPositionItrf, Vector3D.ZERO);
+        }
+        @Override
+        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+            return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
+        }
+        @Override
+        public String getName() { return "SUN"; }
+        @Override
+        public Frame getInertiallyOrientedFrame() { return itrf; }
+        @Override
+        public double getGM() { return Constants.JPL_SSD_SUN_GM; }
+        @Override
+        public Frame getBodyOrientedFrame() { return itrf; }
+    }
 }
