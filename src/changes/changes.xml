@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="1385">
+        Updated SonarQube configuration in contribution guide.
+      </action>
       <action dev="maxime" type="fix" issue="1365">
         Fixed NaN appearing in atmospheric models.
       </action>
