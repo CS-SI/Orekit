@@ -919,7 +919,10 @@ public enum OrekitMessages implements Localizable {
     WRONG_EOP_INTERPOLATION_DEGREE("EOP interpolation degree must be of the form 4k-1, got {0}"),
 
     /** WALKER_INCONSISTENT_PLANES. */
-    WALKER_INCONSISTENT_PLANES("number of planes {0} is inconsistent with number of satellites {1} in Walker constellation");
+    WALKER_INCONSISTENT_PLANES("number of planes {0} is inconsistent with number of satellites {1} in Walker constellation"),
+
+    /** INFINITE_NRMSISE00_DENSITY. */
+    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
