@@ -409,6 +409,9 @@ SP3_INCOMPATIBLE_FILE_METADATA = impossible d''adjuntar els fitxers sp3 tenint m
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = impossible d''adjuntar els fitxers sp3 tenint metadata del satèl·lit {0} diferent 
 
+# frame {0} not allowed here
+FRAME_NOT_ALLOWED = <MISSING TRANSLATION>
+
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = el sistema de coordenades "{0}" de STK és invàlid o no s''ha implementat encara
 
