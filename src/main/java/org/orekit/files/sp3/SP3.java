@@ -300,6 +300,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
     /** Change the frame of an SP3 file.
      * @param original original SP3 file
      * @param newFrame frame to use for the changed SP3 file
+     * @return changed SP3 file
      * @since 12.1
      */
     public static SP3 changeFrame(final SP3 original, final Frame newFrame) {
