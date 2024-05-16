@@ -17,6 +17,9 @@
 package org.orekit.time;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -342,6 +345,29 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
                                        (int) (instant.getEpochSecond() / 86400L)),
              instantToTimeComponents(instant),
              timeScale);
+    }
+
+    /** Build an instance from an {@link Instant instant} in utc time scale.
+     * @param field field utilized as default
+     * @param instant instant in the utc timescale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public FieldAbsoluteDate(final Field<T> field, final Instant instant) {
+        this(field, instant, TimeScalesFactory.getUTC());
+    }
+
+    /** Build an instance from an {@link Instant instant} in the {@link UTCScale time scale}.
+     * @param field field utilized as default
+     * @param instant instant in the time scale
+     * @param utcScale utc time scale
+     * @since 12.1
+     */
+    public FieldAbsoluteDate(final Field<T> field, final Instant instant, final UTCScale utcScale) {
+        this(field, new DateComponents(DateComponents.JAVA_EPOCH,
+                (int) (instant.getEpochSecond() / 86400l)),
+            instantToTimeComponents(instant),
+            utcScale);
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -1259,6 +1285,36 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
     }
 
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public Instant toInstant() {
+        return toInstant(TimeScalesFactory.getTimeScales());
+    }
+
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @param timeScales the timescales to use
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    public Instant toInstant(final TimeScales timeScales) {
+        final UTCScale utc = timeScales.getUTC();
+        final String stringWithoutUtcOffset = toStringWithoutUtcOffset(utc, 9);
+
+        final LocalDateTime localDateTime = LocalDateTime.parse(stringWithoutUtcOffset, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return localDateTime.toInstant(ZoneOffset.UTC);
+    }
+
     /** Split the instance into date/time components.
      * @param timeScale time scale to use
      * @return date/time components
@@ -1634,6 +1690,29 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public String toString(final TimeZone timeZone, final TimeScale utc) {
         final int minuteDuration = utc.minuteDuration(this);
         return getComponents(timeZone, utc).toString(minuteDuration);
+    }
+
+    /**
+     * Return a string representation of this date-time, rounded to the given precision.
+     *
+     * <p>The format used is ISO8601 without the UTC offset.</p>
+     *
+     *
+     * @param timeScale      to use to compute components.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must be
+     *                       greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toString(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
+     * @see DateTimeComponents#toStringWithoutUtcOffset(int, int)
+     * @since 12.2
+     */
+    public String toStringWithoutUtcOffset(final TimeScale timeScale,
+        final int fractionDigits) {
+        return this.getComponents(timeScale)
+            .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
     }
 
     /** Get a time-shifted date.

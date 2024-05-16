@@ -18,6 +18,9 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -418,15 +421,39 @@ public class AbsoluteDate
     }
 
     /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
+     *
+     * @deprecated Use {@link AbsoluteDate#AbsoluteDate(Instant, UTCScale)} or {@link AbsoluteDate#AbsoluteDate(Instant)} instead
      * @param instant instant in the time scale
      * @param timeScale time scale
      * @since 12.0
      */
+    @Deprecated
     public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
         this(new DateComponents(DateComponents.JAVA_EPOCH,
                                 (int) (instant.getEpochSecond() / 86400L)),
              instantToTimeComponents(instant),
              timeScale);
+    }
+
+    /** Build an instance from an {@link Instant instant} in utc time scale.
+     * @param instant instant in the time scale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public AbsoluteDate(final Instant instant) {
+        this(instant, TimeScalesFactory.getUTC());
+    }
+
+    /** Build an instance from an {@link Instant instant} in the {@link UTCScale time scale}.
+     * @param instant instant in the time scale
+     * @param utcScale utc time scale
+     * @since 12.1
+     */
+    public AbsoluteDate(final Instant instant, final UTCScale utcScale) {
+        this(new DateComponents(DateComponents.JAVA_EPOCH,
+                (int) (instant.getEpochSecond() / 86400l)),
+            instantToTimeComponents(instant),
+            utcScale);
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -1011,6 +1038,36 @@ public class AbsoluteDate
     public Date toDate(final TimeScale timeScale) {
         final double time = epoch + (offset + timeScale.offsetFromTAI(this));
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
+    }
+
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public Instant toInstant() {
+        return toInstant(TimeScalesFactory.getTimeScales());
+    }
+
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @param timeScales the timescales to use
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    public Instant toInstant(final TimeScales timeScales) {
+        final UTCScale utc = timeScales.getUTC();
+        final String stringWithoutUtcOffset = toStringWithoutUtcOffset(utc, 9);
+
+        final LocalDateTime localDateTime = LocalDateTime.parse(stringWithoutUtcOffset, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return localDateTime.toInstant(ZoneOffset.UTC);
     }
 
     /** Split the instance into date/time components.
