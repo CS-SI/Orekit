@@ -20,14 +20,22 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 public class SP3WriterTest {
 
@@ -141,6 +149,74 @@ public class SP3WriterTest {
         doTestRoundtrip("/sp3/issue1327-136-sats.sp3");
     }
 
+    @Test
+    public void testChangeFrameItrf96PositionOnly() {
+        doTestChangeFrame("/sp3/gbm18432.sp3.Z",
+                          FramesFactory.getITRF(ITRFVersion.ITRF_1996,
+                                                IERSConventions.IERS_1996,
+                                                false));
+    }
+
+    @Test
+    public void testChangeFrameItrf05PositionOnly() {
+        doTestChangeFrame("/sp3/gbm18432.sp3.Z",
+                          FramesFactory.getITRF(ITRFVersion.ITRF_2005,
+                                                IERSConventions.IERS_2003,
+                                                false));
+    }
+
+    @Test
+    public void testChangeFrameItrf20PositionOnly() {
+        doTestChangeFrame("/sp3/gbm18432.sp3.Z",
+                          FramesFactory.getITRF(ITRFVersion.ITRF_2020,
+                                                IERSConventions.IERS_2010,
+                                                false));
+    }
+
+    @Test
+    public void testChangeFrameGcrfPositionOnly() {
+        doTestChangeFrame("/sp3/gbm18432.sp3.Z", FramesFactory.getGCRF());
+    }
+
+    @Test
+    public void testChangeFrameEme2000PositionOnly() {
+        doTestChangeFrame("/sp3/gbm18432.sp3.Z", FramesFactory.getEME2000());
+    }
+
+    @Test
+    public void testChangeFrameItrf96PositionVelocity() {
+        doTestChangeFrame("/sp3/example-a-2.sp3",
+                          FramesFactory.getITRF(ITRFVersion.ITRF_1996,
+                                                IERSConventions.IERS_1996,
+                                                false));
+    }
+
+    @Test
+    public void testChangeFrameItrf05PositionVelocity() {
+        doTestChangeFrame("/sp3/example-a-2.sp3",
+                          FramesFactory.getITRF(ITRFVersion.ITRF_2005,
+                                                IERSConventions.IERS_2003,
+                                                false));
+    }
+
+    @Test
+    public void testChangeFrameItrf20PositionVelocity() {
+        doTestChangeFrame("/sp3/example-a-2.sp3",
+                          FramesFactory.getITRF(ITRFVersion.ITRF_2020,
+                                                IERSConventions.IERS_2010,
+                                                false));
+    }
+
+    @Test
+    public void testChangeFrameGcrfPositionVelocity() {
+        doTestChangeFrame("/sp3/example-a-2.sp3", FramesFactory.getGCRF());
+    }
+
+    @Test
+    public void testChangeFrameEme2000PositionVelocity() {
+        doTestChangeFrame("/sp3/example-a-2.sp3", FramesFactory.getEME2000());
+    }
+
     private  void doTestRoundtrip(final String name) {
         try {
             DataSource source1 = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -160,6 +236,66 @@ public class SP3WriterTest {
             final SP3        rebuilt = new SP3Parser().parse(source2);
 
             SP3TestUtils.checkEquals(original, rebuilt);
+
+        } catch (IOException ioe) {
+            Assertions.fail(ioe.getLocalizedMessage());
+        }
+    }
+
+    private  void doTestChangeFrame(final String name, final Frame newFrame) {
+        try {
+            DataSource source1 = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            if (name.endsWith(".Z")) {
+                source1 = new UnixCompressFilter().filter(source1);
+
+            }
+            final SP3 original = new SP3Parser().parse(source1);
+            final Frame originalFrame = original.getEphemeris(0).getFrame();
+
+            // change frame
+            final SP3 changed = SP3.changeFrame(original, newFrame);
+
+            // write the parsed file back to a characters array
+            final CharArrayWriter caw = new CharArrayWriter();
+            new SP3Writer(caw, name + "-changed", TimeScalesFactory.getTimeScales()).write(changed);
+
+            // reparse the written file
+            final byte[]     bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
+            final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
+            final SP3        rebuilt = new SP3Parser().parse(source2);
+
+            Assertions.assertEquals(newFrame.getName(), rebuilt.getEphemeris(0).getFrame().getName());
+            Assertions.assertEquals(original.getSatelliteCount(), rebuilt.getSatelliteCount());
+            double maxErrorP = 0;
+            double maxErrorV = 0;
+            for (int i = 0; i < original.getSatelliteCount(); ++i) {
+                final List<SP3Segment> originalSegments = original.getEphemeris(i).getSegments();
+                final List<SP3Segment> rebuiltSegments  = rebuilt.getEphemeris(i).getSegments();
+                Assertions.assertEquals(originalSegments.size(), rebuiltSegments.size());
+                for (int j = 0; j < originalSegments.size(); ++j) {
+                    final List<SP3Coordinate> originalCoordinates = originalSegments.get(j).getCoordinates();
+                    final List<SP3Coordinate> rebuiltCoordinates  = rebuiltSegments.get(j).getCoordinates();
+                    Assertions.assertEquals(originalCoordinates.size(), rebuiltCoordinates.size());
+                    for (int k = 0; k < originalCoordinates.size(); ++k) {
+                        final SP3Coordinate ok = originalCoordinates.get(k);
+                        final SP3Coordinate rk = rebuiltCoordinates.get(k);
+                        final PVCoordinates pv = newFrame.
+                                                 getTransformTo(originalFrame, ok.getDate()).
+                                                 transformPVCoordinates(rk);
+                        maxErrorP = FastMath.max(maxErrorP, Vector3D.distance(ok.getPosition(), pv.getPosition()));
+                        maxErrorV = FastMath.max(maxErrorV,
+                                                 Vector3D.distance(ok.getVelocity(),
+                                                                   ok.getVelocity().getNorm() < 1.0e-15 ?
+                                                                   rk.getVelocity() :
+                                                                   pv.getVelocity()));
+                    }
+                }
+            }
+
+            // tolerances are limited to SP3 file format accuracy
+            // as we have written and parsed again a file
+            Assertions.assertEquals(0, maxErrorP, 1.0e-3);
+            Assertions.assertEquals(0, maxErrorV, 1.0e-6);
 
         } catch (IOException ioe) {
             Assertions.fail(ioe.getLocalizedMessage());

@@ -295,7 +295,7 @@
 
   * Orbit file handling
   
-    * loading and writing of SP3 orbit files (from version a to d)
+    * loading and writing of SP3 orbit files (from version a to d, including extension to a few inertial frames)
     * splicing and interpolation of SP3 files
     * loading and writing of CCSDS Orbit Data Messages (OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation

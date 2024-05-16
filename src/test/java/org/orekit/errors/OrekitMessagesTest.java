@@ -16,6 +16,7 @@
  */
 package org.orekit.errors;
 
+
 import org.hipparchus.exception.UTF8Control;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assertions.assertEquals(294, OrekitMessages.values().length);
+        Assertions.assertEquals(296, OrekitMessages.values().length);
     }
 
     @Test

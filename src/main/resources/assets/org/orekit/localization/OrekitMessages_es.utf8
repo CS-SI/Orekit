@@ -409,6 +409,9 @@ SP3_INCOMPATIBLE_FILE_METADATA = imposible de adjuntar los ficheros sp3 teniendo
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = imposible de adjuntar los ficheros sp3 teniendo metadata del satéllite {0} diferente 
 
+# frame {0} not allowed here
+FRAME_NOT_ALLOWED = <MISSING TRANSLATION>
+
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = el sistema de coordenadas "{0}" de STK es inválido o no aún implementado
 
@@ -881,3 +884,7 @@ WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
 WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
+
+# Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
+

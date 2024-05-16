@@ -27,6 +27,15 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1404">
+        Added support for parsing/writing SP3 files in inertial frames.
+      </action>
+      <action dev="maxime" type="fix" issue="1385">
+        Updated SonarQube configuration in contribution guide.
+      </action>
+      <action dev="maxime" type="fix" issue="1365">
+        Fixed NaN appearing in atmospheric models.
+      </action>
       <action dev="luc" type="fix" issue="1403">
         Added Post Seismic Deformation models, and parse ITRF2020 PSD sinex files
         to retrieve their parameters.

@@ -330,11 +330,15 @@ initialize the project in SonarQube. Here is how to do it.
 
 4. Go to the continuous integration (CI) configuration page of your fork
    (*Settings* -> *CI/CD* -> *Variables* -> *Expand*) and declare a variable
-   named `SONAR_TOKEN`. The value of this variable must be the value of the
+   named `SONAR_TOKEN`.  
+   The value of this variable must be the value of the
    token provided by SonarQube. Check the *Mask variable* option and click on
    *Add variable*.
 
-5. SonarQube dynamically initiates the project on the first submission, but
+5. Also declare a variable `SONAR_HOST_URL` with value https://sonar.orekit.org.  
+   This will allow Gitlab to connect to Orekit SonarQube instance.
+
+6. SonarQube dynamically initiates the project on the first submission, but
    this first submission must be on the **master** branch. You can cause this
    by manually triggering a pipeline. Starting with Orekit version 11, you
    just need to go to the pipelines page (*Project homepage* -> *CI/CD* ->
@@ -342,7 +346,7 @@ initialize the project in SonarQube. Here is how to do it.
    branch, then click on the *Run pipeline* button. Then wait for half an
    hour, which is approximately the time needed to compile and run the tests.
 
-6. After that, you can run again the pipeline on your working branch.
+7. After that, you can run again the pipeline on your working branch.
 
 If your working branch is from an Orekit version prior to 11.0, step 5
 described above will not work because of the continuous integration scripts

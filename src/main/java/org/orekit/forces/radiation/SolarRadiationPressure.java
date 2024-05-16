@@ -16,9 +16,6 @@
  */
 package org.orekit.forces.radiation;
 
-import java.lang.reflect.Array;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -35,6 +32,9 @@ import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FrameAdapter;
 import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.ParameterDriver;
+
+import java.lang.reflect.Array;
+import java.util.List;
 
 /** Solar radiation pressure force model.
  * <p>
