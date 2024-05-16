@@ -20,12 +20,9 @@ import java.io.Serializable;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -379,6 +376,7 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean hasDerivatives() {
         return hasNonKeplerianAcceleration;
     }
@@ -397,67 +395,31 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public CartesianOrbit shiftedBy(final double dt) {
-        final PVCoordinates shiftedPV = isElliptical() ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
+        final PVCoordinates shiftedPV = shiftPV(dt);
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
-    /** Compute shifted position and velocity in elliptic case.
+    /** Compute shifted position and velocity.
      * @param dt time shift
      * @return shifted position and velocity
      */
-    private PVCoordinates shiftPVElliptic(final double dt) {
+    private PVCoordinates shiftPV(final double dt) {
 
-        // preliminary computation
-        final PVCoordinates pv = getPVCoordinates();
-        final Vector3D pvP     = pv.getPosition();
-        final Vector3D pvV     = pv.getVelocity();
-        final Vector3D pvM     = pv.getMomentum();
-        final double r2        = pvP.getNormSq();
-        final double r         = FastMath.sqrt(r2);
-        final double rV2OnMu   = r * pvV.getNormSq() / getMu();
-        final double a         = r / (2 - rV2OnMu);
-        final double muA       = getMu() * a;
+        final Vector3D pvP = getPosition();
+        final PVCoordinates shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt, pvP,
+            getPVCoordinates().getVelocity(), getMu());
 
-        // compute mean anomaly
-        final double eSE    = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
-        final double eCE    = rV2OnMu - 1;
-        final double E0     = FastMath.atan2(eSE, eCE);
-        final double M0     = E0 - eSE;
-
-        final double e         = FastMath.sqrt(eCE * eCE + eSE * eSE);
-        final double sqrt      = FastMath.sqrt((1 + e) / (1 - e));
-
-        // find canonical 2D frame with p pointing to perigee
-        final double v0     = 2 * FastMath.atan(sqrt * FastMath.tan(E0 / 2));
-        final Vector3D p    = new Rotation(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
-        final Vector3D q    = Vector3D.crossProduct(pvM, p).normalize();
-
-        // compute shifted eccentric anomaly
-        final double M1     = M0 + getKeplerianMeanMotion() * dt;
-        final double E1     = KeplerianAnomalyUtility.ellipticMeanToEccentric(e, M1);
-
-        // compute shifted in-plane Cartesian coordinates
-        final SinCos scE    = FastMath.sinCos(E1);
-        final double cE     = scE.cos();
-        final double sE     = scE.sin();
-        final double sE2m1  = FastMath.sqrt((1 - e) * (1 + e));
-
-        // coordinates of position and velocity in the orbital plane
-        final double x      = a * (cE - e);
-        final double y      = a * sE2m1 * sE;
-        final double factor = FastMath.sqrt(getMu() / a) / (1 - e * cE);
-        final double xDot   = -factor * sE;
-        final double yDot   =  factor * sE2m1 * cE;
-
-        final Vector3D shiftedP = new Vector3D(x, p, y, q);
-        final Vector3D shiftedV = new Vector3D(xDot, p, yDot, q);
         if (hasNonKeplerianAcceleration) {
 
             // extract non-Keplerian part of the initial acceleration
+            final double r2 = pvP.getNormSq();
+            final double r = FastMath.sqrt(r2);
             final Vector3D nonKeplerianAcceleration = new Vector3D(1, getPVCoordinates().getAcceleration(),
                                                                    getMu() / (r2 * r), pvP);
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
+            final Vector3D shiftedP = shiftedPV.getPosition();
+            final Vector3D shiftedV = shiftedPV.getVelocity();
             final Vector3D fixedP   = new Vector3D(1, shiftedP,
                                                    0.5 * dt * dt, nonKeplerianAcceleration);
             final double   fixedR2 = fixedP.getNormSq();
@@ -472,80 +434,7 @@ public class CartesianOrbit extends Orbit {
         } else {
             // don't include acceleration,
             // so the shifted orbit is not considered to have derivatives
-            return new PVCoordinates(shiftedP, shiftedV);
-        }
-
-    }
-
-    /** Compute shifted position and velocity in hyperbolic case.
-     * @param dt time shift
-     * @return shifted position and velocity
-     */
-    private PVCoordinates shiftPVHyperbolic(final double dt) {
-
-        final PVCoordinates pv = getPVCoordinates();
-        final Vector3D pvP   = pv.getPosition();
-        final Vector3D pvV   = pv.getVelocity();
-        final Vector3D pvM   = pv.getMomentum();
-        final double r2      = pvP.getNormSq();
-        final double r       = FastMath.sqrt(r2);
-        final double rV2OnMu = r * pvV.getNormSq() / getMu();
-        final double a       = getA();
-        final double muA     = getMu() * a;
-        final double e       = FastMath.sqrt(1 - Vector3D.dotProduct(pvM, pvM) / muA);
-        final double sqrt    = FastMath.sqrt((e + 1) / (e - 1));
-
-        // compute mean anomaly
-        final double eSH     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(-muA);
-        final double eCH     = rV2OnMu - 1;
-        final double H0      = FastMath.log((eCH + eSH) / (eCH - eSH)) / 2;
-        final double M0      = e * FastMath.sinh(H0) - H0;
-
-        // find canonical 2D frame with p pointing to perigee
-        final double v0      = 2 * FastMath.atan(sqrt * FastMath.tanh(H0 / 2));
-        final Vector3D p     = new Rotation(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
-        final Vector3D q     = Vector3D.crossProduct(pvM, p).normalize();
-
-        // compute shifted eccentric anomaly
-        final double M1      = M0 + getKeplerianMeanMotion() * dt;
-        final double H1      = KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, M1);
-
-        // compute shifted in-plane Cartesian coordinates
-        final double cH     = FastMath.cosh(H1);
-        final double sH     = FastMath.sinh(H1);
-        final double sE2m1  = FastMath.sqrt((e - 1) * (e + 1));
-
-        // coordinates of position and velocity in the orbital plane
-        final double x      = a * (cH - e);
-        final double y      = -a * sE2m1 * sH;
-        final double factor = FastMath.sqrt(getMu() / -a) / (e * cH - 1);
-        final double xDot   = -factor * sH;
-        final double yDot   =  factor * sE2m1 * cH;
-
-        final Vector3D shiftedP = new Vector3D(x, p, y, q);
-        final Vector3D shiftedV = new Vector3D(xDot, p, yDot, q);
-        if (hasNonKeplerianAcceleration) {
-
-            // extract non-Keplerian part of the initial acceleration
-            final Vector3D nonKeplerianAcceleration = new Vector3D(1, getPVCoordinates().getAcceleration(),
-                                                                   getMu() / (r2 * r), pvP);
-
-            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
-            final Vector3D fixedP   = new Vector3D(1, shiftedP,
-                                                   0.5 * dt * dt, nonKeplerianAcceleration);
-            final double   fixedR2 = fixedP.getNormSq();
-            final double   fixedR  = FastMath.sqrt(fixedR2);
-            final Vector3D fixedV  = new Vector3D(1, shiftedV,
-                                                  dt, nonKeplerianAcceleration);
-            final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), shiftedP,
-                                                  1, nonKeplerianAcceleration);
-
-            return new PVCoordinates(fixedP, fixedV, fixedA);
-
-        } else {
-            // don't include acceleration,
-            // so the shifted orbit is not considered to have derivatives
-            return new PVCoordinates(shiftedP, shiftedV);
+            return shiftedPV;
         }
 
     }

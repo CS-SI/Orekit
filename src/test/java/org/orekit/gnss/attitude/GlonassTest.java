@@ -19,45 +19,45 @@ package org.orekit.gnss.attitude;
 import org.junit.jupiter.api.Test;
 
 
-public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
+class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta() {
+    void testPatchedLargeNegativeBeta() {
         doTestAxes("patched-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
+    void testPatchedSmallNegativeBeta() {
         doTestAxes("patched-eclips/beta-small-negative-GLONASS.txt", 7.8e-11, 9.8e-16, false);
     }
 
     @Test
-    public void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-GLONASS.txt", 5.2e-6, 9.8e-16, false);
+    void testPatchedCrossingBeta() {
+        doTestAxes("patched-eclips/beta-crossing-GLONASS.txt", 5.2e-6, 1.1e-15, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
+    void testPatchedSmallPositiveBeta() {
         doTestAxes("patched-eclips/beta-small-positive-GLONASS.txt", 2.4e-12, 7.4e-16, false);
     }
 
     @Test
-    public void testPatchedLargePositiveBeta() {
+    void testPatchedLargePositiveBeta() {
         doTestAxes("patched-eclips/beta-large-positive-GLONASS.txt", 6.8e-15, 9.2e-16, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta() {
+    void testOriginalLargeNegativeBeta() {
         doTestAxes("original-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
+    void testOriginalSmallNegativeBeta() {
         doTestAxes("original-eclips/beta-small-negative-GLONASS.txt", 1.6e-4, 9.8e-16, false);
     }
 
     @Test
-    public void testOriginalCrossingBeta() {
+    void testOriginalCrossingBeta() {
         // the very high threshold (0.54 radians) is due to a probable bug in original eclips
         // the output of the routine is limited to the x-sat vector, the yaw angle itself
         // is not output. However, in some cases the x-sat vector is not normalized at all.
@@ -75,16 +75,16 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
         // As a conclusion, we consider here that the reference output is wrong and that
         // Orekit behavior is correct, so we increased the threshold so the test pass,
         // and wrote this big comment to explain the situation
-        doTestAxes("original-eclips/beta-crossing-GLONASS.txt", 0.54, 9.8e-16, false);
+        doTestAxes("original-eclips/beta-crossing-GLONASS.txt", 0.54, 1.1e-15, false);
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
+    void testOriginalSmallPositiveBeta() {
         doTestAxes("original-eclips/beta-small-positive-GLONASS.txt", 1.6e-4, 7.4e-16, false);
     }
 
     @Test
-    public void testOriginalLargePositiveBeta() {
+    void testOriginalLargePositiveBeta() {
         doTestAxes("original-eclips/beta-large-positive-GLONASS.txt", 6.8e-15, 9.2e-16, false);
     }
 

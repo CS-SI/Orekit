@@ -338,7 +338,7 @@ class StateCovarianceBlenderTest {
     void testLOFKeplerianBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-12;
+        final double tolerance = 1.e-9;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -369,12 +369,12 @@ class StateCovarianceBlenderTest {
         }
 
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals( 0.119032415315, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.280069421532, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals( 0.122143275670, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 7.488284544134, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals( 0.228214388901, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(16.046846440744, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals( 0.1190324153, relativeRMSSigmaError[0].getMean(), tolerance);
+        Assertions.assertEquals( 7.2800694215, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 0.1221432756, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        Assertions.assertEquals( 7.4882845441, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 0.2282143889, relativeRMSSigmaError[0].getMax(), tolerance);
+        Assertions.assertEquals(16.0468464407, relativeRMSSigmaError[1].getMax(), tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());
