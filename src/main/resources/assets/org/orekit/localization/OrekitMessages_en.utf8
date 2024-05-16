@@ -409,6 +409,9 @@ SP3_INCOMPATIBLE_FILE_METADATA = cannot splice sp3 files with incompatible metad
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 
+# frame {0} not allowed here
+FRAME_NOT_ALLOWED = frame {0} not allowed here
+
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = STK coordinate system "{0}" is invalid or not yet supported
 

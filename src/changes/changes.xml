@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1404">
+        Added support for parsing/writing SP3 files in inertial frames.
+      </action>
       <action dev="maxime" type="fix" issue="1385">
         Updated SonarQube configuration in contribution guide.
       </action>

@@ -483,6 +483,11 @@ public enum OrekitMessages implements Localizable {
     /** SP3_INCOMPATIBLE_SATELLITE_MEDATADA. */
     SP3_INCOMPATIBLE_SATELLITE_MEDATADA("cannot splice sp3 files with incompatible satellite metadata for satellite {0}"),
 
+    /** FRAME_NOT_ALLOWED.
+     * @since 12.1
+     */
+    FRAME_NOT_ALLOWED("frame {0} not allowed here"),
+
     /** STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM. */
     STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM("STK coordinate system \"{0}\" is invalid or not yet supported"),
 
