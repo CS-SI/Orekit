@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -166,6 +168,12 @@ public class FieldAbsoluteDateTest {
     public void testInstantAccuracy() {
         doTestInstantAccuracy(Binary64Field.getInstance());
     }
+
+    @Test
+    public void testToInstant() {
+        doTestToInstant(Binary64Field.getInstance());
+    }
+
 
     @Test
     public void testUtcGpsOffset() {
@@ -510,6 +518,11 @@ public class FieldAbsoluteDateTest {
         doTestShiftedByWithTimeUnit(Binary64Field.getInstance());
     }
 
+    @Test
+    public void testToStringWithoutUtcOffset() {
+        doTestToStringWithoutUtcOffset(Binary64Field.getInstance());
+    }
+
 
     private <T extends CalculusFieldElement<T>> void doTestStandardEpoch(final Field<T> field) {
 
@@ -761,11 +774,30 @@ public class FieldAbsoluteDateTest {
     private <T extends CalculusFieldElement<T>> void doTest1970Instant(final Field<T> field) {
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, utc).toString());
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, (UTCScale) utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), (UTCScale) utc).toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInstantAccuracy(final Field<T> field) {
         Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), utc).toString());
         Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), utc).toString());
+        Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), (UTCScale) utc).toString());
+        Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), (UTCScale) utc).toString());
+    }
+
+    public <T extends CalculusFieldElement<T>> void doTestToInstant(final Field<T> field) {
+        Assertions.assertEquals(Instant.ofEpochSecond(0), new FieldAbsoluteDate<>(field, "1970-01-01T00:00:00.000Z", utc).toInstant());
+        Assertions.assertEquals(Instant.ofEpochSecond(0), new FieldAbsoluteDate<>(field, "1970-01-01T00:00:00.000Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+
+        Instant expectedInstant = Instant.ofEpochSecond(519000, 123456789);
+        Assertions.assertEquals(expectedInstant, new FieldAbsoluteDate<>(field, "1970-01-07T00:10:00.123456789Z", utc).toInstant());
+        Assertions.assertEquals(expectedInstant, new FieldAbsoluteDate<>(field, "1970-01-07T00:10:00.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+
+        Assertions.assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
+            new FieldAbsoluteDate(field,"2024-05-15T09:32:36.123456789Z", utc).toInstant());
+        Assertions.assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
+            new FieldAbsoluteDate(field, "2024-05-15T09:32:36.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+
     }
 
     private <T extends CalculusFieldElement<T>> void doTestUtcGpsOffset(final Field<T> field) {
@@ -1625,6 +1657,56 @@ public class FieldAbsoluteDateTest {
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
             }
         }
+    }
+
+    public <T extends CalculusFieldElement<T>> void doTestToStringWithoutUtcOffset(final Field<T> field) {
+        // setup
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field,2009, 1, 1, utc);
+        double one = FastMath.nextDown(1.0);
+        double zeroUlp = FastMath.nextUp(0.0);
+        double oneUlp = FastMath.ulp(1.0);
+        //double sixty = FastMath.nextDown(60.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+
+        // action
+        // test midnight
+        checkToStringNoOffset(date, "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(1), "2009-01-01T00:00:01.000");
+        // test digits and rounding
+        checkToStringNoOffset(date.shiftedBy(12.3456789123456789), "2009-01-01T00:00:12.346");
+        checkToStringNoOffset(date.shiftedBy(0.0123456789123456789), "2009-01-01T00:00:00.012");
+        // test min and max values
+        checkToStringNoOffset(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(59.0).shiftedBy(one), "2009-01-01T00:01:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(86399).shiftedBy(one), "2009-01-02T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(oneUlp), "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(one), "2009-01-01T00:00:01.000");
+        checkToStringNoOffset(date.shiftedBy(-zeroUlp), "2009-01-01T00:00:00.000");
+        // test leap
+        // Orekit 10.1 throw OIAE, 10.2 rounds up
+        checkToStringNoOffset(date.shiftedBy(-oneUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(one), "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(-0.5), "2008-12-31T23:59:60.500");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(zeroUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-zeroUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-oneUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-2), "2008-12-31T23:59:59.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-sixtyUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-61).shiftedBy(zeroUlp), "2008-12-31T23:59:00.000");
+        checkToStringNoOffset(date.shiftedBy(-61).shiftedBy(oneUlp), "2008-12-31T23:59:00.000");
+    }
+
+
+    private <T extends CalculusFieldElement<T>> void checkToStringNoOffset(final FieldAbsoluteDate<T> d, final String s) {
+        MatcherAssert.assertThat(d.toStringWithoutUtcOffset(utc, 3), CoreMatchers.is(s));
+        MatcherAssert.assertThat(
+            d.getComponents(utc).toStringWithoutUtcOffset(utc.minuteDuration(d), 3),
+            CoreMatchers.is(s));
     }
 
     private <T extends CalculusFieldElement<T>> void check(FieldAbsoluteDate<T> date,
