@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1405">
+        Switched to automatic differentiation for atmospheric density gradient.
+      </action>
       <action dev="serrof" type="add" issue="1401">
         Added public, light-weight routines for Keplerian motion with Cartesian coordinates.
       </action>

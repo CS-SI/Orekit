@@ -99,7 +99,7 @@ public class DragForce extends AbstractDragForceModel {
         // Using finite differences instead of automatic differentiation as it seems to be much
         // faster for the drag's derivatives' computation
         if (isGradientStateDerivative(s)) {
-            rho =  (T) this.getGradientDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<Gradient>) position);
+            rho =  (T) this.getGradientDensityWrtState(date.toAbsoluteDate(), frame, (FieldVector3D<Gradient>) position);
         } else if (isDSStateDerivative(s)) {
             rho = (T) this.getDSDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<DerivativeStructure>) position);
         } else {

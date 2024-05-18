@@ -93,7 +93,7 @@ class AtmosphereTest {
         @Override
         public <T extends CalculusFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
             final CalculusFieldElement<T> zero = date.getField().getZero();
-            return zero.add(getDensity(date.toAbsoluteDate(), position.toVector3D(), frame));
+            return zero.newInstance(getDensity(date.toAbsoluteDate(), position.toVector3D(), frame));
         }
     }
 

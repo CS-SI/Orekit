@@ -31,6 +31,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 
+import java.util.Arrays;
+
 /**
  * Base class for drag force models.
  * @see DragForce
@@ -230,7 +232,7 @@ public abstract class AbstractDragForceModel implements ForceModel {
      * From a theoretical point of view, this method computes the same values
      * as {@link Atmosphere#getDensity(FieldAbsoluteDate, FieldVector3D, Frame)} in the
      * specific case of {@link Gradient} with respect to state, so
-     * it is less general. However, it is *much* faster in this important case.
+     * it is less general. However, it used to be faster before performance improvements with FieldStaticTransform.
      * </p>
      * <p>
      * The derivatives should be computed with respect to position. The input
@@ -248,7 +250,9 @@ public abstract class AbstractDragForceModel implements ForceModel {
      * @param frame inertial reference frame for state (both orbit and attitude)
      * @param position position of spacecraft in inertial frame
      * @return the density and its derivatives
+     * @deprecated since 12.1
      */
+    @Deprecated
     protected Gradient getGradientDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
                                                                         final Frame frame,
                                                                         final FieldVector3D<Gradient> position) {
@@ -291,4 +295,46 @@ public abstract class AbstractDragForceModel implements ForceModel {
         return new Gradient(rho0, rhoAll);
     }
 
+    /** Compute density and its derivatives.
+     * <p>
+     * The derivatives should be computed with respect to position. The input
+     * parameters already take into account the free parameters (6, 7 or 8 depending
+     * on derivation with respect to drag coefficient and lift ratio being considered or not)
+     * and order (always 1). Free parameters at indices 0, 1 and 2 correspond to derivatives
+     * with respect to position. Free parameters at indices 3, 4 and 5 correspond
+     * to derivatives with respect to velocity (these derivatives will remain zero
+     * as the atmospheric density does not depend on velocity). Free parameter
+     * at indexes 6 and 7 (if present) corresponds to derivatives with respect to drag coefficient
+     * and/or lift ratio (one of these or both).
+     * This 2 last derivatives will remain zero as atmospheric density does not depend on them.
+     * </p>
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in inertial frame
+     * @return the density and its derivatives
+     * @since 12.1
+     */
+    protected Gradient getGradientDensityWrtState(final AbsoluteDate date, final Frame frame,
+                                                  final FieldVector3D<Gradient> position) {
+
+        // Build a Gradient using only derivatives with respect to position
+        final int positionDimension = 3;
+        final FieldVector3D<Gradient> position3 =
+                new FieldVector3D<>(Gradient.variable(positionDimension, 0, position.getX().getReal()),
+                        Gradient.variable(positionDimension, 1,  position.getY().getReal()),
+                        Gradient.variable(positionDimension, 2,  position.getZ().getReal()));
+
+        // Get atmosphere properties in atmosphere own frame
+        final Frame      atmFrame  = atmosphere.getFrame();
+        final StaticTransform toBody = frame.getStaticTransformTo(atmFrame, date);
+        final FieldVector3D<Gradient> posBodyGradient = toBody.transformPosition(position3);
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(position3.getX().getField(), date);
+        final Gradient density = atmosphere.getDensity(fieldDate, posBodyGradient, atmFrame);
+
+        // Density with derivatives:
+        // - The value and only the 3 first derivatives (those with respect to spacecraft position) are computed
+        // - Others are set to 0.
+        final double[] derivatives = Arrays.copyOf(density.getGradient(), position.getX().getFreeParameters());
+        return new Gradient(density.getValue(), derivatives);
+    }
 }
