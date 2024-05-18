@@ -34,6 +34,30 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 class FieldKinematicTransformTest {
 
     @Test
+    void testOf() {
+        // GIVEN
+        final KinematicTransform kinematicTransform = createArbitraryKineticTransform();
+        // WHEn
+        final FieldKinematicTransform<Complex> fieldKinematicTransform = FieldKinematicTransform.of(ComplexField.getInstance(),
+                kinematicTransform);
+        // THEN
+        Assertions.assertEquals(fieldKinematicTransform.getDate(), kinematicTransform.getDate());
+        Assertions.assertEquals(fieldKinematicTransform.getTranslation().toVector3D(), kinematicTransform.getTranslation());
+        Assertions.assertEquals(fieldKinematicTransform.getVelocity().toVector3D(), kinematicTransform.getVelocity());
+        Assertions.assertEquals(0., Rotation.distance(fieldKinematicTransform.getRotation().toRotation(),
+                kinematicTransform.getRotation()));
+        Assertions.assertEquals(fieldKinematicTransform.getRotationRate().toVector3D(),
+                kinematicTransform.getRotationRate());
+    }
+
+    private KinematicTransform createArbitraryKineticTransform() {
+        return KinematicTransform.of(AbsoluteDate.ARBITRARY_EPOCH,
+                new PVCoordinates(Vector3D.MINUS_I, Vector3D.PLUS_J),
+                new Rotation(Vector3D.MINUS_K, Vector3D.PLUS_I),
+                Vector3D.MINUS_J);
+    }
+
+    @Test
     void testGetInverse() {
         // GIVEN
         final FieldKinematicTransform<Complex> fieldKinematicTransform = createArbitraryFieldKineticTransform();

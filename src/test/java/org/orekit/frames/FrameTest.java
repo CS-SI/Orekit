@@ -287,12 +287,19 @@ public class FrameTest {
     }
 
     @Test
-    void testFieldGetKinematicTransformTo() {
+    void testFieldGetKinematicTransformToWithConstantDate() {
+        templateTestFieldGetKinematicTransformTo(getComplexDate());
+    }
+
+    @Test
+    void testFieldGetKinematicTransformToWithNonConstantDate() {
+        templateTestFieldGetKinematicTransformTo(getComplexDate().shiftedBy(Complex.I));
+    }
+
+    private void templateTestFieldGetKinematicTransformTo(final FieldAbsoluteDate<Complex> fieldDate) {
         // GIVEN
         final Frame oldFrame = FramesFactory.getEME2000();
         final Frame newFrame = FramesFactory.getGCRF();
-        final ComplexField complexField = ComplexField.getInstance();
-        final FieldAbsoluteDate<Complex> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(complexField);
         // WHEN
         final FieldKinematicTransform<Complex> fieldKinematicTransform = oldFrame.getKinematicTransformTo(newFrame,
                 fieldDate);
@@ -306,6 +313,10 @@ public class FrameTest {
                 fieldKinematicTransform.getRotation().toRotation()));
         Assertions.assertEquals(kinematicTransform.getRotationRate(),
                 fieldKinematicTransform.getRotationRate().toVector3D());
+    }
+
+    private FieldAbsoluteDate<Complex> getComplexDate() {
+        return FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance());
     }
 
     @BeforeEach
