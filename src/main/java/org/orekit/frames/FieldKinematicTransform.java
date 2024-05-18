@@ -199,6 +199,25 @@ public interface FieldKinematicTransform<T extends CalculusFieldElement<T>> exte
     }
 
     /**
+     * Create a new kinematic transform from a non-Field version.
+     *
+     * @param <T> type of the elements
+     * @param field field.
+     * @param kinematicTransform non-Field kinematic transform
+     * @return the newly created kinematic transform.
+     * @see #of(FieldAbsoluteDate, FieldPVCoordinates, FieldRotation, FieldVector3D)
+     */
+    static <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> of(final Field<T> field,
+                                                                             final KinematicTransform kinematicTransform) {
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, kinematicTransform.getDate());
+        final FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(field,
+            new PVCoordinates(kinematicTransform.getTranslation(), kinematicTransform.getVelocity()));
+        final FieldRotation<T> rotation = new FieldRotation<>(field, kinematicTransform.getRotation());
+        final FieldVector3D<T> rotationRate = new FieldVector3D<>(field, kinematicTransform.getRotationRate());
+        return of(date, pvCoordinates, rotation, rotationRate);
+    }
+
+    /**
      * Create a new kinematic transform from a translation and rotation.
      *
      * @param <T> type of the elements
