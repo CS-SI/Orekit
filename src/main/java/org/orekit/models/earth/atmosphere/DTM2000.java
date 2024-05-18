@@ -1185,7 +1185,7 @@ public class DTM2000 implements Atmosphere {
             final T c2fi = p10mg.multiply(p10mg).negate().add(1);
             final T dkp  = c2fi.multiply(a[ikp + 1]).add(a[ikp]).multiply(akp[2]).add(akp[1]);
             T dakp = p20mg.multiply(a[8]).add(p40mg.multiply(a[68])).
-                     add(p20mg.multiply(a[61]).add(dkp.multiply(dkp).multiply(2 * a[75]).add(a[60])).multiply(dkp.multiply(2))).
+                     add(p20mg.multiply(a[61]).add(dkp.square().multiply(2 * a[75]).add(a[60])).multiply(dkp.multiply(2))).
                      add(a[7]);
             da[ikp]     = dakp.multiply(akp[2]);
             da[ikp + 1] = da[ikp].multiply(c2fi);
@@ -1197,15 +1197,15 @@ public class DTM2000 implements Atmosphere {
             da[7]    = dkp;
             da[8]    = p20mg.multiply(dkp);
             da[68]   = p40mg.multiply(dkp);
-            da[60]   = dkp.multiply(dkp);
+            da[60]   = dkp.square();
             da[61]   = p20mg.multiply(da[60]);
-            da[75]   = da[60].multiply(da[60]);
+            da[75]   = da[60].square();
             da[64]   = zero.newInstance(dkpm);
             da[65]   = p20mg.multiply(dkpm);
             da[72]   = p40mg.multiply(dkpm);
             da[66]   = zero.newInstance(dkpm * dkpm);
             da[73]   = p20mg.multiply(da[66]);
-            da[76]   = da[66].multiply(da[66]);
+            da[76]   = da[66].square();
 
             // non-periodic g(l) function
             T f0 = da[4].multiply(a[4]).

@@ -20,6 +20,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.AfterEach;
@@ -39,9 +41,10 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class HarrisPriesterTest {
+class HarrisPriesterTest {
 
     // Sun
     private PVCoordinatesProvider sun;
@@ -59,7 +62,7 @@ public class HarrisPriesterTest {
     private AbsoluteDate date;
 
     @Test
-    public void testStandard() {
+    void testStandard() {
 
         final HarrisPriester hp = new HarrisPriester(sun, earth);
 
@@ -75,7 +78,7 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testParameterN() {
+    void testParameterN() {
 
         final HarrisPriester hp = new HarrisPriester(sun, earth);
 
@@ -104,7 +107,7 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testMaxAlt() {
+    void testMaxAlt() {
 
         final HarrisPriester hp = new HarrisPriester(sun, earth);
 
@@ -119,7 +122,7 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testUserTab() {
+    void testUserTab() {
 
         final double[][] userTab = {
             {100000.,   4.974e+02,  4.974e+02},
@@ -208,7 +211,7 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testOutOfRange() {
+    void testOutOfRange() {
         Assertions.assertThrows(OrekitException.class, () -> {
             final HarrisPriester hp = new HarrisPriester(sun, earth);
 
@@ -222,7 +225,24 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testVelocityDerivative() {
+    void testGetDensityField() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final HarrisPriester hp = new HarrisPriester(sun, earth);
+        final Frame frame = FramesFactory.getGCRF();
+        final FieldAbsoluteDate<Complex> fieldDate = new FieldAbsoluteDate<>(field, date);
+        // WHEN
+        for (double height = 300e3; height <= 2000e3; height += 100) {
+            final Vector3D position = new Vector3D(Constants.EGM96_EARTH_EQUATORIAL_RADIUS + height, 0., 0.);
+            final FieldVector3D<Complex> fieldPosition = new FieldVector3D<>(field, position);
+            final Complex fieldDensity = hp.getDensity(fieldDate, fieldPosition, frame);
+            final double density = hp.getDensity(date, position, frame);
+            Assertions.assertEquals(density, fieldDensity.getReal());
+        }
+    }
+
+    @Test
+    void testVelocityDerivative() {
         final Frame eme2000 = FramesFactory.getEME2000();
         final HarrisPriester hp = new HarrisPriester(sun, earth);
         final Vector3D pos = earth.getBodyFrame().getStaticTransformTo(eme2000, date).
