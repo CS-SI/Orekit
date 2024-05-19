@@ -34,7 +34,7 @@ import org.orekit.propagation.events.AdaptableInterval;
 public class ElevationDetectionAdaptableIntervalFactory {
 
     /** Default elevation abovde which interval should be switched to fine interval (-5°). */
-    public static double DEFAULT_ELEVATION_SWITCH = FastMath.toRadians(-5.0);
+    public static final double DEFAULT_ELEVATION_SWITCH = FastMath.toRadians(-5.0);
 
     /**
      * Private constructor.
