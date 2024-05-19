@@ -20,16 +20,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Precision;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -37,8 +42,13 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.FieldAngularCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
@@ -83,7 +93,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
 
     /** Register an observer for partial derivatives.
      * <p>
-     * The observer {@link PartialsObserver#partialsComputed(double[], double[]) partialsComputed}
+     * The observer {@link PartialsObserver#partialsComputed(SpacecraftState, double[], double[])} partialsComputed}
      * method will be called when partial derivatives are computed, as a side effect of
      * calling {@link #generate(SpacecraftState)}
      * </p>
@@ -240,10 +250,11 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         final DoubleArrayDictionary accelerationPartials = new DoubleArrayDictionary();
 
         // evaluate contribution of all force models
+        final AttitudeProvider equivalentAttitudeProvider = wrapAttitudeProviderIfPossible(forceModels, attitudeProvider);
         final boolean isThereAnyForceNotDependingOnlyOnPosition = forceModels.stream().anyMatch(force -> !force.dependsOnPositionOnly());
-        final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, SPACE_DIMENSION, attitudeProvider);
+        final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, SPACE_DIMENSION, equivalentAttitudeProvider);
         final NumericalGradientConverter fullConverter = isThereAnyForceNotDependingOnlyOnPosition ?
-            new NumericalGradientConverter(state, STATE_DIMENSION, attitudeProvider) : posOnlyConverter;
+            new NumericalGradientConverter(state, STATE_DIMENSION, equivalentAttitudeProvider) : posOnlyConverter;
 
         for (final ForceModel forceModel : forceModels) {
 
@@ -314,6 +325,38 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
 
         return factor;
 
+    }
+
+    /**
+     * Method that first checks if it is possible to replace the attitude provider with a computationally cheaper one
+     * to evaluate. If applicable, the new provider only computes the rotation and uses dummy rate and acceleration,
+     * since they should not be used later on.
+     * @param forceModels list of forces
+     * @param attitudeProvider original attitude provider
+     * @return same provider if at least one forces used attitude derivatives, otherwise one wrapping the old one for
+     * the rotation
+     */
+    private static AttitudeProvider wrapAttitudeProviderIfPossible(final List<ForceModel> forceModels,
+                                                                   final AttitudeProvider attitudeProvider) {
+        if (forceModels.stream().anyMatch(ForceModel::dependsOnAttitudeRate)) {
+            // at least one force uses an attitude rate, need to keep the original provider
+            return attitudeProvider;
+        } else {
+            // the original provider can be replaced by a lighter one for performance
+            return new AttitudeProvider() {
+                @Override
+                public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+                    return null; // unreachable code
+                }
+
+                @Override
+                public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv, final FieldAbsoluteDate<T> date, final Frame frame) {
+                    final FieldRotation<T> rotation = attitudeProvider.getAttitudeRotation(pvProv, date, frame);
+                    final FieldAngularCoordinates<T> angularCoordinates = new FieldAngularCoordinates<>(rotation, FieldVector3D.getZero(date.getField()));
+                    return new FieldAttitude<>(date, frame, angularCoordinates);
+                }
+            };
+        }
     }
 
     /** Interface for observing partials derivatives. */
