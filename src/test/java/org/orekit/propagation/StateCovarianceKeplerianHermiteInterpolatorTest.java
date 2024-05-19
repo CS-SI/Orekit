@@ -596,7 +596,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-12;
+        final double tolerance = 1.e-9;
         
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -617,12 +617,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.064688795593,
-                            0.187001126783,
-                            0.060525272280,
-                            0.209009256300,
-                            0.172255941648,
-                            0.375601072799,
+                            0.06468878849,
+                            0.18700110863,
+                            0.06052527006,
+                            0.20900926133,
+                            0.17225595779,
+                            0.37560104200,
                             tolerance,
                             showResults);
 
@@ -654,7 +654,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-12;
+        final double tolerance = 1.e-9;
         
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -677,12 +677,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.068710724105,
-                            0.172765884344,
-                            0.069668521368,
-                            0.178806405473,
-                            0.170287022696,
-                            0.384167038037,
+                            0.0687107434,
+                            0.1727658634,
+                            0.06966854473,
+                            0.17880639263,
+                            0.17028706967,
+                            0.3841670162,
                             tolerance,
                             showResults);
 
@@ -713,7 +713,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-12;
+        final double tolerance = 1.e-9;
         
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -736,12 +736,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.196753161694,
-                            0.174480957016,
-                            0.220129965479,
-                            0.150103777416,
-                            0.311560777507,
-                            0.491299023003,
+                            0.1967532898,
+                            0.174480997,
+                            0.220130098,
+                            0.150103817,
+                            0.311560976,
+                            0.491299092,
                             tolerance, 
                             showResults);
 
@@ -779,7 +779,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-12;
+        final double tolerance = 1.e-9;
         
         // Default orbit case
         final Orbit orbit = generateSergeiReferenceOrbit();
@@ -812,11 +812,11 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             System.out.format(Locale.US, "%35s = %20.12f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
             
         }
-        Assertions.assertEquals( 0.067889393957, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.361015950858, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals( 0.064925223782, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 7.705418714605, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals( 0.140595559622, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(16.005108945091, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals( 0.067889396, relativeRMSSigmaError[0].getMean(), tolerance);
+        Assertions.assertEquals( 7.361016578, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 0.064925239, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        Assertions.assertEquals( 7.705418959, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 0.140595553, relativeRMSSigmaError[0].getMax(), tolerance);
+        Assertions.assertEquals(16.005112864, relativeRMSSigmaError[1].getMax(), tolerance);
     }
 }

@@ -45,7 +45,8 @@ public class GeneratorTest {
     @Test
     public void testIssue557() {
 
-        final EventDetector detector = new ElevationDetector(context.stations.get(0).getBaseFrame());
+        final EventDetector detector = EstimationTestUtils.getElevationDetector(context.stations.get(0).getBaseFrame(),
+                                                                                FastMath.toRadians(0.0));
 
         double[] azElError = new double[] {
             FastMath.toRadians(0.015),

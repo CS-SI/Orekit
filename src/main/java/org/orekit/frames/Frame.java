@@ -369,11 +369,19 @@ public class Frame implements Serializable {
      */
     public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransformTo(final Frame destination,
                                                                                                   final FieldAbsoluteDate<T> date) {
-        return getTransformTo(destination,
-            FieldKinematicTransform.getIdentity(date.getField()),
-            frame -> frame.getTransformProvider().getKinematicTransform(date),
-            (t1, t2) -> FieldKinematicTransform.compose(date, t1, t2),
-            FieldKinematicTransform::getInverse);
+        if (date.hasZeroField()) {
+            // If date field is Zero, then use the un-fielded version for performances
+            final KinematicTransform kinematicTransform = getKinematicTransformTo(destination, date.toAbsoluteDate());
+            return FieldKinematicTransform.of(date.getField(), kinematicTransform);
+
+        } else {
+            // Use classic fielded function
+            return getTransformTo(destination,
+                    FieldKinematicTransform.getIdentity(date.getField()),
+                    frame -> frame.getTransformProvider().getKinematicTransform(date),
+                    (t1, t2) -> FieldKinematicTransform.compose(date, t1, t2),
+                    FieldKinematicTransform::getInverse);
+        }
     }
 
     /**

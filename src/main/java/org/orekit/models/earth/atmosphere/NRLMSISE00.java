@@ -3925,8 +3925,8 @@ public class NRLMSISE00 implements Atmosphere {
                 ys[k] = meso_tn2[k].reciprocal();
             }
             final T qSM = rlat.add(z2).divide(rlat.add(z1));
-            T yd1 = meso_tgn2[0].negate().divide(t1.multiply(t1)).multiply(zgdif);
-            T yd2 = meso_tgn2[1].negate().divide(t2.multiply(t2)).multiply(zgdif).multiply(qSM).multiply(qSM);
+            T yd1 = meso_tgn2[0].negate().divide(t1.square()).multiply(zgdif);
+            T yd2 = meso_tgn2[1].negate().divide(t2.square()).multiply(zgdif).multiply(qSM.square());
 
             /* calculate spline coefficients */
             T[] y2out = spline(xs, ys, yd1, yd2);
@@ -4033,7 +4033,7 @@ public class NRLMSISE00 implements Atmosphere {
                 /* calculate temperature below ZA
                  * temperature gradient at ZA from Bates profile */
                 final T p = rlat.add(zlb).divide(rlat.add(ZN1[0]));
-                final T dta = tinf.subtract(ta).multiply(s2).multiply(p.multiply(p));
+                final T dta = tinf.subtract(ta).multiply(s2).multiply(p.square());
                 meso_tgn1[0] = dta;
                 meso_tn1[0] = ta;
                 final T tzn1mn1 = zero.newInstance(ZN1[mn - 1]);
@@ -4051,8 +4051,8 @@ public class NRLMSISE00 implements Atmosphere {
                 }
                 /* end node derivatives */
                 final T q   = rlat.add(ZN1[mn - 1]).divide(rlat.add(ZN1[0]));
-                final T yd1 = meso_tgn1[0].negate().divide(t1.multiply(t1)).multiply(zgdif);
-                final T yd2 = meso_tgn1[1].negate().divide(t2.multiply(t2)).multiply(zgdif).multiply(q.multiply(q));
+                final T yd1 = meso_tgn1[0].negate().divide(t1.square()).multiply(zgdif);
+                final T yd2 = meso_tgn1[1].negate().divide(t2.square()).multiply(zgdif).multiply(q.square());
                 /* calculate spline coefficients */
                 y2out = spline(xs, ys, yd1, yd2);
                 x = zg.divide(zgdif);
@@ -4077,7 +4077,7 @@ public class NRLMSISE00 implements Atmosphere {
             if (!Double.isFinite(densu.getReal())) {
                 if (expl.getReal() < MIN_TEMP) {
                     densu = dlb.multiply(FastMath.exp((FastMath.log(tlb.divide(tt)).multiply(gamma.add(alpha + 1))).
-                                                      subtract(s2.multiply(gamma).multiply(zg2))));;
+                                                      subtract(s2.multiply(gamma).multiply(zg2))));
                 } else {
                     throw new OrekitException(OrekitMessages.INFINITE_NRLMSISE00_DENSITY);
                 }
@@ -4114,7 +4114,7 @@ public class NRLMSISE00 implements Atmosphere {
          */
         private T galt(final T alt) {
             final T r = alt.divide(rlat).add(1);
-            return glat.divide(r.multiply(r));
+            return glat.divide(r.square());
         }
 
         /** Calculate zeta function.

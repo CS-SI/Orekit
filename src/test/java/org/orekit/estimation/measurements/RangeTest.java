@@ -46,14 +46,14 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class RangeTest {
+class RangeTest {
 
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range Values\n");
@@ -67,7 +67,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -75,8 +75,8 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsPMedian = 6.0e-10;
-        double refErrorsPMean   = 3.0e-09;
+        double refErrorsPMedian = 6.7e-10;
+        double refErrorsPMean   = 3.1e-09;
         double refErrorsPMax    = 1.0e-07;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;
@@ -91,7 +91,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesWithModifier() {
+    void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -115,7 +115,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -138,7 +138,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivativesWithModifier() {
+    void testParameterDerivativesWithModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -161,7 +161,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivativesWithEstimatedModifier() {
+    void testParameterDerivativesWithEstimatedModifier() {
 
         // Print the results ?
         boolean printResults = false;

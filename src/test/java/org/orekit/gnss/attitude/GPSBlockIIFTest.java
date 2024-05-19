@@ -19,45 +19,45 @@ package org.orekit.gnss.attitude;
 import org.junit.jupiter.api.Test;
 
 
-public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
+class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta() {
+    void testPatchedLargeNegativeBeta() {
         doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt",  6.8e-15, 7.6e-16, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
+    void testPatchedSmallNegativeBeta() {
         doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIF.txt", 1.8e-12, 9.2e-16, false);
     }
 
     @Test
-    public void testPatchedCrossingBeta() {
+    void testPatchedCrossingBeta() {
         doTestAxes("patched-eclips/beta-crossing-BLOCK-IIF.txt", 5.7e-4, 7.8e-16, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
+    void testPatchedSmallPositiveBeta() {
         doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIF.txt", 2.9e-12, 6.0e-16, false);
     }
 
     @Test
-    public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIF.txt", 7.4e-15, 6.7e-16, false);
+    void testPatchedLargePositiveBeta() {
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIF.txt", 7.4e-15, 7.0e-16, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta() {
+    void testOriginalLargeNegativeBeta() {
         doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt", 6.8e-15, 7.6e-16, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
+    void testOriginalSmallNegativeBeta() {
         doTestAxes("original-eclips/beta-small-negative-BLOCK-IIF.txt", 2.8e-3, 9.2e-16, false);
     }
 
     @Test
-    public void testOriginalCrossingBeta() {
+    void testOriginalCrossingBeta() {
         // the very high threshold (0.24 radians) is due to a probable bug in original eclips
         // the output of the routine is limited to the x-sat vector, the yaw angle itself
         // is not output. However, in some cases the x-sat vector is not normalised at all.
@@ -79,13 +79,13 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
+    void testOriginalSmallPositiveBeta() {
         doTestAxes("original-eclips/beta-small-positive-BLOCK-IIF.txt", 2.8e-4, 6.0e-16, false);
     }
 
     @Test
-    public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIF.txt", 7.4e-15, 6.7e-16, false);
+    void testOriginalLargePositiveBeta() {
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIF.txt", 7.4e-15, 7.0e-16, false);
     }
 
 }

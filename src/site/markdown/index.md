@@ -284,7 +284,7 @@
     * loading and writing of RINEX observation files (version 2, 3, and 4)
     * loading of RINEX navigation files (version 2, 3, and 4)
     * support for Hatanaka compact RINEX format
-    * loading of SINEX file (can load station positions, eccentricities, EOPs, and Differential Code Biases)
+    * loading of SINEX file (can load station positions, velocities, eccentricities, Post-Seismic Deformation models, EOPs, and Differential Code Biases)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
     * parsing of RTCM messages (both ephemeris and correction messages)

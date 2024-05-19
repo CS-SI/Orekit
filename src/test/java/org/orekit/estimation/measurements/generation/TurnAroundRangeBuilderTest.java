@@ -98,10 +98,10 @@ public class TurnAroundRangeBuilderTest {
         generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), primary, secondary, satellite),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(satellite),
-                                                         BooleanDetector.andCombine(new ElevationDetector(primary.getBaseFrame()).
-                                                                                    withConstantElevation(FastMath.toRadians(5.0)),
-                                                                                    new ElevationDetector(secondary.getBaseFrame()).
-                                                                                    withConstantElevation(FastMath.toRadians(5.0))),
+                                                         BooleanDetector.andCombine(EstimationTestUtils.getElevationDetector(primary.getBaseFrame(),
+                                                                                                                             FastMath.toRadians(5.0)),
+                                                                                    EstimationTestUtils.getElevationDetector(secondary.getBaseFrame(),
+                                                                                                                             FastMath.toRadians(5.0))),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
         final GatheringSubscriber gatherer = new GatheringSubscriber();
         generator.addSubscriber(gatherer);

@@ -54,6 +54,7 @@ import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
@@ -63,6 +64,9 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.events.AbstractDetector;
+import org.orekit.propagation.events.ElevationDetector;
+import org.orekit.propagation.events.intervals.ElevationDetectionAdaptableIntervalFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -475,6 +479,22 @@ public class EstimationTestUtils {
                 Assertions.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);
             }
         }
+    }
+
+    /** Get an elevation detector.
+     * @param topo ground station
+     * @param minElevation detection elevation
+     * @return elevation detector
+     */
+    public static ElevationDetector getElevationDetector(final TopocentricFrame topo, final double minElevation) {
+        ElevationDetector detector =
+            new ElevationDetector(topo).
+                withThreshold(AbstractDetector.DEFAULT_THRESHOLD).
+                withMaxCheck(ElevationDetectionAdaptableIntervalFactory.getAdaptableInterval(topo,
+                                                                                             ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH,
+                                                                                             10.0)).
+                withConstantElevation(minElevation);
+        return detector;
     }
 
 }

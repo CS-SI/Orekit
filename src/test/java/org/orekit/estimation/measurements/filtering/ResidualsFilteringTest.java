@@ -32,6 +32,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -103,7 +104,7 @@ public class ResidualsFilteringTest {
         generator.addPropagator(propagator);
         RandomGenerator random = new Well19937a(0x01e226dd859c2c9dL);
         MeasurementBuilder<Range> builder = getBuilder(random, station, satellite, noise);
-        EventDetector event = getElvetaionDetector(topo, 10.0);
+        EventDetector event = EstimationTestUtils.getElevationDetector(topo, FastMath.toRadians(5.0));
         FixedStepSelector dateSelecor = new FixedStepSelector(30, TimeScalesFactory.getUTC());
         EventBasedScheduler<Range> scheduler = new EventBasedScheduler<>(builder, dateSelecor, propagator, event, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE);
         generator.addScheduler(scheduler);

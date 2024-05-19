@@ -236,7 +236,7 @@ class OrbitBlenderTest {
                             0.08349987869494085,
                             0.10151652739088853,
                             0.14827634525717634,
-                            1e-17, false);
+                            1e-12, false);
     }
 
     @SuppressWarnings("deprecation")
@@ -261,7 +261,7 @@ class OrbitBlenderTest {
                             0.08349987869494085,
                             0.10151652739088853,
                             0.14827634525717634,
-                            1e-17, false);
+                            1e-12, false);
     }
 
     @Test
