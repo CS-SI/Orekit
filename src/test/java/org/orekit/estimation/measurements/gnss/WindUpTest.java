@@ -29,6 +29,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -145,8 +146,8 @@ public class WindUpTest {
         generator.addScheduler(new EventBasedScheduler<>(builder,
                                                          new FixedStepSelector(60.0, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(obsSat),
-                                                         new ElevationDetector(station.getBaseFrame()).
-                                                         withConstantElevation(FastMath.toRadians(5.0)).
+                                                         EstimationTestUtils.getElevationDetector(station.getBaseFrame(),
+                                                                                                  FastMath.toRadians(5.0)).
                                                          withHandler(new ContinueOnEvent()),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
         final GatheringSubscriber gatherer = new GatheringSubscriber();
