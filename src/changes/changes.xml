@@ -21,8 +21,11 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1407">
+        Added ElevationDetectionAdaptableIntervalFactory for elevation detector.
+      </action>
       <action dev="serrof" type="update" issue="1406">
-	Check for constant FieldAbsoluteDate when building FieldKinematicTransform.
+        Check for constant FieldAbsoluteDate when building FieldKinematicTransform.
       </action>
       <action dev="serrof" type="update" issue="1405">
         Switched to automatic differentiation for atmospheric density gradient.
