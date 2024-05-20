@@ -22,8 +22,10 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -110,8 +112,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
         final double        r2        = Vector3D.dotProduct(pointingP, pointingP);
 
         // evaluate instant rotation axis due to sat and body motion only (no phasing yet)
-        final Vector3D rotAxisCel =
-            new Vector3D(1 / r2, Vector3D.crossProduct(pointingP, pointing.getVelocity()));
+        final Vector3D rotAxisCel = new Vector3D(1 / r2, Vector3D.crossProduct(pointingP, pointing.getVelocity()));
 
         // fix instant rotation to take phasing constraint into account
         // (adding a rotation around pointing axis ensuring the motion of the phasing axis
@@ -137,10 +138,31 @@ public class CelestialBodyPointed implements AttitudeProvider {
 
     }
 
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv,
+                                        final AbsoluteDate date,
+                                        final Frame frame) {
+        final Vector3D satPosition = pvProv.getPosition(date, celestialFrame);
+
+        // compute celestial references at the specified date
+        final Vector3D bodyPosition    = pointedBody.getPosition(date, celestialFrame);
+        final Vector3D      pointingP  = bodyPosition.subtract(satPosition);
+
+        // compute static transform from celestial frame to satellite frame
+        final Rotation celToSatRotation = new Rotation(pointingP, phasingCel, pointingSat, phasingSat);
+        StaticTransform staticTransform = StaticTransform.of(date, celToSatRotation);
+
+        if (frame != celestialFrame) {
+            // prepend static transform from specified frame to celestial frame
+            staticTransform = StaticTransform.compose(date, frame.getStaticTransformTo(celestialFrame, date), staticTransform);
+        }
+        return staticTransform.getRotation();
+    }
+
     /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
 
         final Field<T> field = date.getField();
         final FieldPVCoordinates<T> satPV = pvProv.getPVCoordinates(date, celestialFrame);
@@ -183,4 +205,29 @@ public class CelestialBodyPointed implements AttitudeProvider {
 
     }
 
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+        final Field<T> field = date.getField();
+        final FieldVector3D<T> satPosition = pvProv.getPosition(date, celestialFrame);
+
+        // compute celestial references at the specified date
+        final FieldVector3D<T> bodyPosition    = new FieldVector3D<>(field,
+                pointedBody.getPosition(date.toAbsoluteDate(), celestialFrame));
+        final FieldVector3D<T>      pointingP = bodyPosition.subtract(satPosition);
+
+        // compute rotation from celestial frame to satellite frame
+        final FieldRotation<T> celToSatRotation =
+                new FieldRotation<>(pointingP, new FieldVector3D<>(field, phasingCel),
+                        new FieldVector3D<>(field, pointingSat), new FieldVector3D<>(field, phasingSat));
+
+        // build static transform combining rotation and instant rotation axis
+        FieldStaticTransform<T> staticTransform = FieldStaticTransform.of(date, celToSatRotation);
+        if (frame != celestialFrame) {
+            // prepend static transform from specified frame to celestial frame
+            staticTransform = FieldStaticTransform.compose(date, frame.getStaticTransformTo(celestialFrame, date), staticTransform);
+        }
+        return staticTransform.getRotation();
+    }
 }
