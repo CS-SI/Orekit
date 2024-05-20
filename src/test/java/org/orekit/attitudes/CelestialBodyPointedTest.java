@@ -18,6 +18,9 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
@@ -29,9 +32,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -39,13 +40,67 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class CelestialBodyPointingTest {
+class CelestialBodyPointedTest {
 
     @Test
-    public void testSunPointing() {
+    void templateTestGetAttitudeRotationSameFrame() {
+        templateTestGetAttitudeRotation(FramesFactory.getEME2000());
+    }
+
+    @Test
+    void templateTestGetAttitudeRotationDifferentFrame() {
+        templateTestGetAttitudeRotation(FramesFactory.getGCRF());
+    }
+
+    void templateTestGetAttitudeRotation(final Frame frame) {
+        // GIVEN
+        final Frame celestialFrame = FramesFactory.getEME2000();
+        final CelestialBodyPointed celestialBodyPointed = new CelestialBodyPointed(celestialFrame,
+                CelestialBodyFactory.getSun(), Vector3D.PLUS_K, Vector3D.PLUS_J, Vector3D.PLUS_K);
+        final PVCoordinates pv =
+                new PVCoordinates(new Vector3D(28812595.32120171334, 5948437.45881852374, 0.0),
+                        new Vector3D(0, 0, 3680.853673522056));
+        final Orbit orbit = new CartesianOrbit(pv, frame, AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU);
+        // WHEN
+        final Rotation actualRotation = celestialBodyPointed.getAttitudeRotation(orbit, orbit.getDate(), frame);
+        // THEN
+        final Rotation expectedRotation = celestialBodyPointed.getAttitude(orbit, orbit.getDate(), frame).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+    }
+
+    @Test
+    void testFieldGetAttitudeRotationSameFrame() {
+        templateTestFieldGetAttitudeRotation(FramesFactory.getEME2000());
+    }
+
+    @Test
+    void testFieldGetAttitudeRotationDifferentFrame() {
+        templateTestFieldGetAttitudeRotation(FramesFactory.getGCRF());
+    }
+
+    void templateTestFieldGetAttitudeRotation(final Frame frame) {
+        // GIVEN
+        final Frame celestialFrame = FramesFactory.getEME2000();
+        final CelestialBodyPointed celestialBodyPointed = new CelestialBodyPointed(celestialFrame,
+                CelestialBodyFactory.getSun(), Vector3D.PLUS_K, Vector3D.PLUS_J, Vector3D.PLUS_K);
+        final PVCoordinates pv =
+                new PVCoordinates(new Vector3D(28812595.32120171334, 5948437.45881852374, 0.0),
+                        new Vector3D(0, 0, 3680.853673522056));
+        final Orbit orbit = new CartesianOrbit(pv, frame, AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU);
+        final FieldOrbit<Complex> fieldOrbit = new FieldCartesianOrbit<>(ComplexField.getInstance(), orbit);
+        // WHEN
+        final FieldRotation<Complex> actualRotation = celestialBodyPointed.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), frame);
+        // THEN
+        final FieldRotation<Complex> expectedRotation = celestialBodyPointed.getAttitude(fieldOrbit, fieldOrbit.getDate(), frame).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+    }
+
+    @Test
+    void testSunPointing() {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         final Frame frame = FramesFactory.getGCRF();
