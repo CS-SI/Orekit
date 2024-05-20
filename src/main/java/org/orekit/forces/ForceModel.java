@@ -130,13 +130,23 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField(), s.getDate())));
     }
 
-    /** Check if force models depends on position only.
+    /** Check if force model depends on position only at a given, fixed date.
      * @return true if force model depends on position only, false
      * if it depends on velocity, either directly or due to a dependency
      * on attitude
      * @since 9.0
      */
     boolean dependsOnPositionOnly();
+
+    /** Check if force model depends on attitude's rotation rate or acceleration at a given, fixed date.
+     * If false, it essentially means that at most the attitude's rotation is used when computing the acceleration vector.
+     * The default implementation returns false as common forces do not.
+     * @return true if force model depends on attitude derivatives
+     * @since 12.1
+     */
+    default boolean dependsOnAttitudeRate() {
+        return false;
+    }
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
