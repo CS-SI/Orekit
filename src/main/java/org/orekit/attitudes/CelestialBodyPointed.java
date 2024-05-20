@@ -100,6 +100,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame) {
 
@@ -138,6 +139,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv,
                                         final AbsoluteDate date,
@@ -160,6 +162,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                             final FieldAbsoluteDate<T> date,
                                                                             final Frame frame) {
@@ -205,6 +208,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                     final FieldAbsoluteDate<T> date,

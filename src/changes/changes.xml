@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1412">
+        Override getTargetPosition in some GroundPointing inheritors.
+      </action>
       <action dev="serrof" type="add" issue="1410">
         Add override for getAttitudeRotation in CelestialBodyPointed.
       </action>

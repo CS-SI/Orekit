@@ -21,8 +21,10 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -87,8 +89,15 @@ public class TargetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
+    protected Vector3D getTargetPosition(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        final StaticTransform staticTransform = getBodyFrame().getStaticTransformTo(frame, date);
+        return staticTransform.transformPosition(target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
+                                                                                            final FieldAbsoluteDate<T> date, final Frame frame) {
         final FieldTransform<T> t = getBodyFrame().getTransformTo(frame, date);
         final FieldVector3D<T> zero = FieldVector3D.getZero(date.getField());
         final TimeStampedFieldPVCoordinates<T> pv =
@@ -96,4 +105,12 @@ public class TargetPointing extends GroundPointing {
         return t.transformPVCoordinates(pv);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getTargetPosition(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                     final FieldAbsoluteDate<T> date,
+                                                                                     final Frame frame) {
+        final FieldStaticTransform<T> staticTransform = getBodyFrame().getStaticTransformTo(frame, date);
+        return staticTransform.transformPosition(target);
+    }
 }
