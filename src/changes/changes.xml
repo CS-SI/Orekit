@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1416">
+        Take advantage of dependsOnAtittudeRate in DSST.
+      </action>
       <action dev="serrof" type="add" issue="1417">
         Override getTargetPosition in LofOffSetPointing and NadirPointing.
       </action>

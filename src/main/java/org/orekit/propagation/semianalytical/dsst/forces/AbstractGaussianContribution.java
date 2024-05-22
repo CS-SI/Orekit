@@ -20,7 +20,9 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.CalculusFieldUnivariateVectorFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
@@ -677,9 +679,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(field, 6);
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngleType.TRUE, stateVector, null);
+            final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), positionAngleType, stateVector, null);
             final FieldOrbit<T> fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null,
-                    PositionAngleType.TRUE, state.getDate(), context.getMu(), state.getFrame());
+                    positionAngleType, state.getDate(), context.getMu(), state.getFrame());
             this.state = new FieldSpacecraftState<>(fixedOrbit, state.getAttitude(), state.getMass());
         }
 
@@ -717,12 +720,21 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Recompose an orbit with time held fixed to be compliant with DSST theory
             final FieldOrbit<T> recomposedOrbit = new FieldEquinoctialOrbit<>(shiftedOrbit.getA(),
                     shiftedOrbit.getEquinoctialEx(), shiftedOrbit.getEquinoctialEy(), shiftedOrbit.getHx(),
-                    shiftedOrbit.getHy(), shiftedOrbit.getLv(), PositionAngleType.TRUE, shiftedOrbit.getFrame(),
+                    shiftedOrbit.getHy(), shiftedOrbit.getLM(), PositionAngleType.MEAN, shiftedOrbit.getFrame(),
                     state.getDate(), context.getMu());
 
             // Get the corresponding attitude
-            final FieldAttitude<T> recomposedAttitude = attitudeProvider.getAttitude(recomposedOrbit,
-                    recomposedOrbit.getDate(), recomposedOrbit.getFrame());
+            final FieldAttitude<T> recomposedAttitude;
+            if (contribution.dependsOnAttitudeRate()) {
+                recomposedAttitude = attitudeProvider.getAttitude(recomposedOrbit,
+                        recomposedOrbit.getDate(), recomposedOrbit.getFrame());
+            } else {
+                final FieldRotation<T> rotation = attitudeProvider.getAttitudeRotation(recomposedOrbit,
+                        recomposedOrbit.getDate(), recomposedOrbit.getFrame());
+                final FieldVector3D<T> zeroVector = FieldVector3D.getZero(recomposedOrbit.getA().getField());
+                recomposedAttitude = new FieldAttitude<>(recomposedOrbit.getDate(), recomposedOrbit.getFrame(),
+                        rotation, zeroVector, zeroVector);
+            }
 
             // create shifted SpacecraftState with attitude at specified time
             final FieldSpacecraftState<T> shiftedState = new FieldSpacecraftState<>(recomposedOrbit, recomposedAttitude,
@@ -952,8 +964,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.context = new AbstractGaussianContributionContext(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final double[] stateVector = new double[6];
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngleType.TRUE, stateVector, null);
-            final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
+            final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), positionAngleType, stateVector, null);
+            final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, positionAngleType,
                     state.getDate(), context.getMu(), state.getFrame());
             this.state = new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
         }
@@ -987,12 +1000,21 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // Recompose an orbit with time held fixed to be compliant with DSST theory
             final Orbit recomposedOrbit = new EquinoctialOrbit(shiftedOrbit.getA(), shiftedOrbit.getEquinoctialEx(),
-                    shiftedOrbit.getEquinoctialEy(), shiftedOrbit.getHx(), shiftedOrbit.getHy(), shiftedOrbit.getLv(),
-                    PositionAngleType.TRUE, shiftedOrbit.getFrame(), state.getDate(), context.getMu());
+                    shiftedOrbit.getEquinoctialEy(), shiftedOrbit.getHx(), shiftedOrbit.getHy(), shiftedOrbit.getLM(),
+                    PositionAngleType.MEAN, shiftedOrbit.getFrame(), state.getDate(), context.getMu());
 
             // Get the corresponding attitude
-            final Attitude recomposedAttitude = attitudeProvider.getAttitude(recomposedOrbit, recomposedOrbit.getDate(),
-                    recomposedOrbit.getFrame());
+            final Attitude recomposedAttitude;
+            if (contribution.dependsOnAttitudeRate()) {
+                recomposedAttitude = attitudeProvider.getAttitude(recomposedOrbit,
+                        recomposedOrbit.getDate(), recomposedOrbit.getFrame());
+            } else {
+                final Rotation rotation = attitudeProvider.getAttitudeRotation(recomposedOrbit,
+                        recomposedOrbit.getDate(), recomposedOrbit.getFrame());
+                final Vector3D zeroVector = Vector3D.ZERO;
+                recomposedAttitude = new Attitude(recomposedOrbit.getDate(), recomposedOrbit.getFrame(),
+                        rotation, zeroVector, zeroVector);
+            }
 
             // create shifted SpacecraftState with attitude at specified time
             final SpacecraftState shiftedState = new SpacecraftState(recomposedOrbit, recomposedAttitude,

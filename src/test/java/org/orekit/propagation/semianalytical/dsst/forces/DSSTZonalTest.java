@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
@@ -33,9 +33,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
-import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -48,10 +45,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DSSTZonalTest {
+class DSSTZonalTest {
 
     @Test
-    public void testGetMeanElementRate() {
+    void testGetMeanElementRate() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -107,7 +104,7 @@ public class DSSTZonalTest {
     }
 
     @Test
-    public void testShortPeriodTerms() {
+    void testShortPeriodTerms() {
         final SpacecraftState meanState = getGEOState();
 
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
@@ -140,7 +137,7 @@ public class DSSTZonalTest {
     }
 
     @Test
-    public void testIssue625() {
+    void testIssue625() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -195,7 +192,7 @@ public class DSSTZonalTest {
     }
 
     @Test
-    public void testOutOfRangeException() {
+    void testOutOfRangeException() {
         try {
             @SuppressWarnings("unused")
             final DSSTZonal zonal = new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(1, 0));

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -30,8 +30,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -40,12 +38,12 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 
-public class FieldDSSTNewtonianAttractionTest {
+class FieldDSSTNewtonianAttractionTest {
 
     private static final double eps  = 1.0e-19;
 
     @Test
-    public void testGetMeanElementRate() {
+    void testGetMeanElementRate() {
         doTestGetMeanElementRate(Binary64Field.getInstance());
     }
 

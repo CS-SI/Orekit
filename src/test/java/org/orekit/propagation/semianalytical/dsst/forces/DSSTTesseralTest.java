@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -44,18 +44,15 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
-import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-public class DSSTTesseralTest {
+class DSSTTesseralTest {
 
     @Test
-    public void testGetMeanElementRate() {
+    void testGetMeanElementRate() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -113,7 +110,7 @@ public class DSSTTesseralTest {
     }
 
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException {
+    void testShortPeriodTerms() throws IllegalArgumentException {
 
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
@@ -162,7 +159,7 @@ public class DSSTTesseralTest {
     }
 
     @Test
-    public void testIssue625() {
+    void testIssue625() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -219,7 +216,7 @@ public class DSSTTesseralTest {
     }
 
     @Test
-    public void testIssue736() {
+    void testIssue736() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -265,7 +262,7 @@ public class DSSTTesseralTest {
      * when the order is lower or equal to 3.
      */
     @Test
-    public void testIssue672() {
+    void testIssue672() {
 
         // GIVEN
         // -----
@@ -323,7 +320,7 @@ public class DSSTTesseralTest {
      *    order of the gravity field (0 in this case). This last behavior was added for non-regression purposes.
      */
     @Test
-    public void testIssue672OutOfRangeException() {
+    void testIssue672OutOfRangeException() {
 
         // Throwing exception
         // ------------------
@@ -373,7 +370,7 @@ public class DSSTTesseralTest {
     }
 
     @Test
-    public void testOutOfRangeException() {
+    void testOutOfRangeException() {
         // Central Body geopotential 1x0
         final UnnormalizedSphericalHarmonicsProvider provider =
                         GravityFieldFactory.getUnnormalizedProvider(1, 0);
@@ -393,7 +390,7 @@ public class DSSTTesseralTest {
     }
 
     @Test
-    public void testGetMaxEccPow()
+    void testGetMaxEccPow()
                     throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final UnnormalizedSphericalHarmonicsProvider provider =
                         GravityFieldFactory.getUnnormalizedProvider(4, 4);;

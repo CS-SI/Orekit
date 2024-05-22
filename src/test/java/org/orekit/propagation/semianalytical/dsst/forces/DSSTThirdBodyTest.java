@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -29,9 +29,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
-import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -45,12 +42,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class DSSTThirdBodyTest {
+class DSSTThirdBodyTest {
 
     private static final double eps  = 3.5e-25;
 
     @Test
-    public void testGetMeanElementRate() throws IllegalArgumentException {
+    void testGetMeanElementRate() throws IllegalArgumentException {
 
         final Frame earthFrame = FramesFactory.getEME2000();
         final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
@@ -103,7 +100,7 @@ public class DSSTThirdBodyTest {
     }
 
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException {
+    void testShortPeriodTerms() throws IllegalArgumentException {
         final SpacecraftState meanState = getGEOState();
 
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
