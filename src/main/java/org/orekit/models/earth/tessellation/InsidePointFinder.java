@@ -89,13 +89,28 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
             final List<Vertex> boundary = convex.getBoundaryLoops();
             final Vertex start = boundary.get(0);
             int n = 0;
-            Vector3D sumB = Vector3D.ZERO;
+
+            // Initialize centroid coordinates
+            Vector3D centroid = Vector3D.ZERO;
+
+            // Iterate through each edge in the boundary loop
             for (Edge e = start.getOutgoing(); n == 0 || e.getStart() != start; e = e.getEnd().getOutgoing()) {
-                sumB = new Vector3D(1, sumB, e.getLength(), e.getCircle().getPole());
+                // Get the 3D coordinates of the start and end points of the edge
+                Vector3D startPoint = e.getStart().getLocation().getVector();
+                Vector3D endPoint = e.getEnd().getLocation().getVector();
+
+                // Add the coordinates of the start and end points to the centroid
+                centroid = centroid.add(startPoint).add(endPoint);
+
+                // Increment the counter
                 n++;
             }
 
-            final S2Point candidate = new S2Point(sumB);
+            // Calculate the average centroid coordinates
+            centroid = centroid.scalarMultiply(1.0 / (2 * n));
+
+            // Project the centroid coordinates onto the sphere to get the candidate point
+            final S2Point candidate = new S2Point(centroid.normalize());
 
             // check the candidate point is really considered inside
             // it may appear outside if the current leaf cell is very thin
