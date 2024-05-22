@@ -71,6 +71,7 @@ public class NadirPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
+    @Override
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                                 final AbsoluteDate date, final Frame frame) {
 
@@ -96,6 +97,17 @@ public class NadirPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
+    @Override
+    protected Vector3D getTargetPosition(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+
+        // transform from specified reference frame to body frame
+        final StaticTransform refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), date);
+
+        return nadirRef(pvProv.getPVCoordinates(date, frame), refToBody).getPosition();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                             final FieldAbsoluteDate<T> date,
                                                                                             final Frame frame) {
@@ -121,6 +133,19 @@ public class NadirPointing extends GroundPointing {
 
         // use interpolation to compute properly the time-derivatives
         return interpolator.interpolate(date, sample);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getTargetPosition(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                     final FieldAbsoluteDate<T> date,
+                                                                                     final Frame frame) {
+
+        // transform from specified reference frame to body frame
+        final FieldStaticTransform<T> refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), date);
+
+        return nadirRef(pvProv.getPVCoordinates(date, frame), refToBody).getPosition();
 
     }
 
