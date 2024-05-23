@@ -41,7 +41,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.IOException;
 import java.util.List;
 
 public class EllipsoidTessellatorTest {
@@ -141,7 +140,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesSmallZoneWithoutTruncation() throws IOException {
+    public void testTilesSmallZoneWithoutTruncation() {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
         EllipsoidTessellator tessellator =
@@ -180,7 +179,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesSmallZoneWithTruncation() throws IOException {
+    public void testTilesSmallZoneWithTruncation() {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
         EllipsoidTessellator tessellator =
@@ -349,21 +348,19 @@ public class EllipsoidTessellatorTest {
 
     @Test
     public void testSampleAroundPoleConstantAzimuth() {
-        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, new S2Point[] {
-            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
-        });
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9,
+                                                            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
+                                                            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
+                                                            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0)));
         doTestSampleAroundPole(aoi, new ConstantAzimuthAiming(ellipsoid, 0.0), -1);
     }
 
     @Test
     public void testSampleAroundPoleDivertedSingularity() {
-        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, new S2Point[] {
-            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
-        });
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9,
+                                                            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
+                                                            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
+                                                            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0)));
         doTestSampleAroundPole(aoi, new DivertedSingularityAiming(aoi), 993);
     }
 

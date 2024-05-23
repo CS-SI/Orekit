@@ -54,7 +54,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -89,7 +88,7 @@ public class FootprintOverlapDetectorTest {
     }
 
     @Test
-    public void testRightForwardView() throws IOException {
+    public void testRightForwardView() {
 
         propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                       RotationOrder.XYZ,
