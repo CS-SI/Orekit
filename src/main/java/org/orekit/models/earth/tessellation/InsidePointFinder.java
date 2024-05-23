@@ -96,8 +96,8 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
             // Iterate through each edge in the boundary loop
             for (Edge e = start.getOutgoing(); n == 0 || e.getStart() != start; e = e.getEnd().getOutgoing()) {
                 // Get the 3D coordinates of the start and end points of the edge
-                Vector3D startPoint = e.getStart().getLocation().getVector();
-                Vector3D endPoint = e.getEnd().getLocation().getVector();
+                final Vector3D startPoint = e.getStart().getLocation().getVector();
+                final Vector3D endPoint   = e.getEnd().getLocation().getVector();
 
                 // Add the coordinates of the start and end points to the centroid
                 centroid = centroid.add(startPoint).add(endPoint);
