@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1419">
+        Add option for automatic differentiation of density for numerical and DSST drag forces.
+      </action>
       <action dev="serrof" type="update" issue="1416">
         Take advantage of dependsOnAtittudeRate in DSST.
       </action>
@@ -46,7 +49,7 @@
         Check for constant FieldAbsoluteDate when building FieldKinematicTransform.
       </action>
       <action dev="serrof" type="update" issue="1405">
-        Switched to automatic differentiation for atmospheric density gradient.
+        Add automatic differentiation for atmospheric density gradient in numerical drag.
       </action>
       <action dev="serrof" type="add" issue="1401">
         Added public, light-weight routines for Keplerian motion with Cartesian coordinates.

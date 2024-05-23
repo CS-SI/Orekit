@@ -436,7 +436,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         final IsotropicDrag dragSensitive = new IsotropicDrag(crossSection, cd);
         final Atmosphere atmosphere =
                 new NRLMSISE00(new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES), sun, earthShape);
-        final DragForce dragForce = new DragForce(atmosphere, dragSensitive);
+        final DragForce dragForce = new DragForce(atmosphere, dragSensitive, false);
         propagator.addForceModel(dragForce);
 
         // Third body

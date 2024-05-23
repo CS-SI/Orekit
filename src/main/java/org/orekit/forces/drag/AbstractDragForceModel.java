@@ -36,7 +36,6 @@ import java.util.Arrays;
 /**
  * Base class for drag force models.
  * @see DragForce
- * @see TimeSpanDragForce
  * @author Bryan Cazabonne
  * @since 10.2
  */
@@ -46,11 +45,34 @@ public abstract class AbstractDragForceModel implements ForceModel {
     private final Atmosphere atmosphere;
 
     /**
-     * Constructor.
+     * Flag to use (first-order) finite differences instead of automatic differentiation when computing density derivatives w.r.t. position.
+     */
+    private final boolean useFiniteDifferencesOnDensityWrtPosition;
+
+    /**
+     * Constructor with default value for finite differences flag.
      * @param atmosphere atmospheric model
      */
     protected AbstractDragForceModel(final Atmosphere atmosphere) {
+        this(atmosphere, true);
+    }
+
+    /**
+     * Constructor.
+     * @param atmosphere atmospheric model
+     * @param useFiniteDifferencesOnDensityWrtPosition flag to use finite differences to compute density derivatives w.r.t.
+     *                                                 position (is less accurate but can be faster depending on model)
+     */
+    protected AbstractDragForceModel(final Atmosphere atmosphere, final boolean useFiniteDifferencesOnDensityWrtPosition) {
         this.atmosphere = atmosphere;
+        this.useFiniteDifferencesOnDensityWrtPosition = useFiniteDifferencesOnDensityWrtPosition;
+    }
+
+    /** Get the atmospheric model.
+     * @return atmosphere model
+     */
+    public Atmosphere getAtmosphere() {
+        return atmosphere;
     }
 
     /** {@inheritDoc} */
@@ -121,6 +143,35 @@ public abstract class AbstractDragForceModel implements ForceModel {
         }
     }
 
+    /**
+     * Evaluate the Field density.
+     * @param s spacecraft state
+     * @return atmospheric density
+     * @param <T> field type
+     * @since 12.1
+     */
+    @SuppressWarnings("unchecked")
+    protected <T extends CalculusFieldElement<T>> T getFieldDensity(final FieldSpacecraftState<T> s) {
+        final FieldAbsoluteDate<T> date     = s.getDate();
+        final Frame                frame    = s.getFrame();
+        final FieldVector3D<T>     position = s.getPosition();
+        if (isGradientStateDerivative(s)) {
+            if (useFiniteDifferencesOnDensityWrtPosition) {
+                return (T) this.getGradientDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<Gradient>) position);
+            } else {
+                return (T) this.getGradientDensityWrtState(date.toAbsoluteDate(), frame, (FieldVector3D<Gradient>) position);
+            }
+        } else if (isDSStateDerivative(s)) {
+            if (useFiniteDifferencesOnDensityWrtPosition) {
+                return (T) this.getDSDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<DerivativeStructure>) position);
+            } else {
+                return (T) this.getDSDensityWrtState(date.toAbsoluteDate(), frame, (FieldVector3D<DerivativeStructure>) position);
+            }
+        } else {
+            return atmosphere.getDensity(date, position, frame);
+        }
+    }
+
     /** Check if a derivative represents a specified variable.
      * @param ds derivative to check
      * @param index index of the variable
@@ -156,7 +207,7 @@ public abstract class AbstractDragForceModel implements ForceModel {
      * From a theoretical point of view, this method computes the same values
      * as {@link Atmosphere#getDensity(FieldAbsoluteDate, FieldVector3D, Frame)} in the
      * specific case of {@link DerivativeStructure} with respect to state, so
-     * it is less general. However, it is *much* faster in this important case.
+     * it is less general. However, it can be faster depending the Field implementation.
      * </p>
      * <p>
      * The derivatives should be computed with respect to position. The input
@@ -226,13 +277,62 @@ public abstract class AbstractDragForceModel implements ForceModel {
     }
 
     /** Compute density and its derivatives.
+     * And doing the actual computation only for the derivatives with respect to position (others are set to 0.).
+     * <p>
+     * The derivatives should be computed with respect to position. The input
+     * parameters already take into account the free parameters (6, 7 or 8 depending
+     * on derivation with respect to drag coefficient and lift ratio being considered or not)
+     * and order (always 1). Free parameters at indices 0, 1 and 2 correspond to derivatives
+     * with respect to position. Free parameters at indices 3, 4 and 5 correspond
+     * to derivatives with respect to velocity (these derivatives will remain zero
+     * as the atmospheric density does not depend on velocity). Free parameter
+     * at indexes 6 and 7 (if present) corresponds to derivatives with respect to drag coefficient
+     * and/or lift ratio (one of these or both).
+     * This 2 last derivatives will remain zero as atmospheric density does not depend on them.
+     * </p>
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in inertial frame
+     * @return the density and its derivatives
+     */
+    protected DerivativeStructure getDSDensityWrtState(final AbsoluteDate date, final Frame frame,
+                                                       final FieldVector3D<DerivativeStructure> position) {
+
+        // Retrieve derivation properties for parameter T
+        // It is implied here that T is a DerivativeStructure
+        // With order 1 and 6, 7 or 8 free parameters
+        // This is all checked before in method isStateDerivatives
+        final DSFactory factory = position.getX().getFactory();
+
+        // Build a DerivativeStructure using only derivatives with respect to position
+        final DSFactory factory3 = new DSFactory(3, 1);
+        final FieldVector3D<DerivativeStructure> position3 =
+                new FieldVector3D<>(factory3.variable(0, position.getX().getReal()),
+                        factory3.variable(1,  position.getY().getReal()),
+                        factory3.variable(2,  position.getZ().getReal()));
+
+        // Get atmosphere properties in atmosphere own frame
+        final Frame      atmFrame  = atmosphere.getFrame();
+        final StaticTransform toBody = frame.getStaticTransformTo(atmFrame, date);
+        final FieldVector3D<DerivativeStructure> posBodyDS = toBody.transformPosition(position3);
+        final FieldAbsoluteDate<DerivativeStructure> fieldDate = new FieldAbsoluteDate<>(position3.getX().getField(), date);
+        final DerivativeStructure density = atmosphere.getDensity(fieldDate, posBodyDS, atmFrame);
+
+        // Density with derivatives:
+        // - The value and only the 3 first derivatives (those with respect to spacecraft position) are computed
+        // - Others are set to 0.
+        final double[] derivatives = Arrays.copyOf(density.getAllDerivatives(), factory.getCompiler().getSize());
+        return factory.build(derivatives);
+    }
+
+    /** Compute density and its derivatives.
      * Using finite differences for the derivatives.
      * And doing the actual computation only for the derivatives with respect to position (others are set to 0.).
      * <p>
      * From a theoretical point of view, this method computes the same values
      * as {@link Atmosphere#getDensity(FieldAbsoluteDate, FieldVector3D, Frame)} in the
      * specific case of {@link Gradient} with respect to state, so
-     * it is less general. However, it used to be faster before performance improvements with FieldStaticTransform.
+     * it is less general. However, it can be faster depending the Field implementation.
      * </p>
      * <p>
      * The derivatives should be computed with respect to position. The input
@@ -250,9 +350,7 @@ public abstract class AbstractDragForceModel implements ForceModel {
      * @param frame inertial reference frame for state (both orbit and attitude)
      * @param position position of spacecraft in inertial frame
      * @return the density and its derivatives
-     * @deprecated since 12.1
      */
-    @Deprecated
     protected Gradient getGradientDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
                                                                         final Frame frame,
                                                                         final FieldVector3D<Gradient> position) {
