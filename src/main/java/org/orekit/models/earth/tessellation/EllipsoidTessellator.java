@@ -310,7 +310,7 @@ public class EllipsoidTessellator {
      */
     private S2Point getInsidePoint(final SphericalPolygonsSet zone) {
 
-        final InsideFinder finder = new InsideFinder(zone);
+        final InsidePointFinder finder = new InsidePointFinder(zone);
         zone.getTree(false).visit(finder);
         return finder.getInsidePoint();
 

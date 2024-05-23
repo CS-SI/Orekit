@@ -36,7 +36,7 @@ import org.hipparchus.geometry.spherical.twod.Vertex;
  * </p>
  * @author Luc Maisonobe
  */
-class InsideFinder implements BSPTreeVisitor<Sphere2D> {
+class InsidePointFinder implements BSPTreeVisitor<Sphere2D> {
 
     /** Zone of interest. */
     private final SphericalPolygonsSet zone;
@@ -50,7 +50,7 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     /** Simple constructor.
      * @param zone zone of interest
      */
-    InsideFinder(final SphericalPolygonsSet zone) {
+    InsidePointFinder(final SphericalPolygonsSet zone) {
         this.zone                    = zone;
         this.insidePointFirstChoice  = null;
         this.insidePointSecondChoice = null;
