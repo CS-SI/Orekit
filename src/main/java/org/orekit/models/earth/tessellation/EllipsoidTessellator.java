@@ -166,8 +166,8 @@ public class EllipsoidTessellator {
 
         final double                  splitWidth  = (fullWidth  - widthOverlap)  / quantization;
         final double                  splitLength = (fullLength - lengthOverlap) / quantization;
-        final Map<Mesh, List<Tile>>   map         = new IdentityHashMap<Mesh, List<Tile>>();
-        final RegionFactory<Sphere2D> factory     = new RegionFactory<Sphere2D>();
+        final Map<Mesh, List<Tile>>   map         = new IdentityHashMap<>();
+        final RegionFactory<Sphere2D> factory     = new RegionFactory<>();
         SphericalPolygonsSet          remaining   = (SphericalPolygonsSet) zone.copySelf();
         S2Point                       inside      = getInsidePoint(remaining);
 
@@ -179,7 +179,7 @@ public class EllipsoidTessellator {
             }
 
             // find a mesh covering at least one connected part of the zone
-            final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
+            final List<Mesh.Node> mergingSeeds = new ArrayList<>();
             Mesh mesh = new Mesh(ellipsoid, zone, aiming, splitLength, splitWidth, inside);
             mergingSeeds.add(mesh.getNode(0, 0));
             List<Tile> tiles = null;
@@ -218,7 +218,7 @@ public class EllipsoidTessellator {
         }
 
         // concatenate the lists from the independent meshes
-        final List<List<Tile>> tilesLists = new ArrayList<List<Tile>>(map.size());
+        final List<List<Tile>> tilesLists = new ArrayList<>(map.size());
         for (final Map.Entry<Mesh, List<Tile>> entry : map.entrySet()) {
             tilesLists.add(entry.getValue());
         }
@@ -243,8 +243,8 @@ public class EllipsoidTessellator {
 
         final double                         splitWidth  = width  / quantization;
         final double                         splitLength = length / quantization;
-        final Map<Mesh, List<GeodeticPoint>> map         = new IdentityHashMap<Mesh, List<GeodeticPoint>>();
-        final RegionFactory<Sphere2D>        factory     = new RegionFactory<Sphere2D>();
+        final Map<Mesh, List<GeodeticPoint>> map         = new IdentityHashMap<>();
+        final RegionFactory<Sphere2D>        factory     = new RegionFactory<>();
         SphericalPolygonsSet                 remaining   = (SphericalPolygonsSet) zone.copySelf();
         S2Point                              inside      = getInsidePoint(remaining);
 
@@ -256,7 +256,7 @@ public class EllipsoidTessellator {
             }
 
             // find a mesh covering at least one connected part of the zone
-            final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
+            final List<Mesh.Node> mergingSeeds = new ArrayList<>();
             Mesh mesh = new Mesh(ellipsoid, zone, aiming, splitLength, splitWidth, inside);
             mergingSeeds.add(mesh.getNode(0, 0));
             List<GeodeticPoint> sample = null;
@@ -268,7 +268,7 @@ public class EllipsoidTessellator {
                 // extract the sample from the mesh
                 // this further expands the mesh so sample cells dimensions are multiples of quantization,
                 // hence it must be performed here before checking meshes independence
-                sample = extractSample(mesh, zone);
+                sample = extractSample(mesh);
 
                 // check the mesh is independent from existing meshes
                 mergingSeeds.clear();
@@ -295,7 +295,7 @@ public class EllipsoidTessellator {
         }
 
         // concatenate the lists from the independent meshes
-        final List<List<GeodeticPoint>> sampleLists = new ArrayList<List<GeodeticPoint>>(map.size());
+        final List<List<GeodeticPoint>> sampleLists = new ArrayList<>(map.size());
         for (final Map.Entry<Mesh, List<GeodeticPoint>> entry : map.entrySet()) {
             sampleLists.add(entry.getValue());
         }
@@ -332,8 +332,7 @@ public class EllipsoidTessellator {
 
         // mesh expansion loop
         boolean expanding = true;
-        final Queue<Mesh.Node> newNodes = new LinkedList<Mesh.Node>();
-        newNodes.addAll(seeds);
+        final Queue<Mesh.Node> newNodes = new LinkedList<>(seeds);
         int count = 0;
         while (expanding) {
 
@@ -392,8 +391,8 @@ public class EllipsoidTessellator {
                                     final double lengthOverlap, final double widthOverlap,
                                     final boolean truncateLastWidth, final boolean truncateLastLength) {
 
-        final List<Tile>      tiles = new ArrayList<Tile>();
-        final List<RangePair> rangePairs = new ArrayList<RangePair>();
+        final List<Tile>      tiles = new ArrayList<>();
+        final List<RangePair> rangePairs = new ArrayList<>();
 
         final int minAcross = mesh.getMinAcrossIndex();
         final int maxAcross = mesh.getMaxAcrossIndex();
@@ -458,12 +457,13 @@ public class EllipsoidTessellator {
 
     }
 
-    /** Extract a sample of points from a mesh.
+    /**
+     * Extract a sample of points from a mesh.
+     *
      * @param mesh mesh from which grid should be extracted
-     * @param zone zone covered by the mesh
      * @return extracted grid
      */
-    private List<GeodeticPoint> extractSample(final Mesh mesh, final SphericalPolygonsSet zone) {
+    private List<GeodeticPoint> extractSample(final Mesh mesh) {
 
         // find how to select sample points taking quantization into account
         // to have the largest possible number of points while still
@@ -499,7 +499,7 @@ public class EllipsoidTessellator {
         }
 
         // extract the sample points
-        final List<GeodeticPoint> sample = new ArrayList<GeodeticPoint>(selectedCount);
+        final List<GeodeticPoint> sample = new ArrayList<>(selectedCount);
         for (int across = mesh.getMinAcrossIndex() + selectedAcrossModulus;
                 across <= mesh.getMaxAcrossIndex();
                 across += quantization) {
@@ -824,7 +824,7 @@ public class EllipsoidTessellator {
                         final int lower = nextLower;
 
                         nextLower += quantization;
-                        if (truncateLast && nextLower > maxIndex && lower < maxIndex) {
+                        if (truncateLast && nextLower > maxIndex) {
                             // truncate last tile
                             nextLower = maxIndex;
                         }
