@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1414" due-to="sohnny">
+        Fixed interior point finder in ellipsoid tesselation.
+      </action>
       <action dev="serrof" type="add" issue="1412">
         Override getTargetPosition in some GroundPointing inheritors.
       </action>
