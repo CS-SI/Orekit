@@ -24,6 +24,9 @@
       <action dev="serrof" type="add" issue="1417">
         Override getTargetPosition in LofOffSetPointing and NadirPointing.
       </action>
+      <action dev="luc" type="fix" issue="1414" due-to="sohnny">
+        Fixed interior point finder in ellipsoid tesselation.
+      </action>
       <action dev="serrof" type="add" issue="1412">
         Override getTargetPosition in some GroundPointing inheritors.
       </action>
