@@ -88,7 +88,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
             final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
-            java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
+            java.lang.reflect.Field atmosphereField = AbstractDragForceModel.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
             java.lang.reflect.Field spacecraftField = DragForce.class.getDeclaredField("spacecraft");
@@ -163,7 +163,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
             final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
-            java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
+            java.lang.reflect.Field atmosphereField = AbstractDragForceModel.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
             java.lang.reflect.Field spacecraftField = DragForce.class.getDeclaredField("spacecraft");
@@ -260,7 +260,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
 
         final DragForce forceModel =
                 new DragForce(getAtmosphere(),
-                              new IsotropicDrag(2.5, 1.2));
+                              new IsotropicDrag(2.5, 1.2), true);
 
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
 
@@ -290,7 +290,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         propagator.setOrbitType(integrationType);
         final DragForce forceModel =
                 new DragForce(getAtmosphere(),
-                              new IsotropicDrag(2.5, 1.2));
+                              new IsotropicDrag(2.5, 1.2), false);
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
 
