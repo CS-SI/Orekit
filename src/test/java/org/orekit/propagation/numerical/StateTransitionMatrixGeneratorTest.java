@@ -18,6 +18,7 @@ package org.orekit.propagation.numerical;
 
 import static org.hamcrest.CoreMatchers.is;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -40,7 +42,9 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -59,11 +63,7 @@ import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
@@ -84,7 +84,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
 /** Unit tests for {@link StateTransitionMatrixGenerator}. */
-public class StateTransitionMatrixGeneratorTest {
+class StateTransitionMatrixGeneratorTest {
 
     @BeforeEach
     public void setUp() {
@@ -93,7 +93,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testInterrupt() {
+    void testInterrupt() {
         final AbsoluteDate firing = new AbsoluteDate(new DateComponents(2004, 1, 2),
                                                      new TimeComponents(4, 15, 34.080),
                                                      TimeScalesFactory.getUTC());
@@ -177,7 +177,7 @@ public class StateTransitionMatrixGeneratorTest {
      * check {@link StateTransitionMatrixGenerator#generate(SpacecraftState)} correctly sets the satellite velocity.
      */
     @Test
-    public void testComputeDerivativesStateVelocity() {
+    void testComputeDerivativesStateVelocity() {
 
         //setup
         /** arbitrary date */
@@ -211,7 +211,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testPropagationTypesElliptical() {
+    void testPropagationTypesElliptical() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
@@ -252,7 +252,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testPropagationTypesHyperbolic() {
+    void testPropagationTypesHyperbolic() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
@@ -293,7 +293,39 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testAccelerationPartialNewtonOnly() {
+    @DisplayName("Coverage test for unlikely case where full attitude provider is needed.")
+    void testCombinedDerivativesWithFullAttitudeProvider() {
+        // GIVEN
+        final KeplerianOrbit orbit =
+                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
+                        FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU);
+        final AttitudeProvider attitudeProvider = new FrameAlignedProvider(orbit.getFrame());
+        final ForceModel mockedForceModel = mockForceModelDependingOnAttitudeRate();
+        final List<ForceModel> forceModels = new ArrayList<>();
+        forceModels.add(mockedForceModel);
+        final String name = "stm";
+        final StateTransitionMatrixGenerator transitionMatrixGenerator = new StateTransitionMatrixGenerator(name,
+                forceModels, attitudeProvider);
+        SpacecraftState state = new SpacecraftState(orbit);
+        state = state.addAdditionalState(name, new double[36]);
+        // WHEN
+        final CombinedDerivatives combinedDerivatives = transitionMatrixGenerator.combinedDerivatives(state);
+        // THEN
+        Assertions.assertNull(combinedDerivatives.getMainStateDerivativesIncrements());
+    }
+
+    @SuppressWarnings("unchecked")
+    private ForceModel mockForceModelDependingOnAttitudeRate() {
+        final ForceModel mockedForceModel = Mockito.mock(ForceModel.class);
+        Mockito.when(mockedForceModel.dependsOnAttitudeRate()).thenReturn(true);
+        Mockito.when(mockedForceModel.dependsOnPositionOnly()).thenReturn(false);
+        Mockito.when(mockedForceModel.acceleration(Mockito.any(FieldSpacecraftState.class), Mockito.any()))
+                .thenReturn(FieldVector3D.getZero(GradientField.getField(6)));
+        return mockedForceModel;
+    }
+
+    @Test
+    void testAccelerationPartialNewtonOnly() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel newton = new NewtonianAttraction(provider.getMu());
@@ -325,7 +357,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testAccelerationPartialGravity5x5() {
+    void testAccelerationPartialGravity5x5() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
@@ -358,7 +390,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testMultiSat() {
+    void testMultiSat() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -422,7 +454,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testParallelStm() {
+    void testParallelStm() {
 
         double a = 7187990.1979844316;
         double e = 0.5e-4;
@@ -459,7 +491,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testNotInitialized() {
+    void testNotInitialized() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -476,7 +508,7 @@ public class StateTransitionMatrixGeneratorTest {
      }
 
     @Test
-    public void testMismatchedDimensions() {
+    void testMismatchedDimensions() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,

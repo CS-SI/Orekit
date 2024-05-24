@@ -41,7 +41,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.IOException;
 import java.util.List;
 
 public class EllipsoidTessellatorTest {
@@ -54,7 +53,7 @@ public class EllipsoidTessellatorTest {
                                                               50000.0, 150000.0, 5000.0, 5000.0,
                                                               false, false);
         Assertions.assertEquals(2,   tiles.size());
-        Assertions.assertEquals(109, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assertions.assertEquals(108, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assertions.assertEquals(4,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
 
     }
@@ -78,7 +77,7 @@ public class EllipsoidTessellatorTest {
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 4);
         final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(), 25000.0, 50000.0);
         Assertions.assertEquals(2,   samples.size());
-        Assertions.assertEquals(452, FastMath.max(samples.get(0).size(), samples.get(1).size()));
+        Assertions.assertEquals(455, FastMath.max(samples.get(0).size(), samples.get(1).size()));
         Assertions.assertEquals(9,   FastMath.min(samples.get(0).size(), samples.get(1).size()));
     }
 
@@ -87,10 +86,10 @@ public class EllipsoidTessellatorTest {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
-                                                              50000.0, 150000.0, 5000.0, 5000.0,
+                                                              50000.0, 140000.0, 5000.0, 5000.0,
                                                               false, false);
         Assertions.assertEquals(2,   tiles.size());
-        Assertions.assertEquals(112, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assertions.assertEquals(121, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assertions.assertEquals(6,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
     }
 
@@ -101,7 +100,7 @@ public class EllipsoidTessellatorTest {
         final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(),
                                                               25000.0, 50000.0);
         Assertions.assertEquals(2,   samples.size());
-        Assertions.assertEquals(452, FastMath.max(samples.get(0).size(), samples.get(1).size()));
+        Assertions.assertEquals(454, FastMath.max(samples.get(0).size(), samples.get(1).size()));
         Assertions.assertEquals(10,  FastMath.min(samples.get(0).size(), samples.get(1).size()));
     }
 
@@ -124,7 +123,7 @@ public class EllipsoidTessellatorTest {
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120)), 4);
         final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(), 25000.0, 50000.0);
         Assertions.assertEquals(2,   samples.size());
-        Assertions.assertEquals(455, FastMath.max(samples.get(0).size(), samples.get(1).size()));
+        Assertions.assertEquals(452, FastMath.max(samples.get(0).size(), samples.get(1).size()));
         Assertions.assertEquals(9,   FastMath.min(samples.get(0).size(), samples.get(1).size()));
     }
 
@@ -136,12 +135,12 @@ public class EllipsoidTessellatorTest {
                                                               150000.0, 250000.0, -5000.0, -5000.0,
                                                               false, false);
         Assertions.assertEquals(1,  tiles.size());
-        Assertions.assertEquals(28, tiles.get(0).size());
+        Assertions.assertEquals(30, tiles.get(0).size());
         checkTilesDontOverlap(tiles);
     }
 
     @Test
-    public void testTilesSmallZoneWithoutTruncation() throws IOException {
+    public void testTilesSmallZoneWithoutTruncation() {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
         EllipsoidTessellator tessellator =
@@ -180,7 +179,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesSmallZoneWithTruncation() throws IOException {
+    public void testTilesSmallZoneWithTruncation() {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
         EllipsoidTessellator tessellator =
@@ -193,27 +192,28 @@ public class EllipsoidTessellatorTest {
 
         final List<List<Tile>> tiles = tessellator.tessellate(small, 50000.0, 150000.0, 0, 0,
                                                               true, true);
+
         Assertions.assertEquals(1, tiles.size());
         Assertions.assertEquals(1, tiles.get(0).size());
         Tile t = tiles.get(0).get(0);
 
         // with truncation, the tile is a fraction of the width and length specification
-        Assertions.assertEquals(3.0 / 16.0 * 150000.0,
-                            Vector3D.distance(ellipsoid.transform(t.getVertices()[0]),
-                                              ellipsoid.transform(t.getVertices()[1])),
-                            10.0);
+        Assertions.assertEquals(2.0 / 16.0 * 150000.0,
+                                Vector3D.distance(ellipsoid.transform(t.getVertices()[0]),
+                                                  ellipsoid.transform(t.getVertices()[1])),
+                                10.0);
         Assertions.assertEquals(4.0 / 16.0 * 50000.0,
-                            Vector3D.distance(ellipsoid.transform(t.getVertices()[1]),
-                                             ellipsoid.transform(t.getVertices()[2])),
-                            0.01);
-        Assertions.assertEquals(3.0 / 16.0 * 150000.0,
-                           Vector3D.distance(ellipsoid.transform(t.getVertices()[2]),
-                                             ellipsoid.transform(t.getVertices()[3])),
-                           10.0);
+                                Vector3D.distance(ellipsoid.transform(t.getVertices()[1]),
+                                                  ellipsoid.transform(t.getVertices()[2])),
+                                0.01);
+        Assertions.assertEquals(2.0 / 16.0 * 150000.0,
+                                Vector3D.distance(ellipsoid.transform(t.getVertices()[2]),
+                                                  ellipsoid.transform(t.getVertices()[3])),
+                                10.0);
         Assertions.assertEquals(4.0 / 16.0 * 50000.0,
-                            Vector3D.distance(ellipsoid.transform(t.getVertices()[3]),
-                                             ellipsoid.transform(t.getVertices()[0])),
-                            0.01);
+                                Vector3D.distance(ellipsoid.transform(t.getVertices()[3]),
+                                                  ellipsoid.transform(t.getVertices()[0])),
+                                0.01);
     }
 
     @Test
@@ -348,21 +348,19 @@ public class EllipsoidTessellatorTest {
 
     @Test
     public void testSampleAroundPoleConstantAzimuth() {
-        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, new S2Point[] {
-            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
-        });
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9,
+                                                            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
+                                                            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
+                                                            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0)));
         doTestSampleAroundPole(aoi, new ConstantAzimuthAiming(ellipsoid, 0.0), -1);
     }
 
     @Test
     public void testSampleAroundPoleDivertedSingularity() {
-        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, new S2Point[] {
-            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
-            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
-        });
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9,
+                                                            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
+                                                            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
+                                                            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0)));
         doTestSampleAroundPole(aoi, new DivertedSingularityAiming(aoi), 993);
     }
 

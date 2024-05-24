@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -26,8 +26,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -36,12 +34,12 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 
-public class DSSTNewtonianAttractionTest {
+class DSSTNewtonianAttractionTest {
 
     private static final double eps  = 1.0e-19;
 
     @Test
-    public void testGetMeanElementRate() throws IllegalArgumentException {
+    void testGetMeanElementRate() throws IllegalArgumentException {
 
         final Frame earthFrame = FramesFactory.getEME2000();
 

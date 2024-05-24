@@ -101,6 +101,24 @@ public class BodyCenterPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
+    @Override
+    protected Vector3D getTargetPosition(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        // spacecraft coordinates in body frame
+        final Vector3D scPositionInBodyFrame = pvProv.getPosition(date, getBodyFrame());
+
+        // central projection to ground (NOT the classical nadir point)
+        final double u     = scPositionInBodyFrame.getX() / ellipsoid.getA();
+        final double v     = scPositionInBodyFrame.getY() / ellipsoid.getB();
+        final double w     = scPositionInBodyFrame.getZ() / ellipsoid.getC();
+        final double d2    = u * u + v * v + w * w;
+        final double d     = FastMath.sqrt(d2);
+        final double ratio = 1.0 / d;
+        final Vector3D projectedP = new Vector3D(ratio, scPositionInBodyFrame);
+
+        return getBodyFrame().getStaticTransformTo(frame, date).transformPosition(projectedP);
+    }
+
+    /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
 
@@ -143,4 +161,21 @@ public class BodyCenterPointing extends GroundPointing {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getTargetPosition(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                     final FieldAbsoluteDate<T> date,
+                                                                                     final Frame frame) {
+        // spacecraft coordinates in body frame
+        final FieldVector3D<T> scPositionInBodyFrame = pvProv.getPosition(date, getBodyFrame());
+
+        // central projection to ground (NOT the classical nadir point)
+        final T u     = scPositionInBodyFrame.getX().divide(ellipsoid.getA());
+        final T v     = scPositionInBodyFrame.getY().divide(ellipsoid.getB());
+        final T w     = scPositionInBodyFrame.getZ().divide(ellipsoid.getC());
+        final T d     = new FieldVector3D<>(u, v, w).getNorm();
+        final FieldVector3D<T> projectedP = new FieldVector3D<>(d.reciprocal(), scPositionInBodyFrame);
+
+        return getBodyFrame().getStaticTransformTo(frame, date).transformPosition(projectedP);
+    }
 }

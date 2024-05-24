@@ -19,8 +19,6 @@ package org.orekit.forces.drag;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
@@ -50,19 +48,28 @@ import org.orekit.utils.ParameterDriver;
 
 public class DragForce extends AbstractDragForceModel {
 
-    /** Atmospheric model. */
-    private final Atmosphere atmosphere;
-
     /** Spacecraft. */
     private final DragSensitive spacecraft;
 
-    /** Simple constructor.
+    /** Constructor with default flag for finite differences.
      * @param atmosphere atmospheric model
      * @param spacecraft the object physical and geometrical information
      */
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
         super(atmosphere);
-        this.atmosphere = atmosphere;
+        this.spacecraft = spacecraft;
+    }
+
+    /** Simple constructor.
+     * @param atmosphere atmospheric model
+     * @param spacecraft the object physical and geometrical information
+     * @param useFiniteDifferencesOnDensityWrtPosition flag to use finite differences to compute density derivatives w.r.t.
+     *                                                 position (is less accurate but can be faster depending on model)
+     * @since 12.1
+     */
+    public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft,
+                     final boolean useFiniteDifferencesOnDensityWrtPosition) {
+        super(atmosphere, useFiniteDifferencesOnDensityWrtPosition);
         this.spacecraft = spacecraft;
     }
 
@@ -74,8 +81,8 @@ public class DragForce extends AbstractDragForceModel {
         final Frame        frame    = s.getFrame();
         final Vector3D     position = s.getPosition();
 
-        final double rho    = atmosphere.getDensity(date, position, frame);
-        final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
+        final double rho    = getAtmosphere().getDensity(date, position, frame);
+        final Vector3D vAtm = getAtmosphere().getVelocity(date, position, frame);
         final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         return spacecraft.dragAcceleration(s, rho, relativeVelocity, parameters);
@@ -83,31 +90,17 @@ public class DragForce extends AbstractDragForceModel {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters) {
+                                                                             final T[] parameters) {
+        // Density and its derivatives
+        final T rho = getFieldDensity(s);
 
+        // Spacecraft relative velocity with respect to the atmosphere
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
         final FieldVector3D<T>     position = s.getPosition();
-
-        // Density and its derivatives
-        final T rho;
-
-        // Check for faster computation dedicated to derivatives with respect to state
-        // Using finite differences instead of automatic differentiation as it seems to be much
-        // faster for the drag's derivatives' computation
-        if (isGradientStateDerivative(s)) {
-            rho =  (T) this.getGradientDensityWrtState(date.toAbsoluteDate(), frame, (FieldVector3D<Gradient>) position);
-        } else if (isDSStateDerivative(s)) {
-            rho = (T) this.getDSDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<DerivativeStructure>) position);
-        } else {
-            rho = atmosphere.getDensity(date, position, frame);
-        }
-
-        // Spacecraft relative velocity with respect to the atmosphere
-        final FieldVector3D<T> vAtm = atmosphere.getVelocity(date, position, frame);
+        final FieldVector3D<T> vAtm = getAtmosphere().getVelocity(date, position, frame);
         final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         // Drag acceleration along with its derivatives
@@ -119,13 +112,6 @@ public class DragForce extends AbstractDragForceModel {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return spacecraft.getDragParametersDrivers();
-    }
-
-    /** Get the atmospheric model.
-     * @return atmosphere model
-     */
-    public Atmosphere getAtmosphere() {
-        return atmosphere;
     }
 
     /** Get spacecraft that are sensitive to atmospheric drag forces.

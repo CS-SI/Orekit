@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -252,22 +253,17 @@ public abstract class AbstractGradientConverter {
             final FieldSpacecraftState<Gradient> spacecraftState;
             if (s0.isOrbitDefined()) {
                 final FieldOrbit<Gradient> orbit = s0.getOrbit();
-                if (orbit instanceof FieldEquinoctialOrbit) {
+                if (orbit.getType().equals(OrbitType.EQUINOCTIAL)) {
                     // for DSST, which always uses EquinoctialOrbit, not CartesianOrbit
-                    // wish there was a way to do this without casting...
-                    final FieldEquinoctialOrbit<Gradient> equinoctialOrbit =
-                            (FieldEquinoctialOrbit<Gradient>) orbit;
-                    final PositionAngleType angleType =
-                            equinoctialOrbit.getCachedPositionAngleType();
                     spacecraftState = new FieldSpacecraftState<>(
                             new FieldEquinoctialOrbit<>(
-                                    extend(equinoctialOrbit.getA(), freeParameters),
-                                    extend(equinoctialOrbit.getEquinoctialEx(), freeParameters),
-                                    extend(equinoctialOrbit.getEquinoctialEy(), freeParameters),
-                                    extend(equinoctialOrbit.getHx(), freeParameters),
-                                    extend(equinoctialOrbit.getHy(), freeParameters),
-                                    extend(equinoctialOrbit.getL(angleType), freeParameters),
-                                    angleType,
+                                    extend(orbit.getA(), freeParameters),
+                                    extend(orbit.getEquinoctialEx(), freeParameters),
+                                    extend(orbit.getEquinoctialEy(), freeParameters),
+                                    extend(orbit.getHx(), freeParameters),
+                                    extend(orbit.getHy(), freeParameters),
+                                    extend(orbit.getLM(), freeParameters),
+                                    PositionAngleType.MEAN,
                                     s0.getFrame(),
                                     extend(s0.getDate(), freeParameters),
                                     extend(s0.getMu(), freeParameters)

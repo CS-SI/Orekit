@@ -54,7 +54,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -89,7 +88,7 @@ public class FootprintOverlapDetectorTest {
     }
 
     @Test
-    public void testRightForwardView() throws IOException {
+    public void testRightForwardView() {
 
         propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                       RotationOrder.XYZ,
@@ -130,7 +129,7 @@ public class FootprintOverlapDetectorTest {
 
         // above Saint-Chamond (Loire), pointing near Saint-Dié-des-Vosges (Vosges) towards North-East
         checkEventPair(events.get(2),  events.get(3),
-                       639113.0751,  38.8681, 45.5212,  4.4866, 48.4066,  7.1546);
+                       639113.5532,  38.3899, 45.5356,  4.4813, 48.4211,  7.1499);
 
         // event is on a descending orbit, so the pointing direction,
         // taking roll and pitch offsets, is towards South-West with respect to spacecraft

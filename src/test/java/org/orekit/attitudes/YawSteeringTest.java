@@ -33,11 +33,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -61,7 +57,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class YawSteeringTest {
+class YawSteeringTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -76,7 +72,7 @@ public class YawSteeringTest {
     OneAxisEllipsoid earthShape;
 
     @Test
-    public void testTarget() {
+    void testTarget() {
 
         //  Attitude laws
         // **************
@@ -105,7 +101,7 @@ public class YawSteeringTest {
     }
 
     @Test
-    public void testSunAligned() {
+    void testSunAligned() {
 
         //  Attitude laws
         // **************
@@ -127,7 +123,7 @@ public class YawSteeringTest {
     }
 
     @Test
-    public void testCompensAxis() {
+    void testCompensAxis() {
 
         //  Attitude laws
         // **************
@@ -158,7 +154,7 @@ public class YawSteeringTest {
     /** Test the derivatives of the sliding target
      */
     @Test
-    public void testSlidingDerivatives() {
+    void testSlidingDerivatives() {
 
         GroundPointing law = new YawSteering(circOrbit.getFrame(),
                                              new NadirPointing(circOrbit.getFrame(), earthShape),
@@ -193,7 +189,7 @@ public class YawSteeringTest {
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
 
         NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
