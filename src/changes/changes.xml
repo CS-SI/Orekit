@@ -27,7 +27,10 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
-      <action dev="serrof" type="add" issue="1419">
+        <action dev="luc" type="fix" issue="1422">
+            Promoted Dipole constructor to public visibility.
+        </action>
+        <action dev="serrof" type="add" issue="1419">
         Add option for automatic differentiation of density for numerical and DSST drag forces.
       </action>
       <action dev="serrof" type="update" issue="1416">

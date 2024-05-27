@@ -50,13 +50,7 @@ public class UnitsCache {
             return Unit.NONE;
         }
 
-        Unit cached = cache.get(specification);
-        if (cached == null) {
-            cached = Unit.parse(specification);
-            cache.put(specification, cached);
-        }
-
-        return cached;
+        return cache.computeIfAbsent(specification, s -> Unit.parse(specification));
 
     }
 
