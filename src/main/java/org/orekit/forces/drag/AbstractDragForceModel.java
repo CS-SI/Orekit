@@ -62,6 +62,7 @@ public abstract class AbstractDragForceModel implements ForceModel {
      * @param atmosphere atmospheric model
      * @param useFiniteDifferencesOnDensityWrtPosition flag to use finite differences to compute density derivatives w.r.t.
      *                                                 position (is less accurate but can be faster depending on model)
+     * @since 12.1
      */
     protected AbstractDragForceModel(final Atmosphere atmosphere, final boolean useFiniteDifferencesOnDensityWrtPosition) {
         this.atmosphere = atmosphere;
@@ -70,6 +71,7 @@ public abstract class AbstractDragForceModel implements ForceModel {
 
     /** Get the atmospheric model.
      * @return atmosphere model
+     * @since 12.1
      */
     public Atmosphere getAtmosphere() {
         return atmosphere;

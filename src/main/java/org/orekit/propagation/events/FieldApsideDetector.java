@@ -43,13 +43,24 @@ import org.orekit.utils.FieldPVCoordinates;
 public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldApsideDetector<T>, T> {
 
     /** Build a new instance.
+     * <p>The Keplerian period is used only to set an upper bound for the
+     * max check interval to period/3 and to set the convergence threshold.</p>
+     * @param keplerianPeriod estimate of the Keplerian period
+     * @since 12.1
+     */
+    public FieldApsideDetector(final T keplerianPeriod) {
+        super(FieldAdaptableInterval.of(keplerianPeriod.divide(3).getReal()), keplerianPeriod.multiply(1e-13),
+            DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>());
+    }
+
+    /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the
      * max check interval to period/3 and to set the convergence
      * threshold according to orbit size</p>
      * @param orbit initial orbit
      */
     public FieldApsideDetector(final FieldOrbit<T> orbit) {
-        this(orbit.getKeplerianPeriod().multiply(1.0e-13), orbit);
+        this(orbit.getKeplerianPeriod());
     }
 
     /** Build a new instance.
@@ -59,7 +70,7 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @param orbit initial orbit
      */
     public FieldApsideDetector(final T threshold, final FieldOrbit<T> orbit) {
-        super(s -> orbit.getKeplerianPeriod().divide(3).getReal(), threshold,
+        super(FieldAdaptableInterval.of(orbit.getKeplerianPeriod().divide(3).getReal()), threshold,
               DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>());
     }
 

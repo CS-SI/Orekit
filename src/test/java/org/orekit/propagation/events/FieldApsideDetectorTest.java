@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
@@ -25,12 +26,10 @@ import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
@@ -79,6 +78,22 @@ class FieldApsideDetectorTest {
     @Test
     void testFixedMaxCheck() {
         doTestMaxcheck(Binary64Field.getInstance(), FieldAdaptableInterval.of(20.), 4687);
+    }
+
+    @Test
+    void testConstructor() {
+        // GIVEN
+        final double period = 10.;
+        final Complex threshold = Complex.ONE;
+        final FieldOrbit<Complex> mockedFieldOrbit = Mockito.mock(FieldOrbit.class);
+        Mockito.when(mockedFieldOrbit.getKeplerianPeriod()).thenReturn(new Complex(period));
+        // WHEN
+        final FieldApsideDetector<Complex> fieldApsideDetector = new FieldApsideDetector<>(threshold, mockedFieldOrbit);
+        // THEN
+        final Orbit mockedOrbit = Mockito.mock(Orbit.class);
+        Mockito.when(mockedOrbit.getKeplerianPeriod()).thenReturn(period);
+        final ApsideDetector apsideDetector = new ApsideDetector(threshold.getReal(), mockedOrbit);
+        Assertions.assertEquals(apsideDetector.getThreshold(), fieldApsideDetector.getThreshold().getReal());
     }
 
     @Test
