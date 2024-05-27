@@ -59,11 +59,9 @@ public class FixedTransformProvider implements TransformProvider {
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         @SuppressWarnings("unchecked")
-        FieldTransform<T> ft = (FieldTransform<T>) cached.get(date.getField());
-        if (ft == null) {
-            ft = new FieldTransform<>(date.getField(), transform);
-            cached.put(date.getField(), ft);
-        }
+        final FieldTransform<T> ft =
+                (FieldTransform<T>) cached.computeIfAbsent(date.getField(),
+                                                           f -> new FieldTransform<>((Field<T>) f, transform));
 
         return ft;
 
