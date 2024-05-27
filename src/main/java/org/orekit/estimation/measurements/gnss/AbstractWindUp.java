@@ -104,7 +104,7 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
         final double correction = FastMath.copySign(Vector3D.angle(dEmitter, dReceiver),
                                                     Vector3D.dotProduct(los, Vector3D.crossProduct(dEmitter, dReceiver)));
 
-        // ensure continuity accross measurements
+        // ensure continuity across measurements
         // we assume the various measurements are close enough in time
         // (less the one satellite half-turn) so the angles remain close
         angularWindUp = MathUtils.normalizeAngle(correction, angularWindUp);
