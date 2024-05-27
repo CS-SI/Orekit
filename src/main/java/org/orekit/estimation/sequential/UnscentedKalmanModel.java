@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.List;
-
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedEvolution;
 import org.hipparchus.filtering.kalman.unscented.UnscentedProcess;
@@ -38,12 +36,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /** Class defining the process model dynamics to use with a {@link UnscentedKalmanEstimator}.
  * @author Gaëtan Pierre
@@ -146,7 +139,6 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
         }
 
         // compute process noise matrix
-        // TODO: predictedSpacecraftStates are not valid here
         final RealMatrix normalizedProcessNoise = getNormalizedProcessNoise(sigmaPoints[0].getDimension());
 
         // Return
@@ -246,8 +238,8 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
         // set estimated value to the predicted value from the filter
         final EstimatedMeasurement<?> predictedMeasurement =
             estimateMeasurement(measurement.getObservedMeasurement(), getCurrentMeasurementNumber(),
-                                                              KalmanEstimatorUtil.filterRelevant(measurement.getObservedMeasurement(),
-                                                              getPredictedSpacecraftStates()));
+                                KalmanEstimatorUtil.filterRelevant(measurement.getObservedMeasurement(),
+                                getPredictedSpacecraftStates()));
         setPredictedMeasurement(predictedMeasurement);
         predictedMeasurement.setEstimatedValue(predictedMeas.ebeMultiply(theoreticalStandardDeviation).toArray());
 
@@ -325,8 +317,8 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
 
         // Corrected measurement
         setCorrectedMeasurement(estimateMeasurement(observedMeasurement, getCurrentMeasurementNumber(),
-                                                             KalmanEstimatorUtil.filterRelevant(observedMeasurement,
-                                                             getCorrectedSpacecraftStates())));
+                                                    KalmanEstimatorUtil.filterRelevant(observedMeasurement,
+                                                    getCorrectedSpacecraftStates())));
     }
 
     /**

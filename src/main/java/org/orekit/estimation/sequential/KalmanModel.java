@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.NonLinearEvolution;
 import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
@@ -38,10 +35,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,7 +63,6 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
                        final ParameterDriversList estimatedMeasurementParameters,
                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
         super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, measurementProcessNoiseMatrix);
-
         // Build the reference propagators and add their partial derivatives equations implementation
         updateReferenceTrajectories(getEstimatedPropagators());
     }

@@ -211,18 +211,18 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     public void testLageos2Extended() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
-        final double distanceAccuracy = 0.86;
+        final double distanceAccuracy = 0.541;
         final double velocityAccuracy = 4.12e-3;
 
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.298867,  -0.137456,  0.013314 };
-        final double rangeBias = 0.002394;
+        final double[] stationOffSet = { 0.2983710,  -0.137384,  0.0156606 };
+        final double rangeBias = -0.00129569;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -23.561321, 20.436460, 0.964161, 5.687193 };
+        final double[] refStatRange = { -23.537659, 20.444514, 0.973118, 5.686005 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, false);
     }
@@ -231,18 +231,18 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     public void testLageos2Unscented() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
-        final double distanceAccuracy = 0.487;
+        final double distanceAccuracy = 0.482;
         final double velocityAccuracy = 3.97e-3;
 
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.302808,  -0.127264,  0.014888 };
-        final double rangeBias = -0.004591;
+        final double[] stationOffSet = { 0.302324,  -0.127179,  0.0172399 };
+        final double rangeBias = -0.008282;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -16.565600, 21.353580, 0.656525, 5.658180 };
+        final double[] refStatRange = { -16.560410, 21.362738, 0.665356, 5.657324 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, true);
     }
@@ -335,8 +335,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         final double parametersAccuracy = 1e-6;
 
         // Test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
-        list.addAll(kalmanLageos2.getMeasurementsParameters().getDrivers());
+        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
         Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parametersAccuracy);
@@ -356,66 +355,63 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
     @Test
     public void testW3BExtended() throws URISyntaxException, IOException {
-        // Batch LS result
-        // final double dragCoef  = -0.2154;
-        final double dragCoef  = 0.1931;
+        // Batch LS result: -0.2154;
+        final double dragCoef  = 0.1932;
 
-        // Batch LS results
-        //Assertions.assertEquals(8.002e-6, leakAcceleration0.getNorm(), 1.0e-8);
+        // Batch LS results: 8.002e-6
         final double leakAccelerationNorm0 = 5.994e-6;
 
-        // Batch LS results
-        //Assertions.assertEquals(3.058e-10, leakAcceleration1.getNorm(), 1.0e-12);
+        // Batch LS results: 3.058e-10
         final double leakAccelerationNorm1 = 1.836e-10;
 
         // Batch LS results
-//        final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
-//        final double   CastleRangeBias = 11274.4677;
-        final double[] castleAzElBias  = { 0.062635, -0.003672};
-        final double   castleRangeBias = 11289.3719;
+        // final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
+        // final double   CastleRangeBias = 11274.4677;
+        final double[] castleAzElBias  = { 0.062636, -0.003672};
+        final double   castleRangeBias = 11289.3471;
 
         // Batch LS results
-//        final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
-//        final double   FucRangeBias = 13467.8256;
+        // final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
+        // final double   FucRangeBias = 13467.8256;
         final double[] fucAzElBias  = { -0.053298, 0.075589 };
-        final double   fucRangeBias = 13482.0697;
+        final double   fucRangeBias = 13482.0805;
 
         // Batch LS results
-//        final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
-//        final double   KumRangeBias = 13512.57594;
+        // final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
+        // final double   KumRangeBias = 13512.57594;
         final double[] kumAzElBias  = { -0.022805, -0.055057 };
-        final double   kumRangeBias = 13502.7469;
+        final double   kumRangeBias = 13502.6845;
 
         // Batch LS results
-//        final double[] PreAzElBias = { 0.030201539, 0.009747877 };
-//        final double PreRangeBias = 13594.11889;
+        // final double[] PreAzElBias = { 0.030201539, 0.009747877 };
+        // final double PreRangeBias = 13594.11889;
         final double[] preAzElBias = { 0.030353, 0.009658 };
-        final double   preRangeBias = 13609.2477;
+        final double   preRangeBias = 13609.2762;
 
         // Batch LS results
-//        final double[] UraAzElBias = { 0.167814449, -0.12305252 };
-//        final double UraRangeBias = 13450.26738;
+        // final double[] UraAzElBias = { 0.167814449, -0.12305252 };
+        // final double UraRangeBias = 13450.26738;
         final double[] uraAzElBias = { 0.167519, -0.122842 };
-        final double   uraRangeBias = 13441.6992;
+        final double   uraRangeBias = 13441.6666;
 
         //statistics for the range residual (min, max, mean, std)
-        final double[] refStatRange = { -12.9815, 18.0467, -1.1336, 5.3128 };
+        final double[] refStatRange = { -12.9805, 18.0538, -1.1332, 5.3125 };
 
         //statistics for the azimuth residual (min, max, mean, std)
-        final double[] refStatAzi = { -0.041441, 0.023473, -0.004426, 0.009911 };
+        final double[] refStatAzi = { -0.041442, 0.023473, -0.004426, 0.009911 };
 
         //statistics for the elevation residual (min, max, mean, std)
-        final double[] refStatEle = { -0.025399, 0.043345, 0.001011, 0.010636 };
+        final double[] refStatEle = { -0.025399, 0.043346, 0.001011, 0.010636 };
 
         // Expected covariance
-        final double dragVariance = 0.016349;
+        final double dragVariance = 0.016350;
         final double leakXVariance = 2.047E-13;
         final double leakYVariance = 5.462E-13;
         final double leakZVariance = 1.71778E-11;
 
         // Prediction position/velocity accuracies
         // FIXME: debug - Comparison with batch LS is bad
-        final double predictionDistanceAccuracy = 234.82;
+        final double predictionDistanceAccuracy = 234.57;
         final double predictionVelocityAccuracy = 0.086;
 
         testW3B(dragCoef, leakAccelerationNorm0, leakAccelerationNorm1,
@@ -428,53 +424,50 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
     @Test
     public void testW3BUnscented() throws URISyntaxException, IOException {
-        // Batch LS result
-        // final double dragCoef  = -0.2154;
+        // Batch LS result: -0.2154;
         final double dragCoef  = -0.0214;
 
-        // Batch LS results
-        //Assertions.assertEquals(8.002e-6, leakAcceleration0.getNorm(), 1.0e-8);
+        // Batch LS results: 8.002e-6
         final double leakAccelerationNorm0 = 5.954e-6;
 
-        // Batch LS results
-        //Assertions.assertEquals(3.058e-10, leakAcceleration1.getNorm(), 1.0e-12);
+        // Batch LS results: 3.058e-10
         final double leakAccelerationNorm1 = 1.619e-10;
 
         // Batch LS results
-//        final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
-//        final double   CastleRangeBias = 11274.4677;
+        // final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
+        // final double   CastleRangeBias = 11274.4677;
         final double[] castleAzElBias  = { 0.062344, -0.004106};
-        final double   castleRangeBias = 11333.1289;
+        final double   castleRangeBias = 11333.0998;
 
         // Batch LS results
-//        final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
-//        final double   FucRangeBias = 13467.8256;
+        // final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
+        // final double   FucRangeBias = 13467.8256;
         final double[] fucAzElBias  = { -0.053870, 0.075641 };
-        final double   fucRangeBias = 13461.7172;
+        final double   fucRangeBias = 13461.7291;
 
         // Batch LS results
-//        final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
-//        final double   KumRangeBias = 13512.57594;
+        // final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
+        // final double   KumRangeBias = 13512.57594;
         final double[] kumAzElBias  = { -0.023393, -0.055078 };
-        final double   kumRangeBias = 13515.6884;
+        final double   kumRangeBias = 13515.6244;
 
         // Batch LS results
-//        final double[] PreAzElBias = { 0.030201539, 0.009747877 };
-//        final double PreRangeBias = 13594.11889;
+        // final double[] PreAzElBias = { 0.030201539, 0.009747877 };
+        // final double PreRangeBias = 13594.11889;
         final double[] preAzElBias = { 0.030250, 0.010083 };
-        final double   preRangeBias = 13533.9953;
+        final double   preRangeBias = 13534.0334;
 
         // Batch LS results
-//        final double[] UraAzElBias = { 0.167814449, -0.12305252 };
-//        final double UraRangeBias = 13450.26738;
+        // final double[] UraAzElBias = { 0.167814449, -0.12305252 };
+        // final double UraRangeBias = 13450.26738;
         final double[] uraAzElBias = { 0.167700, -0.122408 };
-        final double   uraRangeBias = 13417.6979;
+        final double   uraRangeBias = 13417.6695;
 
         //statistics for the range residual (min, max, mean, std)
-        final double[] refStatRange = { -144.9733, 14.7416, -3.8995, 11.9050 };
+        final double[] refStatRange = { -144.9733, 14.7486, -3.8990, 11.9050 };
 
         //statistics for the azimuth residual (min, max, mean, std)
-        final double[] refStatAzi = { -0.041872, 0.018087, -0.004536, 0.008995 };
+        final double[] refStatAzi = { -0.041873, 0.018087, -0.004536, 0.008995 };
 
         //statistics for the elevation residual (min, max, mean, std)
         final double[] refStatEle = { -0.025583, 0.043560, 0.001857, 0.010625 };
@@ -606,8 +599,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Test on measurements parameters
         // -------------------------------
 
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
-        list.addAll(kalmanW3B.getMeasurementsParameters().getDrivers());
+        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>(kalmanW3B.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
         // Station CastleRock
