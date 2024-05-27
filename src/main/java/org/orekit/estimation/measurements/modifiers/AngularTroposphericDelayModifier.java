@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -32,6 +30,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
 
+import java.util.List;
+
 /** Class modifying theoretical angular measurement with tropospheric delay.
  * <p>
  * The effect of tropospheric correction on the angular is computed
@@ -43,10 +43,11 @@ import org.orekit.utils.TrackingCoordinates;
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
  * </p>
- *
+ * @deprecated as of 12.1, {@link AngularRadioRefractionModifier} shall be used to handle tropospheric effect on angular measurements
  * @author Thierry Ceolin
  * @since 8.0
  */
+@Deprecated
 public class AngularTroposphericDelayModifier implements EstimationModifier<AngularAzEl> {
 
     /** Tropospheric delay model. */
@@ -55,7 +56,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current angular measurement method.
-     * @deprecated as of 12.1, replaced by {@link #AngularTroposphericDelayModifier(TroposphericModel)}
+     * @deprecated as of 12.1, {@link AngularRadioRefractionModifier} shall be used to handle tropospheric effect on angular measurements
      */
     @Deprecated
     public AngularTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
@@ -66,7 +67,9 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
      *
      * @param model  Tropospheric delay model appropriate for the current angular measurement method.
      * @since 12.1
+     * @deprecated as of 12.1, {@link AngularRadioRefractionModifier} shall be used to handle tropospheric effect on angular measurements
      */
+    @Deprecated
     public AngularTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
     }
