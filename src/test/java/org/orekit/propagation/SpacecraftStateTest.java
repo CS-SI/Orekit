@@ -68,10 +68,10 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
-public class SpacecraftStateTest {
+class SpacecraftStateTest {
 
     @Test
-    public void testShiftVsEcksteinHechlerError()
+    void testShiftVsEcksteinHechlerError()
         throws ParseException, OrekitException {
 
 
@@ -132,7 +132,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testDatesConsistency() {
+    void testDatesConsistency() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(10.0),
                     orbit.getDate().shiftedBy(10.0), orbit.getFrame()));
@@ -144,7 +144,7 @@ public class SpacecraftStateTest {
      * FixedRate attitude provider.
      */
     @Test
-    public void testDateConsistencyClose() {
+    void testDateConsistencyClose() {
         //setup
         Orbit orbit10Shifts = orbit;
         for (int i = 0; i < 10; i++) {
@@ -165,7 +165,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testFramesConsistency() {
+    void testFramesConsistency() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             new SpacecraftState(orbit,
                     new Attitude(orbit.getDate(),
@@ -175,7 +175,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testTransform()
+    void testTransform()
         throws ParseException, OrekitException {
 
         double maxDP = 0;
@@ -199,7 +199,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testAdditionalStates() {
+    void testAdditionalStates() {
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(60));
         final SpacecraftState extended =
                         state.
@@ -257,7 +257,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testAdditionalStatesDerivatives() {
+    void testAdditionalStatesDerivatives() {
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(60));
         final SpacecraftState extended =
                         state.
@@ -310,7 +310,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testAdditionalTestResetOnEventAnalytical() {
+    void testAdditionalTestResetOnEventAnalytical() {
 
         // Build orbit
         AbsoluteDate date0 = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC());
@@ -359,7 +359,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testAdditionalTestResetOnEventNumerical() {
+    void testAdditionalTestResetOnEventNumerical() {
 
         // Build orbit
         AbsoluteDate date0 = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC());
@@ -409,7 +409,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testSerialization()
+    void testSerialization()
             throws IOException, ClassNotFoundException, OrekitException {
 
         propagator.resetInitialState(propagator.getInitialState().
@@ -465,7 +465,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testSerializationWithAbsPV()
+    void testSerializationWithAbsPV()
             throws IOException, ClassNotFoundException, OrekitException {
 
         final NumericalPropagator numPropagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
@@ -527,7 +527,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testAdditionalStatesAbsPV() {
+    void testAdditionalStatesAbsPV() {
 
         double x_f     = 0.8;
         double y_f     = 0.2;
@@ -614,7 +614,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testAdditionalStatesDerivativesAbsPV() {
+    void testAdditionalStatesDerivativesAbsPV() {
 
         double x_f     = 0.8;
         double y_f     = 0.2;
@@ -695,7 +695,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testShiftAdditionalDerivatives() {
+    void testShiftAdditionalDerivatives() {
 
         final String valueAndDerivative = "value-and-derivative";
         final String valueOnly          = "value-only";
@@ -733,7 +733,7 @@ public class SpacecraftStateTest {
         // WHEN
         final StaticTransform actualStaticTransform = state.toStaticTransform();
         // THEN
-        final StaticTransform expectedStaticTransform = state.toStaticTransform();
+        final StaticTransform expectedStaticTransform = state.toTransform();
         Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
         Assertions.assertEquals(expectedStaticTransform.getTranslation(), actualStaticTransform.getTranslation());
         Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation(),
