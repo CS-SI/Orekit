@@ -275,7 +275,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         final StaticTransform bodyToSc = StaticTransform.compose(
                 s.getDate(),
                 body.getBodyFrame().getStaticTransformTo(s.getFrame(), s.getDate()),
-                s.toTransform());
+                s.toStaticTransform());
         for (final SamplingPoint point : sampledZone) {
             final Vector3D lineOfSightBody = point.getPosition().subtract(scBody);
             if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {
