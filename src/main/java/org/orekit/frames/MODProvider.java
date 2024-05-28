@@ -101,7 +101,7 @@ class MODProvider implements TransformProvider {
         final T[] angles = precessionFunction.value(date);
 
         @SuppressWarnings("unchecked")
-        FieldRotation<T> fR4 =
+        final FieldRotation<T> fR4 =
                 (FieldRotation<T>) fieldR4.computeIfAbsent(date.getField(),
                                                            f -> new FieldRotation<>((Field<T>) f, r4));
 
