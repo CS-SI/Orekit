@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
@@ -94,7 +95,7 @@ public class UnscentedKalmanModelTest {
     private ParameterDriver srpCoefDriver;
 
     /** Tolerance for the test. */
-    private final double tol = 5.0e-9;
+    private final double tol = 1.0e-16;
 
     @BeforeEach
     public void setup() {
@@ -114,7 +115,7 @@ public class UnscentedKalmanModelTest {
         this.pv = new PV(date0,
                              context.initialOrbit.getPosition(),
                              context.initialOrbit.getPVCoordinates().getVelocity(),
-                             new double[] {1., 1., 1., 1.e-3, 1.e-3, 1.e-3}, 1.,
+                             new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,
                              sat);
 
         // Create one 0m range measurement at t0 + 10s
@@ -128,7 +129,7 @@ public class UnscentedKalmanModelTest {
                                                          new double[] {100.},
                                                          new double[] {10.},
                                                          new double[] {0.},
-                                                         new double[] {100.});
+                                                         new double[] {150.});
         this.satRangeBiasDriver = satRangeBias.getParametersDrivers().get(0);
         satRangeBiasDriver.setSelected(true);
         satRangeBiasDriver.setReferenceDate(date);
@@ -198,8 +199,18 @@ public class UnscentedKalmanModelTest {
         // Predicted orbit is equal to initial orbit at t0
         Orbit orbitPred = orbit0;
 
+        // Expected measurement matrix for a PV measurement is the 6-sized identity matrix for cartesian orbital parameters
+        // + zeros for other estimated parameters
+        RealMatrix expH = MatrixUtils.createRealMatrix(6, M);
+        for (int i = 0; i < 6; i++) {
+            expH.setEntry(i, i, 1.);
+        }
+
+        // Expected state transition matrix
+        // State transition matrix is the identity matrix at t0
+        RealMatrix expPhi = MatrixUtils.createRealIdentityMatrix(M);
         // Add PV measurement and check model afterwards
-        checkModelAfterMeasurementAdded(1, pv, Ppred, orbitPred);
+        checkModelAfterMeasurementAdded(1, pv, Ppred, orbitPred, expPhi, expH);
     }
 
     /** Check the model physical outputs at t0 before any measurement is added. */
@@ -221,20 +232,26 @@ public class UnscentedKalmanModelTest {
         // Measurement number
         Assertions.assertEquals(0, model.getCurrentMeasurementNumber());
 
-        // Physical state
+        // Normalized state - is zeros
+        final RealVector stateN = model.getEstimate().getState();
+        Assertions.assertArrayEquals(new double[M], stateN.toArray(), tol);
+
+        // Physical state - = initialized
+        final RealVector x = model.getPhysicalEstimatedState();
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
         orbitType.mapOrbitToArray(orbit0, positionAngleType, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
-        Assertions.assertArrayEquals(model.getPhysicalEstimatedState().toArray(), expX.toArray(), tol);
-        Assertions.assertArrayEquals(model.getEstimate().getState().toArray(),    expX.toArray(), tol);
+        final double[] dX = x.subtract(expX).toArray();
+        Assertions.assertArrayEquals(new double[M], dX, tol);
 
-        // Covariance - filled with 1
+        // Normalized covariance - diagonal
         final double[][] Pn = model.getEstimate().getCovariance().getData();
-        final double[][] expPn = covMatrixProvider.getInitialCovarianceMatrix(null).getData();
+        final double[][] expPn = new double[M][M];
         for (int i = 0; i < M; i++) {
+            expPn[i][i] = 1.;
             Assertions.assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
         }
 
@@ -263,7 +280,9 @@ public class UnscentedKalmanModelTest {
     private void checkModelAfterMeasurementAdded(final int expMeasurementNumber,
                                                 final ObservedMeasurement<?> meas,
                                                 final RealMatrix expPpred,
-                                                final Orbit expOrbitPred) {
+                                                final Orbit expOrbitPred,
+                                                final RealMatrix expPhi,
+                                                final RealMatrix expH) {
 
         // Predicted value of SRP coef and sat range bias
         // (= value before adding measurement to the filter)
@@ -301,6 +320,22 @@ public class UnscentedKalmanModelTest {
             R.setEntry(i, i, measSigmas[i] * measSigmas[i]);
         }
 
+        // Innovation matrix
+        final RealMatrix expS = expH.multiply(expPpred.multiplyTransposed(expH)).add(R);
+        final RealMatrix S = model.getPhysicalInnovationCovarianceMatrix();
+        final double[][] dS = S.subtract(expS).getData();
+        for (int i = 0; i < N; i++) {
+            Assertions.assertArrayEquals(new double[N], dS[i], tol*1e8, "Failed on line \" + i");
+        }
+
+        // Kalman gain
+        final RealMatrix expK = expPpred.multiplyTransposed(expH).multiply(new LUDecomposition(expS).getSolver().getInverse());
+        final RealMatrix K = model.getPhysicalKalmanGain();
+        final double[][] dK = K.subtract(expK).getData();
+        for (int i = 0; i < M; i++) {
+            Assertions.assertArrayEquals(new double[N], dK[i], tol*1e5, "Failed on line " + i);
+        }
+
         // Predicted orbit
         final Orbit orbitPred = model.getPredictedSpacecraftStates()[0].getOrbit();
         final PVCoordinates pvOrbitPred = orbitPred.getPVCoordinates();
@@ -312,7 +347,7 @@ public class UnscentedKalmanModelTest {
 
         // Predicted measurement
         final double[] measPred = model.getPredictedMeasurement().getEstimatedValue();
-        Assertions.assertArrayEquals(expMeasPred, measPred, 3.0e-6);
+        Assertions.assertArrayEquals(expMeasPred, measPred, 1e-6);
 
         // Predicted state
         final double[] orbitPredState = new double[6];
@@ -324,6 +359,27 @@ public class UnscentedKalmanModelTest {
         expXpred.setEntry(6, srpCoefPred);
         expXpred.setEntry(7, satRangeBiasPred);
 
+
+        // Innovation vector
+        final RealVector observedMeas  = MatrixUtils.createRealVector(model.getPredictedMeasurement().getObservedValue());
+        final RealVector predictedMeas = MatrixUtils.createRealVector(model.getPredictedMeasurement().getEstimatedValue());
+        final RealVector innovation = observedMeas.subtract(predictedMeas);
+
+        // Corrected state
+        final RealVector expectedXcor = expXpred.add(expK.operate(innovation));
+        final RealVector Xcor = model.getPhysicalEstimatedState();
+        final double[] dXcor = Xcor.subtract(expectedXcor).toArray();
+        Assertions.assertArrayEquals(new double[M], dXcor, tol);
+
+        // Corrected covariance
+        final RealMatrix expectedPcor =
+                        (MatrixUtils.createRealIdentityMatrix(M).
+                        subtract(expK.multiply(expH))).multiply(expPpred);
+        final RealMatrix Pcor = model.getPhysicalEstimatedCovarianceMatrix();
+        final double[][] dPcor = Pcor.subtract(expectedPcor).getData();
+        for (int i = 0; i < M; i++) {
+            Assertions.assertArrayEquals(new double[M], dPcor[i], tol*1e8, "Failed on line " + i);
+        }
     }
 
     /** Get an array of the scales of the estimated parameters.
@@ -364,8 +420,8 @@ public class UnscentedKalmanModelTest {
     }
 
     /** Create a covariance matrix provider with initial and process noise matrix constant and identical.
-     * Each element Pij of the initial covariance matrix equals:
-     * Pij = scales[i]*scales[j]
+     * Each diagonal element Pii of the initial covariance matrix equals:
+     * Pii = scales[i]*scales[i]
      * @param scales scales of the estimated parameters
      * @return covariance matrix provider
      */
@@ -374,9 +430,7 @@ public class UnscentedKalmanModelTest {
         final int n = scales.length;
         final RealMatrix cov = MatrixUtils.createRealMatrix(n, n);
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                cov.setEntry(i, j, scales[i] * scales[j]);
-            }
+            cov.setEntry(i, i, scales[i] * scales[i]);
         }
         return new ConstantProcessNoise(cov);
     }

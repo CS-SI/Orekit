@@ -141,6 +141,33 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * <p>
      * The interpolators will have the following configuration :
      * <ul>
+     *     <li>Same frame for coordinates and attitude </li>
+     *     <li>Use of position and two time derivatives for absolute position-velocity-acceleration coordinates interpolation</li>
+     *     <li>Use of angular and first time derivative for attitude interpolation</li>
+     * </ul>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only with small number of interpolation
+     * points (about 10-20 points) in order to avoid <a href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's
+     * phenomenon</a> and numerical problems (including NaN appearing).
+     * <p>
+     * <b>BEWARE:</b> output frame <b>must be inertial</b> if this instance is going to interpolate between
+     * tabulated spacecraft states defined by orbit, will throw an error otherwise.
+     *
+     * @param interpolationPoints number of interpolation points
+     * @param extrapolationThreshold extrapolation threshold beyond which the propagation will fail
+     * @param outputFrame output frame
+     * @since 12.1
+     * @see AbstractTimeInterpolator
+     */
+    public SpacecraftStateInterpolator(final int interpolationPoints, final double extrapolationThreshold, final Frame outputFrame) {
+        this(interpolationPoints, extrapolationThreshold, outputFrame, outputFrame);
+    }
+
+    /**
+     * Constructor to create a customizable Hermite interpolator for every spacecraft state field.
+     * <p>
+     * The interpolators will have the following configuration :
+     * <ul>
      *     <li>Default extrapolation threshold of {@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
      *     <li>Use of position and two time derivatives for absolute position-velocity-acceleration coordinates interpolation</li>
      *     <li>Use of angular and first time derivative for attitude interpolation</li>

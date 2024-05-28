@@ -153,10 +153,10 @@ class FieldSpacecraftStateInterpolatorTest {
                 new FieldSpacecraftStateInterpolator<>(2, inertialFrame);
 
         final FieldSpacecraftStateInterpolator<Binary64> interpolator2 =
-                new FieldSpacecraftStateInterpolator<>(3, inertialFrame);
+                new FieldSpacecraftStateInterpolator<>(3, SpacecraftStateInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, inertialFrame);
 
         final FieldSpacecraftStateInterpolator<Binary64> interpolator3 =
-                new FieldSpacecraftStateInterpolator<>(4, inertialFrame);
+                new FieldSpacecraftStateInterpolator<>(4, SpacecraftStateInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, inertialFrame, inertialFrame);
 
         // When & Then
         checkStandardInterpolationError(2, 106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, 450 * 450, interpolator1);
