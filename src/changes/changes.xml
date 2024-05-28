@@ -21,10 +21,16 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
-        <action dev="luc" type="fix" issue="1422">
-            Promoted Dipole constructor to public visibility.
-        </action>
-        <action dev="serrof" type="add" issue="1419">
+      <action dev="luc" type="fix" issue="1422">
+        Promoted Dipole constructor to public visibility.
+      </action>
+      <action dev="bryan" type="add" issue="1379">
+        Added constructor in {Field}SpacecraftStateInterpolator to defined extrapolation threshold.
+      </action>
+      <action dev="bryan" type="add" issue="1420">
+        Deprecated AngularTroposphericDelayModifier because computation is wrong.
+      </action>
+      <action dev="serrof" type="add" issue="1419">
         Add option for automatic differentiation of density for numerical and DSST drag forces.
       </action>
       <action dev="serrof" type="update" issue="1416">
