@@ -18,6 +18,9 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
@@ -29,10 +32,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -43,13 +43,14 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class SpinStabilizedTest {
+class SpinStabilizedTest {
 
     @Test
-    public void testBBQMode() {
+    void testBBQMode() {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
@@ -74,7 +75,44 @@ public class SpinStabilizedTest {
     }
 
     @Test
-    public void testSpin() {
+    void testGetAttitudeRotation() {
+        // GIVEN
+        final Orbit orbit = getOrbit();
+        final AttitudeProvider baseProvider = new FrameAlignedProvider(FramesFactory.getEME2000());
+        final AbsoluteDate startDate = orbit.getDate().shiftedBy(-10.);
+        final SpinStabilized spinStabilized = new SpinStabilized(baseProvider, startDate, Vector3D.PLUS_K, 0.1);
+        // WHEN
+        final Rotation rotation = spinStabilized.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
+        // THEN
+        final Attitude attitude = spinStabilized.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        Assertions.assertEquals(0., Rotation.distance(rotation, attitude.getRotation()));
+    }
+
+    @Test
+    void testFieldGetAttitudeRotation() {
+        // GIVEN
+        final CartesianOrbit orbit = getOrbit();
+        final AbsoluteDate startDate = orbit.getDate().shiftedBy(-10.);
+
+        final AttitudeProvider baseProvider = new FrameAlignedProvider(FramesFactory.getEME2000());
+        final SpinStabilized spinStabilized = new SpinStabilized(baseProvider, startDate, Vector3D.PLUS_K, 0.1);
+        final FieldOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(ComplexField.getInstance(), orbit);
+        // WHEN
+        final FieldRotation<Complex> rotation = spinStabilized.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        // THEN
+        final FieldAttitude<Complex> attitude = spinStabilized.getAttitude(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        Assertions.assertEquals(0., Rotation.distance(rotation.toRotation(), attitude.getRotation().toRotation()));
+    }
+
+    private CartesianOrbit getOrbit() {
+        final PVCoordinates pv =
+                new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
+                        new Vector3D(0, 0, 3680.853673522056));
+        return new CartesianOrbit(pv, FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU);
+    }
+
+    @Test
+    void testSpin() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
