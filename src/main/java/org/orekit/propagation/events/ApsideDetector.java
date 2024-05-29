@@ -41,13 +41,23 @@ import org.orekit.utils.PVCoordinates;
 public class ApsideDetector extends AbstractDetector<ApsideDetector> {
 
     /** Build a new instance.
+     * <p>The Keplerian period is used only to set an upper bound for the
+     * max check interval to period/3 and to set the convergence threshold.</p>
+     * @param keplerianPeriod estimate of the Keplerian period
+     * @since 12.1
+     */
+    public ApsideDetector(final double keplerianPeriod) {
+        super(keplerianPeriod / 3, 1e-13 * keplerianPeriod, DEFAULT_MAX_ITER, new StopOnIncreasing());
+    }
+
+    /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the
      * max check interval to period/3 and to set the convergence
      * threshold according to orbit size</p>
      * @param orbit initial orbit
      */
     public ApsideDetector(final Orbit orbit) {
-        this(1.0e-13 * orbit.getKeplerianPeriod(), orbit);
+        this(orbit.getKeplerianPeriod());
     }
 
     /** Build a new instance.
@@ -57,8 +67,7 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @param orbit initial orbit
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
-        super(orbit.getKeplerianPeriod() / 3, threshold,
-              DEFAULT_MAX_ITER, new StopOnIncreasing());
+        super(orbit.getKeplerianPeriod() / 3, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing());
     }
 
     /** Public constructor with full parameters.

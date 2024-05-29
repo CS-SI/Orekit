@@ -27,6 +27,15 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1425">
+        Override getAttitudeRotation in all AttitudeProviderModifier.
+      </action>
+      <action dev="serrof" type="update" issue="1424">
+        Use toStaticTransform in FieldOfViewDetector.
+      </action>
+      <action dev="serrof" type="add" issue="1423">
+        Add constructor for (Field)ApsideDetector without an Orbit needed.
+      </action>
       <action dev="luc" type="fix" issue="1422">
         Promoted Dipole constructor to public visibility.
       </action>
