@@ -137,12 +137,12 @@ public class FieldExtremumApproachDetector<T extends CalculusFieldElement<T>>
      * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
      * approach.
      *
-     * @see EventHandler
+     * @see FieldEventHandler
      */
     protected FieldExtremumApproachDetector(final T maxCheck, final T threshold, final int maxIter,
                                             final FieldEventHandler<T> handler,
                                             final FieldPVCoordinatesProvider<T> secondaryPVProvider) {
-        this(s -> maxCheck.getReal(), threshold, maxIter, handler, secondaryPVProvider);
+        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, maxIter, handler, secondaryPVProvider);
     }
 
     /**

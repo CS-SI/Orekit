@@ -30,6 +30,7 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -278,7 +279,10 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
 
         // Get PVCoordinates in the same frame
         final FieldPVCoordinates<T> referencePV                = referenceAtTCA.getPVCoordinates();
-        final FieldPVCoordinates<T> otherPVInReferenceInertial = otherAtTCA.getPVCoordinates(referenceInertial);
+        final FieldKinematicTransform<T> kinematicTransform    = otherAtTCA.getFrame()
+            .getKinematicTransformTo(referenceInertial, referenceAtTCA.getDate());
+        final FieldPVCoordinates<T> otherPVInReferenceInertial = kinematicTransform
+            .transformOnlyPV(otherAtTCA.getPVCoordinates());
 
         // Create relative pv expressed in the reference inertial frame
         final FieldVector3D<T> relativePosition = otherPVInReferenceInertial.getPosition()

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1426">
+        Extend use of (Field)KinematicTransform.
+      </action>
       <action dev="serrof" type="update" issue="1425">
         Override getAttitudeRotation in all AttitudeProviderModifier.
       </action>

@@ -180,7 +180,7 @@ public class J2OnlyPerturbation implements ForceModel {
         final double accelerationZ = positionInJ2Frame.getZ() * (ratioTimesFive - 3);
         final Vector3D accelerationInJ2Frame = new Vector3D(accelerationX, accelerationY, accelerationZ);
         final AbsoluteDate date = state.getDate();
-        final StaticTransform fromJ2FrameToPropagationOne = frame.getTransformTo(state.getFrame(), date);
+        final StaticTransform fromJ2FrameToPropagationOne = frame.getStaticTransformTo(state.getFrame(), date);
         final Vector3D transformedAcceleration = fromJ2FrameToPropagationOne.transformVector(accelerationInJ2Frame);
         final double j2 = j2OverTime.value(date);
         final double squaredRadiiRatio = rEq * rEq / squaredRadius;
@@ -203,7 +203,7 @@ public class J2OnlyPerturbation implements ForceModel {
         final T accelerationZ = positionInJ2Frame.getZ().multiply(ratioTimesFive.subtract(3.));
         final FieldVector3D<T> accelerationInJ2Frame = new FieldVector3D<>(accelerationX, accelerationY, accelerationZ);
         final FieldAbsoluteDate<T> date = state.getDate();
-        final FieldStaticTransform<T> fromJ2FrameToPropagationOne = frame.getTransformTo(state.getFrame(), date);
+        final FieldStaticTransform<T> fromJ2FrameToPropagationOne = frame.getStaticTransformTo(state.getFrame(), date);
         final FieldVector3D<T> transformedAcceleration = fromJ2FrameToPropagationOne.transformVector(accelerationInJ2Frame);
         final T j2 = j2OverTime.value(date);
         final T squaredRadiiRatio = squaredRadius.reciprocal().multiply(rEq * rEq);

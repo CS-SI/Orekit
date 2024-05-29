@@ -75,10 +75,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
      */
     public FieldAngularCoordinates(final FieldRotation<T> rotation,
                                    final FieldVector3D<T> rotationRate) {
-        this(rotation, rotationRate,
-             new FieldVector3D<>(rotation.getQ0().getField().getZero(),
-                                 rotation.getQ0().getField().getZero(),
-                                 rotation.getQ0().getField().getZero()));
+        this(rotation, rotationRate, FieldVector3D.getZero(rotation.getQ0().getField()));
     }
 
     /** Builds a rotation / rotation rate / rotation acceleration triplet.
