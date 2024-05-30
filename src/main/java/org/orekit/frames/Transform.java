@@ -153,6 +153,20 @@ public class Transform implements
              new AngularCoordinates(rotation));
     }
 
+    /** Build a combined translation and rotation transform.
+     * @param date date of the transform
+     * @param translation translation to apply (i.e. coordinates of
+     * the transformed origin, or coordinates of the origin of the
+     * old frame in the new frame)
+     * @param rotation rotation to apply ( i.e. rotation to apply to the
+     * coordinates of a vector expressed in the old frame to obtain the
+     * same vector expressed in the new frame )
+     * @since 12.1
+     */
+    public Transform(final AbsoluteDate date, final Vector3D translation, final Rotation rotation) {
+        this(date, new PVCoordinates(translation), new AngularCoordinates(rotation));
+    }
+
     /** Build a translation transform, with its first time derivative.
      * @param date date of the transform
      * @param translation translation to apply (i.e. coordinates of

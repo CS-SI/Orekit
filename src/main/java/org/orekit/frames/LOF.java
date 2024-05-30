@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
@@ -187,6 +188,10 @@ public interface LOF {
      */
     default <T extends CalculusFieldElement<T>> FieldTransform<T> transformFromInertial(final FieldAbsoluteDate<T> date,
                                                                                         final FieldPVCoordinates<T> pv) {
+        if (isQuasiInertial()) {
+            final Field<T> field = date.getField();
+            return new FieldTransform<>(date, pv.getPosition().negate(), rotationFromInertial(field, date, pv));
+        }
 
         // compute the translation part of the transform
         final FieldTransform<T> translation = new FieldTransform<>(date, pv.negate());
@@ -199,11 +204,7 @@ public interface LOF {
                                                                 new FieldVector3D<>(p.getNormSq().reciprocal(),
                                                                                     r.applyTo(momentum)));
 
-        final FieldTransform<T> transform = new FieldTransform<>(date, translation, rotation);
-
-        // If LOF is considered pseudo-inertial, freeze transform
-        return isQuasiInertial() ? transform.freeze() : transform;
-
+        return new FieldTransform<>(date, translation, rotation);
     }
 
     /**
@@ -285,21 +286,17 @@ public interface LOF {
      * @return transform from the frame where position-velocity are defined to local orbital frame
      */
     default Transform transformFromInertial(final AbsoluteDate date, final PVCoordinates pv) {
-
-        // compute the translation part of the transform
-        final Transform translation = new Transform(date, pv.negate());
+        if (isQuasiInertial()) {
+            return new Transform(date, pv.getPosition().negate(), rotationFromInertial(date, pv));
+        }
 
         // compute the rotation part of the transform
         final Rotation  r        = rotationFromInertial(date, pv);
         final Vector3D  p        = pv.getPosition();
         final Vector3D  momentum = pv.getMomentum();
-        final Transform rotation = new Transform(date, r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
+        final AngularCoordinates angularCoordinates = new AngularCoordinates(r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
 
-        final Transform transform = new Transform(date, translation, rotation);
-
-        // If LOF is considered pseudo-inertial, freeze transform
-        return isQuasiInertial() ? transform.freeze() : transform;
-
+        return new Transform(date, pv.negate(), angularCoordinates);
     }
 
     /**
