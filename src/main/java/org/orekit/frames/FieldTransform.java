@@ -163,9 +163,7 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
     public FieldTransform(final FieldAbsoluteDate<T> date, final FieldRotation<T> rotation) {
         this(date, date.toAbsoluteDate(),
              FieldPVCoordinates.getZero(date.getField()),
-             new FieldAngularCoordinates<>(rotation,
-                                           FieldVector3D.getZero(date.getField()),
-                                           FieldVector3D.getZero(date.getField())));
+             new FieldAngularCoordinates<>(rotation, FieldVector3D.getZero(date.getField())));
     }
 
     /** Build a translation transform, with its first time derivative.
@@ -211,6 +209,22 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
         this(date, date.toAbsoluteDate(),
              cartesian,
              FieldAngularCoordinates.getIdentity(date.getField()));
+    }
+
+    /** Build a combined translation and rotation transform.
+     * @param date date of the transform
+     * @param translation translation to apply (i.e. coordinates of
+     * the transformed origin, or coordinates of the origin of the
+     * old frame in the new frame)
+     * @param rotation rotation to apply ( i.e. rotation to apply to the
+     * coordinates of a vector expressed in the old frame to obtain the
+     * same vector expressed in the new frame )
+     * @since 12.1
+     */
+    public FieldTransform(final FieldAbsoluteDate<T> date, final FieldVector3D<T> translation,
+                          final FieldRotation<T> rotation) {
+        this(date, date.toAbsoluteDate(), new FieldPVCoordinates<>(translation, FieldVector3D.getZero(date.getField())),
+                new FieldAngularCoordinates<>(rotation, FieldVector3D.getZero(date.getField())));
     }
 
     /** Build a rotation transform.

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1427">
+        Remove unnecessary computations in transformFromInertial for frozen LOF.
+      </action>
       <action dev="serrof" type="update" issue="1426">
         Extend use of (Field)KinematicTransform.
       </action>
