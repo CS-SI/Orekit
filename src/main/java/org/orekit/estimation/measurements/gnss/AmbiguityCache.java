@@ -55,14 +55,8 @@ public class AmbiguityCache {
      * @return parameter driver for the emitter/receiver/wavelength triplet
      */
     public AmbiguityDriver getAmbiguity(final String emitter, final String receiver, final double wavelength) {
-        final Key key = new Key(emitter, receiver, wavelength);
-        AmbiguityDriver driver = cache.get(key);
-        if (driver == null) {
-            // we need to create and cache a new parameter driver
-            driver = new AmbiguityDriver(emitter, receiver, wavelength);
-            cache.put(key, driver);
-        }
-        return driver;
+        return cache.computeIfAbsent(new Key(emitter, receiver, wavelength),
+                                     k -> new AmbiguityDriver(emitter, receiver, wavelength));
     }
 
     /** Key for the map. */
