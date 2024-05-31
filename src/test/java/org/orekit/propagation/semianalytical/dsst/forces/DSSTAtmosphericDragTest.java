@@ -45,6 +45,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
+import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -194,6 +195,80 @@ class DSSTAtmosphericDragTest {
         Assertions.assertEquals(-5.90158033654418600e-11, y[3], 1.e-25);
         Assertions.assertEquals( 1.02876397430632310e-11, y[4], 1.e-24);
         Assertions.assertEquals( 2.53842752377756570e-8,  y[5], 1.e-23);
+    }
+
+    @Test
+    public void testSetAtmosphereUpperLimit() {
+
+        // Orbit above 1000 km altitude.
+        final Frame eme2000Frame = FramesFactory.getEME2000();
+        final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 0, TimeScalesFactory.getUTC());
+        final double mu = 3.986004415E14;
+        final Orbit orbit = new EquinoctialOrbit(8204535.84810944,
+                                                 -0.001119677138261611,
+                                                 5.333650671984143E-4,
+                                                 0.847841707880348,
+                                                 0.7998014061193262,
+                                                 3.897842092486239,
+                                                 PositionAngleType.TRUE,
+                                                 eme2000Frame,
+                                                 initDate,
+                                                 mu);
+
+         // Drag Force Model
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            CelestialBodyFactory.getEarth().getBodyOrientedFrame());
+        final Atmosphere atm = new SimpleExponentialAtmosphere(earth, 2.6e-10, 200000, 26000);
+        final double cd = 2.0;
+        final double area = 25.0;
+        DSSTAtmosphericDrag drag = new DSSTAtmosphericDrag(atm, cd, area, mu);
+
+        // Attitude of the satellite
+        Rotation rotation =  new Rotation(1.0, 0.0, 0.0, 0.0, false);
+        Vector3D rotationRate = new Vector3D(0., 0., 0.);
+        Vector3D rotationAcceleration = new Vector3D(0., 0., 0.);
+        TimeStampedAngularCoordinates orientation = new TimeStampedAngularCoordinates(initDate, rotation, rotationRate, rotationAcceleration);
+        final Attitude att = new Attitude(eme2000Frame, orientation);
+
+        final SpacecraftState state = new SpacecraftState(orbit, att, 1000.0);
+        final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
+
+        // Force model parameters
+        final double[] parameters = drag.getParameters(orbit.getDate());
+        // Initialize force model
+        drag.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
+
+        // Register the attitude provider to the force model
+        AttitudeProvider attitudeProvider = new FrameAlignedProvider(rotation);
+        drag.registerAttitudeProvider(attitudeProvider);
+
+        // Check max atmosphere altitude
+        final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
+        Assertions.assertEquals(atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, drag.getRbar(), 1e-9);
+
+        // Compute and check that the mean element rates are zero
+        final double[] daidt = drag.getMeanElementRate(state, auxiliaryElements, parameters);
+        Assertions.assertEquals(0.0, daidt[0]);
+        Assertions.assertEquals(0.0, daidt[1]);
+        Assertions.assertEquals(0.0, daidt[2]);
+        Assertions.assertEquals(0.0, daidt[3]);
+        Assertions.assertEquals(0.0, daidt[4]);
+        Assertions.assertEquals(0.0, daidt[5]);
+
+        // Increase atmosphere limit
+        final double expectedAtmosphereLimit = 2000000.0 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        drag.setRbar(expectedAtmosphereLimit);
+        Assertions.assertEquals(expectedAtmosphereLimit, drag.getRbar());
+
+        // Compute and check the mean element rate
+        final double[] daidtNew = drag.getMeanElementRate(state, auxiliaryElements, parameters);
+        Assertions.assertEquals(-3.7465296003917817E-28, daidtNew[0], 1.0e-33);
+        Assertions.assertEquals(7.316039091705292E-36, daidtNew[1], 1.0e-41);
+        Assertions.assertEquals(-2.195983299144844E-36, daidtNew[2], 1.0e-41);
+        Assertions.assertEquals(-9.80724158695418E-37, daidtNew[3], 1.0e-42);
+        Assertions.assertEquals(-9.059767879911556E-37, daidtNew[4], 1.0e-42);
+        Assertions.assertEquals(1.4486591760431082E-38, daidtNew[5], 1.0e-43);
     }
 
     @BeforeEach
