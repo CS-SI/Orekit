@@ -20,21 +20,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Precision;
-import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -42,13 +38,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.FieldAngularCoordinates;
-import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
@@ -343,19 +334,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
             return attitudeProvider;
         } else {
             // the original provider can be replaced by a lighter one for performance
-            return new AttitudeProvider() {
-                @Override
-                public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
-                    return null; // unreachable code
-                }
-
-                @Override
-                public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv, final FieldAbsoluteDate<T> date, final Frame frame) {
-                    final FieldRotation<T> rotation = attitudeProvider.getAttitudeRotation(pvProv, date, frame);
-                    final FieldAngularCoordinates<T> angularCoordinates = new FieldAngularCoordinates<>(rotation, FieldVector3D.getZero(date.getField()));
-                    return new FieldAttitude<>(date, frame, angularCoordinates);
-                }
-            };
+            return AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
         }
     }
 

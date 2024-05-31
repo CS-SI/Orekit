@@ -75,6 +75,12 @@ public class DragForce extends AbstractDragForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public boolean dependsOnAttitudeRate() {
+        return getSpacecraft().dependsOnAttitudeRate();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final AbsoluteDate date     = s.getDate();

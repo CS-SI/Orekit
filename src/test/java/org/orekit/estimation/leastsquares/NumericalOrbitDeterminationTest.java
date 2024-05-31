@@ -273,7 +273,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test
         //definition of the accuracy for the test
 
-        final double distanceAccuracy = 1.05;
+        final double distanceAccuracy = 1.06;
         final double velocityAccuracy = 2.27e-3;
 
         //test on the convergence

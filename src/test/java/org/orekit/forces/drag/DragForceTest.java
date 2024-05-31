@@ -37,6 +37,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.BodyShape;
@@ -737,6 +738,30 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
 
+    @Test
+    void testDependsOnAttitudeRateTrue() {
+        // GIVEN
+        final DragSensitive mockedSensitive = Mockito.mock(DragSensitive.class);
+        Mockito.when(mockedSensitive.dependsOnAttitudeRate()).thenReturn(true);
+        final DragForce dragForce = new DragForce(Mockito.mock(Atmosphere.class), mockedSensitive);
+        // WHEN
+        final boolean value = dragForce.dependsOnAttitudeRate();
+        // THEN
+        Assertions.assertTrue(value);
+    }
+
+    @Test
+    void testDependsOnAttitudeRateFalse() {
+        // GIVEN
+        final DragSensitive mockedSensitive = Mockito.mock(DragSensitive.class);
+        Mockito.when(mockedSensitive.dependsOnAttitudeRate()).thenReturn(false);
+        final DragForce dragForce = new DragForce(Mockito.mock(Atmosphere.class), mockedSensitive);
+        // WHEN
+        final boolean value = dragForce.dependsOnAttitudeRate();
+        // THEN
+        Assertions.assertFalse(value);
+    }
+    
     /** Test that the getParameterDrivers method is working as expected
      * on an IsotropicDrag-based (ie. spherical) DragForce model with
      * several estimated values.
