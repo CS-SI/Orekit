@@ -102,6 +102,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Mapper between raw double components and space flight dynamics objects. */
     private StateMapper stateMapper;
 
+    /**
+     * Attitude provider when evaluating derivatives. Can be a frozen one for performance.
+     * @since 12.1
+     */
+    private AttitudeProvider attitudeProviderForDerivatives;
+
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
 
@@ -149,6 +155,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     public boolean getResetAtEnd() {
         return this.resetAtEnd;
+    }
+
+    /**
+     * Method called when initializing the attitude provider used when evaluating derivatives.
+     * @return attitude provider for derivatives
+     */
+    protected AttitudeProvider initializeAttitudeProviderForDerivatives() {
+        return getAttitudeProvider();
     }
 
     /** Initialize the mapper. */
@@ -457,7 +471,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             stateMapper = createMapper(getInitialState().getDate(), stateMapper.getMu(),
                                        stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
-
+            attitudeProviderForDerivatives = initializeAttitudeProviderForDerivatives();
 
             if (Double.isNaN(getMu())) {
                 setMu(getInitialState().getMu());
@@ -740,6 +754,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             initialState = updateStatesFromAdditionalDerivativesIfKnown(initialState);
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
             main.init(initialState, target);
+            attitudeProviderForDerivatives = initializeAttitudeProviderForDerivatives();
         }
 
         /**
@@ -770,7 +785,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             ++calls;
 
             // update space dynamics view
+            stateMapper.setAttitudeProvider(attitudeProviderForDerivatives);
             SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
+            stateMapper.setAttitudeProvider(getAttitudeProvider());
 
             currentState = updateAdditionalStates(currentState);
             // compute main state differentials

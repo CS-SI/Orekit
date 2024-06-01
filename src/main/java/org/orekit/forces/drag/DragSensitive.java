@@ -53,6 +53,16 @@ public interface DragSensitive {
      */
     String LIFT_RATIO = "lift ratio";
 
+    /** Check if model depends on attitude's rotation rate or acceleration at a given, fixed date.
+     * If false, it essentially means that at most the attitude's rotation is used when computing the acceleration vector.
+     * The default implementation returns false as common models for orbital mechanics do not.
+     * @return true if force model depends on attitude derivatives
+     * @since 12.1
+     */
+    default boolean dependsOnAttitudeRate() {
+        return false;
+    }
+
     /** Get the drivers for supported parameters.
      * @return parameters drivers
      * @since 8.0

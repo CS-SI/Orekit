@@ -104,6 +104,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Mapper between raw double components and space flight dynamics objects. */
     private FieldStateMapper<T> stateMapper;
 
+    /**
+     * Attitude provider when evaluating derivatives. Can be a frozen one for performance.
+     * @since 12.1
+     */
+    private AttitudeProvider attitudeProviderForDerivatives;
+
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
 
@@ -153,6 +159,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      */
     public boolean getResetAtEnd() {
         return this.resetAtEnd;
+    }
+
+    /**
+     * Method called when initializing the attitude provider used when evaluating derivatives.
+     * @return attitude provider for derivatives
+     */
+    protected AttitudeProvider initializeAttitudeProviderForDerivatives() {
+        return getAttitudeProvider();
     }
 
     /** Initialize the mapper.
@@ -453,7 +467,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             stateMapper = createMapper(getInitialState().getDate(), stateMapper.getMu(),
                                        stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
-
 
             // set propagation orbit type
             if (Double.isNaN(getMu().getReal())) {
@@ -757,6 +770,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             initialState = updateStatesFromAdditionalDerivativesIfKnown(initialState);
             final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
             main.init(initialState, target);
+            attitudeProviderForDerivatives = initializeAttitudeProviderForDerivatives();
         }
 
         /**
@@ -787,7 +801,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             ++calls;
 
             // update space dynamics view
+            stateMapper.setAttitudeProvider(attitudeProviderForDerivatives);
             FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
+            stateMapper.setAttitudeProvider(getAttitudeProvider());
             currentState = updateAdditionalStates(currentState);
 
             // compute main state differentials

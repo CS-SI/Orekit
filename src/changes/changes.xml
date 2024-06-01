@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1429">
+        Remove unnecessary computations of attitude rates in numerical propagator.
+      </action>
       <action dev="davidgondelach" type="add" issue="1402">
         Enabled setting altitude limit of atmosphere in DSSTAtmosphericDrag.
       </action>
