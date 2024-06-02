@@ -20,11 +20,13 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -37,8 +39,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -323,5 +328,32 @@ public class FixedPointTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getRaan().getReal(), converted.getRaan().getReal(), threshold * tle.getRaan().getReal());
         Assertions.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), threshold * tle.getMeanAnomaly().getReal());
         Assertions.assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
+    }
+
+    @Test
+    public void testIssue1408() {
+        // The result of the TLE generation shall not be affected by the value of the gravitational
+        // parameter of the input orbit.
+
+        final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+        
+        // Initial TLE
+        final TLE initialTle = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000-0  47577-4 0    12",
+                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
+        final SpacecraftState expectedState = TLEPropagator.selectExtrapolator(initialTle).getInitialState();
+        final TimeStampedPVCoordinates expectedPV = expectedState.getPVCoordinates();
+
+        // Create a new orbit using the position and velocity taken from the TLE, but using
+        // a gravitational parameter mu different from the TLE mu.
+        final CartesianOrbit orbit = new CartesianOrbit(expectedState.getOrbit().getPVCoordinates(), expectedState.getFrame(), Constants.EGM96_EARTH_MU);
+
+        // Generate a TLE based on the orbit and check that the generated TLE is the same as the
+        // original one.
+        final TLE generatedTle = TLE.stateToTLE(new SpacecraftState(orbit), initialTle, algorithm);
+        Assertions.assertEquals(initialTle.getLine1(), generatedTle.getLine1());
+        Assertions.assertEquals(initialTle.getLine2(), generatedTle.getLine2());
+        final TimeStampedPVCoordinates actualPvCoordinates = TLEPropagator.selectExtrapolator(generatedTle).getInitialState().getPVCoordinates();
+        TestUtils.validateVector3D(expectedPV.getPosition(), actualPvCoordinates.getPosition(), 1.0e-4);
+        TestUtils.validateVector3D(expectedPV.getVelocity(), actualPvCoordinates.getVelocity(), 1.0e-4);
     }
 }
