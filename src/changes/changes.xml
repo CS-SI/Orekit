@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="davidgondelach" type="fix" issue="1408">
+        Fixed FixedPointTleGenerationAlgorithm to not depend on gravity parameter of input orbit.
+      </action>
       <action dev="serrof" type="update" issue="1429">
         Remove unnecessary computations of attitude rates in numerical propagator.
       </action>

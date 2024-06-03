@@ -40,6 +40,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -137,7 +138,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
         // Generation epoch
         final AbsoluteDate epoch = state.getDate();
 
-        // gets equinoctial parameters in TEME frame from state
+        // gets equinoctial parameters in TEME frame and with TLE gravity parameter from state
         final EquinoctialOrbit equinoctialOrbit = convert(state.getOrbit());
         double sma = equinoctialOrbit.getA();
         double ex  = equinoctialOrbit.getEquinoctialEx();
@@ -221,7 +222,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
     public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
                                                                     final FieldTLE<T> templateTLE) {
 
-        // gets equinoctial parameters in TEME frame from state
+        // gets equinoctial parameters in TEME frame and with TLE gravity parameter from state
         final FieldEquinoctialOrbit<T> equinoctialOrbit = convert(state.getOrbit());
         T sma = equinoctialOrbit.getA();
         T ex  = equinoctialOrbit.getEquinoctialEx();
@@ -296,22 +297,22 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
     }
 
     /**
-     * Converts an orbit into an equinoctial orbit expressed in TEME frame.
+     * Converts an orbit into an equinoctial orbit expressed in TEME frame with the TLE gravity parameter.
      * @param orbitIn the orbit to convert
      * @return the converted orbit, i.e. equinoctial in TEME frame
      */
     private EquinoctialOrbit convert(final Orbit orbitIn) {
-        return new EquinoctialOrbit(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
+        return new EquinoctialOrbit(orbitIn.getPVCoordinates(teme), teme, TLEConstants.MU);
     }
 
     /**
-     * Converts an orbit into an equinoctial orbit expressed in TEME frame.
+     * Converts an orbit into an equinoctial orbit expressed in TEME frame with the TLE gravity parameter.
      * @param orbitIn the orbit to convert
      * @param <T> type of the element
      * @return the converted orbit, i.e. equinoctial in TEME frame
      */
     private <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn) {
-        return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
+        return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu().newInstance(TLEConstants.MU));
     }
 
 }
