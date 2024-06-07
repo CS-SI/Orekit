@@ -204,7 +204,7 @@ public class PhaseTest {
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
                     final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                    Assertions.assertEquals(1.0e6 * Frequency.E01.getMHzFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
+                    Assertions.assertEquals(Frequency.E01.getFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
                                         estimated.getEstimatedValue()[0],
                                         1.0e-7);
 
@@ -778,7 +778,7 @@ public class PhaseTest {
 
         final IonosphericModel model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                                               new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
-        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        final double frequency = Frequency.G01.getFrequency();
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
 
         // Use a lambda function to implement "handleStep" function

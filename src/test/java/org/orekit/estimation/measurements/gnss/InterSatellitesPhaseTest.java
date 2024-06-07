@@ -208,7 +208,7 @@ public class InterSatellitesPhaseTest {
                     Assertions.assertEquals(2, participants.length);
                     Assertions.assertEquals(FREQUENCY.getWavelength(), ((InterSatellitesPhase) measurement).getWavelength(), 1.0e-15);
                     final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                    Assertions.assertEquals(1.0e6 * FREQUENCY.getMHzFrequency() * (dt + localClockOffset - remoteClockOffset) + ambiguity,
+                    Assertions.assertEquals(FREQUENCY.getFrequency() * (dt + localClockOffset - remoteClockOffset) + ambiguity,
                                         estimated.getEstimatedValue()[0],
                                         1.0e-7);
 

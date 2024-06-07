@@ -81,7 +81,7 @@ public class IonoModifierTest {
         model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
         // GPS L1 in HZ
-        frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        frequency = Frequency.G01.getFrequency();
     }
 
     @Test

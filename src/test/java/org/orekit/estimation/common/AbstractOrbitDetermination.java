@@ -2162,7 +2162,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                           weights.getRangeBaseWeight(), satellite);
                             if (stationData.getIonosphericModel() != null) {
                                 final RangeIonosphericDelayModifier ionoModifier = new RangeIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                     od.getObservationType().getFrequency(system).getMHzFrequency() * 1.0e6);
+                                                                                                                     od.getObservationType().getFrequency(system).getFrequency());
                                           range.addModifier(ionoModifier);
                             }
                             if (satAntennaRangeModifier != null) {
@@ -2195,7 +2195,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                                       weights.getRangeRateBaseWeight(), false, satellite);
                             if (stationData.getIonosphericModel() != null) {
                                 final RangeRateIonosphericDelayModifier ionoModifier = new RangeRateIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                             od.getObservationType().getFrequency(system).getMHzFrequency() * 1.0e6,
+                                                                                                                             od.getObservationType().getFrequency(system).getFrequency(),
                                                                                                                              false);
                                 rangeRate.addModifier(ionoModifier);
                             }

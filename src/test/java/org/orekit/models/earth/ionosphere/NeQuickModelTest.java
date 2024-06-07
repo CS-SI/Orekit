@@ -184,7 +184,7 @@ public class NeQuickModelTest {
         final SpacecraftState state   = new SpacecraftState(orbit);
 
         final double delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
-                                             Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters());
+                                             Frequency.G01.getFrequency(), model.getParameters());
        
         // Verify
         Assertions.assertEquals(1.13, delay, 0.01);
@@ -229,7 +229,7 @@ public class NeQuickModelTest {
         final FieldSpacecraftState<T> state   = new FieldSpacecraftState<>(orbit);
 
         final T delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
-                                        Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters(field));
+                                        Frequency.G01.getFrequency(), model.getParameters(field));
        
         // Verify
         Assertions.assertEquals(1.13, delay.getReal(), 0.01);

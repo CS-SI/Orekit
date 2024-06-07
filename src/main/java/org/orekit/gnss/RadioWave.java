@@ -25,18 +25,18 @@ import org.orekit.utils.Constants;
  */
 public interface RadioWave {
 
-    /** Get the value of the frequency in MHz.
-     * @return value of the frequency in MHz
+    /** Get the value of the frequency in Hz.
+     * @return value of the frequency in Hz
      * @see #getWavelength()
      */
-    double getMHzFrequency();
+    double getFrequency();
 
     /** Get the wavelength in meters.
      * @return wavelength in meters
-     * @see #getMHzFrequency()
+     * @see #getFrequency()
      */
     default double getWavelength() {
-        return Constants.SPEED_OF_LIGHT / (1.0e6 * getMHzFrequency());
+        return Constants.SPEED_OF_LIGHT / getFrequency();
     }
 
 }

@@ -60,7 +60,7 @@ import org.orekit.gnss.SatelliteSystem;
 public class MelbourneWubbenaCombination implements MeasurementCombination {
 
     /** Threshold for frequency comparison. */
-    private static final double THRESHOLD = 1.0e-10;
+    private static final double THRESHOLD = 1.0e-4;
 
     /** Satellite system used for the combination. */
     private final SatelliteSystem system;
@@ -101,17 +101,18 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
                         if (isCombinationPossible) {
                             // Combined value and frequency
                             final double combinedValue     = odWL.getValue() - odNL.getValue();
-                            final double combinedFrequency = odWL.getCombinedMHzFrequency();
+                            final double combinedFrequency = odWL.getCombinedFrequency();
                             // Used observation data to build the Melbourn-Wübbena measurement
-                            final List<ObservationData> usedData = new ArrayList<ObservationData>(4);
+                            final List<ObservationData> usedData = new ArrayList<>(4);
                             usedData.add(0, odWL.getUsedObservationData().get(0));
                             usedData.add(1, odWL.getUsedObservationData().get(1));
                             usedData.add(2, odNL.getUsedObservationData().get(0));
                             usedData.add(3, odNL.getUsedObservationData().get(1));
                             // Update the combined observation data list
-                            combined.add(new CombinedObservationData(CombinationType.MELBOURNE_WUBBENA,
+                            combined.add(new CombinedObservationData(combinedValue, combinedFrequency,
+                                                                     CombinationType.MELBOURNE_WUBBENA,
                                                                      MeasurementType.COMBINED_RANGE_PHASE,
-                                                                     combinedValue, combinedFrequency, usedData));
+                                                                     usedData));
                         }
                     }
                 }
@@ -143,8 +144,8 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
         final double[] frequency = new double[4];
         int j = 0;
         for (int i = 0; i < odWL.getUsedObservationData().size(); i++) {
-            frequency[j++] = odWL.getUsedObservationData().get(i).getObservationType().getFrequency(system).getMHzFrequency();
-            frequency[j++] = odNL.getUsedObservationData().get(i).getObservationType().getFrequency(system).getMHzFrequency();
+            frequency[j++] = odWL.getUsedObservationData().get(i).getObservationType().getFrequency(system).getFrequency();
+            frequency[j++] = odNL.getUsedObservationData().get(i).getObservationType().getFrequency(system).getFrequency();
         }
         // Verify if used frequencies are the same.
         // Possible numerical error is taken into account by using a threshold of acceptance
