@@ -23,13 +23,13 @@ package org.orekit.gnss;
  */
 public interface GnssSignal extends RadioWave {
 
-    /** Common frequency F0 in MHz (10.23 MHz). */
-    double F0 = 10.23;
+    /** Common frequency F0 in Hz (10.23 MHz). */
+    double F0 = 10230000.0;
 
     /** Get the ratio f/f0, where {@link #F0 f0} is the common frequency.
      * @return ratio f/f0, where {@link #F0 f0} is the common frequency
      * @see #F0
-     * @see #getMHzFrequency()
+     * @see #getFrequency()
      */
     double getRatio();
 

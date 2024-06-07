@@ -29,7 +29,6 @@ import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 
 /**
  * Phase minus code cycle slip detectors.
@@ -49,9 +48,6 @@ import org.orekit.utils.Constants;
  * @since 10.2
  */
 public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
-
-    /** Mega Hertz to Hertz conversion factor. */
-    private static final double MHZ_TO_HZ = 1.0e6;
 
     /** Order of the polynomial used for fitting. */
     private final int order;
@@ -101,10 +97,9 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
             // Loop on range measurement
             for (final ObservationData pseudoRange : pseudoRanges) {
                 // Change unit of phase measurement
-                final double frequency = phase.getObservationType().getFrequency(system).getMHzFrequency() * MHZ_TO_HZ;
-                final double cOverF    = Constants.SPEED_OF_LIGHT / frequency;
+                final double wavelength = phase.getObservationType().getFrequency(system).getWavelength();
                 final ObservationData phaseInMeters = new ObservationData(phase.getObservationType(),
-                                                                          cOverF * phase.getValue(),
+                                                                          wavelength * phase.getValue(),
                                                                           phase.getLossOfLockIndicator(),
                                                                           phase.getSignalStrength());
 

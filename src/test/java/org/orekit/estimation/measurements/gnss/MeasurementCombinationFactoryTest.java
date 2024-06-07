@@ -257,7 +257,13 @@ public class MeasurementCombinationFactoryTest {
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L2/P2
         Assertions.assertEquals(expectedL2P2,       data.get(0).getValue(),                eps);
-        Assertions.assertEquals(120 * GnssSignal.F0, data.get(0).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(120 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
+
+        // test deprecated method
+        Assertions.assertEquals(120 * GnssSignal.F0 / AbstractDualFrequencyCombination.MHZ_TO_HZ,
+                                data.get(0).getCombinedMHzFrequency(),
+                                eps);
+
     }
 
     @Test
@@ -314,16 +320,16 @@ public class MeasurementCombinationFactoryTest {
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L1C/C1C
         Assertions.assertEquals(expected1C,          data.get(0).getValue(),                eps);
-        Assertions.assertEquals(154 * GnssSignal.F0, data.get(0).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(154 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
         // L2W/C2W
         Assertions.assertEquals(expected2W,          data.get(1).getValue(),                eps);
-        Assertions.assertEquals(120 * GnssSignal.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(120 * GnssSignal.F0, data.get(1).getCombinedFrequency(), eps);
         // L2X/C2X
         Assertions.assertEquals(expected2X,          data.get(2).getValue(),                eps);
-        Assertions.assertEquals(120 * GnssSignal.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(120 * GnssSignal.F0, data.get(1).getCombinedFrequency(), eps);
         // L5X/C5X
         Assertions.assertEquals(expected5X,          data.get(3).getValue(),                eps);
-        Assertions.assertEquals(115 * GnssSignal.F0, data.get(3).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(115 * GnssSignal.F0, data.get(3).getCombinedFrequency(), eps);
     }
 
     /**
@@ -351,19 +357,19 @@ public class MeasurementCombinationFactoryTest {
             if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
 
                 Assertions.assertEquals(expectedPhaseValue, cod.getValue(),                eps);
-                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedFrequency(), eps);
                 Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 
                 Assertions.assertEquals(expectedRangeValue, cod.getValue(),                eps);
-                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedFrequency(), eps);
                 Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.COMBINED_RANGE_PHASE) {
 
                 Assertions.assertEquals(expectedRangePhase, cod.getValue(),                eps);
-                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedFrequency(), eps);
                 Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             }
@@ -399,7 +405,7 @@ public class MeasurementCombinationFactoryTest {
         final CombinedObservationData   combined = ionoFree.combine(obs1, obs2);
 
         // Combine data
-        final double wavelength         = Constants.SPEED_OF_LIGHT / (combined.getCombinedMHzFrequency() * 1.0e6);
+        final double wavelength         = Constants.SPEED_OF_LIGHT / combined.getCombinedFrequency();
         final double combineValueMeters = combined.getValue() * wavelength;
 
         // Verify
