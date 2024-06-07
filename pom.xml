@@ -1091,9 +1091,6 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-install-plugin</artifactId>
             <version>${orekit.maven-install-plugin.version}</version>
-            <configuration>
-              <createChecksum>true</createChecksum>
-            </configuration>
           </plugin>
         </plugins>
      </build>
@@ -1164,7 +1161,7 @@
                         </goals>
                       </pluginExecutionFilter>
                       <action>
-                        <ignore></ignore>
+                        <ignore/>
                       </action>
                      </pluginExecution>
                   </pluginExecutions>
