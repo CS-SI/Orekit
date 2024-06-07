@@ -16,18 +16,14 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.Map;
-
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.BistaticRange;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
+import java.util.Map;
 
 /** Builder for {@link BistaticRange} measurements.
  * @author Pascal Parraud
@@ -42,11 +38,6 @@ public class BistaticRangeBuilder extends AbstractMeasurementBuilder<BistaticRan
     /** Receiver ground station. */
     private final GroundStation receiver;
 
-    /** Satellite related to this builder.
-     * @since 12.0
-     */
-    private final ObservableSatellite satellite;
-
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param emitter emitter ground station
@@ -60,52 +51,17 @@ public class BistaticRangeBuilder extends AbstractMeasurementBuilder<BistaticRan
                                 final double sigma, final double baseWeight,
                                 final ObservableSatellite satellite) {
         super(noiseSource, sigma, baseWeight, satellite);
-        this.emitter   = emitter;
-        this.receiver  = receiver;
-        this.satellite = satellite;
+        this.emitter  = emitter;
+        this.receiver = receiver;
     }
 
     /** {@inheritDoc} */
     @Override
-    public BistaticRange build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-
-        final double sigma                  = getTheoreticalStandardDeviation()[0];
-        final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
-
-        // create a dummy measurement
-        final BistaticRange dummy = new BistaticRange(emitter, receiver, relevant[0].getDate(),
-                                                      Double.NaN, sigma, baseWeight, satellite);
-        for (final EstimationModifier<BistaticRange> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        double range = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            range += noise[0];
-        }
-
-        // generate measurement
-        final BistaticRange measurement = new BistaticRange(emitter, receiver, relevant[0].getDate(),
-                                                            range, sigma, baseWeight, satellite);
-        for (final EstimationModifier<BistaticRange> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected BistaticRange buildObserved(final AbsoluteDate date,
+                                          final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new BistaticRange(emitter, receiver, date, 0.0,
+                                 getTheoreticalStandardDeviation()[0],
+                                 getBaseWeight()[0], getSatellites()[0]);
     }
 
 }

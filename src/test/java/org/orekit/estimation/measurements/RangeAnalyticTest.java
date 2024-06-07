@@ -41,7 +41,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.StateFunction;
 
 public class RangeAnalyticTest {
 
@@ -222,8 +221,8 @@ public class RangeAnalyticTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> absoluteErrors = new ArrayList<Double>();
-        final List<Double> relativeErrors = new ArrayList<Double>();
+        final List<Double> absoluteErrors = new ArrayList<>();
+        final List<Double> relativeErrors = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -346,8 +345,8 @@ public class RangeAnalyticTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> errorsP = new ArrayList<Double>();
-        final List<Double> errorsV = new ArrayList<Double>();
+        final List<Double> errorsP = new ArrayList<>();
+        final List<Double> errorsV = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -389,14 +388,11 @@ public class RangeAnalyticTest {
 
                     if (isFiniteDifferences) {
                         // Compute a reference value using finite differences
-                        jacobianRef = Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) {
-                                return measurement.
-                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
-                                       getEstimatedValue();
-                            }
-                        }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                           OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                        jacobianRef = Differentiation.differentiate(
+                            state1 -> measurement.
+                                   estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                   getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
+                            OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
                     } else {
                         // Compute a reference value using Range class function
                         jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
@@ -465,8 +461,8 @@ public class RangeAnalyticTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
-        final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsV = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
@@ -522,7 +518,7 @@ public class RangeAnalyticTest {
                                                                1.0, 3.0, 300.0);
 
         // List to store the results
-        final List<Double> relErrorList = new ArrayList<Double>();
+        final List<Double> relErrorList = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -616,7 +612,7 @@ public class RangeAnalyticTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert error list to double[]
-        final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);

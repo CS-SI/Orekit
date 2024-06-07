@@ -24,8 +24,8 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.AngularAzEl;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -79,14 +79,14 @@ public class GeneratorTest {
         genR.addSubscriber(gatherer);
 
         genR.generate(initialDate, finalDate);
-        SortedSet<ObservedMeasurement<?>> generated = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> generated = gatherer.getGeneratedMeasurements();
 
         int nbAzEl  = 0;
         int nbRange = 0;
-        for (final ObservedMeasurement<?> m : generated) {
-            if (m.getMeasurementType().equals(AngularAzEl.MEASUREMENT_TYPE)) {
+        for (final EstimatedMeasurementBase<?> m : generated) {
+            if (m.getObservedMeasurement().getMeasurementType().equals(AngularAzEl.MEASUREMENT_TYPE)) {
                 ++nbAzEl;
-            } else if (m.getMeasurementType().equals(Range.MEASUREMENT_TYPE)) {
+            } else if (m.getObservedMeasurement().getMeasurementType().equals(Range.MEASUREMENT_TYPE)) {
                 ++nbRange;
             } else {
                 Assertions.fail("unexpected measurement type: " + m.getClass().getSimpleName());

@@ -16,9 +16,7 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.lang.reflect.Field;
 import java.util.SortedSet;
-import java.util.function.Function;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -33,9 +31,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.estimation.measurements.modifiers.Bias;
@@ -64,13 +61,14 @@ public class OneWayGNSSPhaseBuilderTest {
                                                            final ObservableSatellite receiver,
                                                            final ObservableSatellite remote) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
+        remote.getClockOffsetDriver().setValue(1.0e-16);
+        remote.getClockDriftDriver().setValue(0);
+        remote.getClockAccelerationDriver().setValue(0);
         MeasurementBuilder<OneWayGNSSPhase> b =
                         new OneWayGNSSPhaseBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                                1.0e-10,
                                                                                                                new GaussianRandomGenerator(random)),
                                                    receiver, remote,
-                                                   new QuadraticClockModel(AbsoluteDate.ARBITRARY_EPOCH,
-                                                                           1.0e-16, 0, 0),
                                                    WAVELENGTH, SIGMA, 1.0,
                                                    new AmbiguityCache());
         b.addModifier(new Bias<>(new String[] { "bias" },
@@ -79,35 +77,6 @@ public class OneWayGNSSPhaseBuilderTest {
                          new double[] { Double.NEGATIVE_INFINITY },
                          new double[] { Double.POSITIVE_INFINITY }));
         return b;
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-    final QuadraticClockModel refQuadratic = new QuadraticClockModel(AbsoluteDate.GALILEO_EPOCH,
-                                                                   1.0e-16, 2.0e-17, -7.0e-18);
-        MeasurementBuilder<OneWayGNSSPhase> b =
-            new OneWayGNSSPhaseBuilder(null,
-                                       new ObservableSatellite(0),
-                                       new ObservableSatellite(1),
-                                       date -> refQuadratic.getOffset(date).getOffset(),
-                                       WAVELENGTH, SIGMA, 1.0);
-        try {
-            Field clockBuilderField = OneWayGNSSPhaseBuilder.class.getDeclaredField("clockBuilder");
-            clockBuilderField.setAccessible(true);
-            Function<AbsoluteDate, QuadraticClockModel> clockBuilder =
-                (Function<AbsoluteDate, QuadraticClockModel>) clockBuilderField.get(b);
-            QuadraticClockModel rebuilt = clockBuilder.apply(AbsoluteDate.GALILEO_EPOCH);
-            for (double dt = -3; dt < 3; dt += 0.01) {
-                final AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH.shiftedBy(dt);
-                Assertions.assertEquals(refQuadratic.getOffset(date).getOffset(),
-                                        rebuilt.getOffset(date).getOffset(),
-                                        1.0e-30);
-            }
-
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            Assertions.fail(e.getLocalizedMessage());
-        }
     }
 
     @Test
@@ -155,7 +124,7 @@ public class OneWayGNSSPhaseBuilderTest {
         AbsoluteDate t0     = o1.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = o1.getDate().shiftedBy(endPeriod   * period);
         generator.generate(t0, t1);
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
 
         // and yet another set of propagators for reference
         Propagator propagator1 = buildPropagator();
@@ -165,7 +134,7 @@ public class OneWayGNSSPhaseBuilderTest {
         AbsoluteDate previous = null;
         AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
         AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
-        for (ObservedMeasurement<?> measurement : measurements) {
+        for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
             Assertions.assertTrue(date.compareTo(tInf) >= 0);
@@ -180,10 +149,13 @@ public class OneWayGNSSPhaseBuilderTest {
                 }
             }
             previous = date;
-            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
-                                                                    propagator1.propagate(date),
-                                                                    propagator2.propagate(date)
-                                                                }).getEstimatedValue();
+            double[] e = measurement.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] {
+                                               propagator1.propagate(date),
+                                               propagator2.propagate(date)
+                                           }).
+                getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }

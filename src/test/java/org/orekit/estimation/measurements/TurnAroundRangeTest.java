@@ -42,7 +42,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TurnAroundRangeTest {
@@ -330,14 +329,12 @@ public class TurnAroundRangeTest {
             final double[][] jacobianRef;
 
             // Compute a reference value using finite differences
-            jacobianRef = Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.
-                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
-                           getEstimatedValue();
-                }
-            }, measurement.getDimension(), propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+            jacobianRef = Differentiation.differentiate(state1 ->
+                                                            measurement.
+                                                                estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                                getEstimatedValue(),
+                                                        measurement.getDimension(), propagator.getAttitudeProvider(),
+                                                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
             Assertions.assertEquals(jacobianRef.length, jacobian.length);
             Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -449,8 +446,8 @@ public class TurnAroundRangeTest {
          }
 
         // List to store the results for primary and secondary station
-        final List<Double> relErrorQMList = new ArrayList<Double>();
-        final List<Double> relErrorQSList = new ArrayList<Double>();
+        final List<Double> relErrorQMList = new ArrayList<>();
+        final List<Double> relErrorQSList = new ArrayList<>();
 
         // Loop on the measurements
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -531,8 +528,8 @@ public class TurnAroundRangeTest {
         } // End for loop on the measurements
 
         // Convert error list to double[]
-        final double relErrorQM[] = relErrorQMList.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorQS[] = relErrorQSList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorQM = relErrorQMList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorQS = relErrorQSList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsQMMedian = new Median().evaluate(relErrorQM);

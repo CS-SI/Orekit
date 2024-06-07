@@ -33,7 +33,6 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
 import org.orekit.estimation.measurements.generation.GatheringSubscriber;
 import org.orekit.estimation.measurements.generation.Generator;
@@ -153,19 +152,21 @@ public class WindUpTest {
         final GatheringSubscriber gatherer = new GatheringSubscriber();
         generator.addSubscriber(gatherer);
         generator.generate(orbit.getDate(), orbit.getDate().shiftedBy(7200));
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
         Assertions.assertEquals(120, measurements.size());
 
         WindUp windUp = new WindUpFactory().getWindUp(system, prn, Dipole.CANONICAL_I_J, station.getBaseFrame().getName());
         Propagator propagator = new KeplerianPropagator(orbit, attitudeProvider);
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        for (ObservedMeasurement<?> m : measurements) {
-            Phase phase = (Phase) m;
+        for (EstimatedMeasurementBase<?> m : measurements) {
+            Phase phase = (Phase) m.getObservedMeasurement();
             @SuppressWarnings("unchecked")
-            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.estimateWithoutDerivatives(new SpacecraftState[] {
-                                                                                                                           propagator.propagate(phase.getDate()) 
-                                                                                                                       });
+            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] {
+                                               propagator.propagate(phase.getDate())
+                                           });
             final double original = estimated.getEstimatedValue()[0];
             windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];

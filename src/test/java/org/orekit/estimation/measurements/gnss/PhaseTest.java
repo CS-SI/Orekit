@@ -914,7 +914,9 @@ public class PhaseTest {
         final GroundStation station = new GroundStation(topo, TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Create a phase measurement
-        final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060, Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
+        final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060,
+                                      Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0),
+                                      new AmbiguityCache());
 
         // First check
         Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);

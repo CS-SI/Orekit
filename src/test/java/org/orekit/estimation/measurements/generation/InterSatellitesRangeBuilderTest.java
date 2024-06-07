@@ -29,9 +29,9 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -73,12 +73,12 @@ public class InterSatellitesRangeBuilderTest {
 
     @Test
     public void testForward() {
-        doTest(0xc82a56322345dc25l, 0.0, 1.2, 2.8 * SIGMA);
+        doTest(0xc82a56322345dc25L, 0.0, 1.2, 2.8 * SIGMA);
     }
 
     @Test
     public void testBackward() {
-        doTest(0x95c10149c4891232l, 0.0, -1.0, 2.6 * SIGMA);
+        doTest(0x95c10149c4891232L, 0.0, -1.0, 2.6 * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -116,7 +116,7 @@ public class InterSatellitesRangeBuilderTest {
         AbsoluteDate t0     = o1.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = o1.getDate().shiftedBy(endPeriod   * period);
         generator.generate(t0, t1);
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
 
         // and yet another set of propagators for reference
         Propagator propagator1 = buildPropagator();
@@ -126,7 +126,7 @@ public class InterSatellitesRangeBuilderTest {
         AbsoluteDate previous = null;
         AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
         AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
-        for (ObservedMeasurement<?> measurement : measurements) {
+        for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
             Assertions.assertTrue(date.compareTo(tInf) >= 0);
@@ -141,10 +141,13 @@ public class InterSatellitesRangeBuilderTest {
                 }
             }
             previous = date;
-            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
-                                                                    propagator1.propagate(date),
-                                                                    propagator2.propagate(date)
-                                                                }).getEstimatedValue();
+            double[] e = measurement.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] {
+                                               propagator1.propagate(date),
+                                               propagator2.propagate(date)
+                                           }).
+                getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }

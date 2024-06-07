@@ -17,13 +17,10 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.InterSatellitesOneWayRangeRate;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
 import java.util.Map;
 
@@ -33,12 +30,6 @@ import java.util.Map;
  */
 public class InterSatellitesOneWayRangeRateBuilder
     extends AbstractMeasurementBuilder<InterSatellitesOneWayRangeRate> {
-
-    /** Satellite which receives the signal and performs the measurement. */
-    private final ObservableSatellite local;
-
-    /** Satellite which simply emits the signal. */
-    private final ObservableSatellite remote;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -51,55 +42,16 @@ public class InterSatellitesOneWayRangeRateBuilder
                                                  final ObservableSatellite local, final ObservableSatellite remote,
                                                  final double sigma, final double baseWeight) {
         super(noiseSource, sigma, baseWeight, local, remote);
-        this.local  = local;
-        this.remote = remote;
     }
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesOneWayRangeRate build(final AbsoluteDate date,
-                                                final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-
-        final double            sigma      = getTheoreticalStandardDeviation()[0];
-        final double            baseWeight = getBaseWeight()[0];
-        final SpacecraftState[] relevant   = new SpacecraftState[] {
-            interpolators.get(local).getInterpolatedState(date),
-            interpolators.get(remote).getInterpolatedState(date)
-        };
-
-        // create a dummy measurement
-        final InterSatellitesOneWayRangeRate dummy = new InterSatellitesOneWayRangeRate(local, remote, relevant[0].getDate(),
-                                                                                        Double.NaN, sigma, baseWeight);
-        for (final EstimationModifier<InterSatellitesOneWayRangeRate> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        double rangeRate = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            rangeRate += noise[0];
-        }
-
-        // generate measurement
-        final InterSatellitesOneWayRangeRate measurement = new InterSatellitesOneWayRangeRate(local, remote, relevant[0].getDate(),
-                                                                                              rangeRate, sigma, baseWeight);
-        for (final EstimationModifier<InterSatellitesOneWayRangeRate> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected InterSatellitesOneWayRangeRate buildObserved(final AbsoluteDate date,
+                                                           final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new InterSatellitesOneWayRangeRate(getSatellites()[0], getSatellites()[1],
+                                                  date, Double.NaN,
+                                                  getTheoreticalStandardDeviation()[0],
+                                                  getBaseWeight()[0]);
     }
 
 }

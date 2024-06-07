@@ -20,6 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.0" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1350">
+          Allow measurement generation feature to return estimated measurements,
+          with fully populated states.
+      </action>
+    </release>
     <release version="12.1" date="TBD" description="TBD">
       <action dev="luc" type="add" issue="1433">
         Added RadioWave and GnssSignal interfaces above the Frequency enumerate.

@@ -59,7 +59,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
     private final AbsoluteDate date;
 
     /** Observed value. */
-    private final double[] observed;
+    private double[] observed;
 
     /** Theoretical standard deviation. */
     private final double[] sigma;
@@ -88,7 +88,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
                                   final double sigma, final double baseWeight,
                                   final List<ObservableSatellite> satellites) {
 
-        this.supportedParameters = new ArrayList<ParameterDriver>();
+        this.supportedParameters = new ArrayList<>();
 
         this.date       = date;
         this.observed   = new double[] {
@@ -103,7 +103,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
         this.satellites = satellites;
 
-        this.modifiers = new ArrayList<EstimationModifier<T>>();
+        this.modifiers = new ArrayList<>();
         setEnabled(true);
 
     }
@@ -122,7 +122,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
                                   final List<ObservableSatellite> satellites) {
-        this.supportedParameters = new ArrayList<ParameterDriver>();
+        this.supportedParameters = new ArrayList<>();
 
         this.date       = date;
         this.observed   = observed.clone();
@@ -131,9 +131,15 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
         this.satellites = satellites;
 
-        this.modifiers = new ArrayList<EstimationModifier<T>>();
+        this.modifiers = new ArrayList<>();
         setEnabled(true);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setObservedValue(final double[] newObserved) {
+        this.observed = newObserved.clone();
     }
 
     /** Add a parameter driver.
@@ -451,7 +457,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
         // The components of the position are the 3 first derivative parameters
         final Vector3D p = state.getPosition();
         final FieldVector3D<Gradient> pDS =
-                        new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative + 0, p.getX()),
+                        new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative,     p.getX()),
                                             Gradient.variable(freeParameters, firstDerivative + 1, p.getY()),
                                             Gradient.variable(freeParameters, firstDerivative + 2, p.getZ()));
 

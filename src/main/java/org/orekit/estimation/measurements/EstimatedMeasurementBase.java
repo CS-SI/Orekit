@@ -143,6 +143,12 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
         return observedMeasurement.getObservedValue();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void setObservedValue(final double[] observed) {
+        observedMeasurement.setObservedValue(observed);
+    }
+
     /** Get the original estimated value prior to any modification.
      * @return original estimated value prior to any modification
      * @since 12.1

@@ -33,7 +33,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
 import org.orekit.estimation.measurements.generation.GatheringSubscriber;
 import org.orekit.estimation.measurements.generation.Generator;
@@ -176,7 +175,7 @@ public class InterSatellitesWindUpTest {
         final GatheringSubscriber gatherer = new GatheringSubscriber();
         generator.addSubscriber(gatherer);
         generator.generate(emitterOrbit.getDate(), emitterOrbit.getDate().shiftedBy(7200));
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
         Assertions.assertEquals(120, measurements.size());
 
         InterSatellitesWindUp windUp  = new InterSatellitesWindUpFactory().getWindUp(emitterSystem,  emitterPrn,
@@ -187,14 +186,16 @@ public class InterSatellitesWindUpTest {
         Propagator receiverPropagator = new KeplerianPropagator(receiverOrbit, receiverAttitudeProvider);
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        for (ObservedMeasurement<?> m : measurements) {
-            InterSatellitesPhase phase = (InterSatellitesPhase) m;
+        for (EstimatedMeasurementBase<?> m : measurements) {
+            InterSatellitesPhase phase = (InterSatellitesPhase) m.getObservedMeasurement();
             @SuppressWarnings("unchecked")
             EstimatedMeasurementBase<InterSatellitesPhase> estimated =
-            (EstimatedMeasurementBase<InterSatellitesPhase>) m.estimateWithoutDerivatives(new SpacecraftState[] {
-                                                                                              receiverPropagator.propagate(phase.getDate()),
-                                                                                              emitterPropagator.propagate(phase.getDate())
-                                                                                          });
+            (EstimatedMeasurementBase<InterSatellitesPhase>) m.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] {
+                                               receiverPropagator.propagate(phase.getDate()),
+                                               emitterPropagator.propagate(phase.getDate())
+                                           });
             final double original = estimated.getEstimatedValue()[0];
             windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];

@@ -43,7 +43,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class KeplerianBatchLSEstimatorTest {
@@ -236,13 +235,10 @@ class KeplerianBatchLSEstimatorTest {
             station.getClockDriftDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
-        final List<ObservedMeasurement<?>> measurements1 =
+        final List<ObservedMeasurement<?>> measurements =
                         KeplerianEstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        measurements.addAll(measurements1);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),

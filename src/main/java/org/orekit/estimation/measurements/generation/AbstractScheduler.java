@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -76,7 +77,7 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
 
     /** {@inheritDoc} */
     @Override
-    public SortedSet<T> generate(final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+    public SortedSet<EstimatedMeasurementBase<T>> generate(final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         // select dates in the current step, using arbitrarily first interpolator
         // as all interpolators cover the same range
@@ -85,7 +86,7 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
                                                                    first.getValue().getCurrentState().getDate());
 
         // generate measurements when feasible
-        final SortedSet<T> measurements = new TreeSet<>();
+        final SortedSet<EstimatedMeasurementBase<T>> measurements = new TreeSet<>();
         for (final AbsoluteDate date : dates) {
             if (measurementIsFeasible(date)) {
                 // a measurement is feasible at this date
