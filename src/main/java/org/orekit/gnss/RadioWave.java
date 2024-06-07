@@ -29,7 +29,7 @@ public interface RadioWave {
      * @return value of the frequency in MHz
      * @see #getWavelength()
      */
-    double getMHzFrequency() ;
+    double getMHzFrequency();
 
     /** Get the wavelength in meters.
      * @return wavelength in meters
