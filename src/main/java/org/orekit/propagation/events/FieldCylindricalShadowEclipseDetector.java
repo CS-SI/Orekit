@@ -21,7 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /**
  * Event detector for eclipses from a single, infinitely-distant light source, occulted by a spherical central body.
@@ -38,7 +38,7 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
     extends FieldAbstractDetector<FieldCylindricalShadowEclipseDetector<T>, T> {
 
     /** Direction provider for the occulted light source i.e. the Sun (whose shadow is approximated as if the body was infinitely distant). */
-    private final ExtendedPVCoordinatesProvider sun;
+    private final ExtendedPositionProvider sun;
 
     /** Radius of central, occulting body (approximated as spherical).
      * Its center is assumed to be at the origin of the frame linked to the state. */
@@ -53,7 +53,7 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
      * @param maxIter maximum iteration for event detection
      * @param handler event handler
      */
-    public FieldCylindricalShadowEclipseDetector(final ExtendedPVCoordinatesProvider sun,
+    public FieldCylindricalShadowEclipseDetector(final ExtendedPositionProvider sun,
                                                  final T occultingBodyRadius,
                                                  final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                                  final int maxIter, final FieldEventHandler<T> handler) {
@@ -68,7 +68,7 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
      * @param occultingBodyRadius occulting body radius
      * @param handler event handler
      */
-    public FieldCylindricalShadowEclipseDetector(final ExtendedPVCoordinatesProvider sun,
+    public FieldCylindricalShadowEclipseDetector(final ExtendedPositionProvider sun,
                                                  final T occultingBodyRadius, final FieldEventHandler<T> handler) {
         this(sun, occultingBodyRadius, FieldAdaptableInterval.of(DEFAULT_MAXCHECK), occultingBodyRadius.getField().getZero().newInstance(DEFAULT_THRESHOLD),
             DEFAULT_MAX_ITER, handler);

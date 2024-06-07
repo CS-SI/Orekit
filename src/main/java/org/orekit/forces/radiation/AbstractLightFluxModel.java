@@ -24,7 +24,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /**
  * Abstract class for light flux models.
@@ -37,13 +37,13 @@ import org.orekit.utils.ExtendedPVCoordinatesProvider;
 public abstract class AbstractLightFluxModel implements LightFluxModel {
 
     /** Direction provider for the occulted body e.g. the Sun. */
-    private final ExtendedPVCoordinatesProvider occultedBody;
+    private final ExtendedPositionProvider occultedBody;
 
     /**
      * Constructor.
      * @param occultedBody position provider for light source
      */
-    protected AbstractLightFluxModel(final ExtendedPVCoordinatesProvider occultedBody) {
+    protected AbstractLightFluxModel(final ExtendedPositionProvider occultedBody) {
         this.occultedBody = occultedBody;
     }
 
@@ -51,7 +51,7 @@ public abstract class AbstractLightFluxModel implements LightFluxModel {
      * Getter for the occulted body's position provider.
      * @return occulted body
      */
-    public ExtendedPVCoordinatesProvider getOccultedBody() {
+    public ExtendedPositionProvider getOccultedBody() {
         return occultedBody;
     }
 

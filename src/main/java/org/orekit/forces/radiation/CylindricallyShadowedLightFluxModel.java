@@ -26,7 +26,7 @@ import org.orekit.propagation.events.CylindricalShadowEclipseDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldCylindricalShadowEclipseDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
      * @param occultedBody position provider for light source
      * @param occultingBodyRadius radius of central, occulting body
      */
-    public CylindricallyShadowedLightFluxModel(final double kRef, final ExtendedPVCoordinatesProvider occultedBody,
+    public CylindricallyShadowedLightFluxModel(final double kRef, final ExtendedPositionProvider occultedBody,
                                                final double occultingBodyRadius) {
         super(occultedBody);
         this.kRef = kRef;
@@ -78,7 +78,7 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
      * @param occultedBody position provider for light source
      * @param occultingBodyRadius radius of central, occulting body
      */
-    public CylindricallyShadowedLightFluxModel(final ExtendedPVCoordinatesProvider occultedBody,
+    public CylindricallyShadowedLightFluxModel(final ExtendedPositionProvider occultedBody,
                                                final double occultingBodyRadius) {
         this(4.56e-6 * FastMath.pow(149597870000.0, 2), occultedBody, occultingBodyRadius);
     }
