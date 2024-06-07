@@ -36,9 +36,6 @@ import org.orekit.utils.Constants;
  */
 public abstract class AbstractDualFrequencyCombination implements MeasurementCombination {
 
-    /** Mega Hertz to Hertz converter. */
-    public static final double MHZ_TO_HZ = 1.0e6;
-
     /** Type of combination of measurements. */
     private final CombinationType type;
 
@@ -104,13 +101,13 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
             final double obs2Meters = od2.getValue() * freq2.getWavelength();
 
             // Calculate the combined value and convert it in cycles using the combined frequency
-            combinedValue = getCombinedValue(obs1Meters, freq1, obs2Meters, freq2) * (combinedFrequency * MHZ_TO_HZ) / Constants.SPEED_OF_LIGHT;
+            combinedValue = getCombinedValue(obs1Meters, freq1, obs2Meters, freq2) * combinedFrequency / Constants.SPEED_OF_LIGHT;
         } else {
             combinedValue = getCombinedValue(od1.getValue(), freq1, od2.getValue(), freq2);
         }
 
         // Combined observation data
-        return new CombinedObservationData(type, measType1, combinedValue, combinedFrequency, Arrays.asList(od1, od2));
+        return new CombinedObservationData(combinedValue, combinedFrequency, type, measType1, Arrays.asList(od1, od2));
 
     }
 
@@ -174,7 +171,7 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
      * Get the combined frequency of two measurements.
      * @param f1 frequency of the first measurement
      * @param f2 frequency of the second measurement
-     * @return combined frequency in MHz
+     * @return combined frequency in Hz
      */
     protected abstract double getCombinedFrequency(Frequency f1, Frequency f2);
 
@@ -190,7 +187,7 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         final ObservationType obsType2 = data2.getObservationType();
         // Dual-frequency combination is possible only if observation code is the same and data frequencies are different
         return obsType1.getFrequency(system) != obsType2.getFrequency(system) &&
-                        obsType1.getSignalCode() == obsType2.getSignalCode();
+               obsType1.getSignalCode() == obsType2.getSignalCode();
     }
 
 }

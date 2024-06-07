@@ -128,14 +128,15 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
         }
 
         // Frequency
-        final double f = freq1.getMHzFrequency();
+        final double f = freq1.getFrequency();
 
         // Combined value
         final double combinedValue = getCombinedValue(phase.getValue(), pseudoRange.getValue());
 
         // Combined observation data
-        return new CombinedObservationData(CombinationType.PHASE_MINUS_CODE, MeasurementType.COMBINED_RANGE_PHASE,
-                                           combinedValue, f, Arrays.asList(phase, pseudoRange));
+        return new CombinedObservationData(combinedValue, f,
+                                           CombinationType.PHASE_MINUS_CODE, MeasurementType.COMBINED_RANGE_PHASE,
+                                           Arrays.asList(phase, pseudoRange));
     }
 
     /**

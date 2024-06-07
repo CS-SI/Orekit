@@ -72,7 +72,7 @@ public class NarrowLaneCombination extends AbstractDualFrequencyCombination {
     /** {@inheritDoc} */
     @Override
     protected double getCombinedFrequency(final Frequency f1, final Frequency f2) {
-        return f1.getMHzFrequency() + f2.getMHzFrequency();
+        return f1.getFrequency() + f2.getFrequency();
     }
 
 }

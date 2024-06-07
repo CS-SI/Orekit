@@ -259,11 +259,6 @@ public class MeasurementCombinationFactoryTest {
         Assertions.assertEquals(expectedL2P2,       data.get(0).getValue(),                eps);
         Assertions.assertEquals(120 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
 
-        // test deprecated method
-        Assertions.assertEquals(120 * GnssSignal.F0 / AbstractDualFrequencyCombination.MHZ_TO_HZ,
-                                data.get(0).getCombinedMHzFrequency(),
-                                eps);
-
     }
 
     @Test
