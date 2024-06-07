@@ -96,7 +96,7 @@ class Iono {
             final IonosphericModel model = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
 
             // scale for current frequency
-            final double f = frequency.getMHzFrequency() * 1.0e6;
+            final double f = frequency.getFrequency();
 
             // create modifiers
             rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(model, f));

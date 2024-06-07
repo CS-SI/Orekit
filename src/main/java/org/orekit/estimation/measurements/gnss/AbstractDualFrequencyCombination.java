@@ -100,8 +100,8 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         final double combinedValue;
         if (obsType1.getMeasurementType() == MeasurementType.CARRIER_PHASE && !Double.isNaN(combinedFrequency)) {
             // Transform from cycle to meters measurements
-            final double obs1Meters = od1.getValue() * Constants.SPEED_OF_LIGHT / (freq1.getMHzFrequency() * MHZ_TO_HZ);
-            final double obs2Meters = od2.getValue() * Constants.SPEED_OF_LIGHT / (freq2.getMHzFrequency() * MHZ_TO_HZ);
+            final double obs1Meters = od1.getValue() * freq1.getWavelength();
+            final double obs2Meters = od2.getValue() * freq2.getWavelength();
 
             // Calculate the combined value and convert it in cycles using the combined frequency
             combinedValue = getCombinedValue(obs1Meters, freq1, obs2Meters, freq2) * (combinedFrequency * MHZ_TO_HZ) / Constants.SPEED_OF_LIGHT;

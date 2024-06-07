@@ -138,8 +138,11 @@ public enum Frequency implements GnssSignal {
     S05(SatelliteSystem.SBAS,    "L5", 115);
     // CHECKSTYLE: resume MultipleStringLiterals check
 
-    /** Common frequency F0 in MHz (10.23 MHz). */
-    public static final double F0 = GnssSignal.F0;
+    /** Common frequency F0 in MHz (10.23 MHz).
+     * @deprecated as of 12.1, replaced by {@link GnssSignal#F0}
+     */
+    @Deprecated
+    public static final double F0 = GnssSignal.F0 * 1.0e-6;
 
     /** Satellite system. */
     private final SatelliteSystem satelliteSystem;
@@ -181,9 +184,18 @@ public enum Frequency implements GnssSignal {
         return ratio;
     }
 
+    /** Get the value of the frequency in MHz.
+     * @return value of the frequency in MHz
+     * @deprecated as of 12.1 replaced by {@link #getFrequency()}
+     */
+    @Deprecated
+    public double getMHzFrequency() {
+        return getFrequency() * 1.0e-6;
+    }
+
     /** {@inheritDoc} */
     @Override
-    public double getMHzFrequency() {
+    public double getFrequency() {
         return ratio * GnssSignal.F0;
     }
 

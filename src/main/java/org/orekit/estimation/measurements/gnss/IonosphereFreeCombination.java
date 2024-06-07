@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.gnss;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.gnss.Frequency;
-import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 
@@ -84,7 +83,7 @@ public class IonosphereFreeCombination extends AbstractDualFrequencyCombination 
         // Multiplication factor used to compute the combined frequency
         final int k = (ratioF1 - ratioF1Int > 0.0 || ratioF2 - ratioF2Int > 0.0) ? 1 : ArithmeticUtils.gcd(ratioF1Int, ratioF2Int);
         // Combined frequency
-        return MathArrays.linearCombination(ratioF1, ratioF1, -ratioF2, ratioF2) * (GnssSignal.F0 / k);
+        return MathArrays.linearCombination(ratioF1, ratioF1, -ratioF2, ratioF2) * (Frequency.F0 / k);
     }
 
 }
