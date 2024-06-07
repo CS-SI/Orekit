@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1433">
+        Added RadioWave and GnssSignal interfaces above the Frequency enumerate.
+      </action>
       <action dev="davidgondelach" type="fix" issue="1408">
         Fixed FixedPointTleGenerationAlgorithm to not depend on gravity parameter of input orbit.
       </action>
