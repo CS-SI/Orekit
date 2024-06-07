@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
@@ -108,8 +109,8 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
         final ObservationType obsType2 = pseudoRange.getObservationType();
 
         // Frequencies
-        final Frequency freq1 = obsType1.getFrequency(system);
-        final Frequency freq2 = obsType2.getFrequency(system);
+        final GnssSignal freq1 = obsType1.getFrequency(system);
+        final GnssSignal freq2 = obsType2.getFrequency(system);
         // Check if the combination of measurements if performed for two different frequencies
         if (freq1 != freq2) {
             throw new OrekitException(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS,

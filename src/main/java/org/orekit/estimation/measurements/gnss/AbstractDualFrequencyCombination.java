@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
@@ -71,12 +72,12 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         final ObservationType obsType2 = od2.getObservationType();
 
         // Frequencies
-        final Frequency freq1 = obsType1.getFrequency(system);
-        final Frequency freq2 = obsType2.getFrequency(system);
+        final GnssSignal signal1 = obsType1.getFrequency(system);
+        final GnssSignal signal2 = obsType2.getFrequency(system);
         // Check if the combination of measurements if performed for two different frequencies
-        if (freq1 == freq2) {
+        if (signal1 == signal2) {
             throw new OrekitException(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS,
-                                      freq1, freq2, getName());
+                                      signal1.getFrequency(), signal2.getFrequency(), getName());
         }
 
         // Measurements types
@@ -91,19 +92,19 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         }
 
         // Combined frequency
-        final double combinedFrequency = getCombinedFrequency(freq1, freq2);
+        final double combinedFrequency = getCombinedFrequency(signal1, signal2);
 
         // Combined value
         final double combinedValue;
         if (obsType1.getMeasurementType() == MeasurementType.CARRIER_PHASE && !Double.isNaN(combinedFrequency)) {
             // Transform from cycle to meters measurements
-            final double obs1Meters = od1.getValue() * freq1.getWavelength();
-            final double obs2Meters = od2.getValue() * freq2.getWavelength();
+            final double obs1Meters = od1.getValue() * signal1.getWavelength();
+            final double obs2Meters = od2.getValue() * signal2.getWavelength();
 
             // Calculate the combined value and convert it in cycles using the combined frequency
-            combinedValue = getCombinedValue(obs1Meters, freq1, obs2Meters, freq2) * combinedFrequency / Constants.SPEED_OF_LIGHT;
+            combinedValue = getCombinedValue(obs1Meters, signal1, obs2Meters, signal2) * combinedFrequency / Constants.SPEED_OF_LIGHT;
         } else {
-            combinedValue = getCombinedValue(od1.getValue(), freq1, od2.getValue(), freq2);
+            combinedValue = getCombinedValue(od1.getValue(), signal1, od2.getValue(), signal2);
         }
 
         // Combined observation data
@@ -159,24 +160,26 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
 
     /**
      * Get the combined observed value of two measurements.
+     *
      * @param obs1 observed value of the first measurement
-     * @param f1 frequency of the first measurement
+     * @param s1   frequency of the first measurement
      * @param obs2 observed value of the second measurement
-     * @param f2 frequency of the second measurement
+     * @param s2   frequency of the second measurement
      * @return combined observed value
      */
-    protected abstract double getCombinedValue(double obs1, Frequency f1, double obs2, Frequency f2);
+    protected abstract double getCombinedValue(double obs1, GnssSignal s1, double obs2, GnssSignal s2);
 
     /**
      * Get the combined frequency of two measurements.
-     * @param f1 frequency of the first measurement
-     * @param f2 frequency of the second measurement
+     *
+     * @param s1 frequency of the first measurement
+     * @param s2 frequency of the second measurement
      * @return combined frequency in Hz
      */
-    protected abstract double getCombinedFrequency(Frequency f1, Frequency f2);
+    protected abstract double getCombinedFrequency(GnssSignal s1, GnssSignal s2);
 
     /**
-     * Verifies if two observation data can be combine.
+     * Verifies if two observation data can be combined.
      * @param data1 first observation data
      * @param data2 second observation data
      * @return true if observation data can be combined

@@ -1033,7 +1033,7 @@ public enum ObservationType {
      * @param system satellite system
      * @return frequency for the satellite system, or null if satellite system not compatible
      */
-    public Frequency getFrequency(final SatelliteSystem system) {
+    public GnssSignal getFrequency(final SatelliteSystem system) {
         return frequencies.get(system);
     }
 
