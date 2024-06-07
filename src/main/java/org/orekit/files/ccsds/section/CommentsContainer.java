@@ -35,7 +35,7 @@ import org.orekit.errors.OrekitMessages;
 public class CommentsContainer implements Section {
 
     /** Comments, as one line per string. */
-    private final List<String> comments;
+    private List<String> comments;
 
     /** Indicator for accepting comments. */
     private boolean acceptComments;
@@ -103,6 +103,13 @@ public class CommentsContainer implements Section {
      */
     public List<String> getComments() {
         return Collections.unmodifiableList(comments);
+    }
+
+    /** Set the comments. This removes all previous comments and replaces them with the new ones.
+     * @param comments List with new comments
+     */
+    public void setComments(final List<String> comments) {
+        this.comments = comments;
     }
 
     /** Check if container is still accepting comments.

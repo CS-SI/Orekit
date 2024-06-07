@@ -24,6 +24,9 @@
       <action dev="luc" type="add" issue="1436">
         Use SI units for frequencies (Hz instead of MHz).
       </action>
+      <action dev="davidgondelach" type="add" issue="1262">
+        Enable changing the comments in CCSDS messages.
+      </action>
       <action dev="luc" type="add" issue="1433">
         Added RadioWave and GnssSignal interfaces above the Frequency enumerate.
       </action>
