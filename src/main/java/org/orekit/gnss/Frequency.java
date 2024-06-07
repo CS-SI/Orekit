@@ -16,15 +16,13 @@
  */
 package org.orekit.gnss;
 
-import org.orekit.utils.Constants;
-
 /**
  * Enumerate for GNSS frequencies.
  *
  * @author Luc Maisonobe
  * @since 9.2
  */
-public enum Frequency {
+public enum Frequency implements GnssSignal {
 
     // CHECKSTYLE: stop MultipleStringLiterals check
     /** GPS L1 (1575.42 MHz). */
@@ -141,7 +139,7 @@ public enum Frequency {
     // CHECKSTYLE: resume MultipleStringLiterals check
 
     /** Common frequency F0 in MHz (10.23 MHz). */
-    public static final double F0 = 10.23;
+    public static final double F0 = GnssSignal.F0;
 
     /** Satellite system. */
     private final SatelliteSystem satelliteSystem;
@@ -149,13 +147,13 @@ public enum Frequency {
     /** RINEX name for the frequency. */
     private final String name;
 
-    /** Ratio f/f0, where {@link #F0 f0} is the common frequency. */
+    /** Ratio f/f0, where {@link GnssSignal#F0 f0} is the common frequency. */
     private final double ratio;
 
     /** Simple constructor.
      * @param name for the frequency
      * @param satelliteSystem satellite system for which this frequency is defined
-     * @param ratio ratio f/f0, where {@link #F0 f0} is the common frequency
+     * @param ratio ratio f/f0, where {@link GnssSignal#F0 f0} is the common frequency
      */
     Frequency(final SatelliteSystem satelliteSystem, final String name, final double ratio) {
         this.satelliteSystem = satelliteSystem;
@@ -177,32 +175,16 @@ public enum Frequency {
         return satelliteSystem;
     }
 
-    /** Get the ratio f/f0, where {@link #F0 f0} is the common frequency.
-     * @return ratio f/f0, where {@link #F0 f0} is the common frequency
-     * @see #F0
-     * @see #getMHzFrequency()
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getRatio() {
         return ratio;
     }
 
-    /** Get the value of the frequency in MHz.
-     * @return value of the frequency in MHz
-     * @see #F0
-     * @see #getRatio()
-     * @see #getWavelength()
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getMHzFrequency() {
-        return ratio * F0;
-    }
-
-    /** Get the wavelength in meters.
-     * @return wavelength in meters
-     * @see #getMHzFrequency()
-     * @since 10.1
-     */
-    public double getWavelength() {
-        return Constants.SPEED_OF_LIGHT / (1.0e6 * getMHzFrequency());
+        return ratio * GnssSignal.F0;
     }
 
 }
