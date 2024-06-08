@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
@@ -34,8 +34,8 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
     /** Identifier for Beidou-3 B2B message type. */
     public static final String CNV3 = "CNV3";
 
-    /** Signal on which navigation signal is sent. */
-    private final Frequency signal;
+    /** Radio wave on which navigation signal is sent. */
+    private final RadioWave radioWave;
 
     /** Change rate in semi-major axis (m/s). */
     private double aDot;
@@ -93,19 +93,19 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
 
     /**
      * Constructor.
-     * @param signal signal on which navigation signal is sent
+     * @param radioWave radio wave on which navigation signal is sent
      */
-    public BeidouCivilianNavigationMessage(final Frequency signal) {
+    public BeidouCivilianNavigationMessage(final RadioWave radioWave) {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
-        this.signal = signal;
+        this.radioWave = radioWave;
     }
 
     /**
-     * Getter for signal.
-     * @return signal on which navigation signal is sent
+     * Getter for radio wave.
+     * @return radio wave on which navigation signal is sent
      */
-    public Frequency getSignal() {
-        return signal;
+    public RadioWave getRadioWave() {
+        return radioWave;
     }
 
     /**

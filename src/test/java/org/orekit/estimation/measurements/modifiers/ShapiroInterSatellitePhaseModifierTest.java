@@ -32,6 +32,7 @@ import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhaseMeasurementCreator;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -45,8 +46,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class ShapiroInterSatellitePhaseModifierTest {
 
-    /** Frequency of the measurements. */
-    private static final Frequency FREQUENCY = Frequency.G01;
+    /** Radio wave of the measurements. */
+    private static final RadioWave RADIO_WAVE = Frequency.G01;
 
     @Test
     public void testShapiroOneWay() {
@@ -82,7 +83,7 @@ public class ShapiroInterSatellitePhaseModifierTest {
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesPhaseMeasurementCreator(ephemeris,
-                                                                                                          FREQUENCY,
+                                                                                                          RADIO_WAVE,
                                                                                                           ambiguity,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset,

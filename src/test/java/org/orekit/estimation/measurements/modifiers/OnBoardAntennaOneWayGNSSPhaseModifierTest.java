@@ -30,6 +30,7 @@ import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhaseCreator;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -44,7 +45,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
 
-    private static final Frequency FREQUENCY = Frequency.G01;
+    private static final RadioWave RADIO_WAVE = Frequency.G01;
 
     @Test
     public void testPreliminary() {
@@ -76,8 +77,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
-                                                                                          "remote",
-                                                                                          FREQUENCY,
+                                                                                          "remote", RADIO_WAVE,
                                                                                           ambiguity,
                                                                                           localClockOffset,
                                                                                           remoteClockOffset,
@@ -93,8 +93,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
-                                                                                          "remote",
-                                                                                          FREQUENCY,
+                                                                                          "remote", RADIO_WAVE,
                                                                                           ambiguity,
                                                                                           localClockOffset,
                                                                                           remoteClockOffset,
@@ -106,8 +105,8 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
             OneWayGNSSPhase sr = (OneWayGNSSPhase) spacecraftCenteredMeasurements.get(i);
             OneWayGNSSPhase ar = (OneWayGNSSPhase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * FREQUENCY.getWavelength() >= -1.0);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * FREQUENCY.getWavelength() <= -0.36);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * RADIO_WAVE.getWavelength() >= -1.0);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * RADIO_WAVE.getWavelength() <= -0.36);
         }
     }
 
@@ -141,8 +140,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
-                                                                                          "remote",
-                                                                                          FREQUENCY,
+                                                                                          "remote", RADIO_WAVE,
                                                                                           ambiguity,
                                                                                           localClockOffset,
                                                                                           remoteClockOffset),
@@ -156,8 +154,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
-                                                                                          "remote",
-                                                                                          FREQUENCY,
+                                                                                          "remote", RADIO_WAVE,
                                                                                           ambiguity,
                                                                                           localClockOffset,
                                                                                           remoteClockOffset,
@@ -174,7 +171,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
             EstimatedMeasurementBase<OneWayGNSSPhase> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             OneWayGNSSPhase ar = (OneWayGNSSPhase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0] * FREQUENCY.getWavelength(), estimated.getEstimatedValue()[0] * FREQUENCY.getWavelength(), 6.0e-5);
+            Assertions.assertEquals(ar.getObservedValue()[0] * RADIO_WAVE.getWavelength(), estimated.getEstimatedValue()[0] * RADIO_WAVE.getWavelength(), 6.0e-5);
         }
 
     }

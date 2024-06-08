@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Top level interface for radio waves.
@@ -24,6 +25,11 @@ import org.orekit.utils.Constants;
  *
  */
 public interface RadioWave {
+
+    /** Default 1MHz tolerance for {@link #closeTo(RadioWave)}.
+     * @since 13.0
+     */
+    double ONE_MILLI_HERTZ = 1.0e-3;
 
     /** Get the value of the frequency in Hz.
      * @return value of the frequency in Hz
@@ -37,6 +43,28 @@ public interface RadioWave {
      */
     default double getWavelength() {
         return Constants.SPEED_OF_LIGHT / getFrequency();
+    }
+
+    /** Check if two radio waves are closer than {@link #ONE_MILLI_HERTZ}.
+     * @param other other radio wave to check against instance
+     * @return true if radio waves are closer than {@link #ONE_MILLI_HERTZ}
+     * @see #closeTo(RadioWave, double)
+     * @since 13.0
+     */
+    default boolean closeTo(final RadioWave other) {
+        return closeTo(other, ONE_MILLI_HERTZ);
+    }
+
+    /** Check if two radio waves are closer than tolerance.
+     * @param other other radio wave to check against instance
+     * @param tolerance frequency tolerance in Hz
+     * @return true if radio waves are closer than tolerance
+     * @see #ONE_MILLI_HERTZ
+     * @see #closeTo(RadioWave)
+     * @since 13.0
+     */
+    default boolean closeTo(final RadioWave other, final double tolerance) {
+        return FastMath.abs(getFrequency() - other.getFrequency()) < tolerance;
     }
 
 }

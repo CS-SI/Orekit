@@ -30,6 +30,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -39,8 +40,8 @@ import org.orekit.time.AbsoluteDate;
 
 public class ShapiroPhaseModifierTest {
 
-    /** Frequency of the measurements. */
-    private static final Frequency FREQUENCY = Frequency.G01;
+    /** Radio wave of the measurements. */
+    private static final RadioWave RADIO_WAVE = Frequency.G01;
 
     @Test
     public void testShapiro() {
@@ -66,8 +67,7 @@ public class ShapiroPhaseModifierTest {
         final double satClockOffset    = 345.0e-6;
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context,
-                                                                                           FREQUENCY,
+                                                               new PhaseMeasurementCreator(context, RADIO_WAVE,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);

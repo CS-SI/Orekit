@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.files.rinex.observation.ObservationDataSet;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
@@ -37,16 +37,16 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
     private static final String SEPARATOR = " - ";
 
     /** Minimum number of measurement needed before being able to figure out cycle-slip occurrence.*/
-    private int minMeasurementNumber;
+    private final int minMeasurementNumber;
 
     /** Maximum time lapse between two measurements without considering a cycle-slip occurred [s]. */
     private final double dt;
 
     /** List which contains all the info regarding the cycle slip. */
-    private List<CycleSlipDetectorResults> data;
+    private final List<CycleSlipDetectorResults> data;
 
     /** List of all the things use for cycle-slip detections. */
-    private List<Map<Frequency, DataForDetection>> stuff;
+    private final List<Map<GnssSignal, DataForDetection>> stuff;
 
     /**
      * Cycle-slip detector Abstract Constructor.
@@ -107,7 +107,7 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
      * Get the stuff (all the things needed for, the detector).
      * @return return stuff
      */
-    protected List<Map<Frequency, DataForDetection>> getStuffReference() {
+    protected List<Map<GnssSignal, DataForDetection>> getStuffReference() {
         return stuff;
     }
 
@@ -115,36 +115,36 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
      * @param nameSat name of the satellite (e.g. "GPS - 7")
      * @param date date of the measurement
      * @param value measurement at the current date
-     * @param freq frequency used
+     * @param signal signal used
      */
     protected void cycleSlipDataSet(final String nameSat, final AbsoluteDate date,
-                                    final double value, final Frequency freq)  {
+                                    final double value, final GnssSignal signal)  {
         // Check if cycle-slip data are empty
         if (data.isEmpty()) {
-            data.add(new CycleSlipDetectorResults(nameSat, date, freq));
-            final Map<Frequency, DataForDetection> newMap = new HashMap<>();
-            newMap.put(freq, new DataForDetection(value, date));
+            data.add(new CycleSlipDetectorResults(nameSat, date, signal));
+            final Map<GnssSignal, DataForDetection> newMap = new HashMap<>();
+            newMap.put(signal, new DataForDetection(value, date));
             stuff.add(newMap);
         } else {
-            if (!alreadyExist(nameSat, freq)) {
+            if (!alreadyExist(nameSat, signal)) {
                 // As the couple satellite-frequency, first possibility is that the satellite already exist within the data but not at this frequency
                 for (CycleSlipDetectorResults r: data) {
                     if (r.getSatelliteName().compareTo(nameSat) == 0) {
-                        r.addAtOtherFrequency(freq, date);
-                        final Map<Frequency, DataForDetection> newMap = stuff.get(data.indexOf(r));
-                        newMap.put(freq, new DataForDetection(value, date));
+                        r.addAtOtherFrequency(signal, date);
+                        final Map<GnssSignal, DataForDetection> newMap = stuff.get(data.indexOf(r));
+                        newMap.put(signal, new DataForDetection(value, date));
                         stuff.set(data.indexOf(r), newMap);
                         return;
                     }
                 }
                 //If w've reach this point is because the name does not exist, in this case another element in the two list should be added
-                data.add(new CycleSlipDetectorResults(nameSat, date, freq));
-                final Map<Frequency, DataForDetection> newMap = new HashMap<>();
-                newMap.put(freq, new DataForDetection(value, date));
+                data.add(new CycleSlipDetectorResults(nameSat, date, signal));
+                final Map<GnssSignal, DataForDetection> newMap = new HashMap<>();
+                newMap.put(signal, new DataForDetection(value, date));
                 stuff.add(newMap);
             } else {
                 // We add the value of the combination of measurements
-                addValue(nameSat, date, value, freq);
+                addValue(nameSat, date, value, signal);
             }
         }
 
@@ -163,14 +163,14 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
     /**
      * Return true if the link (defined by a frequency and a satellite) has been already built.
      * @param nameSat name of the satellite (e.g.: GPS - 07 for satelite 7 of GPS constellation).
-     * @param freq frequency used in the link
+     * @param signal signal used in the link
      * @return true if it already exists within attribute data
      */
-    private boolean alreadyExist(final String nameSat, final Frequency freq) {
+    private boolean alreadyExist(final String nameSat, final GnssSignal signal) {
         if (data != null) {
             for (CycleSlipDetectorResults result: data) {
                 if (result.getSatelliteName().compareTo(nameSat) == 0) {
-                    return result.getCycleSlipMap().containsKey(freq);
+                    return result.getCycleSlipMap().containsKey(signal);
                 }
             }
         }
@@ -182,20 +182,20 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
      * @param nameSat name of the satellite (satellite system - PRN)
      * @param date date of the measurement
      * @param value phase measurement minus code measurement
-     * @param frequency frequency use
+     * @param signal signal used
      */
     private void addValue(final String nameSat, final AbsoluteDate date,
-                          final double value, final Frequency frequency) {
+                          final double value, final GnssSignal signal) {
         // Loop on cycle-slip data
         for (CycleSlipDetectorResults result: data) {
             // Find the good position to add the data
-            if (result.getSatelliteName().compareTo(nameSat) == 0 && result.getCycleSlipMap().containsKey(frequency)) {
+            if (result.getSatelliteName().compareTo(nameSat) == 0 && result.getCycleSlipMap().containsKey(signal)) {
                 // The date is not to far away from the last one
-                final Map<Frequency, DataForDetection> valuesMap = stuff.get(data.indexOf(result));
-                final DataForDetection detect = valuesMap.get(frequency);
+                final Map<GnssSignal, DataForDetection> valuesMap = stuff.get(data.indexOf(result));
+                final DataForDetection detect = valuesMap.get(signal);
                 detect.write                  = (detect.write + 1) % minMeasurementNumber;
                 detect.figures[detect.write]  = new SlipComputationData(value, date);
-                result.setDate(frequency, date);
+                result.setDate(signal, date);
                 detect.canBeComputed++;
                 break;
             }
@@ -209,10 +209,10 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
     static class SlipComputationData {
 
         /** Value of the measurement. */
-        private double value;
+        private final double value;
 
         /** Date of measurement. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /**
          * Simple constructor.

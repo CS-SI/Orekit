@@ -21,7 +21,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -92,7 +91,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGpsRinex301Truncated() throws URISyntaxException, IOException {
+    public void testGpsRinex301Truncated() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_GPS_Rinex301.n";
@@ -107,7 +106,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGpsRinex301() throws URISyntaxException, IOException {
+    public void testGpsRinex301() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_GPS_Rinex301.n";
@@ -195,7 +194,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGpsRinex400() throws URISyntaxException, IOException {
+    public void testGpsRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_GPS_Rinex400.n";
@@ -253,7 +252,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testSBASRinex301() throws URISyntaxException, IOException {
+    public void testSBASRinex301() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_SBAS_Rinex301.n";
@@ -320,7 +319,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testBeidouRinex302() throws URISyntaxException, IOException {
+    public void testBeidouRinex302() throws IOException {
 
         final String ex = "/gnss/navigation/Example_Beidou_Rinex302.n";
         final RinexNavigation file = new RinexNavigationParser().
@@ -390,7 +389,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testBeidouRinex400() throws URISyntaxException, IOException {
+    public void testBeidouRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Beidou_Rinex400.n";
@@ -427,7 +426,7 @@ public class NavigationFileParserTest {
         final List<BeidouCivilianNavigationMessage> list = file.getBeidouCivilianNavigationMessages("C19");
         Assertions.assertEquals(6, list.size());
         Assertions.assertEquals(0.0, list.get(0).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B1C, list.get(0).getSignal());
+        Assertions.assertTrue(list.get(0).getRadioWave().closeTo(Frequency.B1C, 1.0e-6));
         Assertions.assertEquals(-1.139640808105e-02, list.get(0).getADot(),       1.0e-15);
         Assertions.assertEquals(-1.300156250000e+02, list.get(0).getCrs(),        1.0e-15);
         Assertions.assertEquals(3.453536710809e-09,  list.get(0).getDeltaN(),     1.0e-15);
@@ -464,22 +463,22 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(16, list.get(0).getIODE());
 
         Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B1C, list.get(1).getSignal());
+        Assertions.assertTrue(list.get(1).getRadioWave().closeTo(Frequency.B1C, 1.0e-6));
         Assertions.assertEquals(0.0, list.get(2).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B2A, list.get(2).getSignal());
+        Assertions.assertTrue(list.get(2).getRadioWave().closeTo(Frequency.B2A, 1.0e-6));
         Assertions.assertEquals(0.0,                 list.get(2).getIscB1CD(),    1.0e-15);
         Assertions.assertEquals(-2.735760062933e-09, list.get(2).getIscB2AD(),    1.0e-15);
         Assertions.assertEquals(0.0, list.get(3).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B2A, list.get(3).getSignal());
+        Assertions.assertTrue(list.get(3).getRadioWave().closeTo(Frequency.B2A));
         Assertions.assertEquals(0.0, list.get(4).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B2B, list.get(4).getSignal());
+        Assertions.assertTrue(list.get(4).getRadioWave().closeTo(Frequency.B2B));
         Assertions.assertEquals(0.0, list.get(5).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B2B, list.get(5).getSignal());
+        Assertions.assertTrue(list.get(5).getRadioWave().closeTo(Frequency.B2B));
 
     }
 
     @Test
-    public void testGalileoRinex302() throws URISyntaxException, IOException {
+    public void testGalileoRinex302() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Galileo_Rinex302.n";
@@ -565,7 +564,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGalileoRinex400() throws URISyntaxException, IOException {
+    public void testGalileoRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Galileo_Rinex400.n";
@@ -603,7 +602,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testQZSSRinex302() throws URISyntaxException, IOException {
+    public void testQZSSRinex302() throws IOException {
 
         final String ex = "/gnss/navigation/Example_QZSS_Rinex302.n";
         final RinexNavigation file = new RinexNavigationParser().
@@ -692,7 +691,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testQZSSRinex400() throws URISyntaxException, IOException {
+    public void testQZSSRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_QZSS_Rinex400.n";
@@ -745,7 +744,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGLONASSRinex303() throws URISyntaxException, IOException {
+    public void testGLONASSRinex303() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Glonass_Rinex303.n";
@@ -806,7 +805,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testIRNSSRinex303() throws URISyntaxException, IOException {
+    public void testIRNSSRinex303() throws IOException {
 
         final String ex = "/gnss/navigation/Example_IRNSS_Rinex303.n";
         final RinexNavigation file = new RinexNavigationParser().
@@ -876,7 +875,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testIRNSSRinex400() throws URISyntaxException, IOException {
+    public void testIRNSSRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_IRNSS_Rinex400.n";
@@ -912,7 +911,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testMixedRinex304() throws URISyntaxException, IOException {
+    public void testMixedRinex304() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Mixed_Rinex304.n";
@@ -973,7 +972,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testMixedRinex305() throws URISyntaxException, IOException {
+    public void testMixedRinex305() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Mixed_Rinex305.n";
@@ -1033,7 +1032,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testQZSSRinex304() throws URISyntaxException, IOException {
+    public void testQZSSRinex304() throws IOException {
 
         final String ex = "/gnss/navigation/Example_QZSS_Rinex304.n";
         final RinexNavigation file = new RinexNavigationParser().
@@ -1104,7 +1103,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGpsRinex304() throws URISyntaxException, IOException {
+    public void testGpsRinex304() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_GPS_Rinex304.n";
@@ -1194,7 +1193,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGalileoRinex304() throws URISyntaxException, IOException {
+    public void testGalileoRinex304() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Galileo_Rinex304.n";
@@ -1273,7 +1272,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testSBASRinex304() throws URISyntaxException, IOException {
+    public void testSBASRinex304() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_SBAS_Rinex304.n";
@@ -1340,7 +1339,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testSBASRinex400() throws URISyntaxException, IOException {
+    public void testSBASRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_SBAS_Rinex400.n";
@@ -1377,7 +1376,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testIRNSSRinex304() throws URISyntaxException, IOException {
+    public void testIRNSSRinex304() throws IOException {
 
         final String ex = "/gnss/navigation/Example_IRNSS_Rinex304.n";
         final RinexNavigation file = new RinexNavigationParser().
@@ -1447,7 +1446,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testBeidouRinex304() throws URISyntaxException, IOException {
+    public void testBeidouRinex304() throws IOException {
 
         final String ex = "/gnss/navigation/Example_Beidou_Rinex304.n";
         final RinexNavigation file = new RinexNavigationParser().
@@ -1517,7 +1516,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testStoRinex400() throws URISyntaxException, IOException {
+    public void testStoRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Sto_Rinex400.n";
@@ -1612,7 +1611,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testEopRinex400() throws URISyntaxException, IOException {
+    public void testEopRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Eop_Rinex400.n";
@@ -1704,7 +1703,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testIonRinex400() throws URISyntaxException, IOException {
+    public void testIonRinex400() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_Ion_Rinex400.n";
@@ -1804,7 +1803,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGPSRinex2() throws URISyntaxException, IOException {
+    public void testGPSRinex2() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/brdc0130.22n";
@@ -1862,7 +1861,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGlonassRinex2() throws URISyntaxException, IOException {
+    public void testGlonassRinex2() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/brdc0130.22g";
@@ -1940,7 +1939,7 @@ public class NavigationFileParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
-            Assertions.assertEquals(9.99,  ((Double) oe.getParts()[0]).doubleValue(), 1.0e-10);
+            Assertions.assertEquals(9.99,  (Double) oe.getParts()[0], 1.0e-10);
             Assertions.assertEquals(ex, oe.getParts()[1]);
         }
     }
@@ -1999,7 +1998,7 @@ public class NavigationFileParserTest {
                     m.invoke(sbasParserField.get(null), "", parseInfo);
                     Assertions.fail("an exception should have been thrown");
                 } catch (InvocationTargetException e) {
-                    Assertions.assertTrue(e.getCause() instanceof OrekitInternalError);
+                    Assertions.assertInstanceOf(OrekitInternalError.class, e.getCause());
                 }
             }
 

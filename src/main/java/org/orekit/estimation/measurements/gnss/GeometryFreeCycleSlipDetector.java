@@ -24,7 +24,7 @@ import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.observation.ObservationDataSet;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
@@ -92,8 +92,8 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
         for (CombinedObservationData cod : phasesGF) {
             final String nameSat = setName(prn, observation.getSatellite().getSystem());
             // Check for cycle-slip detection
-            final Frequency frequency = cod.getUsedObservationData().get(0).getObservationType().getFrequency(system);
-            final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), frequency);
+            final GnssSignal signal = cod.getUsedObservationData().get(0).getObservationType().getFrequency(system);
+            final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), signal);
             if (!slip) {
                 // Update cycle slip data
                 cycleSlipDataSet(nameSat, date, cod.getValue(), cod.getUsedObservationData().get(0).getObservationType().getFrequency(system));
@@ -107,15 +107,15 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
      * @param nameSat name of the satellite, on the pre-defined format (e.g.: GPS - 07 for satellite 7 of GPS constellation)
      * @param currentDate the date at which we check if a cycle-slip occurs
      * @param valueGF geometry free measurement
-     * @param frequency frequency used
+     * @param signal frequency used
      * @return true if a cycle slip has been detected.
      */
     private boolean cycleSlipDetection(final String nameSat, final AbsoluteDate currentDate,
-                                       final double valueGF, final Frequency frequency) {
+                                       final double valueGF, final GnssSignal signal) {
 
         // Access the cycle slip results to know if a cycle-slip already occurred
         final List<CycleSlipDetectorResults>         data  = getResults();
-        final List<Map<Frequency, DataForDetection>> stuff = getStuffReference();
+        final List<Map<GnssSignal, DataForDetection>> stuff = getStuffReference();
 
         // If a cycle-slip already occurred
         if (data != null) {
@@ -124,16 +124,16 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
             for (CycleSlipDetectorResults resultGF : data) {
 
                 // Found the right cycle data
-                if (resultGF.getSatelliteName().compareTo(nameSat) == 0 && resultGF.getCycleSlipMap().containsKey(frequency)) {
-                    final Map<Frequency, DataForDetection> values = stuff.get(data.indexOf(resultGF));
-                    final DataForDetection dataForDetection = values.get(frequency);
+                if (resultGF.getSatelliteName().compareTo(nameSat) == 0 && resultGF.getCycleSlipMap().containsKey(signal)) {
+                    final Map<GnssSignal, DataForDetection> values = stuff.get(data.indexOf(resultGF));
+                    final DataForDetection dataForDetection = values.get(signal);
 
                     // Check the time gap condition
                     final double deltaT = FastMath.abs(currentDate.durationFrom(dataForDetection.getFiguresReference()[dataForDetection.getWrite()].getDate()));
                     if (deltaT > getMaxTimeBeetween2Measurement()) {
-                        resultGF.addCycleSlipDate(frequency, currentDate);
+                        resultGF.addCycleSlipDate(signal, currentDate);
                         dataForDetection.resetFigures(new SlipComputationData[getMinMeasurementNumber()], valueGF, currentDate);
-                        resultGF.setDate(frequency, currentDate);
+                        resultGF.setDate(signal, currentDate);
                         return true;
                     }
 
@@ -149,9 +149,9 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
                         final PolynomialCurveFitter fitting = PolynomialCurveFitter.create(2);
                         // Check if there is a cycle_slip
                         if (FastMath.abs(fitting.fit(xy)[0] - valueGF) > threshold) {
-                            resultGF.addCycleSlipDate(frequency, currentDate);
+                            resultGF.addCycleSlipDate(signal, currentDate);
                             dataForDetection.resetFigures(new SlipComputationData[getMinMeasurementNumber()], valueGF, currentDate);
-                            resultGF.setDate(frequency, currentDate);
+                            resultGF.setDate(signal, currentDate);
                             return true;
                         }
 
