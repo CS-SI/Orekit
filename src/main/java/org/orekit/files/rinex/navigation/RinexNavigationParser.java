@@ -1632,12 +1632,12 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
-                if (pi.beidouCNav.getSignal() == Frequency.B1C) {
+                if (pi.beidouCNav.getRadioWave().closeTo(Frequency.B1C)) {
                     pi.beidouCNav.setIscB1CD(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                     // field 2 is spare
                     pi.beidouCNav.setTgdB1Cp(parseBroadcastDouble3(line, pi.initialSpaces, Unit.SECOND));
                     pi.beidouCNav.setTgdB2ap(parseBroadcastDouble4(line, pi.initialSpaces, Unit.SECOND));
-                } else if (pi.beidouCNav.getSignal() == Frequency.B2A) {
+                } else if (pi.beidouCNav.getRadioWave().closeTo(Frequency.B2A)) {
                     // field 1 is spare
                     pi.beidouCNav.setIscB2AD(parseBroadcastDouble2(line, pi.initialSpaces, Unit.SECOND));
                     pi.beidouCNav.setTgdB1Cp(parseBroadcastDouble3(line, pi.initialSpaces, Unit.SECOND));
@@ -1650,7 +1650,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseEighthBroadcastOrbit(final String line, final ParseInfo pi) {
-                if (pi.beidouCNav.getSignal() == Frequency.B2B) {
+                if (pi.beidouCNav.getRadioWave().closeTo(Frequency.B2B)) {
                     pi.beidouCNav.setTransmissionTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                     pi.closePendingMessage();
                 } else {

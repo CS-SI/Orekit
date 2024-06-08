@@ -29,6 +29,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -180,8 +181,8 @@ public class AntexLoaderTest {
         Assertions.assertEquals("",                      loader.getReceiversAntennas().get(1).getSerialNumber());
         Assertions.assertEquals("AERAT1675_120   SPKE",  loader.getReceiversAntennas().get(2).getType());
         Assertions.assertEquals("",                      loader.getReceiversAntennas().get(2).getSerialNumber());
-        Assertions.assertEquals(1, loader.getReceiversAntennas().get(2).getFrequencies().size());
-        Assertions.assertEquals(Frequency.G01, loader.getReceiversAntennas().get(2).getFrequencies().get(0));
+        Assertions.assertEquals(1, loader.getReceiversAntennas().get(2).getRadioWaves().size());
+        Assertions.assertTrue(loader.getReceiversAntennas().get(2).getRadioWaves().get(0).closeTo(Frequency.G01));
         try {
             loader.getReceiversAntennas().get(2).getEccentricities(Frequency.E06);
             Assertions.fail("an exception should have been thrown");
@@ -292,7 +293,7 @@ public class AntexLoaderTest {
                                 final int endYear, final int endMonth, final int endDay,
                                 final SatelliteSystem system, final String type,
                                 final SatelliteType satType, final int satCode, final int prnNumber,
-                                final String cosparId, final Frequency freq, final double az, final double pol,
+                                final String cosparId, final RadioWave radioWave, final double az, final double pol,
                                 final double phaseCenterVariation) {
         final double oneMilliSecond = 0.001;
         final AbsoluteDate startDate = new AbsoluteDate(startYear, startMonth, startDay,
@@ -316,7 +317,7 @@ public class AntexLoaderTest {
             Assertions.assertEquals(0.0,            endDate.durationFrom(antenna.getValidUntil()), 1.0e-10);
         }
         Assertions.assertEquals(phaseCenterVariation * 0.001,
-                            antenna.getPhaseCenterVariation(freq,
+                            antenna.getPhaseCenterVariation(radioWave,
                                                             new Vector3D(FastMath.toRadians(az),
                                                                          FastMath.toRadians(90 - pol))),
                             1.0e-10);

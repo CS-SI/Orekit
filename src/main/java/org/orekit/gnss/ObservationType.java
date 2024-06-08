@@ -998,7 +998,7 @@ public enum ObservationType {
     /** Signal code. */
     private final SignalCode code;
 
-    /** Map of ferquencies. */
+    /** Map of frequencies. */
     private final Map<SatelliteSystem, Frequency> frequencies;
 
     /** Simple  constructor.

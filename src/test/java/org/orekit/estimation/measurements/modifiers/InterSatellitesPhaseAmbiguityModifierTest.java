@@ -28,6 +28,7 @@ import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhaseMeasurementCreator;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -44,7 +45,7 @@ import java.util.List;
 @Deprecated
 public class InterSatellitesPhaseAmbiguityModifierTest {
 
-    private static final Frequency FREQUENCY = Frequency.G01;
+    private static final RadioWave RADIO_WAVE = Frequency.G01;
 
     @Test
     public void testEffect() {
@@ -77,7 +78,7 @@ public class InterSatellitesPhaseAmbiguityModifierTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesPhaseMeasurementCreator(ephemeris,
-                                                                                                          FREQUENCY,
+                                                                                                          RADIO_WAVE,
                                                                                                           ambiguity1,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset,

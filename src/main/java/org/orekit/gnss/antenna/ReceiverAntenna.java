@@ -18,7 +18,7 @@ package org.orekit.gnss.antenna;
 
 import java.util.Map;
 
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 
 /**
  * GNSS receiver antenna model.
@@ -40,7 +40,7 @@ public class ReceiverAntenna extends Antenna {
      * @param serialNumber serial number
      */
     public ReceiverAntenna(final String type, final String sinexCode,
-                           final Map<Frequency, FrequencyPattern> patterns,
+                           final Map<RadioWave, FrequencyPattern> patterns,
                            final String serialNumber) {
         super(type, sinexCode, patterns);
         this.serialNumber = serialNumber;

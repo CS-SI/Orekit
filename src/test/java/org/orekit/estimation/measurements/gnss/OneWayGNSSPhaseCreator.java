@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.QuadraticClockModel;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -43,17 +43,17 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     public OneWayGNSSPhaseCreator(final BoundedPropagator ephemeris,
                                   final String remoteName,
-                                  final Frequency frequency,
+                                  final RadioWave radioWave,
                                   final int ambiguity,
                                   final double localClockOffset,
                                   final double remoteClockOffset) {
-        this(ephemeris, remoteName, frequency, ambiguity,
+        this(ephemeris, remoteName, radioWave, ambiguity,
              localClockOffset, remoteClockOffset, Vector3D.ZERO, Vector3D.ZERO);
     }
 
     public OneWayGNSSPhaseCreator(final BoundedPropagator ephemeris,
                                   final String remoteName,
-                                  final Frequency frequency,
+                                  final RadioWave radioWave,
                                   final int ambiguity,
                                   final double localClockOffset,
                                   final double remoteClockOffset,
@@ -65,7 +65,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
                                                            remoteClockOffset, 0.0, 0.0);
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
-        this.wavelength          = frequency.getWavelength();
+        this.wavelength          = radioWave.getWavelength();
         this.local               = new ObservableSatellite(0);
         this.local.getClockOffsetDriver().setValue(localClockOffset);
         this.cache               = new AmbiguityCache();

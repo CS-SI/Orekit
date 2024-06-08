@@ -18,7 +18,7 @@ package org.orekit.gnss.antenna;
 
 import java.util.Map;
 
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
@@ -68,7 +68,7 @@ public class SatelliteAntenna extends Antenna {
      * @param validUntil end of validity
      */
     public SatelliteAntenna(final String type, final String sinexCode,
-                            final Map<Frequency, FrequencyPattern> patterns,
+                            final Map<RadioWave, FrequencyPattern> patterns,
                             final SatelliteSystem satelliteSystem, final int prnNumber,
                             final SatelliteType satelliteType, final int satelliteCode,
                             final String cosparID,

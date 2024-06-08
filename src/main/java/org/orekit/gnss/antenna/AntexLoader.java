@@ -42,6 +42,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -232,7 +233,7 @@ public class AntexLoader {
                 Vector3D                         eccentricities       = Vector3D.ZERO;
                 int                              nbFrequencies        = -1;
                 Frequency                        frequency            = null;
-                Map<Frequency, FrequencyPattern> patterns             = null;
+                Map<RadioWave, FrequencyPattern> patterns             = null;
                 boolean                          inFrequency          = false;
                 boolean                          inRMS                = false;
 

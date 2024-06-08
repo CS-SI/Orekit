@@ -19,7 +19,7 @@ package org.orekit.estimation.common;
 
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
@@ -39,10 +39,10 @@ class Iono {
     private final boolean twoWay;
 
     /** Map for range modifiers. */
-    private final Map<Frequency, Map<DateComponents, RangeIonosphericDelayModifier>> rangeModifiers;
+    private final Map<RadioWave, Map<DateComponents, RangeIonosphericDelayModifier>> rangeModifiers;
 
     /** Map for range-rate modifiers. */
-    private final Map<Frequency, Map<DateComponents, RangeRateIonosphericDelayModifier>> rangeRateModifiers;
+    private final Map<RadioWave, Map<DateComponents, RangeRateIonosphericDelayModifier>> rangeRateModifiers;
 
     /** Simple constructor.
      * @param twoWay flag for two-way range-rate
@@ -54,41 +54,43 @@ class Iono {
     }
 
     /** Get range modifier for a measurement.
-     * @param frequency frequency of the signal
+     * @param radioWave radio wave of the signal
      * @param date measurement date
      * @return range modifier
      */
-    public RangeIonosphericDelayModifier getRangeModifier(final Frequency frequency,
+    public RangeIonosphericDelayModifier getRangeModifier(final RadioWave radioWave,
                                                           final AbsoluteDate date) {
         final DateComponents dc = date.getComponents(TimeScalesFactory.getUTC()).getDate();
-        ensureFrequencyAndDateSupported(frequency, dc);
-        return rangeModifiers.get(frequency).get(dc);
+        ensureFrequencyAndDateSupported(radioWave, dc);
+        return rangeModifiers.get(radioWave).get(dc);
     }
 
-    /** Get range-rate modifier for a measurement.
-     * @param frequency frequency of the signal
-     * @param date measurement date
+    /**
+     * Get range-rate modifier for a measurement.
+     *
+     * @param radioWave radio wave of the signal
+     * @param date      measurement date
      * @return range-rate modifier
      */
-    public RangeRateIonosphericDelayModifier getRangeRateModifier(final Frequency frequency,
+    public RangeRateIonosphericDelayModifier getRangeRateModifier(final RadioWave radioWave,
                                                                   final AbsoluteDate date) {
         final DateComponents dc = date.getComponents(TimeScalesFactory.getUTC()).getDate();
-        ensureFrequencyAndDateSupported(frequency, dc);
-        return rangeRateModifiers.get(frequency).get(dc);
+        ensureFrequencyAndDateSupported(radioWave, dc);
+        return rangeRateModifiers.get(radioWave).get(dc);
     }
 
     /** Create modifiers for a frequency and date if needed.
-     * @param frequency frequency of the signal
+     * @param radioWave radio wave of the signal
      * @param dc date for which modifiers are required
      */
-    private void ensureFrequencyAndDateSupported(final Frequency frequency, final DateComponents dc) {
+    private void ensureFrequencyAndDateSupported(final RadioWave radioWave, final DateComponents dc) {
 
-        if (!rangeModifiers.containsKey(frequency)) {
-            rangeModifiers.put(frequency, new HashMap<>());
-            rangeRateModifiers.put(frequency, new HashMap<>());
+        if (!rangeModifiers.containsKey(radioWave)) {
+            rangeModifiers.put(radioWave, new HashMap<>());
+            rangeRateModifiers.put(radioWave, new HashMap<>());
         }
 
-        if (!rangeModifiers.get(frequency).containsKey(dc)) {
+        if (!rangeModifiers.get(radioWave).containsKey(dc)) {
 
             // load Klobuchar model for the L1 frequency
             final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
@@ -96,11 +98,11 @@ class Iono {
             final IonosphericModel model = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
 
             // scale for current frequency
-            final double f = frequency.getFrequency();
+            final double f = radioWave.getFrequency();
 
             // create modifiers
-            rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(model, f));
-            rangeRateModifiers.get(frequency).put(dc, new RangeRateIonosphericDelayModifier(model, f, twoWay));
+            rangeModifiers.get(radioWave).put(dc, new RangeIonosphericDelayModifier(model, f));
+            rangeRateModifiers.get(radioWave).put(dc, new RangeRateIonosphericDelayModifier(model, f, twoWay));
 
         }
 

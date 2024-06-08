@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
-import org.orekit.gnss.Frequency;
 import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationType;

@@ -24,7 +24,6 @@ import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.observation.ObservationDataSet;
-import org.orekit.gnss.Frequency;
 import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;

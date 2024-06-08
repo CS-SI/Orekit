@@ -427,7 +427,7 @@ public class NavigationFileParserTest {
         final List<BeidouCivilianNavigationMessage> list = file.getBeidouCivilianNavigationMessages("C19");
         Assertions.assertEquals(6, list.size());
         Assertions.assertEquals(0.0, list.get(0).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B1C, list.get(0).getSignal());
+        Assertions.assertTrue(list.get(0).getRadioWave().closeTo(Frequency.B1C, 1.0e-6));
         Assertions.assertEquals(-1.139640808105e-02, list.get(0).getADot(),       1.0e-15);
         Assertions.assertEquals(-1.300156250000e+02, list.get(0).getCrs(),        1.0e-15);
         Assertions.assertEquals(3.453536710809e-09,  list.get(0).getDeltaN(),     1.0e-15);
@@ -464,17 +464,17 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(16, list.get(0).getIODE());
 
         Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B1C, list.get(1).getSignal());
+        Assertions.assertTrue(list.get(1).getRadioWave().closeTo(Frequency.B1C, 1.0e-6));
         Assertions.assertEquals(0.0, list.get(2).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B2A, list.get(2).getSignal());
+        Assertions.assertTrue(list.get(2).getRadioWave().closeTo(Frequency.B2A, 1.0e-6));
         Assertions.assertEquals(0.0,                 list.get(2).getIscB1CD(),    1.0e-15);
         Assertions.assertEquals(-2.735760062933e-09, list.get(2).getIscB2AD(),    1.0e-15);
         Assertions.assertEquals(0.0, list.get(3).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B2A, list.get(3).getSignal());
+        Assertions.assertTrue(list.get(3).getRadioWave().closeTo(Frequency.B2A));
         Assertions.assertEquals(0.0, list.get(4).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B2B, list.get(4).getSignal());
+        Assertions.assertTrue(list.get(4).getRadioWave().closeTo(Frequency.B2B));
         Assertions.assertEquals(0.0, list.get(5).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertEquals(Frequency.B2B, list.get(5).getSignal());
+        Assertions.assertTrue(list.get(5).getRadioWave().closeTo(Frequency.B2B));
 
     }
 

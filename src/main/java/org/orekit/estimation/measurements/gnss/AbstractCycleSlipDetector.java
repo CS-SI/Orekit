@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.files.rinex.observation.ObservationDataSet;
-import org.orekit.gnss.Frequency;
 import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
