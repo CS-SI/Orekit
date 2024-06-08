@@ -27,6 +27,9 @@
       </action>
     </release>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1437">
+        Add extended position provider.
+      </action>
       <action dev="luc" type="add" issue="1436">
         Use SI units for frequencies (Hz instead of MHz).
       </action>

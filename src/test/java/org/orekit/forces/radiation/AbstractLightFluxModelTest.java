@@ -17,6 +17,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.Collections;
 import java.util.List;
@@ -97,7 +98,7 @@ class AbstractLightFluxModelTest {
         final ExtendedPVCoordinatesProvider mockedProvider = Mockito.mock(ExtendedPVCoordinatesProvider.class);
         final TestLightFluxModel testLightFluxModel = new TestLightFluxModel(mockedProvider);
         // WHEN
-        final ExtendedPVCoordinatesProvider actualProvider = testLightFluxModel.getOccultedBody();
+        final ExtendedPositionProvider actualProvider = testLightFluxModel.getOccultedBody();
         // THEN
         Assertions.assertEquals(mockedProvider, actualProvider);
     }

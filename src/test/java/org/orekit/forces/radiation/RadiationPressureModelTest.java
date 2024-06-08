@@ -24,6 +24,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -136,7 +137,7 @@ class RadiationPressureModelTest {
                                                    final AbsoluteDate terminalDate) {
         final NumericalPropagator propagator = createPropagator();
         final CylindricallyShadowedLightFluxModel lightFluxModel = (CylindricallyShadowedLightFluxModel) radiationPressureModel.getLightFluxModel();
-        final SolarRadiationPressure solarRadiationPressure = new SolarRadiationPressure(lightFluxModel.getOccultedBody(),
+        final SolarRadiationPressure solarRadiationPressure = new SolarRadiationPressure((ExtendedPVCoordinatesProvider) lightFluxModel.getOccultedBody(),
                 new OneAxisEllipsoid(lightFluxModel.getOccultingBodyRadius(), 0., FramesFactory.getGTOD(false)),
                 radiationPressureModel.getRadiationSensitive());
         propagator.addForceModel(solarRadiationPressure);
