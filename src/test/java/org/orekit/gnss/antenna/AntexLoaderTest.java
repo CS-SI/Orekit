@@ -181,6 +181,7 @@ public class AntexLoaderTest {
         Assertions.assertEquals("",                      loader.getReceiversAntennas().get(1).getSerialNumber());
         Assertions.assertEquals("AERAT1675_120   SPKE",  loader.getReceiversAntennas().get(2).getType());
         Assertions.assertEquals("",                      loader.getReceiversAntennas().get(2).getSerialNumber());
+        Assertions.assertEquals("IGS14_1972",            loader.getReceiversAntennas().get(2).getSinexCode());
         Assertions.assertEquals(1, loader.getReceiversAntennas().get(2).getRadioWaves().size());
         Assertions.assertTrue(loader.getReceiversAntennas().get(2).getRadioWaves().get(0).closeTo(Frequency.G01));
         try {

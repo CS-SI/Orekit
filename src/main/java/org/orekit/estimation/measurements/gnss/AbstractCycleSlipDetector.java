@@ -37,16 +37,16 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
     private static final String SEPARATOR = " - ";
 
     /** Minimum number of measurement needed before being able to figure out cycle-slip occurrence.*/
-    private int minMeasurementNumber;
+    private final int minMeasurementNumber;
 
     /** Maximum time lapse between two measurements without considering a cycle-slip occurred [s]. */
     private final double dt;
 
     /** List which contains all the info regarding the cycle slip. */
-    private List<CycleSlipDetectorResults> data;
+    private final List<CycleSlipDetectorResults> data;
 
     /** List of all the things use for cycle-slip detections. */
-    private List<Map<GnssSignal, DataForDetection>> stuff;
+    private final List<Map<GnssSignal, DataForDetection>> stuff;
 
     /**
      * Cycle-slip detector Abstract Constructor.
@@ -209,10 +209,10 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
     static class SlipComputationData {
 
         /** Value of the measurement. */
-        private double value;
+        private final double value;
 
         /** Date of measurement. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /**
          * Simple constructor.

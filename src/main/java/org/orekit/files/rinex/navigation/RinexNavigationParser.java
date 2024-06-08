@@ -85,7 +85,7 @@ public class RinexNavigationParser {
     private static final Unit KM_PER_S = Unit.parse("km/s");
 
     /** Converter for accelerations. */
-    private static final Unit KM_PER_S2 = Unit.parse("km/s²");;
+    private static final Unit KM_PER_S2 = Unit.parse("km/s²");
 
     /** Converter for velocities. */
     private static final Unit M_PER_S = Unit.parse("m/s");
@@ -106,16 +106,16 @@ public class RinexNavigationParser {
     private static final Unit SQRT_M = Unit.parse("√m");
 
     /** Converter for angular rates. */
-    private static final Unit RAD_PER_S = Unit.parse("rad/s");;
+    private static final Unit RAD_PER_S = Unit.parse("rad/s");
 
     /** Converter for angular accelerations. */
-    private static final Unit RAD_PER_S2 = Unit.parse("rad/s²");;
+    private static final Unit RAD_PER_S2 = Unit.parse("rad/s²");
 
     /** Converter for rates of small angle. */
-    private static final Unit AS_PER_DAY = Unit.parse("as/d");;
+    private static final Unit AS_PER_DAY = Unit.parse("as/d");
 
     /** Converter for accelerations of small angles. */
-    private static final Unit AS_PER_DAY2 = Unit.parse("as/d²");;
+    private static final Unit AS_PER_DAY2 = Unit.parse("as/d²");
 
     /** System initials. */
     private static final String INITIALS = "GRECIJS";
@@ -197,7 +197,7 @@ public class RinexNavigationParser {
         private final TimeScales timeScales;
 
         /** The corresponding navigation messages file object. */
-        private RinexNavigation file;
+        private final RinexNavigation file;
 
         /** Number of initial spaces in broadcase orbits lines. */
         private int initialSpaces;
@@ -611,9 +611,9 @@ public class RinexNavigationParser {
                                pi.sto.setDefinedTimeSystem(TimeSystem.parseTwoLettersCode(RinexUtils.parseString(line, 24, 2)));
                                pi.sto.setReferenceTimeSystem(TimeSystem.parseTwoLettersCode(RinexUtils.parseString(line, 26, 2)));
                                final String sbas = RinexUtils.parseString(line, 43, 18);
-                               pi.sto.setSbasId(sbas.length() > 0 ? SbasId.valueOf(sbas) : null);
+                               pi.sto.setSbasId(!sbas.isEmpty() ? SbasId.valueOf(sbas) : null);
                                final String utc = RinexUtils.parseString(line, 62, 18);
-                               pi.sto.setUtcId(utc.length() > 0 ? UtcId.parseUtcId(utc) : null);
+                               pi.sto.setUtcId(!utc.isEmpty() ? UtcId.parseUtcId(utc) : null);
 
                                // TODO is the reference date relative to one or the other time scale?
                                final int year  = RinexUtils.parseInt(line, 4, 4);

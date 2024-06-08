@@ -78,7 +78,7 @@ public class Antenna {
         return patterns.
                entrySet().
                stream().
-               map(e -> e.getKey()).
+               map(Map.Entry::getKey).
                collect(Collectors.toList());
     }
 

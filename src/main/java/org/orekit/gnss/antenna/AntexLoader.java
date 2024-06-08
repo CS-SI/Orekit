@@ -287,7 +287,7 @@ public class AntexLoader {
                             try {
                                 satelliteType = SatelliteType.parseSatelliteType(antennaType);
                                 final String satField = parseString(line, 20, 20);
-                                if (satField.length() > 0) {
+                                if (!satField.isEmpty()) {
                                     satelliteSystem = SatelliteSystem.parseSatelliteSystem(satField);
                                     final int n = parseInt(satField, 1, 19);
                                     switch (satelliteSystem) {
