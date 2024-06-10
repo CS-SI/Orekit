@@ -26,14 +26,15 @@
   </bannerRight>
   <body>
     <menu name="Orekit">
-      <item name="Overview"            href="/index.html"               />
-      <item name="Getting the sources" href="/sources.html"             />
-      <item name="Building"            href="/building.html"            />
-      <item name="FAQ"                 href="/faq.html"                 />
-      <item name="License"             href="/licenses.html"            />
-      <item name="Downloads"           href="/downloads.html"           />
-      <item name="Changes"             href="/changes-report.html"      />
-      <item name="Contact"             href="/contact.html"             />
+      <item name="Overview"                          href="/index.html"           />
+      <item name="Upgrading from a previous version" href="/upgrading.html"       />
+      <item name="Getting the sources"               href="/sources.html"         />
+      <item name="Building"                          href="/building.html"        />
+      <item name="FAQ"                               href="/faq.html"             />
+      <item name="License"                           href="/licenses.html"        />
+      <item name="Downloads"                         href="/downloads.html"       />
+      <item name="Changes"                           href="/changes-report.html"  />
+      <item name="Contact"                           href="/contact.html"         />
     </menu>
     <menu name="Data">
       <item name="Contexts"               href="/data/contexts.html"              />
