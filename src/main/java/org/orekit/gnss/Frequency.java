@@ -158,9 +158,8 @@ public enum Frequency implements GnssSignal {
         this.ratio           = ratio;
     }
 
-    /** Get the RINEX name for the frequency.
-     * @return RINEX name for the frequency
-     */
+    /** {@inheritDoc} */
+    @Override
     public String getName() {
         return name;
     }
