@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="update" issue="1439">
+            Added a posteriori filtering feature for generated measurements.
+        </action>
         <action dev="luc" type="update" issue="1438">
             Added upgrade instructions for major versions.
         </action>

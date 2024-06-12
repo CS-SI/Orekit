@@ -48,6 +48,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.SortedSet;
+import java.util.function.Predicate;
 
 public class InterSatellitesRangeBuilderTest {
 
@@ -72,20 +73,49 @@ public class InterSatellitesRangeBuilderTest {
     }
 
     @Test
-    public void testForward() {
-        doTest(0xc82a56322345dc25L, 0.0, 1.2, 2.8 * SIGMA);
+    public void testForwardAll() {
+        doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> true,
+               264, 73485.963, 28386637.208, 2.8 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0x95c10149c4891232L, 0.0, -1.0, 2.6 * SIGMA);
+    public void testForwardIgnoreSmall() {
+        doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] > 10000000.0,
+               182, 10111578.965, 28386637.208, 2.8 * SIGMA);
+    }
+
+    @Test
+    public void testForwardIgnoreLarge() {
+        doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] <= 10000000.0,
+               82, 73485.963, 9969288.418, 2.8 * SIGMA);
+    }
+
+    @Test
+    public void testBackwardAll() {
+        doTest(0x95c10149c4891232L, 0.0, -1.0, e -> true,
+               219, 243749.068, 28279283.197, 2.6 * SIGMA);
+    }
+
+    @Test
+    public void testBackwardIgnoreSmall() {
+        doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] > 10000000.0,
+               153, 10131712.178, 28279283.197, 2.6 * SIGMA);
+    }
+
+    @Test
+    public void testBackwardIgnoreLarge() {
+        doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] <= 10000000.0,
+               66, 243749.068, 9950029.194, 2.6 * SIGMA);
     }
 
     private Propagator buildPropagator() {
         return EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
     }
 
-    private void doTest(long seed, double startPeriod, double endPeriod, double tolerance) {
+    private void doTest(long seed, double startPeriod, double endPeriod,
+                        Predicate<EstimatedMeasurementBase<InterSatellitesRange>> filter,
+                        int expectedCount,
+                        double expectedMin, double expectedMax, double tolerance) {
         Generator generator = new Generator();
         generator.addPropagator(buildPropagator()); // dummy first propagator
         generator.addPropagator(buildPropagator()); // dummy second propagator
@@ -106,6 +136,7 @@ public class InterSatellitesRangeBuilderTest {
         // this is the reason why we create a *new* KeplerianPropagator below
         generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), receiver, remote),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
+                                                         filter,
                                                          generator.getPropagator(receiver),
                                                          new InterSatDirectViewDetector(context.earth, new KeplerianPropagator(o2)),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
@@ -117,6 +148,7 @@ public class InterSatellitesRangeBuilderTest {
         AbsoluteDate t1     = o1.getDate().shiftedBy(endPeriod   * period);
         generator.generate(t0, t1);
         SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
+        Assertions.assertEquals(expectedCount, measurements.size());
 
         // and yet another set of propagators for reference
         Propagator propagator1 = buildPropagator();
@@ -126,6 +158,8 @@ public class InterSatellitesRangeBuilderTest {
         AbsoluteDate previous = null;
         AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
         AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
         for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
@@ -150,9 +184,13 @@ public class InterSatellitesRangeBuilderTest {
                 getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
+                min      = FastMath.min(min, e[i]);
+                max      = FastMath.max(max, e[i]);
             }
         }
         Assertions.assertEquals(0.0, maxError, tolerance);
+        Assertions.assertEquals(expectedMin, min, tolerance);
+        Assertions.assertEquals(expectedMax, max, tolerance);
      }
 
      @BeforeEach

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -42,14 +43,24 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
     /** Selector for dates. */
     private final DatesSelector selector;
 
+    /** Predicate for a posteriori filtering of generated measurements.
+     * @since 13.0
+     */
+    private final Predicate<EstimatedMeasurementBase<T>> filter;
+
     /** Simple constructor.
      * @param builder builder for individual measurements
      * @param selector selector for dates
+     * @param filter predicate for a posteriori filtering of generated measurements
+     *               (measurements are accepted if the predicates evaluates to {@code true})
+     * @since 13.0
      */
     protected AbstractScheduler(final MeasurementBuilder<T> builder,
-                                final DatesSelector selector) {
+                                final DatesSelector selector,
+                                final Predicate<EstimatedMeasurementBase<T>> filter) {
         this.builder  = builder;
         this.selector = selector;
+        this.filter   = filter;
     }
 
     /** {@inheritDoc}
@@ -90,7 +101,11 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
         for (final AbsoluteDate date : dates) {
             if (measurementIsFeasible(date)) {
                 // a measurement is feasible at this date
-                measurements.add(getBuilder().build(date, interpolators));
+                final EstimatedMeasurementBase<T> built = getBuilder().build(date, interpolators);
+                if (filter.test(built)) {
+                    // add the generated measurement is the filters accepts it
+                    measurements.add(built);
+                }
             }
         }
 
