@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="maxime" type="update" issue="1257" due-to="lucian">
+        Updated Romanian translation.
+      </action>
       <action dev="serrof" type="add" issue="1437">
         Add extended position provider.
       </action>
