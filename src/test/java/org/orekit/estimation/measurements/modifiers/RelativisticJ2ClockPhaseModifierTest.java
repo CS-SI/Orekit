@@ -30,7 +30,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -96,7 +96,7 @@ public class RelativisticJ2ClockPhaseModifierTest {
         final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement
-        final Phase phase = new Phase(station, state.getDate(), 26584264.45, Frequency.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));
+        final Phase phase = new Phase(station, state.getDate(), 26584264.45, PredefinedGnssSignal.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));
         final EstimatedMeasurement<Phase> estimated = new EstimatedMeasurement<Phase>(phase, 0, 0,
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});

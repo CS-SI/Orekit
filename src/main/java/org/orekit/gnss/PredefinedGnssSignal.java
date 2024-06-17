@@ -17,12 +17,12 @@
 package org.orekit.gnss;
 
 /**
- * Enumerate for GNSS frequencies.
+ * Enumerate for GNSS predefined signals.
  *
  * @author Luc Maisonobe
  * @since 9.2
  */
-public enum Frequency implements GnssSignal {
+public enum PredefinedGnssSignal implements GnssSignal {
 
     // CHECKSTYLE: stop MultipleStringLiterals check
     /** GPS L1 (1575.42 MHz). */
@@ -152,7 +152,7 @@ public enum Frequency implements GnssSignal {
      * @param satelliteSystem satellite system for which this frequency is defined
      * @param ratio ratio f/f0, where {@link GnssSignal#F0 f0} is the common frequency
      */
-    Frequency(final SatelliteSystem satelliteSystem, final String name, final double ratio) {
+    PredefinedGnssSignal(final SatelliteSystem satelliteSystem, final String name, final double ratio) {
         this.satelliteSystem = satelliteSystem;
         this.name            = name;
         this.ratio           = ratio;

@@ -40,7 +40,7 @@ import org.orekit.estimation.measurements.generation.InterSatellitesPhaseBuilder
 import org.orekit.estimation.measurements.generation.SignSemantic;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.attitude.GPSBlockIIA;
 import org.orekit.gnss.attitude.GPSBlockIIR;
@@ -162,8 +162,8 @@ public class InterSatellitesWindUpTest {
                                                                                                   receiverAttitudeProvider));
         InterSatellitesPhaseBuilder builder     = new InterSatellitesPhaseBuilder(null,
                                                                                   receiverSat, emitterSat,
-                                                                                  Frequency.G01.getWavelength(),
-                                                                                  0.01 * Frequency.G01.getWavelength(),
+                                                                                  PredefinedGnssSignal.G01.getWavelength(),
+                                                                                  0.01 * PredefinedGnssSignal.G01.getWavelength(),
                                                                                   1.0,
                                                                                   new AmbiguityCache());
         generator.addScheduler(new EventBasedScheduler<>(builder,

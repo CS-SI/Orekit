@@ -25,7 +25,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -66,7 +66,7 @@ public class PhaseAmbiguityModifierTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01,
+                                                                                           PredefinedGnssSignal.G01,
                                                                                            ambiguity1,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);

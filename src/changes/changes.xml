@@ -28,7 +28,8 @@
             Added upgrade instructions for major versions.
         </action>
         <action dev="luc" type="update" issue="1434">
-            Replaced Frequency by RadioWave or GnssSignal where relevant.
+            Replaced Frequency by RadioWave, GnssSignal or PredefinedGnssSignal
+            where relevant.
         </action>
         <action dev="luc" type="update" issue="1350">
           Allow measurement generation feature to return estimated measurements,

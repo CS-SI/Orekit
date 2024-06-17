@@ -34,7 +34,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.estimation.measurements.modifiers.Bias;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -55,7 +55,7 @@ public class InterSatellitesPhaseBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
-    private static final double WAVELENGTH = Frequency.G01.getWavelength();
+    private static final double WAVELENGTH = PredefinedGnssSignal.G01.getWavelength();
 
     private MeasurementBuilder<InterSatellitesPhase> getBuilder(final RandomGenerator random,
                                                                 final ObservableSatellite receiver,

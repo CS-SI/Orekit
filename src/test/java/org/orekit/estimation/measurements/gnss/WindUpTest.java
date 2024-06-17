@@ -39,7 +39,7 @@ import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.SignSemantic;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.attitude.GPSBlockIIA;
 import org.orekit.gnss.attitude.GPSBlockIIR;
@@ -48,7 +48,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
@@ -138,8 +137,8 @@ public class WindUpTest {
         Generator           generator = new Generator();
         ObservableSatellite obsSat    = generator.addPropagator(new KeplerianPropagator(orbit, attitudeProvider));
         PhaseBuilder        builder   = new PhaseBuilder(null, station,
-                                                         Frequency.G01.getWavelength(),
-                                                         0.01 * Frequency.G01.getWavelength(),
+                                                         PredefinedGnssSignal.G01.getWavelength(),
+                                                         0.01 * PredefinedGnssSignal.G01.getWavelength(),
                                                          1.0, obsSat,
                                                          new AmbiguityCache());
         generator.addScheduler(new EventBasedScheduler<>(builder,

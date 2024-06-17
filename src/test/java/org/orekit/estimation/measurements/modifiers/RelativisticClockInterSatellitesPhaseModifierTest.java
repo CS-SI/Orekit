@@ -27,7 +27,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -47,7 +47,7 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
     public void testRelativisticClockCorrectionDeprecated() {
 
         // Measurement
-        final double wavelength = Frequency.G01.getWavelength();
+        final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     date,
                                                                     Vector3D.distance(states[0].getPosition(),
@@ -72,7 +72,7 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
     public void testRelativisticClockCorrection() {
 
         // Measurement
-        final double wavelength = Frequency.G01.getWavelength();
+        final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     date,
                                                                     Vector3D.distance(states[0].getPosition(),

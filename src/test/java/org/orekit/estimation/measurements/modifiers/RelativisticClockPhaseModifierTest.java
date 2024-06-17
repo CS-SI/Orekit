@@ -31,7 +31,7 @@ import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
@@ -86,7 +86,7 @@ public class RelativisticClockPhaseModifierTest {
         final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement
-        final Phase phase = new Phase(station, state.getDate(), 26584264.45, Frequency.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));
+        final Phase phase = new Phase(station, state.getDate(), 26584264.45, PredefinedGnssSignal.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));
         final EstimatedMeasurement<Phase> estimated = new EstimatedMeasurement<>(phase, 0, 0,
                                                                                  new SpacecraftState[] {state},
                                                                                  new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
@@ -99,7 +99,7 @@ public class RelativisticClockPhaseModifierTest {
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assertions.assertEquals(-6.87 / Frequency.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(-6.87 / PredefinedGnssSignal.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 
@@ -142,7 +142,7 @@ public class RelativisticClockPhaseModifierTest {
         final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement
-        final Phase phase = new Phase(station, state.getDate(), 26584264.45, Frequency.G01.getWavelength(),
+        final Phase phase = new Phase(station, state.getDate(), 26584264.45, PredefinedGnssSignal.G01.getWavelength(),
                                       1.0, 1.0, new ObservableSatellite(0),
                                       new AmbiguityCache());
         final EstimatedMeasurement<Phase> estimated = new EstimatedMeasurement<>(phase, 0, 0,
@@ -157,7 +157,7 @@ public class RelativisticClockPhaseModifierTest {
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assertions.assertEquals(-6.87 / Frequency.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(-6.87 / PredefinedGnssSignal.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 

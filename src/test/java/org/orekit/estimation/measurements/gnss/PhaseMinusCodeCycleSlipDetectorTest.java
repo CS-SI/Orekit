@@ -27,7 +27,7 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservationParser;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -67,51 +67,51 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         for(CycleSlipDetectorResults d: results) {
             switch(getPrn(d)) {
                 case 1:
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,33 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,33 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,40 ,00.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,40 ,00.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 5:
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 6:
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 28, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 28, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 31, 0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 31, 0.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 7:
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 13,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 13,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 11,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 11,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 9:
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 32,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 32,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 31,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 31,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 11:
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(PredefinedGnssSignal.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 default:   break;
@@ -147,7 +147,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                         new AbsoluteDate(2016,02,13,04,45,13.000 , TimeScalesFactory.getUTC()),
                         new AbsoluteDate(2016,02,13,04,54,13.000 , TimeScalesFactory.getUTC())};
                     int i1 = 0;
-                    for (AbsoluteDate dateL1: d.getCycleSlipMap().get(Frequency.G01)) {
+                    for (AbsoluteDate dateL1: d.getCycleSlipMap().get(PredefinedGnssSignal.G01)) {
                         Assertions.assertEquals(0,  dateL1.compareTo(dateCycleSlipL1[i1]));
                         i1++;
                     }
@@ -158,7 +158,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                         new AbsoluteDate(2016,02,13,04,45,43.000 , TimeScalesFactory.getUTC()),
                         new AbsoluteDate(2016,02,13,04,54,13.000 , TimeScalesFactory.getUTC())};
                     int i2 = 0;
-                    for(AbsoluteDate dateL2: d.getCycleSlipMap().get(Frequency.G02)) {
+                    for(AbsoluteDate dateL2: d.getCycleSlipMap().get(PredefinedGnssSignal.G02)) {
                         Assertions.assertEquals(0,  dateL2.compareTo(dateCycleSlipL2[i2]));
                         i2++;
                     }
@@ -201,11 +201,11 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             final List<CycleSlipDetectorResults> resultsL2 = slipDetectorsL2.detect(obserDataSets);
             for(CycleSlipDetectorResults d : resultsL2) {
                 if(i == 0) {
-                    final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
+                    final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(PredefinedGnssSignal.G02);
                     Assertions.assertEquals(3, computedDateOnL2.size());
                     Assertions.assertEquals(0.0, computedDateOnL2.get(0).durationFrom(dateL2[i]), 0.0);
                 } else {
-                    final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
+                    final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(PredefinedGnssSignal.G02);
                     Assertions.assertEquals(0, computedDateOnL2.size());
                 }
 
@@ -227,7 +227,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             final List<CycleSlipDetectorResults> resultsL1 = slipDetectorsL1.detect(obserDataSets);
             for(CycleSlipDetectorResults d : resultsL1) {
                 if(i == 0) {
-                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
+                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(PredefinedGnssSignal.G01);
                     Assertions.assertEquals(3, computedDateOnL1.size());
                     int i1 = 0;
                     for(AbsoluteDate date: computedDateOnL1) {
@@ -235,10 +235,10 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                         i1++;
                     }
                 } else if (i == 1) {
-                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
+                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(PredefinedGnssSignal.G01);
                     Assertions.assertEquals(2, computedDateOnL1.size());
                 } else {
-                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
+                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(PredefinedGnssSignal.G01);
                     Assertions.assertEquals(0, computedDateOnL1.size());
                 }
             }

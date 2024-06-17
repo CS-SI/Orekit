@@ -41,7 +41,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.RadioWave;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
@@ -232,7 +232,7 @@ public class AntexLoader {
                 double[][]                       grid2D               = null;
                 Vector3D                         eccentricities       = Vector3D.ZERO;
                 int                              nbFrequencies        = -1;
-                Frequency                        frequency            = null;
+                PredefinedGnssSignal             predefinedGnssSignal = null;
                 Map<RadioWave, FrequencyPattern> patterns             = null;
                 boolean                          inFrequency          = false;
                 boolean                          inRMS                = false;
@@ -277,7 +277,7 @@ public class AntexLoader {
                             grid2D               = null;
                             eccentricities       = Vector3D.ZERO;
                             nbFrequencies        = -1;
-                            frequency            = null;
+                            predefinedGnssSignal = null;
                             patterns             = null;
                             inFrequency          = false;
                             inRMS                = false;
@@ -355,7 +355,7 @@ public class AntexLoader {
                             break;
                         case "START OF FREQUENCY" :
                             try {
-                                frequency = Frequency.valueOf(parseString(line, 3, 3));
+                                predefinedGnssSignal = PredefinedGnssSignal.valueOf(parseString(line, 3, 3));
                                 grid1D    = new double[1 + (int) FastMath.round((polarStop - polarStart) / polarStep)];
                                 if (azimuthStep > 0.001) {
                                     grid2D = new double[1 + (int) FastMath.round(2 * FastMath.PI / azimuthStep)][grid1D.length];
@@ -375,9 +375,9 @@ public class AntexLoader {
                             break;
                         case "END OF FREQUENCY" : {
                             final String endFrequency = parseString(line, 3, 3);
-                            if (frequency == null || !frequency.toString().equals(endFrequency)) {
+                            if (predefinedGnssSignal == null || !predefinedGnssSignal.toString().equals(endFrequency)) {
                                 throw new OrekitException(OrekitMessages.MISMATCHED_FREQUENCIES,
-                                                          name, lineNumber, frequency, endFrequency);
+                                                          name, lineNumber, predefinedGnssSignal, endFrequency);
 
                             }
 
@@ -403,11 +403,11 @@ public class AntexLoader {
                             } else {
                                 phaseCenterVariation = new TwoDVariation(polarStart, polarStep, azimuthStep, grid2D);
                             }
-                            patterns.put(frequency, new FrequencyPattern(eccentricities, phaseCenterVariation));
-                            frequency   = null;
-                            grid1D      = null;
-                            grid2D      = null;
-                            inFrequency = false;
+                            patterns.put(predefinedGnssSignal, new FrequencyPattern(eccentricities, phaseCenterVariation));
+                            predefinedGnssSignal = null;
+                            grid1D               = null;
+                            grid2D               = null;
+                            inFrequency          = false;
                             break;
                         }
                         case "START OF FREQ RMS" :

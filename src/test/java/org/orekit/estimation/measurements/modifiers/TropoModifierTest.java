@@ -43,7 +43,7 @@ import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
@@ -187,7 +187,7 @@ public class TropoModifierTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01,
+                                                                                           PredefinedGnssSignal.G01,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
@@ -236,7 +236,7 @@ public class TropoModifierTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01,
+                                                                                           PredefinedGnssSignal.G01,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);

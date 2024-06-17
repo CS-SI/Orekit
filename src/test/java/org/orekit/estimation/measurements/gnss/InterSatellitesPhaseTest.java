@@ -35,7 +35,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -56,7 +56,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class InterSatellitesPhaseTest {
 
-    private static final RadioWave RADIO_WAVE = Frequency.G01;
+    private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     /**
      * Test the values of the phase comparing the observed values and the estimated values
@@ -464,7 +464,7 @@ public class InterSatellitesPhaseTest {
         final int    ambiguity         = 1234;
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
-        final InterSatellitesPhaseMeasurementCreator creator = new InterSatellitesPhaseMeasurementCreator(ephemeris, Frequency.E01,
+        final InterSatellitesPhaseMeasurementCreator creator = new InterSatellitesPhaseMeasurementCreator(ephemeris, PredefinedGnssSignal.E01,
                                                                             ambiguity, localClockOffset, remoteClockOffset);
         creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
         creator.getRemoteSatellite().getClockOffsetDriver().setSelected(true);
@@ -589,7 +589,7 @@ public class InterSatellitesPhaseTest {
 
         // Create a phase measurement. Remote is set to null since it not used by the test
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
-                                                                    AbsoluteDate.J2000_EPOCH, 467614.701, Frequency.G01.getWavelength(),
+                                                                    AbsoluteDate.J2000_EPOCH, 467614.701, PredefinedGnssSignal.G01.getWavelength(),
                                                                     0.02, 1.0,
                                                                     new AmbiguityCache());
 

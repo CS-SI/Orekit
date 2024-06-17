@@ -53,7 +53,7 @@ import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
@@ -81,7 +81,7 @@ public class IonoModifierTest {
         model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
         // GPS L1 in HZ
-        frequency = Frequency.G01.getFrequency();
+        frequency = PredefinedGnssSignal.G01.getFrequency();
     }
 
     @Test
@@ -110,7 +110,7 @@ public class IonoModifierTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01, 0,
+                                                                                           PredefinedGnssSignal.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
@@ -182,7 +182,7 @@ public class IonoModifierTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01, 0,
+                                                                                           PredefinedGnssSignal.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();

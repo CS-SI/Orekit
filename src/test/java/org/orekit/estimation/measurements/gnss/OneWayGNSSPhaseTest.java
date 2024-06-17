@@ -35,7 +35,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -56,7 +56,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OneWayGNSSPhaseTest {
 
-    private static final RadioWave RADIO_WAVE = Frequency.G01;
+    private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     /**
      * Test the values of the phase comparing the observed values and the estimated values
@@ -561,7 +561,7 @@ public class OneWayGNSSPhaseTest {
 
         // Create a phase measurement. Remote is set to null since it not used by the test
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(null, 635.0e-6, AbsoluteDate.J2000_EPOCH, 467614.701,
-                                                          Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
+                                                          PredefinedGnssSignal.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
 
         // First check
         Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);

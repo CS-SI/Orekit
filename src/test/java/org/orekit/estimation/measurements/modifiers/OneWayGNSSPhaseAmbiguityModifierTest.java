@@ -27,7 +27,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhaseCreator;
 import org.orekit.frames.LOFType;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -45,7 +45,7 @@ import java.util.List;
 @Deprecated
 public class OneWayGNSSPhaseAmbiguityModifierTest {
 
-    private static final RadioWave RADIO_WAVE = Frequency.G01;
+    private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     @Test
     public void testEffect() {

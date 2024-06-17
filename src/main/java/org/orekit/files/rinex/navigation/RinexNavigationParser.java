@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.utils.parsing.RinexUtils;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
@@ -1632,12 +1632,12 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
-                if (pi.beidouCNav.getRadioWave().closeTo(Frequency.B1C)) {
+                if (pi.beidouCNav.getRadioWave().closeTo(PredefinedGnssSignal.B1C)) {
                     pi.beidouCNav.setIscB1CD(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                     // field 2 is spare
                     pi.beidouCNav.setTgdB1Cp(parseBroadcastDouble3(line, pi.initialSpaces, Unit.SECOND));
                     pi.beidouCNav.setTgdB2ap(parseBroadcastDouble4(line, pi.initialSpaces, Unit.SECOND));
-                } else if (pi.beidouCNav.getRadioWave().closeTo(Frequency.B2A)) {
+                } else if (pi.beidouCNav.getRadioWave().closeTo(PredefinedGnssSignal.B2A)) {
                     // field 1 is spare
                     pi.beidouCNav.setIscB2AD(parseBroadcastDouble2(line, pi.initialSpaces, Unit.SECOND));
                     pi.beidouCNav.setTgdB1Cp(parseBroadcastDouble3(line, pi.initialSpaces, Unit.SECOND));
@@ -1650,7 +1650,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseEighthBroadcastOrbit(final String line, final ParseInfo pi) {
-                if (pi.beidouCNav.getRadioWave().closeTo(Frequency.B2B)) {
+                if (pi.beidouCNav.getRadioWave().closeTo(PredefinedGnssSignal.B2B)) {
                     pi.beidouCNav.setTransmissionTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                     pi.closePendingMessage();
                 } else {
@@ -1885,13 +1885,13 @@ public class RinexNavigationParser {
                         parseInfo.beidouLNav = new BeidouLegacyNavigationMessage();
                         return BEIDOU_D1_D2;
                     } else if (type.equals(BeidouCivilianNavigationMessage.CNV1)) {
-                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(Frequency.B1C);
+                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B1C);
                         return BEIDOU_CNV_123;
                     } else if (type.equals(BeidouCivilianNavigationMessage.CNV2)) {
-                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(Frequency.B2A);
+                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B2A);
                         return BEIDOU_CNV_123;
                     } else if (type.equals(BeidouCivilianNavigationMessage.CNV3)) {
-                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(Frequency.B2B);
+                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B2B);
                         return BEIDOU_CNV_123;
                     }
                     break;

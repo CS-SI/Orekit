@@ -31,7 +31,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -184,7 +184,7 @@ public class NeQuickModelTest {
         final SpacecraftState state   = new SpacecraftState(orbit);
 
         final double delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
-                                             Frequency.G01.getFrequency(), model.getParameters());
+                                             PredefinedGnssSignal.G01.getFrequency(), model.getParameters());
        
         // Verify
         Assertions.assertEquals(1.13, delay, 0.01);
@@ -229,7 +229,7 @@ public class NeQuickModelTest {
         final FieldSpacecraftState<T> state   = new FieldSpacecraftState<>(orbit);
 
         final T delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
-                                        Frequency.G01.getFrequency(), model.getParameters(field));
+                                        PredefinedGnssSignal.G01.getFrequency(), model.getParameters(field));
        
         // Verify
         Assertions.assertEquals(1.13, delay.getReal(), 0.01);
