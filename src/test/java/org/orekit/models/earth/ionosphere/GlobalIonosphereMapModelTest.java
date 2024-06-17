@@ -53,8 +53,8 @@ import org.orekit.utils.IERSConventions;
 
 public class GlobalIonosphereMapModelTest {
 
-    private static double epsilonParser = 1.0e-16;
-    private static double epsilonDelay  = 0.001;
+    private static final double epsilonParser = 1.0e-16;
+    private static final double epsilonDelay  = 0.001;
     private SpacecraftState state;
     private OneAxisEllipsoid earth;
 
@@ -295,10 +295,10 @@ public class GlobalIonosphereMapModelTest {
             longitude1 = FastMath.toRadians(181.0);
             longitude2 = FastMath.toRadians(-179.0);
             AbsoluteDate date1 = new AbsoluteDate(2019, 1, 15, 1, 0, 0.0, TimeScalesFactory.getUTC());
-            Assertions.assertEquals(((Double) pathDelay.invoke(model, date1, new GeodeticPoint(latitude, longitude1, 0.0),
-                                                               0.01, PredefinedGnssSignal.G01.getFrequency())).doubleValue(),
+            Assertions.assertEquals((Double) pathDelay.invoke(model, date1, new GeodeticPoint(latitude, longitude1, 0.0),
+                                                              0.01, PredefinedGnssSignal.G01.getFrequency()),
                                     ((Double) pathDelay.invoke(model, date1, new GeodeticPoint(latitude, longitude2, 0.0),
-                                                               0.01, PredefinedGnssSignal.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     epsilonParser);
 
             // Test longitude = 180° and longitude = -180°
@@ -307,9 +307,9 @@ public class GlobalIonosphereMapModelTest {
             longitude2 = FastMath.toRadians(-180.0);
 
             Assertions.assertEquals(((Double) pathDelay.invoke(model, date2, new GeodeticPoint(latitude, longitude1, 0.0),
-                                                               0.01, PredefinedGnssSignal.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     ((Double) pathDelay.invoke(model, date2, new GeodeticPoint(latitude, longitude2, 0.0),
-                                                               0.01, PredefinedGnssSignal.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     epsilonParser);
 
             // Test longitude = 0° and longitude = 360°
@@ -318,9 +318,9 @@ public class GlobalIonosphereMapModelTest {
             longitude2 =  FastMath.toRadians(360.0);
 
             Assertions.assertEquals(((Double) pathDelay.invoke(model, date3, new GeodeticPoint(latitude, longitude1, 0.0),
-                                                               0.01, PredefinedGnssSignal.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     ((Double) pathDelay.invoke(model, date3, new GeodeticPoint(latitude, longitude2, 0.0),
-                                                               0.01, PredefinedGnssSignal.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     epsilonParser);
 
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |

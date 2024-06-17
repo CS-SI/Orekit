@@ -266,8 +266,8 @@ public class NeQuickModelTest {
 
         // Date
         final FieldAbsoluteDate<T> date =
-                        new FieldAbsoluteDate<T>(field,
-                                                 new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
+                        new FieldAbsoluteDate<>(field,
+                                                new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(-31.80)),

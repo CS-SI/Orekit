@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -107,7 +108,7 @@ public class GeometryFreeCycleSlipDetectorTest {
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
         DataSource nd = new DataSource(fileName,
-                                     () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+                                     () -> Files.newInputStream(new File(input.getParentFile(), fileName).toPath()));
         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                      new UnixCompressFilter(),
                                                      new HatanakaCompressFilter())) {
@@ -127,7 +128,7 @@ public class GeometryFreeCycleSlipDetectorTest {
                         new GeometryFreeCycleSlipDetector(29, 29.0, 10);
         final List<CycleSlipDetectorResults> results2 = slipDetectors2.detect(obserDataSets);
         for(CycleSlipDetectorResults d: results2) {
-            Assertions.assertTrue(d.getCycleSlipMap().get(PredefinedGnssSignal.G01).size() == 97);
+            Assertions.assertEquals(97, d.getCycleSlipMap().get(PredefinedGnssSignal.G01).size());
         }
     }
 
@@ -137,7 +138,7 @@ public class GeometryFreeCycleSlipDetectorTest {
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
         DataSource nd = new DataSource(fileName,
-                                     () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+                                     () -> Files.newInputStream(new File(input.getParentFile(), fileName).toPath()));
         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                      new UnixCompressFilter(),
                                                      new HatanakaCompressFilter())) {
@@ -151,7 +152,7 @@ public class GeometryFreeCycleSlipDetectorTest {
             new GeometryFreeCycleSlipDetector(31, 31.0, 9);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
         //According to excel graph, cycle-slip occur at 1 h 59m 43s
-        AbsoluteDate trueDate = new AbsoluteDate(2016, 02, 13, 1, 59, 43, TimeScalesFactory.getUTC());
+        AbsoluteDate trueDate = new AbsoluteDate(2016, 2, 13, 1, 59, 43, TimeScalesFactory.getUTC());
         final int size = results.get(0).getCycleSlipMap().get(PredefinedGnssSignal.G01).size();
         Assertions.assertEquals(1, size);
         final AbsoluteDate computedDate = results.get(0).getCycleSlipMap().get(PredefinedGnssSignal.G01).get(0);
@@ -160,37 +161,38 @@ public class GeometryFreeCycleSlipDetectorTest {
 
     private int getPrn(final CycleSlipDetectorResults d) {
 
-        if(d.getSatelliteName().substring(6).compareTo("1")==0) {return 1;};
-        if(d.getSatelliteName().substring(6).compareTo("2")==0) {return 2;};
-        if(d.getSatelliteName().substring(6).compareTo("3")==0) {return 3;};
-        if(d.getSatelliteName().substring(6).compareTo("4")==0) {return 4;};
-        if(d.getSatelliteName().substring(6).compareTo("5")==0) {return 5;};
-        if(d.getSatelliteName().substring(6).compareTo("6")==0) {return 6;};
-        if(d.getSatelliteName().substring(6).compareTo("7")==0) {return 7;};
-        if(d.getSatelliteName().substring(6).compareTo("8")==0) {return 8;};
-        if(d.getSatelliteName().substring(6).compareTo("9")==0) {return 9;};
-        if(d.getSatelliteName().substring(6).compareTo("10")==0) {return 10;};
-        if(d.getSatelliteName().substring(6).compareTo("11")==0) {return 11;};
-        if(d.getSatelliteName().substring(6).compareTo("12")==0) {return 12;};
-        if(d.getSatelliteName().substring(6).compareTo("13")==0) {return 13;};
-        if(d.getSatelliteName().substring(6).compareTo("14")==0) {return 14;};
-        if(d.getSatelliteName().substring(6).compareTo("15")==0) {return 15;};
-        if(d.getSatelliteName().substring(6).compareTo("16")==0) {return 16;};
-        if(d.getSatelliteName().substring(6).compareTo("17")==0) {return 17;};
-        if(d.getSatelliteName().substring(6).compareTo("18")==0) {return 18;};
-        if(d.getSatelliteName().substring(6).compareTo("19")==0) {return 19;};
-        if(d.getSatelliteName().substring(6).compareTo("20")==0) {return 20;};
-        if(d.getSatelliteName().substring(6).compareTo("21")==0) {return 21;};
-        if(d.getSatelliteName().substring(6).compareTo("22")==0) {return 22;};
-        if(d.getSatelliteName().substring(6).compareTo("23")==0) {return 23;};
-        if(d.getSatelliteName().substring(6).compareTo("24")==0) {return 24;};
-        if(d.getSatelliteName().substring(6).compareTo("25")==0) {return 25;};
-        if(d.getSatelliteName().substring(6).compareTo("26")==0) {return 26;};
-        if(d.getSatelliteName().substring(6).compareTo("27")==0) {return 27;};
-        if(d.getSatelliteName().substring(6).compareTo("28")==0) {return 28;};
-        if(d.getSatelliteName().substring(6).compareTo("29")==0) {return 29;};
-        if(d.getSatelliteName().substring(6).compareTo("30")==0) {return 30;};
-        if(d.getSatelliteName().substring(6).compareTo("31")==0) {return 31;} else {return 32;}
+        if(d.getSatelliteName().substring(6).compareTo("1")==0) {return 1;}
+        if(d.getSatelliteName().substring(6).compareTo("2")==0) {return 2;}
+        if(d.getSatelliteName().substring(6).compareTo("3")==0) {return 3;}
+        if(d.getSatelliteName().substring(6).compareTo("4")==0) {return 4;}
+        if(d.getSatelliteName().substring(6).compareTo("5")==0) {return 5;}
+        if(d.getSatelliteName().substring(6).compareTo("6")==0) {return 6;}
+        if(d.getSatelliteName().substring(6).compareTo("7")==0) {return 7;}
+        if(d.getSatelliteName().substring(6).compareTo("8")==0) {return 8;}
+        if(d.getSatelliteName().substring(6).compareTo("9")==0) {return 9;}
+        if(d.getSatelliteName().substring(6).compareTo("10")==0) {return 10;}
+        if(d.getSatelliteName().substring(6).compareTo("11")==0) {return 11;}
+        if(d.getSatelliteName().substring(6).compareTo("12")==0) {return 12;}
+        if(d.getSatelliteName().substring(6).compareTo("13")==0) {return 13;}
+        if(d.getSatelliteName().substring(6).compareTo("14")==0) {return 14;}
+        if(d.getSatelliteName().substring(6).compareTo("15")==0) {return 15;}
+        if(d.getSatelliteName().substring(6).compareTo("16")==0) {return 16;}
+        if(d.getSatelliteName().substring(6).compareTo("17")==0) {return 17;}
+        if(d.getSatelliteName().substring(6).compareTo("18")==0) {return 18;}
+        if(d.getSatelliteName().substring(6).compareTo("19")==0) {return 19;}
+        if(d.getSatelliteName().substring(6).compareTo("20")==0) {return 20;}
+        if(d.getSatelliteName().substring(6).compareTo("21")==0) {return 21;}
+        if(d.getSatelliteName().substring(6).compareTo("22")==0) {return 22;}
+        if(d.getSatelliteName().substring(6).compareTo("23")==0) {return 23;}
+        if(d.getSatelliteName().substring(6).compareTo("24")==0) {return 24;}
+        if(d.getSatelliteName().substring(6).compareTo("25")==0) {return 25;}
+        if(d.getSatelliteName().substring(6).compareTo("26")==0) {return 26;}
+        if(d.getSatelliteName().substring(6).compareTo("27")==0) {return 27;}
+        if(d.getSatelliteName().substring(6).compareTo("28")==0) {return 28;}
+        if(d.getSatelliteName().substring(6).compareTo("29")==0) {return 29;}
+        if(d.getSatelliteName().substring(6).compareTo("30")==0) {return 30;}
+        if(d.getSatelliteName().substring(6).compareTo("31")==0) {return 31;}
+        else {return 32;}
 
     }
 

@@ -276,7 +276,6 @@ public class AntexLoader {
                             grid1D               = null;
                             grid2D               = null;
                             eccentricities       = Vector3D.ZERO;
-                            nbFrequencies        = -1;
                             predefinedGnssSignal = null;
                             patterns             = null;
                             inFrequency          = false;
