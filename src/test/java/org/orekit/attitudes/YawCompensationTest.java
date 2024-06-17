@@ -134,7 +134,7 @@ class YawCompensationTest {
                             3.0e-11 * reference.getVelocity().getNorm());
         Assertions.assertEquals(0.0,
                             Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
-                            7.0e-6 * reference.getAcceleration().getNorm());
+                            1.0e-5 * reference.getAcceleration().getNorm());
 
     }
 

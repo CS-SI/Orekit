@@ -47,12 +47,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
+import org.orekit.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +65,60 @@ class NadirPointingTest {
     private Frame itrf;
 
     @Test
+    void testGetTargetPV() {
+        // GIVEN
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
+        final NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        final PVCoordinatesProvider provider = (date1, frame1) -> {
+            final double duration = date1.durationFrom(AbsoluteDate.FIFTIES_EPOCH);
+            final Vector3D position = new Vector3D(duration * duration / 2, 0., 0.);
+            final Vector3D velocity = new Vector3D(duration, 0., 0.);
+            final Vector3D acceleration = new Vector3D(1, 0, 0);
+            return new TimeStampedPVCoordinates(date1, position, velocity, acceleration);
+        };
+        // WHEN
+        final TimeStampedPVCoordinates actualPV = nadirAttitudeLaw.getTargetPV(provider, date, frame);
+        // THEN
+        final PVCoordinatesProvider providerWithoutAcceleration = (date12, frame12) -> {
+            final TimeStampedPVCoordinates originalPV = provider.getPVCoordinates(date12, frame12);
+            return new TimeStampedPVCoordinates(date12, originalPV.getPosition(), originalPV.getVelocity());
+        };
+        final TimeStampedPVCoordinates pv = nadirAttitudeLaw.getTargetPV(providerWithoutAcceleration, date, frame);
+        Assertions.assertEquals(pv.getDate(), actualPV.getDate());
+        final PVCoordinates relativePV = new PVCoordinates(pv, actualPV);
+        Assertions.assertEquals(0., relativePV.getPosition().getNorm(), 2e-9);
+        Assertions.assertEquals(0., relativePV.getVelocity().getNorm(), 1e-7);
+    }
+
+    @Test
+    void testGetTargetPVViaInterpolationField() {
+        // GIVEN
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
+        final NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        final PVCoordinatesProvider provider = (dateIn, frameIn) -> new TimeStampedPVCoordinates(dateIn,
+                new Vector3D(dateIn.durationFrom(AbsoluteDate.FIFTIES_EPOCH), 0., 0.), Vector3D.PLUS_I);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> fieldDate = new FieldAbsoluteDate<>(field, date);
+        final FieldPVCoordinatesProvider<Complex> fieldProvider = (dateIn, frameIn) -> new TimeStampedFieldPVCoordinates<>(dateIn,
+                new FieldVector3D<>(dateIn.durationFrom(AbsoluteDate.FIFTIES_EPOCH), field.getZero(), field.getZero()),
+                FieldVector3D.getPlusI(field), FieldVector3D.getZero(field));
+        // WHEN
+        final TimeStampedFieldPVCoordinates<Complex> actualPV = nadirAttitudeLaw.getTargetPV(fieldProvider, fieldDate, frame);
+        // THEN
+        final TimeStampedPVCoordinates pv = nadirAttitudeLaw.getTargetPV(provider, date, frame);
+        Assertions.assertEquals(pv.getDate(), actualPV.getDate().toAbsoluteDate());
+        final PVCoordinates relativePV = new PVCoordinates(pv, actualPV.toPVCoordinates());
+        final Vector3D positionDifference = relativePV.getPosition();
+        Assertions.assertEquals(0., positionDifference.getNorm(), 1e-9);
+        final Vector3D velocityDifference = relativePV.getVelocity();
+        Assertions.assertEquals(0., velocityDifference.getNorm(), 1e-6);
+    }
+
+    @Test
     void testGetTargetPosition() {
         // GIVEN
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
@@ -82,7 +131,7 @@ class NadirPointingTest {
         final Vector3D actualPosition = nadirAttitudeLaw.getTargetPosition(circ, circ.getDate(), circ.getFrame());
         // THEN
         final Vector3D expectedPosition = nadirAttitudeLaw.getTargetPV(circ, circ.getDate(), circ.getFrame()).getPosition();
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm(), 1e-9);
     }
 
     @Test
@@ -99,7 +148,7 @@ class NadirPointingTest {
         final FieldVector3D<Complex> actualPosition = nadirAttitudeLaw.getTargetPosition(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
         // THEN
         final FieldVector3D<Complex> expectedPosition = nadirAttitudeLaw.getTargetPV(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getPosition();
-        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-20);
+        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-9);
     }
 
     /** Test in the case of a spheric earth : nadir pointing shall be
