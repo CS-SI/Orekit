@@ -250,17 +250,6 @@ class RangeTest {
                     absoluteErrors.add(absoluteError);
                     relativeErrors.add(FastMath.abs(absoluteError)/FastMath.abs(RangeObserved));
 
-                    // test deprecated method (just for test coverage)
-                    // here, the frame is not the same in both calls, but results should be the same as both are inertial frames
-                    Assertions.assertEquals(AbstractMeasurement.signalTimeOfFlight(estimated.getParticipants()[0],
-                                                                                   estimated.getParticipants()[1].getPosition(),
-                                                                                   estimated.getParticipants()[1].getDate()),
-                                            AbstractMeasurement.signalTimeOfFlight(estimated.getParticipants()[0],
-                                                                                   estimated.getParticipants()[1].getPosition(),
-                                                                                   estimated.getParticipants()[1].getDate(),
-                                                                                   state.getFrame()),
-                                            1.0e-6);
-
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();

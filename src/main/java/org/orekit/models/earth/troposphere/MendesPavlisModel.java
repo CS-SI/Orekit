@@ -49,9 +49,7 @@ import org.orekit.utils.units.UnitsConverter;
 *
 * @author Bryan Cazabonne
 */
-@SuppressWarnings("deprecation")
-public class MendesPavlisModel
-    implements DiscreteTroposphericModel, TroposphericModel, MappingFunction, TroposphereMappingFunction {
+public class MendesPavlisModel implements TroposphericModel, TroposphereMappingFunction {
 
     /** Coefficients for the dispertion equation for the hydrostatic component [µm<sup>-2</sup>]. */
     private static final double[] K_COEFFICIENTS = {
@@ -81,29 +79,6 @@ public class MendesPavlisModel
 
     /** Provider for pressure, temperature and humidity. */
     private final PressureTemperatureHumidityProvider pthProvider;
-
-    /** Create a new Mendes-Pavlis model for the troposphere.
-     * This initialization will compute the water vapor pressure
-     * thanks to the values of the pressure, the temperature and the humidity
-     * @param t0 the temperature at the station, K
-     * @param p0 the atmospheric pressure at the station, hPa
-     * @param rh the humidity at the station, as a ratio (50% → 0.5)
-     * @param lambda laser wavelength, µm
-     * @deprecated as of 12.1, replaced by {@link #MendesPavlisModel(PressureTemperatureHumidityProvider, double, Unit)}
-     */
-    @Deprecated
-    public MendesPavlisModel(final double t0, final double p0,
-                             final double rh, final double lambda) {
-        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(0,
-                                                                                             TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
-                                                                                             t0,
-                                                                                             new CIPM2007().
-                                                                                             waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
-                                                                                                                t0, rh),
-                                                                                             Double.NaN,
-                                                                                             Double.NaN)),
-             lambda, TroposphericModelUtils.MICRO_M);
-    }
 
     /** Create a new Mendes-Pavlis model for the troposphere.
      * @param pthProvider provider for atmospheric pressure, temperature and humidity at the station
@@ -141,24 +116,6 @@ public class MendesPavlisModel
     }
 
     /** Create a new Mendes-Pavlis model using a standard atmosphere model.
-    *
-    * <ul>
-    * <li>temperature: 18 degree Celsius</li>
-    * <li>pressure: 1013.25 hPa</li>
-    * <li>humidity: 50%</li>
-    * </ul>
-    *
-    * @param lambda laser wavelength, µm
-    *
-    * @return a Mendes-Pavlis model with standard environmental values
-    * @deprecated as of 12.1, replaced by {@link #getStandardModel(double, Unit)}
-    */
-    @Deprecated
-    public static MendesPavlisModel getStandardModel(final double lambda) {
-        return getStandardModel(lambda, TroposphericModelUtils.MICRO_M);
-    }
-
-    /** Create a new Mendes-Pavlis model using a standard atmosphere model.
      *
      * <ul>
      * <li>altitude: 0m</li>
@@ -189,22 +146,12 @@ public class MendesPavlisModel
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public double pathDelay(final double elevation, final GeodeticPoint point,
-                            final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date).
-               getDelay();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
                                        final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
         // Zenith delay
-        final double[] zenithDelay = computeZenithDelay(point, parameters, date);
+        final double[] zenithDelay = computeZenithDelay(point, date);
         // Mapping function
         final double[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
         // Tropospheric path delay
@@ -216,24 +163,12 @@ public class MendesPavlisModel
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                         point,
-                         new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                         parameters, date).
-               getDelay();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
                                                                                    final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Zenith delay
-        final T[] zenithDelay = computeZenithDelay(point, parameters, date);
+        final T[] zenithDelay = computeZenithDelay(point, date);
         // Mapping function
         final T[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
         // Tropospheric path delay
@@ -243,18 +178,19 @@ public class MendesPavlisModel
                                             zenithDelay[1].multiply(mappingFunction[1]));
     }
 
-    /** This method allows the  computation of the zenith hydrostatic and
+    /**
+     * This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
      * <ul>
      * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
      * <li>double[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
+     *
      * @param point station location
-     * @param parameters tropospheric model parameters
-     * @param date current date
+     * @param date  current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters, final AbsoluteDate date) {
+    public double[] computeZenithDelay(final GeodeticPoint point, final AbsoluteDate date) {
 
         final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
         final double fsite   = getSiteFunctionValue(point);
@@ -273,20 +209,20 @@ public class MendesPavlisModel
         return delay;
     }
 
-    /** This method allows the  computation of the zenith hydrostatic and
+    /**
+     * This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
      * <ul>
      * <li>T[0] = D<sub>hz</sub> → zenith hydrostatic delay
      * <li>T[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
-     * @param <T> type of the elements
+     *
+     * @param <T>   type of the elements
      * @param point station location
-     * @param parameters tropospheric model parameters
-     * @param date current date
+     * @param date  current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
     public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point,
-                                                                      final T[] parameters,
                                                                       final FieldAbsoluteDate<T> date) {
 
         final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
@@ -307,28 +243,6 @@ public class MendesPavlisModel
 
         return delay;
 
-    }
-
-    /** With the Mendes Pavlis tropospheric model, the mapping
-     * function is not split into hydrostatic and wet component.
-     * <p>
-     * Therefore, the two components of the resulting array are equals.
-     * <ul>
-     * <li>double[0] = m(e) → total mapping function
-     * <li>double[1] = m(e) → total mapping function
-     * </ul>
-     * <p>
-     * The total delay will thus be computed as:<br>
-     * δ = D<sub>hz</sub> * m(e) + D<sub>wz</sub> * m(e)<br>
-     * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
-     */
-    @Override
-    @Deprecated
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final AbsoluteDate date) {
-        return mappingFactors(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                              date);
     }
 
     /** With the Mendes Pavlis tropospheric model, the mapping
@@ -376,31 +290,6 @@ public class MendesPavlisModel
             factor,
             factor
         };
-    }
-
-    /** With the Mendes Pavlis tropospheric model, the mapping
-     * function is not split into hydrostatic and wet component.
-     * <p>
-     * Therefore, the two components of the resulting array are equals.
-     * <ul>
-     * <li>double[0] = m(e) → total mapping function
-     * <li>double[1] = m(e) → total mapping function
-     * </ul>
-     * <p>
-     * The total delay will thus be computed as:<br>
-     * δ = D<sub>hz</sub> * m(e) + D<sub>wz</sub> * m(e)<br>
-     * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
-     */
-    @Override
-    @Deprecated
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
-                                                                  final FieldGeodeticPoint<T> point,
-                                                                  final FieldAbsoluteDate<T> date) {
-        return mappingFactors(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                              point,
-                              new FieldPressureTemperatureHumidity<>(date.getField(),
-                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                              date);
     }
 
     /** With the Mendes Pavlis tropospheric model, the mapping

@@ -113,19 +113,6 @@ public class AbstractGlobalPressureTemperature
 
     }
 
-    /**
-     * Constructor with already loaded grid.
-     *
-     * @param grid loaded grid
-     * @param utc UTC time scale.
-     * @deprecated as of 12.1 used only by {@link GlobalPressureTemperature2Model}
-     */
-    @Deprecated
-    protected AbstractGlobalPressureTemperature(final Grid grid, final TimeScale utc) {
-        this.grid = grid;
-        this.utc  = utc;
-    }
-
     /** {@inheritDoc} */
     @Override
     public ViennaACoefficients getA(final GeodeticPoint location, final AbsoluteDate date) {
@@ -149,8 +136,8 @@ public class AbstractGlobalPressureTemperature
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // Corrected height (can be negative)
-        final double undu            = interpolator.interpolate(e -> e.getUndulation());
-        final double correctedheight = location.getAltitude() - undu - interpolator.interpolate(e -> e.getHs());
+        final double undu            = interpolator.interpolate(GridEntry::getUndulation);
+        final double correctedheight = location.getAltitude() - undu - interpolator.interpolate(GridEntry::getHs);
 
         // Temperature gradient [K/m]
         final double dTdH = interpolator.interpolate(e -> e.getModel(SeasonalModelType.DT).evaluate(dayOfYear)) * 0.001;
@@ -236,8 +223,8 @@ public class AbstractGlobalPressureTemperature
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // Corrected height (can be negative)
-        final T undu            = interpolator.interpolate(e -> e.getUndulation());
-        final T correctedheight = location.getAltitude().subtract(undu).subtract(interpolator.interpolate(e -> e.getHs()));
+        final T undu            = interpolator.interpolate(GridEntry::getUndulation);
+        final T correctedheight = location.getAltitude().subtract(undu).subtract(interpolator.interpolate(GridEntry::getHs));
 
         // Temperature gradient [K/m]
         final T dTdH = interpolator.interpolate(e -> e.getModel(SeasonalModelType.DT).evaluate(dayOfYear)).multiply(0.001);
