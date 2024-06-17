@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1441">
+        Use automatic differentiation when possible in nadir pointing.
+      </action>
       <action dev="maxime" type="update" issue="1257" due-to="lucian">
         Updated Romanian translation.
       </action>
