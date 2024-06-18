@@ -16,7 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
