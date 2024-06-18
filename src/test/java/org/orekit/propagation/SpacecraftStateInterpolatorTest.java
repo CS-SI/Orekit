@@ -99,7 +99,7 @@ class SpacecraftStateInterpolatorTest {
             double OMEGA = FastMath.toRadians(261);
             double lv    = 0;
 
-            AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
+            AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 1, 1),
                     TimeComponents.H00,
                     TimeScalesFactory.getUTC());
             final Frame frame = FramesFactory.getEME2000();
@@ -560,8 +560,10 @@ class SpacecraftStateInterpolatorTest {
         Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
 
         final SpacecraftStateInterpolator stateInterpolator =
-                new SpacecraftStateInterpolator(frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
-                        attitudeInterpolator, additionalStateInterpolator);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
+                                                attitudeInterpolator, additionalStateInterpolator);
 
         // WHEN
         final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
