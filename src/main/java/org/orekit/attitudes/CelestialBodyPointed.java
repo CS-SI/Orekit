@@ -28,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -69,7 +70,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
     private final Frame celestialFrame;
 
     /** Celestial body to point at. */
-    private final PVCoordinatesProvider pointedBody;
+    private final ExtendedPositionProvider pointedBody;
 
     /** Phasing reference, in celestial frame. */
     private final Vector3D phasingCel;
@@ -88,7 +89,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
      * @param phasingSat phasing reference, in satellite frame
      */
     public CelestialBodyPointed(final Frame celestialFrame,
-                                final PVCoordinatesProvider pointedBody,
+                                final ExtendedPositionProvider pointedBody,
                                 final Vector3D phasingCel,
                                 final Vector3D pointingSat,
                                 final Vector3D phasingSat) {
@@ -171,9 +172,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
         final FieldPVCoordinates<T> satPV = pvProv.getPVCoordinates(date, celestialFrame);
 
         // compute celestial references at the specified date
-        final FieldPVCoordinates<T> bodyPV    = new FieldPVCoordinates<>(field,
-                                                                         pointedBody.getPVCoordinates(date.toAbsoluteDate(),
-                                                                                                      celestialFrame));
+        final FieldPVCoordinates<T> bodyPV    = pointedBody.getPVCoordinates(date, celestialFrame);
         final FieldPVCoordinates<T> pointing  = new FieldPVCoordinates<>(satPV, bodyPV);
         final FieldVector3D<T>      pointingP = pointing.getPosition();
         final T                     r2        = FieldVector3D.dotProduct(pointingP, pointingP);
@@ -217,8 +216,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
         final FieldVector3D<T> satPosition = pvProv.getPosition(date, celestialFrame);
 
         // compute celestial references at the specified date
-        final FieldVector3D<T> bodyPosition    = new FieldVector3D<>(field,
-                pointedBody.getPosition(date.toAbsoluteDate(), celestialFrame));
+        final FieldVector3D<T> bodyPosition    = pointedBody.getPosition(date, celestialFrame);
         final FieldVector3D<T>      pointingP = bodyPosition.subtract(satPosition);
 
         // compute rotation from celestial frame to satellite frame

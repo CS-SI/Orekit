@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -51,7 +52,7 @@ class SpinStabilizedTest {
 
     @Test
     void testBBQMode() {
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getTAI());
