@@ -110,7 +110,7 @@ public class FixedRateTest {
     @DefaultDataContext
     public void testSpin() {
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
@@ -233,7 +233,7 @@ public class FixedRateTest {
 
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
-                                                            new DateComponents(1970, 01, 01),
+                                                            new DateComponents(1970, 1, 1),
                                                             new TimeComponents(3, 25, 45.6789),
                                                             TimeScalesFactory.getUTC());
 

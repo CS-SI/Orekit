@@ -105,7 +105,7 @@ public class FrameAlignedProviderTest {
     @Test
     @DefaultDataContext
     public void testSpin() {
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
@@ -298,7 +298,7 @@ public class FrameAlignedProviderTest {
         try {
             Utils.setDataRoot("regular-data");
 
-            t0 = new AbsoluteDate(new DateComponents(2008, 06, 03), TimeComponents.H12,
+            t0 = new AbsoluteDate(new DateComponents(2008, 6, 3), TimeComponents.H12,
                                   TimeScalesFactory.getUTC());
             orbit0 =
                 new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,

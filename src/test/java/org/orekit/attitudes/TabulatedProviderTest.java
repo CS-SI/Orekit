@@ -159,7 +159,7 @@ public class TabulatedProviderTest {
         referencePropagator.setAttitudeProvider(referenceProvider);
 
         // create sample
-        final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        final List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
         referencePropagator.setStepHandler(samplingRate, currentState -> sample.add(currentState.getAttitude().getOrientation()));
         referencePropagator.propagate(circOrbit.getDate().shiftedBy(2 * circOrbit.getKeplerianPeriod()));
 
@@ -219,7 +219,7 @@ public class TabulatedProviderTest {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

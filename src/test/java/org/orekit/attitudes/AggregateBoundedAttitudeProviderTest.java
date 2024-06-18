@@ -127,7 +127,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testOutsideBounds() throws Exception {
+    public void testOutsideBounds() {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -154,12 +154,12 @@ public class AggregateBoundedAttitudeProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testFieldOutsideBounds() throws Exception {
+    public void testFieldOutsideBounds() {
         doTestFieldOutsideBounds(Binary64Field.getInstance());
     }
 
     @DefaultDataContext
-    private <T extends CalculusFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
+    private <T extends CalculusFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));

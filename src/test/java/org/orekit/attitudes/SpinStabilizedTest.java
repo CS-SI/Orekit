@@ -54,7 +54,7 @@ class SpinStabilizedTest {
     @DefaultDataContext
     void testBBQMode() {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getTAI());
         double rate = 2.0 * FastMath.PI / (12 * 60);
@@ -120,7 +120,7 @@ class SpinStabilizedTest {
     @DefaultDataContext
     void testSpin() {
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         double rate = 2.0 * FastMath.PI / (12 * 60);
