@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -72,6 +73,7 @@ public class TabulatedProviderTest {
     OneAxisEllipsoid earthShape;
 
     @Test
+    @DefaultDataContext
     public void testDifferentFrames() {
         double             samplingRate      = 10.0;
         int                n                 = 8;
@@ -211,6 +213,7 @@ public class TabulatedProviderTest {
     }
 
     @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");

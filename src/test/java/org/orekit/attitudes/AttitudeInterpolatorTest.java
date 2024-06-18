@@ -24,6 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -46,6 +47,7 @@ import java.util.List;
 class AttitudeInterpolatorTest {
 
     @Test
+    @DefaultDataContext
     public void testInterpolation() {
 
         // Given
@@ -163,6 +165,7 @@ class AttitudeInterpolatorTest {
 
     @Test
     @DisplayName("test error thrown when sample is too small")
+    @DefaultDataContext
     void testErrorThrownWhenSampleIsTooSmall() {
         // Given
         final AbsoluteDate interpolationDate = new AbsoluteDate();

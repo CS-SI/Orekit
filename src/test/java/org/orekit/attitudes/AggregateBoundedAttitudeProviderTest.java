@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -61,6 +62,7 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testAEM() {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
@@ -87,10 +89,12 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testFieldAEM() {
         doTestFieldAEM(Binary64Field.getInstance());
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
@@ -122,6 +126,7 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testOutsideBounds() throws Exception {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
@@ -148,10 +153,12 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testFieldOutsideBounds() throws Exception {
         doTestFieldOutsideBounds(Binary64Field.getInstance());
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
