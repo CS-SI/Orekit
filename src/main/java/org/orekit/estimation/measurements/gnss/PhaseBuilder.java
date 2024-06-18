@@ -49,26 +49,6 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
-     * @deprecated as of 12.1, replaced by {@link #PhaseBuilder(CorrelatedRandomVectorGenerator,
-     * GroundStation, double, double, double, ObservableSatellite,
-     * AmbiguityCache)}
-     */
-    @Deprecated
-    public PhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                        final GroundStation station, final double wavelength,
-                        final double sigma, final double baseWeight,
-                        final ObservableSatellite satellite) {
-        this(noiseSource, station, wavelength, sigma, baseWeight, satellite,
-             AmbiguityCache.DEFAULT_CACHE);
-    }
-
-    /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param station ground station from which measurement is performed
-     * @param wavelength phase observed value wavelength (m)
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param satellite satellite related to this builder
      * @param cache from which ambiguity drive should come
      * @since 12.1
      */

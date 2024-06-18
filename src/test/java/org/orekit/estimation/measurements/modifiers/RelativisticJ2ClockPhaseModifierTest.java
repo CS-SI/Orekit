@@ -27,6 +27,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -44,13 +45,10 @@ import java.util.Arrays;
 
 /**
  * Check against prediction in
- *
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck"
- *
  * An approximate value is given in terms of delay for Galileo satellites.
  * As these satellites are close to GPS satellites, we consider the delays to be
  * of the same order, namely around 62ps.
- *
  * The values produced by the modifiers are translated in terms of delay and checked against
  * the approximate value.
  */
@@ -96,7 +94,9 @@ public class RelativisticJ2ClockPhaseModifierTest {
         final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // phase measurement
-        final Phase phase = new Phase(station, state.getDate(), 26584264.45, PredefinedGnssSignal.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));
+        final Phase phase = new Phase(station, state.getDate(), 26584264.45, PredefinedGnssSignal.G01.getWavelength(),
+                                1.0, 1.0, new ObservableSatellite(0),
+                                      new AmbiguityCache());
         final EstimatedMeasurement<Phase> estimated = new EstimatedMeasurement<>(phase, 0, 0,
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});

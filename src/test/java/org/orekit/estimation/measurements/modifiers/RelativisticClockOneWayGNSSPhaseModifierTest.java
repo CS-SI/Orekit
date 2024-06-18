@@ -25,6 +25,8 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.propagation.SpacecraftState;
@@ -46,10 +48,12 @@ public class RelativisticClockOneWayGNSSPhaseModifierTest {
 
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
-        final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), 0.0, date,
+        final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), "",
+                                                          new QuadraticClockModel(date, 0.0, 0.0, 0.0), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
-                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0));
+                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0),
+                                                          new AmbiguityCache());
 
         // One-way GNSS phase before applying the modifier
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
