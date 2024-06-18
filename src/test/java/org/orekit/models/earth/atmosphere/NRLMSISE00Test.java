@@ -59,10 +59,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 
-public class NRLMSISE00Test {
+class NRLMSISE00Test {
 
     @Test
-    public void testLegacy() throws
+    void testLegacy() throws
     NoSuchMethodException, SecurityException, InstantiationException,
     IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
@@ -193,14 +193,14 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testDensity() throws
+    void testDensity() throws
     InstantiationException, IllegalAccessException,
     IllegalArgumentException, InvocationTargetException,
     NoSuchMethodException, SecurityException {
         // Build the input params provider
         final InputParams ip = new InputParams();
         // Get Sun
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
         // Get Earth body shape
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -255,11 +255,11 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testDensityField() {
+    void testDensityField() {
         // Build the input params provider
         final InputParams ip = new InputParams();
         // Get Sun
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
         // Get Earth body shape
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -292,19 +292,19 @@ public class NRLMSISE00Test {
 
         final double    rho = atm.getDensity(date, pos, itrf);
         final Binary64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
-                                              new FieldVector3D<>(field.getOne(), pos),
+                                              new FieldVector3D<>(field, pos),
                                               itrf);
 
-        Assertions.assertEquals(rho, rho64.getReal(), rho * 2.0e-13);
+        Assertions.assertEquals(rho, rho64.getReal(), rho * 2.0e-11);
 
     }
 
     @Test
-    public void testDensityGradient() {
+    void testDensityGradient() {
         // Build the input params provider
         final InputParams ip = new InputParams();
         // Get Sun
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
         // Get Earth body shape
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -376,7 +376,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testWrongNumberLow() {
+    void testWrongNumberLow() {
         try {
             new NRLMSISE00(null, null, null).withSwitch(0, 17);
             Assertions.fail("an exception should have been thrown");
@@ -389,7 +389,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testWrongNumberHigh() {
+    void testWrongNumberHigh() {
         try {
             new NRLMSISE00(null, null, null).withSwitch(24, 17);
             Assertions.fail("an exception should have been thrown");
@@ -402,7 +402,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlobe7SwitchesOn() {
+    void testGlobe7SwitchesOn() {
         RandomGenerator random = new Well19937a(0xb9d06451353d23cbl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -412,7 +412,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlobe7SwitchesOff() {
+    void testGlobe7SwitchesOff() {
         RandomGenerator random = new Well19937a(0x778b486a40464b8fl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -422,7 +422,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlobe7SwitchesRandom() {
+    void testGlobe7SwitchesRandom() {
         RandomGenerator random = new Well19937a(0xe20a69235cc9583dl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -432,7 +432,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlob7sSwitchesOn() {
+    void testGlob7sSwitchesOn() {
         RandomGenerator random = new Well19937a(0xc7c218fabec5e98cl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -442,7 +442,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlob7sSwitchesOff() {
+    void testGlob7sSwitchesOff() {
         RandomGenerator random = new Well19937a(0x141f7aa933299a83l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -452,7 +452,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlob7sSwitchesRandom() {
+    void testGlob7sSwitchesRandom() {
         RandomGenerator random = new Well19937a(0x3671893ce741fc5cl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -462,7 +462,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgts7SwitchesOn() {
+    void testgts7SwitchesOn() {
         RandomGenerator random = new Well19937a(0xb6dcf73ed5e5d985l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -472,7 +472,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgts7SwitchesOff() {
+    void testgts7SwitchesOff() {
         RandomGenerator random = new Well19937a(0x0c953641bea0f6d2l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -482,7 +482,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgts7SwitchesRandom() {
+    void testgts7SwitchesRandom() {
         RandomGenerator random = new Well19937a(0x7347cacb946cb93bl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -492,7 +492,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7SwitchesOn() {
+    void testgtd7SwitchesOn() {
         RandomGenerator random = new Well19937a(0x3439206bdd4dff5dl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -502,7 +502,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7SwitchesOff() {
+    void testgtd7SwitchesOff() {
         RandomGenerator random = new Well19937a(0x3dc1f824e1033d1bl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -512,7 +512,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7SwitchesRandom() {
+    void testgtd7SwitchesRandom() {
         RandomGenerator random = new Well19937a(0xa12175ef0b689b04l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -522,7 +522,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7dSwitchesOn() {
+    void testgtd7dSwitchesOn() {
         RandomGenerator random = new Well19937a(0x4bbb424422a1b909l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -532,7 +532,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7dSwitchesOff() {
+    void testgtd7dSwitchesOff() {
         RandomGenerator random = new Well19937a(0x7f6da37655e30103l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -542,7 +542,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7dSwitchesRandom() {
+    void testgtd7dSwitchesRandom() {
         RandomGenerator random = new Well19937a(0x4a75e29ddf23ccd7l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -553,7 +553,7 @@ public class NRLMSISE00Test {
 
     /** Test issue 1365: NaN appears during integration due to bad computation of density. */
     @Test
-    public void testIssue1365AvoidNan1() {
+    void testIssue1365AvoidNan1() {
 
         // GIVEN
         // -----
@@ -604,7 +604,7 @@ public class NRLMSISE00Test {
      * Bumping in the first protection against NaNs.
      */
     @Test
-    public void testIssue1365AvoidNan2() {
+    void testIssue1365AvoidNan2() {
 
         // GIVEN
         // -----
@@ -655,7 +655,7 @@ public class NRLMSISE00Test {
      * Throwing exception for crossing 0m altitude boundary.
      */
     @Test
-    public void testIssue1365AvoidNanExceptionRaised() {
+    void testIssue1365AvoidNanExceptionRaised() {
 
         // GIVEN
         // -----

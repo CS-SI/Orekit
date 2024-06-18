@@ -55,7 +55,7 @@ public class DTM2000Test {
     public void testWithOriginalTestsCases() {
 
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
@@ -161,7 +161,7 @@ public class DTM2000Test {
         Vector3D pEcef = new Vector3D(6378137 + 300e3, 0, 0);
         Vector3D pFrame = ecef.getStaticTransformTo(frame, date)
                 .transformPosition(pEcef);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(
                 6378136.460, 1.0 / 298.257222101, ecef);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
@@ -178,7 +178,7 @@ public class DTM2000Test {
     @Test
     public void testField() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
@@ -267,7 +267,7 @@ public class DTM2000Test {
 
         // Get ITRF and Earth ellipsoid
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.GRIM5C1_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.GRIM5C1_EARTH_FLATTENING, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();

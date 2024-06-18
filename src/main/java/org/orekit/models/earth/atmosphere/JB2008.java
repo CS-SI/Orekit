@@ -38,7 +38,7 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /** This is the realization of the Jacchia-Bowman 2008 atmospheric model.
  * <p>
@@ -75,7 +75,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), 2008: FORTRAN routine
  * @author Pascal Parraud (java translation)
  */
-public class JB2008 implements Atmosphere {
+public class JB2008 extends AbstractSunInfluencedAtmosphere {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -4201270765122160831L;
@@ -168,9 +168,6 @@ public class JB2008 implements Atmosphere {
         -0.212825156e+02,  0.275555432e+01
     };
 
-    /** Sun position. */
-    private PVCoordinatesProvider sun;
-
     /** External data container. */
     private JB2008InputParameters inputParams;
 
@@ -187,11 +184,11 @@ public class JB2008 implements Atmosphere {
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
-     * @see #JB2008(JB2008InputParameters, PVCoordinatesProvider, BodyShape, TimeScale)
+     * @see #JB2008(JB2008InputParameters, ExtendedPositionProvider, BodyShape, TimeScale)
      */
     @DefaultDataContext
     public JB2008(final JB2008InputParameters parameters,
-                  final PVCoordinatesProvider sun, final BodyShape earth) {
+                  final ExtendedPositionProvider sun, final BodyShape earth) {
         this(parameters, sun, earth, DataContext.getDefault().getTimeScales().getUTC());
     }
 
@@ -205,11 +202,11 @@ public class JB2008 implements Atmosphere {
      * @since 10.1
      */
     public JB2008(final JB2008InputParameters parameters,
-                  final PVCoordinatesProvider sun,
+                  final ExtendedPositionProvider sun,
                   final BodyShape earth,
                   final TimeScale utc) {
+        super(sun);
         this.earth = earth;
-        this.sun = sun;
         this.inputParams = parameters;
         this.utc = utc;
     }
@@ -1220,7 +1217,7 @@ public class JB2008 implements Atmosphere {
 
         // compute sun position
         final Frame ecef = earth.getBodyFrame();
-        final Vector3D sunPos = sun.getPosition(date, ecef);
+        final Vector3D sunPos = getSunPosition(date, ecef);
         final GeodeticPoint sunInBody = earth.transform(sunPos, ecef, date);
 
         return getDensity(dateMJD,
@@ -1261,8 +1258,7 @@ public class JB2008 implements Atmosphere {
 
         // compute sun position
         final Frame ecef = earth.getBodyFrame();
-        final FieldVector3D<T> sunPos = new FieldVector3D<>(date.getField(),
-                        sun.getPosition(dateD, ecef));
+        final FieldVector3D<T> sunPos = getSunPosition(date, ecef);
         final FieldGeodeticPoint<T> sunInBody = earth.transform(sunPos, ecef, date);
 
         return getDensity(dateMJD,

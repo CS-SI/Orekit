@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -47,7 +48,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 class HarrisPriesterTest {
 
     // Sun
-    private PVCoordinatesProvider sun;
+    private CelestialBody sun;
 
     // Earth
     private OneAxisEllipsoid earth;

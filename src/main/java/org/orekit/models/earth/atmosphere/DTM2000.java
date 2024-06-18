@@ -35,7 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,7 +68,7 @@ import java.util.Arrays;
  * <p>
  * Mean solar flux is (for the moment) represented by the F10.7 indices. Instantaneous
  * flux can be set to the mean value if the data is not available. Geomagnetic
- * activity is represented by the Kp indice, which goes from 1 (very low activity) to
+ * activity is represented by the Kp index, which goes from 1 (very low activity) to
  * 9 (high activity).
  *
  * <p>
@@ -80,7 +80,7 @@ import java.util.Arrays;
  * @author R. Biancale, S. Bruinsma: original fortran routine
  * @author Fabien Maussion (java translation)
  */
-public class DTM2000 implements Atmosphere {
+public class DTM2000 extends AbstractSunInfluencedAtmosphere {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170705L;
@@ -148,9 +148,6 @@ public class DTM2000 implements Atmosphere {
     private static double[] t0   = null;
     private static double[] tp   = null;
 
-    /** Sun position. */
-    private PVCoordinatesProvider sun;
-
     /** External data container. */
     private DTM2000InputParameters inputParams;
 
@@ -167,11 +164,11 @@ public class DTM2000 implements Atmosphere {
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
-     * @see #DTM2000(DTM2000InputParameters, PVCoordinatesProvider, BodyShape, TimeScale)
+     * @see #DTM2000(DTM2000InputParameters, ExtendedPositionProvider, BodyShape, TimeScale)
      */
     @DefaultDataContext
     public DTM2000(final DTM2000InputParameters parameters,
-                   final PVCoordinatesProvider sun, final BodyShape earth) {
+                   final ExtendedPositionProvider sun, final BodyShape earth) {
         this(parameters, sun, earth, DataContext.getDefault().getTimeScales().getUTC());
     }
 
@@ -183,9 +180,10 @@ public class DTM2000 implements Atmosphere {
      * @since 10.1
      */
     public DTM2000(final DTM2000InputParameters parameters,
-                   final PVCoordinatesProvider sun,
+                   final ExtendedPositionProvider sun,
                    final BodyShape earth,
                    final TimeScale utc) {
+        super(sun);
 
         synchronized (DTM2000.class) {
             // lazy reading of model coefficients
@@ -195,7 +193,6 @@ public class DTM2000 implements Atmosphere {
         }
 
         this.earth = earth;
-        this.sun = sun;
         this.inputParams = parameters;
 
         this.utc = utc;
@@ -347,7 +344,7 @@ public class DTM2000 implements Atmosphere {
         final double lat = inBody.getLatitude();
 
         // compute local solar time
-        final Vector3D sunPos = sun.getPosition(date, ecef);
+        final Vector3D sunPos = getSunPosition(date, ecef);
         final double hl = FastMath.PI + FastMath.atan2(
                 sunPos.getX() * pEcef.getY() - sunPos.getY() * pEcef.getX(),
                 sunPos.getX() * pEcef.getX() + sunPos.getY() * pEcef.getY());
@@ -384,7 +381,7 @@ public class DTM2000 implements Atmosphere {
         final T lat = inBody.getLatitude();
 
         // compute local solar time
-        final Vector3D sunPos = sun.getPosition(dateD, ecef);
+        final FieldVector3D<T> sunPos = getSunPosition(date, ecef);
         final T y  = pEcef.getY().multiply(sunPos.getX()).subtract(pEcef.getX().multiply(sunPos.getY()));
         final T x  = pEcef.getX().multiply(sunPos.getX()).add(pEcef.getY().multiply(sunPos.getY()));
         final T hl = y.atan2(x).add(y.getPi());
