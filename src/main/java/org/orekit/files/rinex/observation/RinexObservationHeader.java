@@ -385,24 +385,6 @@ public class RinexObservationHeader extends RinexBaseHeader {
         return eccentricities;
     }
 
-    /** Set the realtime-derived receiver clock offset.
-     * @param clkOffset realtime-derived receiver clock offset
-     * @deprecated as of 12.1, replaced by {@link #setClockOffsetApplied(boolean)}
-     */
-    @Deprecated
-    public void setClkOffset(final int clkOffset) {
-        setClockOffsetApplied(clkOffset > 0);
-    }
-
-    /** Get the realtime-derived receiver clock offset.
-     * @return realtime-derived receiver clock offset
-     * @deprecated as of 12.1, replaced by #@link {@link #getClockOffsetApplied()}
-     */
-    @Deprecated
-    public int getClkOffset() {
-        return getClockOffsetApplied() ? 1 : 0;
-    }
-
     /** Set the application flag for realtime-derived receiver clock offset.
      * @param clockOffsetApplied application flag for realtime-derived receiver clock offset
      * @since 12.1
