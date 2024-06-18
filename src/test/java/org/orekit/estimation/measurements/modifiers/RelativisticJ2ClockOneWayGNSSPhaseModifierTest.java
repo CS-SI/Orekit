@@ -64,10 +64,12 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
 
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
-        final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), 0.0, date,
+        final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), "",
+                                                          new QuadraticClockModel(date, 0.0, 0.0, 0.0), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
-                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0));
+                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0),
+                                                          new AmbiguityCache());
 
         // One-way GNSS phase before applying the modifier
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);

@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical;
 
 import java.util.Collection;
 import java.util.NavigableMap;
-import java.util.TreeMap;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -111,24 +110,6 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      */
     public TimeSpanMap<BoundedPropagator> getPropagatorsMap() {
         return map;
-    }
-
-    /** Get an unmodifiable view of the propagators map.
-     * <p>
-     * The key of the map entries are the {@link BoundedPropagator#getMinDate() min dates}
-     * of each propagator.
-     * </p>
-     * @return unmodifiable view of the propagators map
-     * @since 12.0
-     * @deprecated as of 12.1, replaced by {@link #getPropagatorsMap()}
-     */
-    @Deprecated
-    public NavigableMap<AbsoluteDate, BoundedPropagator> getPropagators() {
-        final NavigableMap<AbsoluteDate, BoundedPropagator> nm = new TreeMap<>();
-        for (TimeSpanMap.Span<BoundedPropagator> span = map.getFirstNonNullSpan(); span != null; span = span.next()) {
-            nm.put(span.getData().getMinDate(), span.getData());
-        }
-        return nm;
     }
 
     @Override

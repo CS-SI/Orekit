@@ -32,11 +32,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-;
-
 public class MendesPavlisModelTest {
 
-    private static double epsilon = 1e-6;
+    private static final double epsilon = 1e-6;
 
     @BeforeAll
     public static void setUpGlobal() {
@@ -96,7 +94,7 @@ public class MendesPavlisModelTest {
         final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                                               lambda, TroposphericModelUtils.MICRO_M);
 
-        final double[] computedDelay = model.computeZenithDelay(point, model.getParameters(), date);
+        final double[] computedDelay = model.computeZenithDelay(point, date);
 
         Assertions.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
         Assertions.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
@@ -225,9 +223,19 @@ public class MendesPavlisModelTest {
 
         final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
 
-        final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure, humidity, lambda);
+        final PressureTemperatureHumidity pth =
+                new PressureTemperatureHumidity(0,
+                                                TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
+                                                temperature,
+                                                new CIPM2007().waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
+                                                                                  temperature, humidity),
+                                                Double.NaN,
+                                                Double.NaN);
+        final MendesPavlisModel model =
+                new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                      lambda, TroposphericModelUtils.MICRO_M);
 
-        final double[] computedDelay = model.computeZenithDelay(point, model.getParameters(), date);
+        final double[] computedDelay = model.computeZenithDelay(point, date);
 
         Assertions.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
         Assertions.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
@@ -242,8 +250,12 @@ public class MendesPavlisModelTest {
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
+        MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943, TroposphericModelUtils.MICRO_M);
+        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                            point,
+                                            TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                            model.getParameters(), date).
+                            getDelay();
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }

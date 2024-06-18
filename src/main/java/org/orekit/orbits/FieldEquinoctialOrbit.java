@@ -691,54 +691,6 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         return aDot != null;
     }
 
-    /** Computes the true longitude argument from the eccentric longitude argument.
-     * @param lE = E + ω + Ω eccentric longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the true longitude argument
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
-        return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, lE);
-    }
-
-    /** Computes the eccentric longitude argument from the true longitude argument.
-     * @param lv = v + ω + Ω true longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the eccentric longitude argument
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
-        return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
-    }
-
-    /** Computes the eccentric longitude argument from the mean longitude argument.
-     * @param lM = M + ω + Ω mean longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the eccentric longitude argument
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T meanToEccentric(final T lM, final T ex, final T ey) {
-        return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM);
-    }
-
-    /** Computes the mean longitude argument from the eccentric longitude argument.
-     * @param lE = E + ω + Ω mean longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the mean longitude argument
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
-        return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, lE);
-    }
-
     /** {@inheritDoc} */
     @Override
     public T getE() {

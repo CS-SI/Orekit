@@ -625,50 +625,6 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                                                                                    getLvDot());
     }
 
-    /** Computes the true longitude argument from the eccentric longitude argument.
-     * @param lE = E + ω + Ω eccentric longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @return the true longitude argument
-     */
-    @Deprecated
-    public static double eccentricToTrue(final double lE, final double ex, final double ey) {
-        return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, lE);
-    }
-
-    /** Computes the eccentric longitude argument from the true longitude argument.
-     * @param lv = v + ω + Ω true longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @return the eccentric longitude argument
-     */
-    @Deprecated
-    public static double trueToEccentric(final double lv, final double ex, final double ey) {
-        return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
-    }
-
-    /** Computes the eccentric longitude argument from the mean longitude argument.
-     * @param lM = M + ω + Ω mean longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @return the eccentric longitude argument
-     */
-    @Deprecated
-    public static double meanToEccentric(final double lM, final double ex, final double ey) {
-        return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM);
-    }
-
-    /** Computes the mean longitude argument from the eccentric longitude argument.
-     * @param lE = E + ω + Ω mean longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @return the mean longitude argument
-     */
-    @Deprecated
-    public static double eccentricToMean(final double lE, final double ex, final double ey) {
-        return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, lE);
-    }
-
     /** {@inheritDoc} */
     @Override
     public double getE() {

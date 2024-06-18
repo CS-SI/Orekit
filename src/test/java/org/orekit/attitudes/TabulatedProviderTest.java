@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -72,6 +73,7 @@ public class TabulatedProviderTest {
     OneAxisEllipsoid earthShape;
 
     @Test
+    @DefaultDataContext
     public void testDifferentFrames() {
         double             samplingRate      = 10.0;
         int                n                 = 8;
@@ -157,7 +159,7 @@ public class TabulatedProviderTest {
         referencePropagator.setAttitudeProvider(referenceProvider);
 
         // create sample
-        final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        final List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
         referencePropagator.setStepHandler(samplingRate, currentState -> sample.add(currentState.getAttitude().getOrientation()));
         referencePropagator.propagate(circOrbit.getDate().shiftedBy(2 * circOrbit.getKeplerianPeriod()));
 
@@ -211,12 +213,13 @@ public class TabulatedProviderTest {
     }
 
     @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

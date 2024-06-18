@@ -793,50 +793,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                                                                                    getAlphaVDot());
     }
 
-    /** Computes the true latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + ω eccentric latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @return the true latitude argument.
-     */
-    @Deprecated
-    public static double eccentricToTrue(final double alphaE, final double ex, final double ey) {
-        return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alphaE);
-    }
-
-    /** Computes the eccentric latitude argument from the true latitude argument.
-     * @param alphaV = V + ω true latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @return the eccentric latitude argument.
-     */
-    @Deprecated
-    public static double trueToEccentric(final double alphaV, final double ex, final double ey) {
-        return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alphaV);
-    }
-
-    /** Computes the eccentric latitude argument from the mean latitude argument.
-     * @param alphaM = M + ω  mean latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @return the eccentric latitude argument.
-     */
-    @Deprecated
-    public static double meanToEccentric(final double alphaM, final double ex, final double ey) {
-        return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alphaM);
-    }
-
-    /** Computes the mean latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + ω  mean latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @return the mean latitude argument.
-     */
-    @Deprecated
-    public static double eccentricToMean(final double alphaE, final double ex, final double ey) {
-        return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alphaE);
-    }
-
     /** {@inheritDoc} */
     @Override
     public double getE() {

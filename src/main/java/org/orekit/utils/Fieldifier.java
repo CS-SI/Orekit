@@ -21,8 +21,6 @@ import org.hipparchus.Field;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldStateCovariance;
 import org.orekit.propagation.StateCovariance;
 import org.orekit.time.FieldAbsoluteDate;
@@ -37,24 +35,6 @@ public class Fieldifier {
     /** Private constructor. */
     private Fieldifier() {
         // Empty constructor
-    }
-
-    /**
-     * Fieldify given orbit with given field.
-     * <p>
-     * Conserve derivatives and return orbit in same orbit type as input orbit.
-     *
-     * @param field field to fieldify with
-     * @param orbit orbit to fieldify
-     * @param <T> type of the elements
-     *
-     * @return fielded orbit
-     * @deprecated
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> FieldOrbit<T> fieldify(final Field<T> field, final Orbit orbit) {
-
-        return orbit.getType().convertToFieldOrbit(field, orbit);
     }
 
     /**

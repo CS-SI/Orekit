@@ -46,24 +46,6 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @deprecated as of 12.1, replaced by {@link #InterSatellitesPhaseBuilder(CorrelatedRandomVectorGenerator,
-     * ObservableSatellite, ObservableSatellite, double, double, double, AmbiguityCache)}
-     */
-    @Deprecated
-    public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final ObservableSatellite local, final ObservableSatellite remote,
-                                       final double wavelength, final double sigma, final double baseWeight) {
-        this(noiseSource, local, remote, wavelength, sigma, baseWeight,
-             AmbiguityCache.DEFAULT_CACHE);
-    }
-
-    /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal
-     * @param wavelength phase observed value wavelength (m)
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
      * @param cache from which ambiguity drive should come
      * @since 12.1
      */

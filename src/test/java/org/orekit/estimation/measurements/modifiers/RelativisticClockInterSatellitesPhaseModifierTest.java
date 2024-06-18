@@ -52,7 +52,8 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
                                                                     date,
                                                                     Vector3D.distance(states[0].getPosition(),
                                                                                       states[1].getPosition()) / wavelength,
-                                                                    wavelength, 1.0, 1.0);
+                                                                    wavelength, 1.0, 1.0,
+                                                                    new AmbiguityCache());
 
         // Inter-satellites phase before applying the modifier
         final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);

@@ -153,9 +153,8 @@ class FieldCircularOrbitTest {
 
     @Test
     void testErrors()  {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestNonInertialFrame(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> doTestNonInertialFrame(Binary64Field.getInstance()));
     }
 
     @Test
@@ -353,71 +352,6 @@ class FieldCircularOrbitTest {
                 Assertions.assertEquals(circularOrbit.getAlphaE(), fieldOrbit.getAlphaE().getReal());
             }
         }
-    }
-
-
-    @Test
-    @Deprecated
-    void testTrueToEccentric() {
-        // GIVEN
-        final ComplexField field = ComplexField.getInstance();
-        final Complex zero = field.getZero();
-        final Complex ex = zero.newInstance(1e-2);
-        final Complex ey = zero.newInstance(1.e-3);
-        final Complex inputAnomaly = zero.newInstance(1.);
-        // WHEN
-        final Complex actualL = FieldCircularOrbit.trueToEccentric(inputAnomaly, ex, ey);
-        // THEN
-        final Complex expectedL = FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, inputAnomaly);
-        Assertions.assertEquals(expectedL.getReal(), actualL.getReal());
-    }
-
-    @Test
-    @Deprecated
-    void testEccentricToTrue() {
-        // GIVEN
-        final ComplexField field = ComplexField.getInstance();
-        final Complex zero = field.getZero();
-        final Complex ex = zero.newInstance(1e-2);
-        final Complex ey = zero.newInstance(1.e-3);
-        final Complex inputAnomaly = zero.newInstance(1.);
-        // WHEN
-        final Complex actualL = FieldCircularOrbit.eccentricToTrue(inputAnomaly, ex, ey);
-        // THEN
-        final Complex expectedL = FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, inputAnomaly);
-        Assertions.assertEquals(expectedL.getReal(), actualL.getReal());
-    }
-
-    @Test
-    @Deprecated
-    void testMeanToEccentric() {
-        // GIVEN
-        final ComplexField field = ComplexField.getInstance();
-        final Complex zero = field.getZero();
-        final Complex ex = zero.newInstance(1e-2);
-        final Complex ey = zero.newInstance(1.e-3);
-        final Complex inputAnomaly = zero.newInstance(1.);
-        // WHEN
-        final Complex actualL = FieldCircularOrbit.meanToEccentric(inputAnomaly, ex, ey);
-        // THEN
-        final Complex expectedL = FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, inputAnomaly);
-        Assertions.assertEquals(expectedL.getReal(), actualL.getReal());
-    }
-
-    @Test
-    @Deprecated
-    void testEccentricToMean() {
-        // GIVEN
-        final ComplexField field = ComplexField.getInstance();
-        final Complex zero = field.getZero();
-        final Complex ex = zero.newInstance(1e-2);
-        final Complex ey = zero.newInstance(1.e-3);
-        final Complex inputAnomaly = zero.newInstance(1.);
-        // WHEN
-        final Complex actualL = FieldCircularOrbit.eccentricToMean(inputAnomaly, ex, ey);
-        // THEN
-        final Complex expectedL = FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, inputAnomaly);
-        Assertions.assertEquals(expectedL.getReal(), actualL.getReal());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestCircularToEquinoctialEll(Field<T> field) {
@@ -1031,7 +965,7 @@ class FieldCircularOrbitTest {
 
     private <T extends CalculusFieldElement<T>> void doTestJacobianReference(Field<T> field) {
         T zero =  field.getZero();
-        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 4, 1, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         FieldCircularOrbit<T> orbCir = new FieldCircularOrbit<>(zero.add(7000000.0), zero.add(0.01), zero.add(-0.02), zero.add(1.2), zero.add(2.1),
                                                                 zero.add(0.7), PositionAngleType.MEAN,
@@ -1121,7 +1055,7 @@ class FieldCircularOrbitTest {
     private <T extends CalculusFieldElement<T>> void doTestJacobianFinitedifferences(Field<T> field) {
         T zero =  field.getZero();
 
-        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 4, 1, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         FieldCircularOrbit<T> orbCir = new FieldCircularOrbit<>(zero.add(7000000.0), zero.add(0.01), zero.add(-0.02), zero.add(1.2), zero.add(2.1),
                                                                 zero.add(0.7), PositionAngleType.MEAN,
@@ -1271,49 +1205,49 @@ class FieldCircularOrbitTest {
         final T mu   = zero.add(Constants.EIGEN5C_EARTH_MU);
         final FieldCircularOrbit<T> orbit = new FieldCircularOrbit<>(pv, frame, mu);
 
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getA),
                             orbit.getADot().getReal(),
                             4.3e-8);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getEquinoctialEx),
                             orbit.getEquinoctialExDot().getReal(),
                             2.1e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getEquinoctialEy),
                             orbit.getEquinoctialEyDot().getReal(),
                             5.4e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getHx),
                             orbit.getHxDot().getReal(),
                             1.6e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getHy),
                             orbit.getHyDot().getReal(),
                             7.3e-17);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getLv),
                             orbit.getLvDot().getReal(),
                             3.4e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getLE),
                             orbit.getLEDot().getReal(),
                             3.5e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getLM),
                             orbit.getLMDot().getReal(),
                             5.3e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getE),
                             orbit.getEDot().getReal(),
                             6.8e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getI),
                             orbit.getIDot().getReal(),
                             5.7e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getCircularEx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getCircularEx),
                             orbit.getCircularExDot().getReal(),
                             2.2e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getCircularEy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getCircularEy),
                             orbit.getCircularEyDot().getReal(),
                             5.3e-17);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaV()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getAlphaV),
                             orbit.getAlphaVDot().getReal(),
                             4.3e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getAlphaE),
                             orbit.getAlphaEDot().getReal(),
                             1.2e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaM()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldCircularOrbit::getAlphaM),
                             orbit.getAlphaMDot().getReal(),
                             3.7e-15);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngleType.TRUE)),
@@ -1332,11 +1266,9 @@ class FieldCircularOrbitTest {
     double differentiate(TimeStampedFieldPVCoordinates<T> pv, Frame frame, T mu, S picker) {
         final DSFactory factory = new DSFactory(1, 1);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
-        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return picker.apply(new FieldCircularOrbit<>(pv.shiftedBy(dt), frame, mu)).getReal();
-            }
-        });
+        UnivariateDifferentiableFunction diff =
+                differentiator.differentiate((UnivariateFunction) dt -> picker.apply(new FieldCircularOrbit<>(pv.shiftedBy(dt),
+                                                                                                              frame, mu)).getReal());
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
      }
 

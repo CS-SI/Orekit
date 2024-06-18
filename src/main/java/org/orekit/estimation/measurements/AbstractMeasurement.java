@@ -25,9 +25,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -281,25 +279,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
     /** Compute propagation delay on a link leg (typically downlink or uplink).
      * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
-     * in the same frame as {@code adjustableEmitterPV}
-     * @param signalArrivalDate date at which the signal arrives to receiver
-     * @return <em>positive</em> delay between signal emission and signal reception dates
-     * @deprecated as of 12.1, replaced by either {@link #signalTimeOfFlight(TimeStampedPVCoordinates,
-     * Vector3D, AbsoluteDate, Frame)} or {@link #signalTimeOfFlight(PVCoordinatesProvider, AbsoluteDate,
-     * Vector3D, AbsoluteDate, Frame)}
-     */
-    @Deprecated
-    @DefaultDataContext
-    public static double signalTimeOfFlight(final TimeStampedPVCoordinates adjustableEmitterPV,
-                                            final Vector3D receiverPosition,
-                                            final AbsoluteDate signalArrivalDate) {
-        return signalTimeOfFlight(adjustableEmitterPV, receiverPosition, signalArrivalDate,
-                                  FramesFactory.getGCRF());
-    }
-
-    /** Compute propagation delay on a link leg (typically downlink or uplink).
-     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
      * @param receiverPosition fixed position of receiver at {@code signalArrivalDate}
      * @param receiverFrame frame in which both {@code adjustableEmitterPV} and
      *                      {@code receiver receiverPosition} are defined
@@ -353,26 +332,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
         return delay;
 
-    }
-
-    /** Compute propagation delay on a link leg (typically downlink or uplink).
-     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
-     * in the same frame as {@code adjustableEmitterPV}
-     * @param signalArrivalDate date at which the signal arrives to receiver
-     * @return <em>positive</em> delay between signal emission and signal reception dates
-     * @param <T> the type of the components
-     * @deprecated as of 12.1, replaced by either {@link #signalTimeOfFlight(TimeStampedFieldPVCoordinates,
-     * FieldVector3D, FieldAbsoluteDate, Frame)} or {@link #signalTimeOfFlight(FieldPVCoordinatesProvider,
-     * FieldAbsoluteDate, FieldVector3D, FieldAbsoluteDate, Frame)}
-     */
-    @Deprecated
-    @DefaultDataContext
-    public static <T extends CalculusFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
-                                                                           final FieldVector3D<T> receiverPosition,
-                                                                           final FieldAbsoluteDate<T> signalArrivalDate) {
-        return signalTimeOfFlight(adjustableEmitterPV, receiverPosition, signalArrivalDate,
-                                  FramesFactory.getGCRF());
     }
 
     /** Compute propagation delay on a link leg (typically downlink or uplink).

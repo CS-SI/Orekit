@@ -86,7 +86,9 @@ public class RelativisticClockPhaseModifierTest {
         final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement
-        final Phase phase = new Phase(station, state.getDate(), 26584264.45, PredefinedGnssSignal.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));
+        final Phase phase = new Phase(station, state.getDate(), 26584264.45, PredefinedGnssSignal.G01.getWavelength(),
+                                1.0, 1.0, new ObservableSatellite(0),
+                                      new AmbiguityCache());
         final EstimatedMeasurement<Phase> estimated = new EstimatedMeasurement<>(phase, 0, 0,
                                                                                  new SpacecraftState[] {state},
                                                                                  new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});

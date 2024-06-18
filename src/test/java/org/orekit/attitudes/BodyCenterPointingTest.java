@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -154,6 +155,7 @@ class BodyCenterPointingTest {
     }
 
     @Test
+    @DefaultDataContext
     void testQDot() {
 
         Utils.setDataRoot("regular-data");
@@ -174,10 +176,10 @@ class BodyCenterPointingTest {
                 new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
         propagator.setAttitudeProvider(earthCenterAttitudeLaw);
 
-        List<WeightedObservedPoint> w0 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w1 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w2 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w3 = new ArrayList<WeightedObservedPoint>();
+        List<WeightedObservedPoint> w0 = new ArrayList<>();
+        List<WeightedObservedPoint> w1 = new ArrayList<>();
+        List<WeightedObservedPoint> w2 = new ArrayList<>();
+        List<WeightedObservedPoint> w3 = new ArrayList<>();
         for (double dt = -1; dt < 1; dt += 0.01) {
             Rotation rP = propagator.propagate(date.shiftedBy(dt)).getAttitude().getRotation();
             w0.add(new WeightedObservedPoint(1, dt, rP.getQ0()));
@@ -214,6 +216,7 @@ class BodyCenterPointingTest {
     }
 
     @Test
+    @DefaultDataContext
     void testSpin() {
 
         Utils.setDataRoot("regular-data");
@@ -261,24 +264,30 @@ class BodyCenterPointingTest {
     }
 
     @Test
+    @DefaultDataContext
     void testTargetField() {
         doTestTarget(Binary64Field.getInstance());
     }
+
     @Test
+    @DefaultDataContext
     public void doxBodyCenterInPointingDirectionTest() {
         doTestBodyCenterInPointingDirection(Binary64Field.getInstance());
     }
 
     @Test
+    @DefaultDataContext
     void testQDotField() {
         doTestQDot(Binary64Field.getInstance());
     }
 
     @Test
+    @DefaultDataContext
     void testSpinField() {
         doTestSpin(Binary64Field.getInstance());
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>>void doTestTarget(final Field<T> field) {
 
         T mu = field.getZero().add(3.9860047e14);
@@ -291,8 +300,8 @@ class BodyCenterPointingTest {
         final T pa=zero.add(FastMath.toRadians(45.));
         final T m =zero.add(FastMath.toRadians(5.3-270));
 
-     // Computation date
-        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+        // Computation date
+        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 4, 7),
                                                            TimeComponents.H00,
                                                            TimeScalesFactory.getUTC());
         // Orbit
@@ -317,6 +326,7 @@ class BodyCenterPointingTest {
 
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestBodyCenterInPointingDirection(final Field<T> field)  {
 
         T zero = field.getZero();
@@ -330,8 +340,8 @@ class BodyCenterPointingTest {
 
         final T m =zero.add(FastMath.toRadians(5.300-270.));
 
-     // Computation date
-        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+        // Computation date
+        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 4, 7),
                                                            TimeComponents.H00,
                                                            TimeScalesFactory.getUTC());
         // Orbit
@@ -378,6 +388,7 @@ class BodyCenterPointingTest {
 
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestQDot(final Field<T> field) {
 
         final double ae  = 6.378137e6;
@@ -397,8 +408,8 @@ class BodyCenterPointingTest {
         final T m     = zero.add(FastMath.toRadians(5.3-270));
         final T ehMu  = zero.add(3.9860047e14);
 
-     // Computation date
-        FieldAbsoluteDate<T> date_comp= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+        // Computation date
+        FieldAbsoluteDate<T> date_comp= new FieldAbsoluteDate<>(field, new DateComponents(2008, 4, 7),
                                                                 TimeComponents.H00,
                                                                 TimeScalesFactory.getUTC());
         // Orbit
@@ -424,10 +435,10 @@ class BodyCenterPointingTest {
                 new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
         propagator.setAttitudeProvider(earthCenterAttitudeLaw);
 
-        List<WeightedObservedPoint> w0 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w1 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w2 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w3 = new ArrayList<WeightedObservedPoint>();
+        List<WeightedObservedPoint> w0 = new ArrayList<>();
+        List<WeightedObservedPoint> w1 = new ArrayList<>();
+        List<WeightedObservedPoint> w2 = new ArrayList<>();
+        List<WeightedObservedPoint> w3 = new ArrayList<>();
         for (double dt = -1; dt < 1; dt += 0.01) {
             FieldRotation<T> rP = propagator.propagate(date.shiftedBy(dt)).getAttitude().getRotation();
             w0.add(new WeightedObservedPoint(1, dt, rP.getQ0().getReal()));
@@ -463,6 +474,7 @@ class BodyCenterPointingTest {
 
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestSpin(final Field<T> field) {
 
         final double ae  = 6.378137e6;
@@ -483,7 +495,7 @@ class BodyCenterPointingTest {
         final T ehMu  = zero.add(3.9860047e14);
 
         // Computation date
-        FieldAbsoluteDate<T> date_R = new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+        FieldAbsoluteDate<T> date_R = new FieldAbsoluteDate<>(field, new DateComponents(2008, 4, 7),
                                                               TimeComponents.H00,
                                                               TimeScalesFactory.getUTC());
         // Orbit
@@ -537,13 +549,14 @@ class BodyCenterPointingTest {
     }
 
     @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

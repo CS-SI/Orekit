@@ -146,8 +146,7 @@ public class PredictedEOPHistoryTest {
 
         EOPHistory predicted = new PredictedEOPHistory(truncatedEOP,
                                                        30 * Constants.JULIAN_DAY,
-                                                       new EOPFitter(new SingleParameterFitter(3 * Constants.JULIAN_YEAR,
-                                                                                               Constants.JULIAN_DAY,
+                                                       new EOPFitter(new SingleParameterFitter(Constants.JULIAN_DAY,
                                                                                                1.0e-12, 3,
                                                                                                SingleParameterFitter.SUN_PULSATION,
                                                                                                2 * SingleParameterFitter.SUN_PULSATION,

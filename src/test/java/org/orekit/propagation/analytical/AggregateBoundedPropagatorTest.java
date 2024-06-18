@@ -104,9 +104,6 @@ public class AggregateBoundedPropagatorTest {
             Assertions.assertEquals(span.getStart(), span.getData().getMinDate());
         }
 
-        // test deprecated method
-        Assertions.assertEquals(2, actual.getPropagators().size());
-
     }
 
     /**

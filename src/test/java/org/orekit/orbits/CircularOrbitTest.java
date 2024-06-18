@@ -540,7 +540,7 @@ class CircularOrbitTest {
     @Test
     void testJacobianReference() {
 
-        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 4, 1, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         CircularOrbit orbCir = new CircularOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
                 0.7, PositionAngleType.MEAN,
@@ -621,7 +621,7 @@ class CircularOrbitTest {
     @Test
     void testJacobianFinitedifferences() {
 
-        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 4, 1, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         CircularOrbit orbCir = new CircularOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
                 0.7, PositionAngleType.MEAN,
@@ -930,49 +930,49 @@ class CircularOrbitTest {
         final double mu   = Constants.EIGEN5C_EARTH_MU;
         final CircularOrbit orbit = new CircularOrbit(pv, frame, mu);
 
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getA),
                 orbit.getADot(),
                 4.3e-8);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getEquinoctialEx),
                 orbit.getEquinoctialExDot(),
                 2.1e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getEquinoctialEy),
                 orbit.getEquinoctialEyDot(),
                 5.4e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getHx),
                 orbit.getHxDot(),
                 1.6e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getHy),
                 orbit.getHyDot(),
                 7.3e-17);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getLv),
                 orbit.getLvDot(),
                 3.4e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getLE),
                 orbit.getLEDot(),
                 3.5e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getLM),
                 orbit.getLMDot(),
                 5.3e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getE),
                 orbit.getEDot(),
                 6.8e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getI),
                 orbit.getIDot(),
                 5.7e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getCircularEx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getCircularEx),
                 orbit.getCircularExDot(),
                 2.2e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getCircularEy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getCircularEy),
                 orbit.getCircularEyDot(),
                 5.3e-17);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaV()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getAlphaV),
                 orbit.getAlphaVDot(),
                 4.3e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getAlphaE),
                 orbit.getAlphaEDot(),
                 1.2e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaM()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CircularOrbit::getAlphaM),
                 orbit.getAlphaMDot(),
                 3.7e-15);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngleType.TRUE)),
@@ -991,11 +991,8 @@ class CircularOrbitTest {
     double differentiate(TimeStampedPVCoordinates pv, Frame frame, double mu, S picker) {
         final DSFactory factory = new DSFactory(1, 1);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
-        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return picker.apply(new CircularOrbit(pv.shiftedBy(dt), frame, mu));
-            }
-        });
+        UnivariateDifferentiableFunction diff =
+                differentiator.differentiate((UnivariateFunction) dt -> picker.apply(new CircularOrbit(pv.shiftedBy(dt), frame, mu)));
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
     }
 
@@ -1210,30 +1207,6 @@ class CircularOrbitTest {
         Assertions.assertEquals(0.0, normalized2.getRightAscensionOfAscendingNodeDot() - withDerivatives.getRightAscensionOfAscendingNodeDot(), 1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getAlphaVDot() - withDerivatives.getAlphaVDot(), 1.0e-10);
 
-    }
-
-    @Test
-    @Deprecated
-    void positionAngleNonRegressionOnDeprecated() {
-        // Can be removed when deprecated routines are removed in next major release (13.0)
-        // GIVEN
-        final double ex = 0.2;
-        final double ey = 0.3;
-        final double originalPositionAngle = 1.;
-        // WHEN
-        final double actualEccentricToMean = CircularOrbit.eccentricToMean(originalPositionAngle, ex, ey);
-        final double actualEccentricToTrue = CircularOrbit.eccentricToTrue(originalPositionAngle, ex, ey);
-        final double actualMeanToEccentric = CircularOrbit.meanToEccentric(originalPositionAngle, ex, ey);
-        final double actualTrueToEccentric = CircularOrbit.trueToEccentric(originalPositionAngle, ex, ey);
-        // THEN
-        Assertions.assertEquals(CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, originalPositionAngle),
-                actualEccentricToMean);
-        Assertions.assertEquals(CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, originalPositionAngle),
-                actualEccentricToTrue);
-        Assertions.assertEquals(CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, originalPositionAngle),
-                actualMeanToEccentric);
-        Assertions.assertEquals(CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, originalPositionAngle),
-                actualTrueToEccentric);
     }
 
     @Test

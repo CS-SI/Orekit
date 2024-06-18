@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="update" >
+            Removed all classes and methods that were deprecated in 12.X.
+        </action>
         <action dev="luc" type="update" issue="1439">
             Added a posteriori filtering feature for generated measurements.
         </action>

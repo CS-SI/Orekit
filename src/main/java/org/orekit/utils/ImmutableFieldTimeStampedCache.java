@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -101,21 +100,6 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
     private ImmutableFieldTimeStampedCache() {
         this.data             = null;
         this.maxNeighborsSize = 0;
-    }
-
-    /**
-     * Get an empty immutable cache, cast to the correct type.
-     *
-     * @param <TS> the type of data
-     * @param <CFE> the type of the calculus field element
-     * @param ignored field to which the elements belong
-     * @return an empty {@link ImmutableTimeStampedCache}.
-     * @deprecated as of 12.1, replaced by {@link #emptyCache()}
-     */
-    @Deprecated
-    public static <TS extends FieldTimeStamped<CFE>, CFE extends CalculusFieldElement<CFE>>
-        ImmutableFieldTimeStampedCache<TS, CFE> emptyCache(final Field<CFE> ignored) {
-        return emptyCache();
     }
 
     /**

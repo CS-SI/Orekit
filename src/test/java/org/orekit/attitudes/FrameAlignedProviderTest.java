@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -68,6 +69,7 @@ public class FrameAlignedProviderTest {
     private Orbit        orbit0;
 
     @Test
+    @DefaultDataContext
     public void testIsInertial() {
         FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9,
                                                                          RotationConvention.VECTOR_OPERATOR));
@@ -85,6 +87,7 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testCompensateMomentum() {
         FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2,
                                                                          RotationConvention.VECTOR_OPERATOR));
@@ -100,8 +103,9 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testSpin() {
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
@@ -245,6 +249,7 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     void testGetAttitudeRotation() {
         // GIVEN
         final Frame frame1 = FramesFactory.getGCRF();
@@ -259,17 +264,20 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     void testGetAttitudeRotationFieldComplex() {
         final ComplexField complexField = ComplexField.getInstance();
         templateTestGetRotationField(complexField);
     }
 
     @Test
+    @DefaultDataContext
     void testGetAttitudeRotationFieldGradient() {
         final GradientField gradientField = GradientField.getField(1);
         templateTestGetRotationField(gradientField);
     }
 
+    @DefaultDataContext
     <T extends CalculusFieldElement<T>> void templateTestGetRotationField(final Field<T> field) {
         // GIVEN
         final Frame frame1 = FramesFactory.getGCRF();
@@ -285,11 +293,12 @@ public class FrameAlignedProviderTest {
     }
 
     @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
-            t0 = new AbsoluteDate(new DateComponents(2008, 06, 03), TimeComponents.H12,
+            t0 = new AbsoluteDate(new DateComponents(2008, 6, 3), TimeComponents.H12,
                                   TimeScalesFactory.getUTC());
             orbit0 =
                 new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,

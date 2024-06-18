@@ -41,16 +41,6 @@ public class BistaticRangeRateTroposphericDelayModifier
     /** Constructor.
      *
      * @param model Tropospheric delay model appropriate for the current range-rate measurement method.
-     * @deprecated as of 12.1, replaced by {@link #BistaticRangeRateTroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    public BistaticRangeRateTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
-
-    /** Constructor.
-     *
-     * @param model Tropospheric delay model appropriate for the current range-rate measurement method.
      * @since 12.1
      */
     public BistaticRangeRateTroposphericDelayModifier(final TroposphericModel model) {

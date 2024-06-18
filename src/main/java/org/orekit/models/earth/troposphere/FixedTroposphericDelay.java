@@ -45,8 +45,7 @@ import org.orekit.utils.TrackingCoordinates;
  * the {@link DataProvidersManager}.
  * @author Thomas Neidhart
  */
-@SuppressWarnings("deprecation")
-public class FixedTroposphericDelay implements DiscreteTroposphericModel, TroposphericModel {
+public class FixedTroposphericDelay implements TroposphericModel {
 
     /** Singleton object for the default model. */
     private static FixedTroposphericDelay defaultModel;
@@ -61,7 +60,7 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
     private final double[][] fArr;
 
     /** Interpolation function for the tropospheric delays. */
-    private PiecewiseBicubicSplineInterpolatingFunction delayFunction;
+    private final PiecewiseBicubicSplineInterpolatingFunction delayFunction;
 
     /** Creates a new {@link FixedTroposphericDelay} instance.
      * @param xArr abscissa grid for the interpolation function
@@ -132,15 +131,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
         return defaultModel;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double pathDelay(final double elevation, final GeodeticPoint point,
-                            final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date).getDelay();
-    }
-
     /** {@inheritDoc}
      * <p>
      * All delays are affected to {@link TroposphericDelay#getZh() hydrostatic zenith}
@@ -161,17 +151,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
 
         return new TroposphericDelay(delayFunction.value(h, MathUtils.SEMI_PI), 0.0,
                                      delayFunction.value(h, e), 0.0);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                         point,
-                         new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                         parameters, date).getDelay();
     }
 
     /** {@inheritDoc}
