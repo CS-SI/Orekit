@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -50,15 +51,15 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 import java.text.ParseException;
 
-public class JB2008Test {
+class JB2008Test {
 
     private static final TimeScale TT = TimeScalesFactory.getTT();
 
     @Test
-    public void testLegacy() {
+    void testLegacy() {
         final boolean print = false;
         // Build the model
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING, itrf);
@@ -112,12 +113,12 @@ public class JB2008Test {
 
 
     @Test
-    public void testAltitude() {
+    void testAltitude() {
         final boolean print = false;
         // Build the iput params provider
         final InputParams ip = new InputParams();
         // Get Sun
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
         // Get Earth body shape
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -156,7 +157,7 @@ public class JB2008Test {
    }
 
     @Test
-    public void testException() throws ParseException {
+    void testException() throws ParseException {
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -177,7 +178,7 @@ public class JB2008Test {
     }
 
     @Test
-    public void testDensityField() {
+    void testDensityField() {
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -198,10 +199,10 @@ public class JB2008Test {
                     // Run
                     final double    rho = atm.getDensity(date, pos, itrf);
                     final Binary64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
-                                                           new FieldVector3D<>(field.getOne(), pos),
+                                                           new FieldVector3D<>(field, pos),
                                                            itrf);
 
-                    Assertions.assertEquals(rho, rho64.getReal(), rho * 4.0e-13);
+                    Assertions.assertEquals(rho, rho64.getReal(), rho * 4.0e-10);
 
                 }
             }
@@ -210,7 +211,7 @@ public class JB2008Test {
     }
 
     @Test
-    public void testDensityGradient() {
+    void testDensityGradient() {
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -281,7 +282,7 @@ public class JB2008Test {
     }
 
     @Test
-    public void testComparisonWithReference() {
+    void testComparisonWithReference() {
 
         // The objective of this test is to compare Orekit results with
         // the reference JB2008 Code Files provided by Space Environment

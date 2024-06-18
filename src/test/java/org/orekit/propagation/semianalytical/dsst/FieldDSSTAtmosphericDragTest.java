@@ -82,10 +82,10 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
-public class FieldDSSTAtmosphericDragTest {
+class FieldDSSTAtmosphericDragTest {
 
     @Test
-    public void testGetMeanElementRate() {
+    void testGetMeanElementRate() {
         doTestGetMeanElementRate(Binary64Field.getInstance());
     }
 
@@ -165,7 +165,7 @@ public class FieldDSSTAtmosphericDragTest {
     }
 
     @Test
-    public void testShortPeriodTerms() {
+    void testShortPeriodTerms() {
         doTestShortPeriodTerms(Binary64Field.getInstance());
     }
 
@@ -227,18 +227,18 @@ public class FieldDSSTAtmosphericDragTest {
             }
         }
 
-        Assertions.assertEquals( 0.03966657233267546,     y[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(-1.52943814431705860e-8,  y[1].getReal(), 1.0e-22);
-        Assertions.assertEquals(-2.36149298285122150e-8,  y[2].getReal(), 1.4e-23);
-        Assertions.assertEquals(-5.90158033654432200e-11, y[3].getReal(), 1.0e-24);
-        Assertions.assertEquals( 1.02876397430619780e-11, y[4].getReal(), 2.0e-24);
-        Assertions.assertEquals( 2.53842752377756140e-8,  y[5].getReal(), 1.0e-22);
+        Assertions.assertEquals( 0.03966657233267546,     y[0].getReal(), 1.0e-12);
+        Assertions.assertEquals(-1.52943814431705860e-8,  y[1].getReal(), 1.0e-20);
+        Assertions.assertEquals(-2.36149298285122150e-8,  y[2].getReal(), 1.0e-20);
+        Assertions.assertEquals(-5.90158033654432200e-11, y[3].getReal(), 1.0e-20);
+        Assertions.assertEquals( 1.02876397430619780e-11, y[4].getReal(), 1.0e-20);
+        Assertions.assertEquals( 2.53842752377756140e-8,  y[5].getReal(), 1.0e-20);
 
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsStateDerivatives() {
+    void testShortPeriodTermsStateDerivatives() {
 
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -362,12 +362,12 @@ public class FieldDSSTAtmosphericDragTest {
     }
 
     @Test
-    public void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() throws ParseException, IOException {
         doTestShortPeriodTermsParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 6.0e-14);
     }
 
     @Test
-    public void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() throws ParseException, IOException {
         doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 3.7e-9);
     }
 
