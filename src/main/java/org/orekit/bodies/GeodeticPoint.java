@@ -80,6 +80,7 @@ public class GeodeticPoint implements Serializable {
      * @param latitude latitude of the point (rad)
      * @param longitude longitude of the point (rad)
      * @param altitude altitude of the point (m)
+     * @see SexagesimalAngle
      */
     public GeodeticPoint(final double latitude, final double longitude,
                          final double altitude) {

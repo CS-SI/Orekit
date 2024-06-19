@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1443">
+            Added support for sexagesimal angles.
+        </action>
         <action dev="luc" type="update" >
             Removed all classes and methods that were deprecated in 12.X.
         </action>
