@@ -66,28 +66,28 @@ public class SexagesimalAngle {
         this.arcSecond = (m - arcMinute) * SIXTY;
     }
 
-    /** Get sign
+    /** Get sign.
      * @return sign
      */
     public int getSign() {
         return sign;
     }
 
-    /** Get degree part of the angle
+    /** Get degree part of the angle.
      * @return degree part of the angle
      */
     public int getDegree() {
         return degree;
     }
 
-    /** Get arc-minute part of the angle
+    /** Get arc-minute part of the angle.
      * @return arc-minute part of the angle
      */
     public int getArcMinute() {
         return arcMinute;
     }
 
-    /** Get arc-second part of the angle
+    /** Get arc-second part of the angle.
      * @return arc-second part of the angle
      */
     public double getArcSecond() {
