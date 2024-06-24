@@ -19,6 +19,11 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.water.CIPM2007;
+import org.orekit.utils.units.Unit;
 
 /**
  * Utility class for tropospheric models.
@@ -26,6 +31,50 @@ import org.hipparchus.util.FastMath;
  * @since 11.0
  */
 public class TroposphericModelUtils {
+
+    /** Nanometers unit.
+     * @since 12.1
+     */
+    public static final Unit NANO_M = Unit.parse("nm");
+
+    /** Micrometers unit.
+     * @since 12.1
+     */
+    public static final Unit MICRO_M = Unit.parse("µm");
+
+    /** HectoPascal unit.
+     * @since 12.1
+     */
+    public static final Unit HECTO_PASCAL = Unit.parse("hPa");
+
+    /** Standard atmosphere.
+     * <ul>
+     * <li>altitude: 0m</li>
+     * <li>temperature: 20 degree Celsius</li>
+     * <li>pressure: 1013.25 mbar</li>
+     * <li>humidity: 50%</li>
+     * </ul>
+     * @see #STANDARD_ATMOSPHERE_PROVIDER
+     * @since 12.1
+     */
+    public static final PressureTemperatureHumidity STANDARD_ATMOSPHERE;
+
+    /** Provider for {@link #STANDARD_ATMOSPHERE standard atmosphere}.
+     * @since 12.1
+     */
+    public static final PressureTemperatureHumidityProvider STANDARD_ATMOSPHERE_PROVIDER;
+
+    static {
+        final double h  = 0.0;
+        final double p  = HECTO_PASCAL.toSI(1013.25);
+        final double t  = 273.15 + 20;
+        final double rh = 0.5;
+        STANDARD_ATMOSPHERE = new PressureTemperatureHumidity(h, p, t,
+                                                              new CIPM2007().waterVaporPressure(p, t, rh),
+                                                              Double.NaN, Double.NaN);
+        STANDARD_ATMOSPHERE_PROVIDER =
+                        new ConstantPressureTemperatureHumidityProvider(STANDARD_ATMOSPHERE);
+    }
 
     /**
      * Private constructor as class is a utility.
@@ -116,7 +165,7 @@ public class TroposphericModelUtils {
         final T fixedHeight = FastMath.max(zero, height);
         final T sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
-        final T function = TroposphericModelUtils.mappingFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
+        final T function = TroposphericModelUtils.mappingFunction(zero.newInstance(2.53e-5), zero.newInstance(5.49e-3), zero.newInstance(1.14e-3), elevation);
         // Ref: Eq. 6
         final T dmdh = sinE.reciprocal().subtract(function);
         // Ref: Eq. 7

@@ -46,9 +46,38 @@ public interface TransformProvider extends Serializable {
     <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date);
 
     /**
-     * Get a transform for only rotations and translations on the specified date.
+     * Get a transform for position and velocity, not acceleration.
      *
      * <p>The default implementation returns {@link #getTransform(AbsoluteDate)}
+     * but implementations may override it for better performance.
+     *
+     * @param date current date.
+     * @return the kinematic transform.
+     * @since 12.1
+     */
+    default KinematicTransform getKinematicTransform(AbsoluteDate date) {
+        return getTransform(date);
+    }
+
+    /**
+     * Get a transform for position and velocity, not acceleration.
+     *
+     * <p>The default implementation returns {@link #getTransform(AbsoluteDate)}
+     * but implementations may override it for better performance.
+     *
+     * @param <T> type of the elements
+     * @param date current date.
+     * @return the kinematic transform.
+     * @since 12.1
+     */
+    default <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(FieldAbsoluteDate<T> date) {
+        return getTransform(date);
+    }
+
+    /**
+     * Get a transform for only rotations and translations on the specified date.
+     *
+     * <p>The default implementation calls {@link #getTransform(AbsoluteDate)}
      * but implementations may override it for better performance.
      *
      * @param date current date.

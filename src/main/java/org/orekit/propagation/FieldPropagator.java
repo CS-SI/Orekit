@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -28,6 +29,7 @@ import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
@@ -248,5 +250,17 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return propagated state
      */
     FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> start, FieldAbsoluteDate<T> target);
+
+    /** {@inheritDoc} */
+    @Override
+    default TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+        return propagate(date).getPVCoordinates(frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return propagate(date).getPosition(frame);
+    }
 
 }

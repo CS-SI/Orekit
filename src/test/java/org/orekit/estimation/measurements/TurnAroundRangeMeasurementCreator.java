@@ -108,7 +108,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                 final GroundStation    secondaryStation  = entry.getValue();
                 final AbsoluteDate     date          = currentState.getDate();
                 final Frame            inertial      = currentState.getFrame();
-                final Vector3D         position      = currentState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
+                final Vector3D         position      = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
 
                 // Create a TAR measurement only if elevation for both stations is higher than elevationMin°
                 if ((primaryStation.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0))&&
@@ -130,7 +130,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final double secondaryTauD  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) {
                             final SpacecraftState transitState = currentState.shiftedBy(-x);
-                            final double d = Vector3D.distance(transitState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter),
+                            final double d = Vector3D.distance(transitState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter),
                                                                secondaryStationPosition);
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
@@ -142,7 +142,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final double secondaryTauU  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) {
                             final SpacecraftState transitState = currentState.shiftedBy(+x);
-                            final double d = Vector3D.distance(transitState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter),
+                            final double d = Vector3D.distance(transitState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter),
                                                                secondaryStationPosition);
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
@@ -154,11 +154,11 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
                     // Transit state position & date for the 1st leg of the signal path
                     final SpacecraftState S1 = currentState.shiftedBy(-secondaryTauD);
-                    final Vector3D        P1 = S1.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
+                    final Vector3D        P1 = S1.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
                     final AbsoluteDate    T1 = date.shiftedBy(-secondaryTauD);
 
                     // Transit state position & date for the 2nd leg of the signal path
-                    final Vector3D     P2  = currentState.shiftedBy(+secondaryTauU).toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
+                    final Vector3D     P2  = currentState.shiftedBy(+secondaryTauU).toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
                     final AbsoluteDate T2  = date.shiftedBy(+secondaryTauU);
 
 
@@ -182,7 +182,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // Primary station uplink delay - from primary station to P1
                     // Here the state date is known. Thus we can use the function "signalTimeOfFlight"
                     // of the AbstractMeasurement class
-                    final double primaryTauU = AbstractMeasurement.signalTimeOfFlight(primaryStationAtReception, P1, T1);
+                    final double primaryTauU = AbstractMeasurement.signalTimeOfFlight(primaryStationAtReception, P1, T1, inertial);
 
                     final AbsoluteDate primaryEmissionDate   = T1.shiftedBy(-primaryTauU);
 

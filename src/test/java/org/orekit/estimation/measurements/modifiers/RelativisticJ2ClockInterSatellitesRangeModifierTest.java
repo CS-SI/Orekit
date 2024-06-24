@@ -65,7 +65,7 @@ public class RelativisticJ2ClockInterSatellitesRangeModifierTest {
                                                                     1.0, 1.0);
 
         // Inter-satellites range before applying the modifier
-        final EstimatedMeasurementBase<InterSatellitesRange> estimatedBefore = range.estimateWithoutDerivatives(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesRange> estimatedBefore = range.estimateWithoutDerivatives(states);
 
         // Inter-satellites range before applying the modifier
         final EstimationModifier<InterSatellitesRange> modifier = new RelativisticJ2ClockInterSatellitesRangeModifier(Constants.WGS84_EARTH_MU,

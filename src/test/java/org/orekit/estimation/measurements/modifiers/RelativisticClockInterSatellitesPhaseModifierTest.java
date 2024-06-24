@@ -25,6 +25,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.gnss.Frequency;
 import org.orekit.propagation.SpacecraftState;
@@ -41,8 +42,9 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
     /** Spacecraft states. */
     private static SpacecraftState[] states;
 
+    @Deprecated
     @Test
-    public void testRelativisticClockCorrection() {
+    public void testRelativisticClockCorrectionDeprecated() {
 
         // Measurement
         final double wavelength = Frequency.G01.getWavelength();
@@ -53,7 +55,33 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
                                                                     wavelength, 1.0, 1.0);
 
         // Inter-satellites phase before applying the modifier
-        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
+
+        // Inter-satellites phase after applying the modifier
+        final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticClockInterSatellitesPhaseModifier();
+        phase.addModifier(modifier);
+        final EstimatedMeasurement<InterSatellitesPhase> estimatedAfter = phase.estimate(0, 0, states);
+
+        // Verify
+        Assertions.assertEquals(-10.57, (estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0]) * wavelength, 1.0e-2);
+        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+
+    }
+
+    @Test
+    public void testRelativisticClockCorrection() {
+
+        // Measurement
+        final double wavelength = Frequency.G01.getWavelength();
+        final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
+                                                                    date,
+                                                                    Vector3D.distance(states[0].getPosition(),
+                                                                                      states[1].getPosition()) / wavelength,
+                                                                    wavelength, 1.0, 1.0,
+                                                                    new AmbiguityCache());
+
+        // Inter-satellites phase before applying the modifier
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
 
         // Inter-satellites phase after applying the modifier
         final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticClockInterSatellitesPhaseModifier();

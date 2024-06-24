@@ -109,9 +109,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
     */
     private double[][] phaseErrorJacobianState(final double[] derivatives, final int freeStateParameters) {
         final double[][] finiteDifferencesJacobian = new double[1][6];
-        for (int i = 0; i < freeStateParameters; i++) {
-            finiteDifferencesJacobian[0][i] = derivatives[i];
-        }
+        System.arraycopy(derivatives, 0, finiteDifferencesJacobian[0], 0, freeStateParameters);
         return finiteDifferencesJacobian;
     }
 
@@ -143,14 +141,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
     private double[] phaseErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
         // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
         // freeStateParameters ... n     -> derivatives of the delay wrt ionospheric parameters
-        final int dim = derivatives.length - freeStateParameters;
-        final double[] phaseError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            phaseError[i] = derivatives[freeStateParameters + i];
-        }
-
-        return phaseError;
+        return Arrays.copyOfRange(derivatives, freeStateParameters, derivatives.length);
     }
 
     /** {@inheritDoc} */
@@ -171,7 +162,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         final double[] newValue = estimated.getEstimatedValue();
         final double delay = phaseErrorIonosphericModel(station, state);
         newValue[0] = newValue[0] - delay;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
 
     }
 

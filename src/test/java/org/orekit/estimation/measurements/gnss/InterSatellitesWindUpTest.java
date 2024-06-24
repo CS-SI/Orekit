@@ -45,6 +45,7 @@ import org.orekit.gnss.Frequency;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.attitude.GPSBlockIIA;
 import org.orekit.gnss.attitude.GPSBlockIIR;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -80,7 +81,8 @@ public class InterSatellitesWindUpTest {
                                                       new GeodeticPoint(FastMath.toRadians(55.0 + ( 1.0 + 10.0 / 60.0) / 60.0),
                                                                         FastMath.toRadians(82.0 + (55.0 + 22.0 / 60.0) / 60.0),
                                                                         160.0),
-                                                      "Новосибирск")),
+                                                      "Новосибирск"),
+                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER),
                -0.082134, 0.060814);
     }
 
@@ -106,7 +108,8 @@ public class InterSatellitesWindUpTest {
                                                       new GeodeticPoint(FastMath.toRadians( -(25.0 + 4.0 / 60.0)),
                                                                         FastMath.toRadians(-(130.0 + 6.0 / 60.0)),
                                                                         0.0),
-                                                      "Adamstown")),
+                                                      "Adamstown"),
+                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER),
                -0.961925, 0.360695);
     }
 
@@ -128,7 +131,8 @@ public class InterSatellitesWindUpTest {
                                                       new GeodeticPoint(FastMath.toRadians(   19.0 + (49.0 + 20.0 / 60.0) / 60.0),
                                                                         FastMath.toRadians(-(155.0 + (28.0 + 30.0 / 60.0) / 60.0)),
                                                                         4205.0),
-                                                      "Mauna Kea")),
+                                                      "Mauna Kea"),
+                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER),
                0.349123, 0.972542);
     }
 
@@ -161,7 +165,8 @@ public class InterSatellitesWindUpTest {
                                                                                   receiverSat, emitterSat,
                                                                                   Frequency.G01.getWavelength(),
                                                                                   0.01 * Frequency.G01.getWavelength(),
-                                                                                  1.0);
+                                                                                  1.0,
+                                                                                  new AmbiguityCache());
         generator.addScheduler(new EventBasedScheduler<>(builder,
                                                          new FixedStepSelector(60.0, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(emitterSat),
@@ -186,8 +191,7 @@ public class InterSatellitesWindUpTest {
             InterSatellitesPhase phase = (InterSatellitesPhase) m;
             @SuppressWarnings("unchecked")
             EstimatedMeasurementBase<InterSatellitesPhase> estimated =
-            (EstimatedMeasurementBase<InterSatellitesPhase>) m.estimateWithoutDerivatives(0, 0,
-                                                                                          new SpacecraftState[] {
+            (EstimatedMeasurementBase<InterSatellitesPhase>) m.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                               receiverPropagator.propagate(phase.getDate()),
                                                                                               emitterPropagator.propagate(phase.getDate())
                                                                                           });

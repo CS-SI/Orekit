@@ -44,8 +44,9 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
-import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -57,7 +58,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class PhaseTest {
@@ -199,13 +199,12 @@ public class PhaseTest {
 
                     // Values of the Phase & errors
                     final double phaseObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                         new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
                     final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                    Assertions.assertEquals(1.0e6 * Frequency.E01.getMHzFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
+                    Assertions.assertEquals(Frequency.E01.getFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
                                         estimated.getEstimatedValue()[0],
                                         1.0e-7);
 
@@ -307,8 +306,8 @@ public class PhaseTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> errorsP = new ArrayList<Double>();
-        final List<Double> errorsV = new ArrayList<Double>();
+        final List<Double> errorsP = new ArrayList<>();
+        final List<Double> errorsV = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -335,14 +334,13 @@ public class PhaseTest {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            return measurement.
-                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                                   getEstimatedValue();
-                        }
-                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                    jacobianRef = Differentiation.differentiate(
+                        state1 -> measurement.
+                               estimateWithoutDerivatives(new SpacecraftState[] {
+                            state1
+                        }).
+                               getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
+                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -400,8 +398,8 @@ public class PhaseTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
-        final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsV = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
@@ -443,7 +441,8 @@ public class PhaseTest {
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
-        final PhaseMeasurementCreator creator = new PhaseMeasurementCreator(context, Frequency.E01,
+        final PhaseMeasurementCreator creator = new PhaseMeasurementCreator(context,
+                                                                            Frequency.E01,
                                                                             ambiguity,
                                                                             satClockOffset);
         creator.getSatellite().getClockOffsetDriver().setSelected(true);
@@ -459,7 +458,7 @@ public class PhaseTest {
                         EstimationTestUtils.createMeasurements(propagator, creator, 1.0, 3.0, 300.0);
 
         // List to store the results
-        final List<Double> relErrorList = new ArrayList<Double>();
+        final List<Double> relErrorList = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -509,7 +508,7 @@ public class PhaseTest {
                                             @Override
                                             public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.
-                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                        getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
@@ -553,7 +552,7 @@ public class PhaseTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert error list to double[]
-        final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);
@@ -577,11 +576,11 @@ public class PhaseTest {
     public void testStateDerivativesWithTroposphericModifier() {
 
         final boolean printResults     = false;
-        final double  refErrorsPMedian = 5.9e-10;
-        final double  refErrorsPMean   = 4.3e-9;
-        final double  refErrorsPMax    = 3.8e-7;
-        final double  refErrorsVMedian = 2.0e-5;
-        final double  refErrorsVMean   = 8.3e-5;
+        final double  refErrorsPMedian = 6.0e-10;
+        final double  refErrorsPMean   = 2.9e-9;
+        final double  refErrorsPMax    = 1.1e-7;
+        final double  refErrorsVMedian = 1.5e-5;
+        final double  refErrorsVMean   = 7.8e-5;
         final double  refErrorsVMax    = 4.6e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -609,8 +608,8 @@ public class PhaseTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> errorsP = new ArrayList<Double>();
-        final List<Double> errorsV = new ArrayList<Double>();
+        final List<Double> errorsP = new ArrayList<>();
+        final List<Double> errorsV = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -624,11 +623,11 @@ public class PhaseTest {
                     String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
 
                     // Add modifier
-                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-                    final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
-                    final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(tropoModel);
-                    final List<ParameterDriver> parameters = modifier.getParametersDrivers();
-                    parameters.get(0).setName(stationName + "/" + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                    final NiellMappingFunctionModel      mappingFunction = new NiellMappingFunctionModel();
+                    final EstimatedModel                 tropoModel      = new EstimatedModel(mappingFunction, 5.0);
+                    final PhaseTroposphericDelayModifier modifier        = new PhaseTroposphericDelayModifier(tropoModel);
+                    final List<ParameterDriver>          parameters      = modifier.getParametersDrivers();
+                    parameters.get(0).setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
                     parameters.get(0).setSelected(true);
                     ((Phase) measurement).addModifier(modifier);
 
@@ -648,14 +647,13 @@ public class PhaseTest {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            return measurement.
-                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                                   getEstimatedValue();
-                        }
-                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                    jacobianRef = Differentiation.differentiate(
+                        state1 -> measurement.
+                               estimateWithoutDerivatives(new SpacecraftState[] {
+                            state1
+                        }).
+                               getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
+                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -712,8 +710,8 @@ public class PhaseTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
-        final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsV = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
@@ -775,12 +773,12 @@ public class PhaseTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> errorsP = new ArrayList<Double>();
-        final List<Double> errorsV = new ArrayList<Double>();
+        final List<Double> errorsP = new ArrayList<>();
+        final List<Double> errorsV = new ArrayList<>();
 
         final IonosphericModel model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                                               new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
-        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        final double frequency = Frequency.G01.getFrequency();
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
 
         // Use a lambda function to implement "handleStep" function
@@ -812,14 +810,13 @@ public class PhaseTest {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            return measurement.
-                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                                   getEstimatedValue();
-                        }
-                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                    jacobianRef = Differentiation.differentiate(
+                        state1 -> measurement.
+                               estimateWithoutDerivatives(new SpacecraftState[] {
+                            state1
+                        }).
+                               getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
+                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -876,8 +873,8 @@ public class PhaseTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
-        final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsV = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
@@ -914,7 +911,7 @@ public class PhaseTest {
         final TopocentricFrame topo = new TopocentricFrame(body,
                                                            new GeodeticPoint(FastMath.toRadians(51.8), FastMath.toRadians(102.2), 811.2),
                                                            "BADG");
-        final GroundStation station = new GroundStation(topo);
+        final GroundStation station = new GroundStation(topo, TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Create a phase measurement
         final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060, Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
@@ -932,7 +929,7 @@ public class PhaseTest {
         Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
-            if (driver.getName() == Phase.AMBIGUITY_NAME) {
+            if (driver instanceof AmbiguityDriver) {
                 Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
                 Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
             }

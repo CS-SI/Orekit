@@ -16,14 +16,6 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
@@ -47,8 +39,16 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem
@@ -227,13 +227,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         lastDate  = measurements.get(measurements.size() - 1).getDate();
 
         // Decide the direction of propagation
-        if (FastMath.abs(refDate.durationFrom(firstDate)) <= FastMath.abs(refDate.durationFrom(lastDate))) {
-            // Propagate forward from firstDate
-            forwardPropagation = true;
-        } else {
-            // Propagate backward from lastDate
-            forwardPropagation = false;
-        }
+        forwardPropagation = FastMath.abs(refDate.durationFrom(firstDate)) <= FastMath.abs(refDate.durationFrom(lastDate));
     }
 
     /** Set the counter for evaluations.
@@ -307,7 +301,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
         observer.modelCalled(orbits, evaluations);
 
-        return new Pair<RealVector, RealMatrix>(value, jacobian);
+        return new Pair<>(value, jacobian);
 
     }
 

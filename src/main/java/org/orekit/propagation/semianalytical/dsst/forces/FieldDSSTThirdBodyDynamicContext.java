@@ -136,7 +136,7 @@ public class FieldDSSTThirdBodyDynamicContext<T extends CalculusFieldElement<T>>
 
         // &Chi;
         X = aux.getB().reciprocal();
-        XX = X.multiply(X);
+        XX = X.square();
         XXX = X.multiply(XX);
         // -2 * a / A
         m2aoA = aux.getSma().multiply(-2.).divide(A);

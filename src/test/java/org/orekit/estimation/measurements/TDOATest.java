@@ -70,7 +70,7 @@ public class TDOATest {
             SpacecraftState state = propagator.propagate(measurement.getDate());
 
             // Estimate the measurement value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -120,7 +120,7 @@ public class TDOATest {
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
                     return measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
                            getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(), OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
@@ -186,7 +186,7 @@ public class TDOATest {
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
                     return measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
                            getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -280,7 +280,7 @@ public class TDOATest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
@@ -369,7 +369,7 @@ public class TDOATest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
@@ -378,7 +378,7 @@ public class TDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 9.0e-7);
+        Assertions.assertEquals(0, maxRelativeError, 2.5e-6);
 
     }
 

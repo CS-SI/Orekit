@@ -50,6 +50,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
@@ -1487,9 +1488,8 @@ public class DSSTPropagatorTest {
                                            SpacecraftState... meanStates) {
         }
 
-        @SafeVarargs
         @Override
-        public final <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(
+        public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(
                 T[] parameters, FieldSpacecraftState<T>... meanStates) {
         }
 

@@ -29,6 +29,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -140,12 +141,13 @@ public class WindUpTest {
         PhaseBuilder        builder   = new PhaseBuilder(null, station,
                                                          Frequency.G01.getWavelength(),
                                                          0.01 * Frequency.G01.getWavelength(),
-                                                         1.0, obsSat);
+                                                         1.0, obsSat,
+                                                         new AmbiguityCache());
         generator.addScheduler(new EventBasedScheduler<>(builder,
                                                          new FixedStepSelector(60.0, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(obsSat),
-                                                         new ElevationDetector(station.getBaseFrame()).
-                                                         withConstantElevation(FastMath.toRadians(5.0)).
+                                                         EstimationTestUtils.getElevationDetector(station.getBaseFrame(),
+                                                                                                  FastMath.toRadians(5.0)).
                                                          withHandler(new ContinueOnEvent()),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
         final GatheringSubscriber gatherer = new GatheringSubscriber();
@@ -161,8 +163,7 @@ public class WindUpTest {
         for (ObservedMeasurement<?> m : measurements) {
             Phase phase = (Phase) m;
             @SuppressWarnings("unchecked")
-            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.estimateWithoutDerivatives(0, 0,
-                                                                                                                       new SpacecraftState[] {
+            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                                            propagator.propagate(phase.getDate()) 
                                                                                                                        });
             final double original = estimated.getEstimatedValue()[0];

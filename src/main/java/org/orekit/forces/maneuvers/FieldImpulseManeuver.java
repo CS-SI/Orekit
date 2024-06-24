@@ -233,6 +233,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
                                     final FieldEventDetector<T> detector,
                                     final boolean increasing) {
             // filter underlying event
+            @SuppressWarnings("unchecked")
             final FieldImpulseManeuver<?, T> im = (FieldImpulseManeuver<?, T>) detector;
             final Action underlyingAction = im.trigger.getHandler().eventOccurred(s, im.trigger,
                     increasing);
@@ -245,6 +246,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
         public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector,
                                                   final FieldSpacecraftState<T> oldState) {
 
+            @SuppressWarnings("unchecked")
             final FieldImpulseManeuver<?, T> im = (FieldImpulseManeuver<?, T>) detector;
             final FieldAbsoluteDate<T> date = oldState.getDate();
             final FieldRotation<T> rotation;

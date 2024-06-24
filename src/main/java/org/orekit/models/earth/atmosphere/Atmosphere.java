@@ -21,9 +21,9 @@ import java.io.Serializable;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -68,10 +68,10 @@ public interface Atmosphere extends Serializable {
      * @return velocity (m/s) (defined in the same frame as the position)
      */
     default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) {
-        final Transform     bodyToFrame = getFrame().getTransformTo(frame, date);
-        final Vector3D      posInBody   = bodyToFrame.toStaticTransform().getInverse().transformPosition(position);
+        final KinematicTransform bodyToFrame = getFrame().getKinematicTransformTo(frame, date);
+        final Vector3D      posInBody   = bodyToFrame.getStaticInverse().transformPosition(position);
         final PVCoordinates pvBody      = new PVCoordinates(posInBody, Vector3D.ZERO);
-        final PVCoordinates pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
+        final PVCoordinates pvFrame     = bodyToFrame.transformOnlyPV(pvBody);
         return pvFrame.getVelocity();
     }
 
@@ -82,12 +82,14 @@ public interface Atmosphere extends Serializable {
      * @param <T> instance of CalculusFieldElement
      * @return velocity (m/s) (defined in the same frame as the position)
      */
-    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
-        final FieldTransform<T>     bodyToFrame = getFrame().getTransformTo(frame, date);
-        final FieldVector3D<T>      posInBody   = bodyToFrame.toStaticTransform().getInverse().transformPosition(position);
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date,
+                                                                             FieldVector3D<T> position,
+                                                                             Frame frame) {
+        final FieldKinematicTransform<T> bodyToFrame = getFrame().getKinematicTransformTo(frame, date);
+        final FieldVector3D<T>      posInBody   = bodyToFrame.getStaticInverse().transformPosition(position);
         final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody,
                 FieldVector3D.getZero(date.getField()));
-        final FieldPVCoordinates<T> pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
+        final FieldPVCoordinates<T> pvFrame     = bodyToFrame.transformOnlyPV(pvBody);
         return pvFrame.getVelocity();
     }
 

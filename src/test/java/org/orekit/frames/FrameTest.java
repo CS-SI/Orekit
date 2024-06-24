@@ -17,6 +17,8 @@
 package org.orekit.frames;
 
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -28,6 +30,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -264,6 +267,56 @@ public class FrameTest {
             Vector3D c = transform.transformPosition(a);
             Assertions.assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
         }
+    }
+
+    @Test
+    void testGetKinematicTransformTo() {
+        // GIVEN
+        final Frame oldFrame = FramesFactory.getEME2000();
+        final Frame newFrame = FramesFactory.getGCRF();
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final KinematicTransform kinematicTransform = oldFrame.getKinematicTransformTo(newFrame, date);
+        // THEN
+        final Transform transform = oldFrame.getTransformTo(newFrame, date);
+        Assertions.assertEquals(date, kinematicTransform.getDate());
+        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+    }
+
+    @Test
+    void testFieldGetKinematicTransformToWithConstantDate() {
+        templateTestFieldGetKinematicTransformTo(getComplexDate());
+    }
+
+    @Test
+    void testFieldGetKinematicTransformToWithNonConstantDate() {
+        templateTestFieldGetKinematicTransformTo(getComplexDate().shiftedBy(Complex.I));
+    }
+
+    private void templateTestFieldGetKinematicTransformTo(final FieldAbsoluteDate<Complex> fieldDate) {
+        // GIVEN
+        final Frame oldFrame = FramesFactory.getEME2000();
+        final Frame newFrame = FramesFactory.getGCRF();
+        // WHEN
+        final FieldKinematicTransform<Complex> fieldKinematicTransform = oldFrame.getKinematicTransformTo(newFrame,
+                fieldDate);
+        // THEN
+        final KinematicTransform kinematicTransform = oldFrame.getKinematicTransformTo(newFrame,
+                fieldDate.toAbsoluteDate());
+        Assertions.assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
+        Assertions.assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
+        Assertions.assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
+        Assertions.assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
+                fieldKinematicTransform.getRotation().toRotation()));
+        Assertions.assertEquals(kinematicTransform.getRotationRate(),
+                fieldKinematicTransform.getRotationRate().toVector3D());
+    }
+
+    private FieldAbsoluteDate<Complex> getComplexDate() {
+        return FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance());
     }
 
     @BeforeEach

@@ -97,7 +97,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
 
             Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
 
-            Vector3D los = fovToBody.toStaticTransform().getInverse().transformPosition(earth.transform(loop.get(i)));
+            Vector3D los = fovToBody.getStaticInverse().transformPosition(earth.transform(loop.get(i)));
             double offset = Vector3D.angle(fov.getCenter(), los);
             minOffset = FastMath.min(minOffset, offset);
             maxOffset = FastMath.max(maxOffset, offset);

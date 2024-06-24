@@ -50,7 +50,7 @@ public class ShapiroRangeModifier extends AbstractShapiroBaseModifier implements
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
-        doModify(estimated);
+        doModify(this, estimated);
     }
 
 }

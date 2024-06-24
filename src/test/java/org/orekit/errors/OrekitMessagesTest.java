@@ -16,6 +16,8 @@
  */
 package org.orekit.errors;
 
+
+import org.hipparchus.exception.UTF8Control;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -26,18 +28,19 @@ import java.util.ResourceBundle;
 
 public class OrekitMessagesTest {
 
-    private final String[] LANGUAGES_LIST = { "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
+    private final String[] LANGUAGES_LIST = { "ca", "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
 
     @Test
     public void testMessageNumber() {
-        Assertions.assertEquals(289, OrekitMessages.values().length);
+        Assertions.assertEquals(296, OrekitMessages.values().length);
     }
 
     @Test
     public void testAllKeysPresentInPropertiesFiles() {
         for (final String language : LANGUAGES_LIST) {
             ResourceBundle bundle = ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
-                    Locale.forLanguageTag(language), new OrekitMessages.UTF8Control());
+                                                             Locale.forLanguageTag(language),
+                                                             new UTF8Control());
             for (OrekitMessages message : OrekitMessages.values()) {
                 final String messageKey = message.toString();
                 boolean keyPresent = false;
@@ -55,7 +58,8 @@ public class OrekitMessagesTest {
     public void testAllPropertiesCorrespondToKeys() {
         for (final String language : LANGUAGES_LIST) {
             ResourceBundle bundle = ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
-                    Locale.forLanguageTag(language), new OrekitMessages.UTF8Control());
+                                                             Locale.forLanguageTag(language),
+                                                             new UTF8Control());
             for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                 final String propertyKey = keys.nextElement();
                 try {
@@ -85,7 +89,7 @@ public class OrekitMessagesTest {
             String translated = message.getLocalizedString(Locale.ENGLISH);
 
             // Check that the original message is not empty.
-            Assertions.assertFalse(message.getSourceString().length() == 0,message.name());
+            Assertions.assertFalse(message.getSourceString().isEmpty(), message.name());
 
             // Check that both texts are the same
             Assertions.assertEquals(message.getSourceString(), translated,message.name());

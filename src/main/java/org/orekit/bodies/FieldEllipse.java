@@ -99,13 +99,13 @@ public class FieldEllipse<T extends CalculusFieldElement<T>> {
         this.a      = a;
         this.b      = b;
         this.frame  = frame;
-        this.a2     = a.multiply(a);
+        this.a2     = a.square();
         this.g      = b.divide(a);
         this.g2     = g.multiply(g);
         this.e2     = g2.negate().add(1);
-        this.b2     = b.multiply(b);
-        this.evoluteFactorX = a2.subtract(b2).divide(a2.multiply(a2));
-        this.evoluteFactorY = b2.subtract(a2).divide(b2.multiply(b2));
+        this.b2     = b.square();
+        this.evoluteFactorX = a2.subtract(b2).divide(a2.square());
+        this.evoluteFactorY = b2.subtract(a2).divide(b2.square());
     }
 
     /** Get the center of the 2D ellipse.
@@ -273,7 +273,7 @@ public class FieldEllipse<T extends CalculusFieldElement<T>> {
         // tangent to the ellipse
         final T fx = a2.negate().multiply(e2D.getY());
         final T fy = b2.multiply(e2D.getX());
-        final T f2 = fx.multiply(fx).add(fy.multiply(fy));
+        final T f2 = fx.square().add(fy.square());
         final T f  = FastMath.sqrt(f2);
         final FieldVector2D<T>tangent = new FieldVector2D<>(fx.divide(f), fy.divide(f));
 

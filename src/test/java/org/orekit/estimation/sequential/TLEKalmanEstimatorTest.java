@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -30,8 +33,8 @@ import org.orekit.estimation.TLEEstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -43,9 +46,6 @@ import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TLEKalmanEstimatorTest {
 
@@ -86,8 +86,7 @@ public class TLEKalmanEstimatorTest {
                                                                new PVMeasurementCreator(),
                                                                0.0, 3.0, 300.0);
         // Reference propagator for estimation performances
-        final TLEPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -149,8 +148,7 @@ public class TLEKalmanEstimatorTest {
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
-        final TLEPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -230,8 +228,7 @@ public class TLEKalmanEstimatorTest {
         }
 
         // Reference propagator for estimation performances
-        final TLEPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -305,8 +302,7 @@ public class TLEKalmanEstimatorTest {
         measurements.addAll(measurementsRangeRate);
 
         // Reference propagator for estimation performances
-        final TLEPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.

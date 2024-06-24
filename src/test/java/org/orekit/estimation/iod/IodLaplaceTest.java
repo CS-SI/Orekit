@@ -29,6 +29,7 @@ import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -54,7 +55,8 @@ public class IodLaplaceTest extends AbstractIodTest {
         final OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                    Constants.WGS84_EARTH_FLATTENING, itrf);
         this.observer = new GroundStation(
-                new TopocentricFrame(body, new GeodeticPoint(0.528253, -1.705768, 0.0), "Austin"));
+                new TopocentricFrame(body, new GeodeticPoint(0.528253, -1.705768, 0.0), "Austin"),
+                TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         this.observer.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);

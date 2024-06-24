@@ -71,7 +71,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * Creates an instance of Elevation detector based on passed in topocentric frame
      * and overrides of default maximal checking interval and convergence threshold values.
      * @param maxCheck maximum checking interval (s)
-     * @param threshold maximum divergence threshold (s)
+     * @param threshold maximum convergence threshold (s)
      * @param topo reference to a topocentric model
      * @see #withConstantElevation(double)
      * @see #withElevationMask(ElevationMask)
@@ -79,7 +79,24 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      */
     public ElevationDetector(final double maxCheck, final double threshold,
                              final TopocentricFrame topo) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER,
+        this(AdaptableInterval.of(maxCheck), threshold, topo);
+    }
+
+    /**
+     * Creates an instance of Elevation detector based on passed in topocentric frame
+     * and overrides of default maximal checking interval and convergence threshold values.
+     * @param maxCheck maximum checking adaptable interval
+     * @param threshold maximum convergence threshold (s)
+     * @param topo reference to a topocentric model
+     * @see org.orekit.propagation.events.intervals.ElevationDetectionAdaptableIntervalFactory
+     * @see #withConstantElevation(double)
+     * @see #withElevationMask(ElevationMask)
+     * @see #withRefraction(AtmosphericRefractionModel)
+     * @since 12.1
+     */
+    public ElevationDetector(final AdaptableInterval maxCheck, final double threshold,
+                             final TopocentricFrame topo) {
+        this(maxCheck, threshold, DEFAULT_MAX_ITER,
              new StopOnDecreasing(),
              0.0, null, null, topo);
     }

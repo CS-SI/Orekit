@@ -138,6 +138,7 @@ public class RinexObservationParser {
                                               parseInfo.lineNumber, source.getName(), line);
 
                 }
+
         } catch (IOException ioe) {
             throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
         }
@@ -165,6 +166,12 @@ public class RinexObservationParser {
 
         /** Date of the observation. */
         private AbsoluteDate tObs;
+
+        /** Indicator that time of first observation was already fixed. */
+        private boolean tFirstFixed;
+
+        /** Indicator that time of last observation was already fixed. */
+        private boolean tLastFixed;
 
         /** Receiver clock offset (seconds). */
         private double rcvrClkOffset;
@@ -242,6 +249,8 @@ public class RinexObservationParser {
             this.file                   = new RinexObservation();
             this.lineNumber             = 0;
             this.tObs                   = AbsoluteDate.PAST_INFINITY;
+            this.tFirstFixed            = false;
+            this.tLastFixed             = false;
             this.timeScale              = null;
             this.nbTypes                = -1;
             this.nbSatObs               = -1;
@@ -254,6 +263,33 @@ public class RinexObservationParser {
             this.satPhaseShift          = new ArrayList<>();
             this.typesObsScaleFactor    = new ArrayList<>();
             this.satObs                 = new ArrayList<>();
+        }
+
+        /** Set observation date, taking care of receiver/absolute time scales.
+         * @param rawDate date as parsed, prior to any time scale modification
+         */
+        private void setTObs(final AbsoluteDate rawDate) {
+            final RinexObservationHeader header = file.getHeader();
+            if (header.getClockOffsetApplied()) {
+                // date was already in an absolute time scale
+                tObs = rawDate;
+            } else {
+                // the epoch was expressed in receiver clock
+                // we need to convert it to absolute date
+                if (FastMath.abs(rawDate.durationFrom(header.getTFirstObs())) < 1.0e-6 &&
+                    !tFirstFixed) {
+                    // we need to fix the first date in the header too
+                    header.setTFirstObs(header.getTFirstObs().shiftedBy(-rcvrClkOffset));
+                    tFirstFixed = true;
+                }
+                if (FastMath.abs(rawDate.durationFrom(header.getTLastObs())) < 1.0e-6 &&
+                    !tLastFixed) {
+                    // we need to fix the last date in the header too
+                    header.setTLastObs(header.getTLastObs().shiftedBy(-rcvrClkOffset));
+                    tLastFixed = true;
+                }
+                tObs = rawDate.shiftedBy(-rcvrClkOffset);
+            }
         }
 
     }
@@ -321,11 +357,9 @@ public class RinexObservationParser {
 
         /** Parser for approximative position. */
         APPROX_POSITION_XYZ(line -> RinexLabels.APPROX_POSITION_XYZ.matches(RinexUtils.getLabel(line)),
-                            (line, parseInfo) -> {
-                                parseInfo.file.getHeader().setApproxPos(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
-                                                                                     RinexUtils.parseDouble(line, 14, 14),
-                                                                                     RinexUtils.parseDouble(line, 28, 14)));
-                            },
+                            (line, parseInfo) -> parseInfo.file.getHeader().setApproxPos(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                                  RinexUtils.parseDouble(line, 14, 14),
+                                                                                                  RinexUtils.parseDouble(line, 28, 14))),
                             LineParser::headerNext),
 
         /** Parser for antenna reference point. */
@@ -339,11 +373,9 @@ public class RinexObservationParser {
 
         /** Parser for antenna reference point. */
         ANTENNA_DELTA_X_Y_Z(line -> RinexLabels.ANTENNA_DELTA_X_Y_Z.matches(RinexUtils.getLabel(line)),
-                            (line, parseInfo) -> {
-                                parseInfo.file.getHeader().setAntennaReferencePoint(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
-                                                                                                 RinexUtils.parseDouble(line, 14, 14),
-                                                                                                 RinexUtils.parseDouble(line, 28, 14)));
-                            },
+                            (line, parseInfo) -> parseInfo.file.getHeader().setAntennaReferencePoint(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                                                  RinexUtils.parseDouble(line, 14, 14),
+                                                                                                                  RinexUtils.parseDouble(line, 28, 14))),
                             LineParser::headerNext),
 
         /** Parser for antenna phase center. */
@@ -359,11 +391,9 @@ public class RinexObservationParser {
 
         /** Parser for antenna bore sight. */
         ANTENNA_B_SIGHT_XYZ(line -> RinexLabels.ANTENNA_B_SIGHT_XYZ.matches(RinexUtils.getLabel(line)),
-                            (line, parseInfo) -> {
-                                parseInfo.file.getHeader().setAntennaBSight(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
-                                                                                         RinexUtils.parseDouble(line, 14, 14),
-                                                                                         RinexUtils.parseDouble(line, 28, 14)));
-                            },
+                            (line, parseInfo) -> parseInfo.file.getHeader().setAntennaBSight(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                                          RinexUtils.parseDouble(line, 14, 14),
+                                                                                                          RinexUtils.parseDouble(line, 28, 14))),
                             LineParser::headerNext),
 
         /** Parser for antenna zero direction. */
@@ -401,11 +431,9 @@ public class RinexObservationParser {
 
         /** Parser for center of mass. */
         CENTER_OF_MASS_XYZ(line -> RinexLabels.CENTER_OF_MASS_XYZ.matches(RinexUtils.getLabel(line)),
-                           (line, parseInfo) -> {
-                               parseInfo.file.getHeader().setCenterMass(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
-                                                                                     RinexUtils.parseDouble(line, 14, 14),
-                                                                                     RinexUtils.parseDouble(line, 28, 14)));
-                           },
+                           (line, parseInfo) -> parseInfo.file.getHeader().setCenterMass(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                                      RinexUtils.parseDouble(line, 14, 14),
+                                                                                                      RinexUtils.parseDouble(line, 28, 14))),
                            LineParser::headerNext),
 
         /** Parser for DOI.
@@ -523,20 +551,18 @@ public class RinexObservationParser {
 
         /** Parser for time of last observation. */
         TIME_OF_LAST_OBS(line -> RinexLabels.TIME_OF_LAST_OBS.matches(RinexUtils.getLabel(line)),
-                         (line, parseInfo) -> {
-                             parseInfo.file.getHeader().setTLastObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
-                                                                                     RinexUtils.parseInt(line, 6, 6),
-                                                                                     RinexUtils.parseInt(line, 12, 6),
-                                                                                     RinexUtils.parseInt(line, 18, 6),
-                                                                                     RinexUtils.parseInt(line, 24, 6),
-                                                                                     RinexUtils.parseDouble(line, 30, 13),
-                                                                                     parseInfo.timeScale));
-                         },
+                         (line, parseInfo) -> parseInfo.file.getHeader().setTLastObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
+                                                                                                      RinexUtils.parseInt(line, 6, 6),
+                                                                                                      RinexUtils.parseInt(line, 12, 6),
+                                                                                                      RinexUtils.parseInt(line, 18, 6),
+                                                                                                      RinexUtils.parseInt(line, 24, 6),
+                                                                                                      RinexUtils.parseDouble(line, 30, 13),
+                                                                                                      parseInfo.timeScale)),
                          LineParser::headerNext),
 
         /** Parser for indicator of receiver clock offset application. */
         RCV_CLOCK_OFFS_APPL(line -> RinexLabels.RCV_CLOCK_OFFS_APPL.matches(RinexUtils.getLabel(line)),
-                            (line, parseInfo) -> parseInfo.file.getHeader().setClkOffset(RinexUtils.parseInt(line, 0, 6)),
+                            (line, parseInfo) -> parseInfo.file.getHeader().setClockOffsetApplied(RinexUtils.parseInt(line, 0, 6) > 0),
                             LineParser::headerNext),
 
         /** Parser for differential code bias corrections. */
@@ -649,25 +675,25 @@ public class RinexObservationParser {
 
                                 // C1C signal
                                 final String c1c = RinexUtils.parseString(line, 1, 3);
-                                if (c1c.length() > 0) {
+                                if (!c1c.isEmpty()) {
                                     parseInfo.file.getHeader().setC1cCodePhaseBias(RinexUtils.parseDouble(line, 5, 8));
                                 }
 
                                 // C1P signal
                                 final String c1p = RinexUtils.parseString(line, 14, 3);
-                                if (c1p.length() > 0) {
+                                if (!c1p.isEmpty()) {
                                     parseInfo.file.getHeader().setC1pCodePhaseBias(RinexUtils.parseDouble(line, 18, 8));
                                 }
 
                                 // C2C signal
                                 final String c2c = RinexUtils.parseString(line, 27, 3);
-                                if (c2c.length() > 0) {
+                                if (!c2c.isEmpty()) {
                                     parseInfo.file.getHeader().setC2cCodePhaseBias(RinexUtils.parseDouble(line, 31, 8));
                                 }
 
                                 // C2P signal
                                 final String c2p = RinexUtils.parseString(line, 40, 3);
-                                if (c2p.length() > 0) {
+                                if (!c2p.isEmpty()) {
                                     parseInfo.file.getHeader().setC2pCodePhaseBias(RinexUtils.parseDouble(line, 44, 8));
                                 }
 
@@ -695,7 +721,7 @@ public class RinexObservationParser {
         PRN_NB_OF_OBS(line -> RinexLabels.PRN_NB_OF_OBS.matches(RinexUtils.getLabel(line)),
                       (line, parseInfo) ->  {
                           final String systemName = RinexUtils.parseString(line, 3, 1);
-                          if (systemName.length() > 0) {
+                          if (!systemName.isEmpty()) {
                               final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(systemName);
                               final int             prn    = RinexUtils.parseInt(line, 4, 2);
                               parseInfo.currentSat         = new SatInSystem(system,
@@ -713,7 +739,7 @@ public class RinexObservationParser {
                                (i + size) <= RinexUtils.LABEL_INDEX && parseInfo.nbTypes < types.size();
                                i += increment) {
                               final String nb = RinexUtils.parseString(line, i, size);
-                              if (nb.length() > 0) {
+                              if (!nb.isEmpty()) {
                                   parseInfo.file.getHeader().setNbObsPerSatellite(parseInfo.currentSat, types.get(parseInfo.nbTypes),
                                                                         RinexUtils.parseInt(line, i, size));
                               }
@@ -751,7 +777,7 @@ public class RinexObservationParser {
                         parseInfo.file.getHeader().getReceiverNumber()       == null ||
                         parseInfo.file.getHeader().getAntennaNumber()        == null ||
                         Double.isNaN(parseInfo.file.getHeader().getAntennaHeight()) &&
-                                parseInfo.file.getHeader().getAntennaReferencePoint() == null  ||
+                        parseInfo.file.getHeader().getAntennaReferencePoint() == null  ||
                         parseInfo.file.getHeader().getTFirstObs()            == null ||
                         parseInfo.file.getHeader().getTypeObs().isEmpty()) {
                         throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, parseInfo.name);
@@ -840,13 +866,13 @@ public class RinexObservationParser {
                                if (!parseInfo.specialRecord) {
 
                                    // observations epoch
-                                   parseInfo.tObs = new AbsoluteDate(RinexUtils.convert2DigitsYear(RinexUtils.parseInt(line, 1, 2)),
-                                                                     RinexUtils.parseInt(line,  4, 2),
-                                                                     RinexUtils.parseInt(line,  7, 2),
-                                                                     RinexUtils.parseInt(line, 10, 2),
-                                                                     RinexUtils.parseInt(line, 13, 2),
-                                                                     RinexUtils.parseDouble(line, 15, 11),
-                                                                     parseInfo.timeScale);
+                                   parseInfo.setTObs(new AbsoluteDate(RinexUtils.convert2DigitsYear(RinexUtils.parseInt(line, 1, 2)),
+                                                                      RinexUtils.parseInt(line,  4, 2),
+                                                                      RinexUtils.parseInt(line,  7, 2),
+                                                                      RinexUtils.parseInt(line, 10, 2),
+                                                                      RinexUtils.parseInt(line, 13, 2),
+                                                                      RinexUtils.parseDouble(line, 15, 11),
+                                                                      parseInfo.timeScale));
 
                                    // satellites list
                                    RINEX_2_DATA_SAT_LIST.parsingMethod.parse(line, parseInfo);
@@ -998,13 +1024,13 @@ public class RinexObservationParser {
                                if (!parseInfo.specialRecord) {
 
                                    // observations epoch
-                                   parseInfo.tObs = new AbsoluteDate(RinexUtils.parseInt(line,  2, 4),
-                                                                     RinexUtils.parseInt(line,  7, 2),
-                                                                     RinexUtils.parseInt(line, 10, 2),
-                                                                     RinexUtils.parseInt(line, 13, 2),
-                                                                     RinexUtils.parseInt(line, 16, 2),
-                                                                     RinexUtils.parseDouble(line, 18, 11),
-                                                                     parseInfo.timeScale);
+                                   parseInfo.setTObs(new AbsoluteDate(RinexUtils.parseInt(line,  2, 4),
+                                                                      RinexUtils.parseInt(line,  7, 2),
+                                                                      RinexUtils.parseInt(line, 10, 2),
+                                                                      RinexUtils.parseInt(line, 13, 2),
+                                                                      RinexUtils.parseInt(line, 16, 2),
+                                                                      RinexUtils.parseDouble(line, 18, 11),
+                                                                      parseInfo.timeScale));
 
                                }
 

@@ -172,9 +172,9 @@ public class UpperBounds {
         final T zero = gamma.getField().getZero();
         // Initialization
         final int mei = m * eps * irf;
-        final T sinisq = gamma.multiply(gamma).negate().add(1.);
+        final T sinisq = gamma.square().negate().add(1.);
         // Set a lower bound for inclination
-        final T sininc = FastMath.max(zero.add(0.03), FastMath.sqrt(sinisq));
+        final T sininc = FastMath.max(zero.newInstance(0.03), FastMath.sqrt(sinisq));
         final T onepig = gamma.multiply(irf).add(1.);
         final T sinincPowLmMEI = FastMath.pow(sininc, l - mei);
         final T onepigPowLmMEI = FastMath.pow(onepig, mei);
@@ -186,7 +186,7 @@ public class UpperBounds {
         if (n > l) {
             final int lp1 = l + 1;
 
-            T dpnml  = zero.add(lp1 * eps);
+            T dpnml  = zero.newInstance(lp1 * eps);
             T pnml   = gamma.multiply(dpnml).subtract(m);
 
             // If index > 1
@@ -195,9 +195,9 @@ public class UpperBounds {
                 final int ml  = m * l;
                 final int mm  = m * m;
 
-                T pn1ml  = zero.add(1.);
+                T pn1ml  = zero.newInstance(1.);
                 T dpn1ml = zero;
-                T pn2ml  = zero.add(1.);
+                T pn2ml  = zero.newInstance(1.);
                 T dpn2ml = zero;
                 for (int in = l + 2; in <= n; in++) {
                     final int nm1   = in - 1;

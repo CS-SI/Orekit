@@ -138,16 +138,18 @@ public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
         final DataContext         cdmDataContext      = cdm.getDataContext();
 
         // Extract primary data
-        final FieldOrbit<T> primaryOrbit =
-                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData,
-                                                                 primaryMetadata, cdmDataContext));
+        final Orbit primaryOrbitFromCdm = getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData,
+                primaryMetadata, cdmDataContext);
+        final FieldOrbit<T> primaryOrbit = primaryOrbitFromCdm.getType().convertToFieldOrbit(field,
+                primaryOrbitFromCdm);
         final FieldStateCovariance<T> primaryCovariance =
                 Fieldifier.fieldify(field, getObjectStateCovarianceFromCdm(cdmRelativeMetadata, primaryData));
 
         // Extract secondary data
-        final FieldOrbit<T> secondaryOrbit =
-                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData,
-                                                                 secondaryMetadata, cdmDataContext));
+        final Orbit secondaryOrbitFromCdm = getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData,
+                secondaryMetadata, cdmDataContext);
+        final FieldOrbit<T> secondaryOrbit = secondaryOrbitFromCdm.getType().convertToFieldOrbit(field,
+                secondaryOrbitFromCdm);
         final FieldStateCovariance<T> secondaryCovariance =
                 Fieldifier.fieldify(field, getObjectStateCovarianceFromCdm(cdmRelativeMetadata, secondaryData));
 

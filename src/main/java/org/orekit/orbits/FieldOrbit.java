@@ -20,6 +20,7 @@ package org.orekit.orbits;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
@@ -152,32 +153,32 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * use {@code mu} and the position to compute the acceleration, including
      * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
-     * @param FieldPVCoordinates the position and velocity in the inertial frame
+     * @param fieldPVCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link TimeStampedPVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    protected FieldOrbit(final TimeStampedFieldPVCoordinates<T> FieldPVCoordinates, final Frame frame, final T mu)
+    protected FieldOrbit(final TimeStampedFieldPVCoordinates<T> fieldPVCoordinates, final Frame frame, final T mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
         this.field = mu.getField();
         this.zero = this.field.getZero();
         this.one = this.field.getOne();
-        this.date = FieldPVCoordinates.getDate();
+        this.date = fieldPVCoordinates.getDate();
         this.mu = mu;
-        if (FieldPVCoordinates.getAcceleration().getNormSq().getReal() == 0.0) {
+        if (fieldPVCoordinates.getAcceleration().getNormSq().getReal() == 0.0) {
             // the acceleration was not provided,
             // compute it from Newtonian attraction
-            final T r2 = FieldPVCoordinates.getPosition().getNormSq();
+            final T r2 = fieldPVCoordinates.getPosition().getNormSq();
             final T r3 = r2.multiply(r2.sqrt());
-            this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(FieldPVCoordinates.getDate(),
-                                                                     FieldPVCoordinates.getPosition(),
-                                                                     FieldPVCoordinates.getVelocity(),
-                                                                     new FieldVector3D<>(r3.reciprocal().multiply(mu.negate()), FieldPVCoordinates.getPosition()));
+            this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(fieldPVCoordinates.getDate(),
+                                                                     fieldPVCoordinates.getPosition(),
+                                                                     fieldPVCoordinates.getVelocity(),
+                                                                     new FieldVector3D<>(r3.reciprocal().multiply(mu.negate()), fieldPVCoordinates.getPosition()));
         } else {
-            this.pvCoordinates = FieldPVCoordinates;
+            this.pvCoordinates = fieldPVCoordinates;
         }
         this.frame = frame;
     }
@@ -190,21 +191,32 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     protected static <T extends CalculusFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final T mu) {
 
-        final FieldVector3D<T> a = pva.getAcceleration();
-        if (a == null) {
-            return false;
-        }
+        if (mu.getField().getZero() instanceof Derivative<?>) {
+            return Orbit.hasNonKeplerianAcceleration(pva.toPVCoordinates(), mu.getReal()); // for performance
 
-        final FieldVector3D<T> p = pva.getPosition();
-        final T r2 = p.getNormSq();
-        final T r  = r2.sqrt();
-        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), p);
-        if (a.getNorm().getReal() > 1.0e-9 * keplerianAcceleration.getNorm().getReal()) {
-            // we have a relevant acceleration, we can compute derivatives
-            return true;
         } else {
-            // the provided acceleration is either too small to be reliable (probably even 0), or NaN
-            return false;
+            final FieldVector3D<T> a = pva.getAcceleration();
+            if (a == null) {
+                return false;
+            }
+
+            final FieldVector3D<T> p = pva.getPosition();
+            final T r2 = p.getNormSq();
+
+            // Check if acceleration is relatively close to 0 compared to the Keplerian acceleration
+            final double tolerance = mu.getReal() * 1e-9;
+            final FieldVector3D<T> aTimesR2 = a.scalarMultiply(r2);
+            if (aTimesR2.getNorm().getReal() < tolerance) {
+                return false;
+            }
+
+            if ((aTimesR2.add(p.normalize().scalarMultiply(mu))).getNorm().getReal() > tolerance) {
+                // we have a relevant acceleration, we can compute derivatives
+                return true;
+            } else {
+                // the provided acceleration is either too small to be reliable (probably even 0), or NaN
+                return false;
+            }
         }
 
     }
@@ -461,6 +473,12 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
+        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
     }
 
     /** Get the position in a specified frame.

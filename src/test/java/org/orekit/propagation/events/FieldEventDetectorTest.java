@@ -108,7 +108,6 @@ public class FieldEventDetectorTest {
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         T stepSize = zero.add(60.0);
-        @SuppressWarnings("unchecked")
         final FieldDateDetector<T> detector = new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(handler);
         propagator.addEventDetector(detector);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
@@ -138,7 +137,6 @@ public class FieldEventDetectorTest {
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         T stepSize = zero.add(60.0);
         OutOfOrderChecker<T> checker = new OutOfOrderChecker<>(stepSize);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(checker);
         propagator.addEventDetector(detector);
         propagator.setStepHandler(stepSize, checker);
@@ -206,7 +204,7 @@ public class FieldEventDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, step));
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit));
-        GCallsCounter<T> counter = new GCallsCounter<>(s -> 100000.0, zero.add(1.0e-6), 20,
+        GCallsCounter<T> counter = new GCallsCounter<>(FieldAdaptableInterval.of(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(step.multiply(n)));
@@ -233,7 +231,7 @@ public class FieldEventDetectorTest {
         final T step = zero.add(60.0);
         final int    n    = 100;
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
-        GCallsCounter<T> counter = new GCallsCounter<>(s -> 100000.0, zero.add(1.0e-6), 20,
+        GCallsCounter<T> counter = new GCallsCounter<>(FieldAdaptableInterval.of(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
@@ -304,11 +302,11 @@ public class FieldEventDetectorTest {
                                                                                                                         zero.add(1920.6332221785074),
                                                                                                                         zero.add(-5172.2177085540500))),
                                                              eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
-        k2.addEventDetector(new FieldCloseApproachDetector<>(s -> 2015.243454166727, zero.add(0.0001), 100,
+        k2.addEventDetector(new FieldCloseApproachDetector<>(FieldAdaptableInterval.of(2015.243454166727), zero.add(0.0001), 100,
                                                              new FieldContinueOnEvent<T>(),
                                                              k1));
         k2.addEventDetector(new FieldDateDetector<>(field, interruptDates).
-                            withMaxCheck(s -> Constants.JULIAN_DAY).
+                            withMaxCheck(FieldAdaptableInterval.of(Constants.JULIAN_DAY)).
                             withThreshold(field.getZero().newInstance(1.0e-6)));
         FieldSpacecraftState<T> s = k2.propagate(startDate, targetDate);
         Assertions.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
@@ -349,7 +347,6 @@ public class FieldEventDetectorTest {
         doTestWrappedException(Binary64Field.getInstance());
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestWrappedException(Field<T> field) {
         final T zero = field.getZero();
         final Throwable dummyCause = new RuntimeException();
@@ -410,7 +407,7 @@ public class FieldEventDetectorTest {
 
             @Override
             public FieldAdaptableInterval<T> getMaxCheckInterval() {
-                return s -> 60;
+                return FieldAdaptableInterval.of(60.);
             }
 
             @Override
@@ -503,7 +500,6 @@ public class FieldEventDetectorTest {
         });
 
         for (int i = 0; i < 10; ++i) {
-            @SuppressWarnings("unchecked")
             FieldDateDetector<T> detector = new FieldDateDetector<>(field, initialDate.shiftedBy(0.0625 * (i + 1))).
                                             withHandler((state, d, increasing) -> {
                                                 checker.callDate(state.getDate());

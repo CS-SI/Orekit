@@ -18,10 +18,9 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.Line;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
@@ -35,11 +34,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -63,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class YawCompensationTest {
+class YawCompensationTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -80,7 +75,7 @@ public class YawCompensationTest {
     /** Test that pointed target remains the same with or without yaw compensation
      */
     @Test
-    public void testTarget() {
+    void testTarget() {
 
         //  Attitude laws
         // **************
@@ -111,7 +106,7 @@ public class YawCompensationTest {
     /** Test the derivatives of the sliding target
      */
     @Test
-    public void testSlidingDerivatives() {
+    void testSlidingDerivatives() {
 
         GroundPointing law =
                 new YawCompensation(circOrbit.getFrame(), new NadirPointing(circOrbit.getFrame(), earthShape));
@@ -139,14 +134,14 @@ public class YawCompensationTest {
                             3.0e-11 * reference.getVelocity().getNorm());
         Assertions.assertEquals(0.0,
                             Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
-                            7.0e-6 * reference.getAcceleration().getNorm());
+                            1.0e-5 * reference.getAcceleration().getNorm());
 
     }
 
     /** Test that pointed target motion is along -X sat axis
      */
     @Test
-    public void testAlignment() {
+    void testAlignment() {
 
         GroundPointing   notCompensated = new NadirPointing(circOrbit.getFrame(), earthShape);
         YawCompensation compensated     = new YawCompensation(circOrbit.getFrame(), notCompensated);
@@ -221,7 +216,7 @@ public class YawCompensationTest {
      * and minimum yaw compensation is at maximum latitude.
      */
     @Test
-    public void testCompensMinMax() {
+    void testCompensMinMax() {
 
         //  Attitude laws
         // **************
@@ -300,7 +295,7 @@ public class YawCompensationTest {
     /** Test that compensation rotation axis is Zsat, yaw axis
      */
     @Test
-    public void testCompensAxis() {
+    void testCompensAxis() {
 
         //  Attitude laws
         // **************
@@ -326,7 +321,7 @@ public class YawCompensationTest {
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
 
         NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 

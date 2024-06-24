@@ -18,6 +18,9 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -33,11 +36,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -48,18 +47,13 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
+import org.orekit.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class NadirPointingTest {
+class NadirPointingTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -70,11 +64,98 @@ public class NadirPointingTest {
     // Reference frame = ITRF
     private Frame itrf;
 
+    @Test
+    void testGetTargetPV() {
+        // GIVEN
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
+        final NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        final PVCoordinatesProvider provider = (date1, frame1) -> {
+            final double duration = date1.durationFrom(AbsoluteDate.FIFTIES_EPOCH);
+            final Vector3D position = new Vector3D(duration * duration / 2, 0., 0.);
+            final Vector3D velocity = new Vector3D(duration, 0., 0.);
+            final Vector3D acceleration = new Vector3D(1, 0, 0);
+            return new TimeStampedPVCoordinates(date1, position, velocity, acceleration);
+        };
+        // WHEN
+        final TimeStampedPVCoordinates actualPV = nadirAttitudeLaw.getTargetPV(provider, date, frame);
+        // THEN
+        final PVCoordinatesProvider providerWithoutAcceleration = (date12, frame12) -> {
+            final TimeStampedPVCoordinates originalPV = provider.getPVCoordinates(date12, frame12);
+            return new TimeStampedPVCoordinates(date12, originalPV.getPosition(), originalPV.getVelocity());
+        };
+        final TimeStampedPVCoordinates pv = nadirAttitudeLaw.getTargetPV(providerWithoutAcceleration, date, frame);
+        Assertions.assertEquals(pv.getDate(), actualPV.getDate());
+        final PVCoordinates relativePV = new PVCoordinates(pv, actualPV);
+        Assertions.assertEquals(0., relativePV.getPosition().getNorm(), 2e-9);
+        Assertions.assertEquals(0., relativePV.getVelocity().getNorm(), 1e-7);
+    }
+
+    @Test
+    void testGetTargetPVViaInterpolationField() {
+        // GIVEN
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
+        final NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        final PVCoordinatesProvider provider = (dateIn, frameIn) -> new TimeStampedPVCoordinates(dateIn,
+                new Vector3D(dateIn.durationFrom(AbsoluteDate.FIFTIES_EPOCH), 0., 0.), Vector3D.PLUS_I);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> fieldDate = new FieldAbsoluteDate<>(field, date);
+        final FieldPVCoordinatesProvider<Complex> fieldProvider = (dateIn, frameIn) -> new TimeStampedFieldPVCoordinates<>(dateIn,
+                new FieldVector3D<>(dateIn.durationFrom(AbsoluteDate.FIFTIES_EPOCH), field.getZero(), field.getZero()),
+                FieldVector3D.getPlusI(field), FieldVector3D.getZero(field));
+        // WHEN
+        final TimeStampedFieldPVCoordinates<Complex> actualPV = nadirAttitudeLaw.getTargetPV(fieldProvider, fieldDate, frame);
+        // THEN
+        final TimeStampedPVCoordinates pv = nadirAttitudeLaw.getTargetPV(provider, date, frame);
+        Assertions.assertEquals(pv.getDate(), actualPV.getDate().toAbsoluteDate());
+        final PVCoordinates relativePV = new PVCoordinates(pv, actualPV.toPVCoordinates());
+        final Vector3D positionDifference = relativePV.getPosition();
+        Assertions.assertEquals(0., positionDifference.getNorm(), 1e-9);
+        final Vector3D velocityDifference = relativePV.getVelocity();
+        Assertions.assertEquals(0., velocityDifference.getNorm(), 1e-6);
+    }
+
+    @Test
+    void testGetTargetPosition() {
+        // GIVEN
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
+        final NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
+        final CircularOrbit circ =
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                        FastMath.toRadians(5.300), PositionAngleType.MEAN,
+                        FramesFactory.getEME2000(), date, mu);
+        // WHEN
+        final Vector3D actualPosition = nadirAttitudeLaw.getTargetPosition(circ, circ.getDate(), circ.getFrame());
+        // THEN
+        final Vector3D expectedPosition = nadirAttitudeLaw.getTargetPV(circ, circ.getDate(), circ.getFrame()).getPosition();
+        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm(), 1e-9);
+    }
+
+    @Test
+    void testGetTargetPositionField() {
+        // GIVEN
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
+        final NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
+        final CircularOrbit circ =
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                        FastMath.toRadians(5.300), PositionAngleType.MEAN,
+                        FramesFactory.getEME2000(), date, mu);
+        final FieldCircularOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(ComplexField.getInstance(), circ);
+        // WHEN
+        final FieldVector3D<Complex> actualPosition = nadirAttitudeLaw.getTargetPosition(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        // THEN
+        final FieldVector3D<Complex> expectedPosition = nadirAttitudeLaw.getTargetPV(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getPosition();
+        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-9);
+    }
+
     /** Test in the case of a spheric earth : nadir pointing shall be
      * the same as earth center pointing
      */
     @Test
-    public void testSphericEarth() {
+    void testSphericEarth() {
 
         // Spheric earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
@@ -112,7 +193,7 @@ public class NadirPointingTest {
      *   - different from earth center pointing in any other case
      */
     @Test
-    public void testNonSphericEarth() {
+    void testNonSphericEarth() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
@@ -193,7 +274,7 @@ public class NadirPointingTest {
         but that's what is to test.
      */
     @Test
-    public void testVertical() {
+    void testVertical() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
@@ -237,7 +318,7 @@ public class NadirPointingTest {
     /** Test the derivatives of the sliding target
      */
     @Test
-    public void testSlidingDerivatives() {
+    void testSlidingDerivatives() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
@@ -279,7 +360,7 @@ public class NadirPointingTest {
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);

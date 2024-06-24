@@ -47,7 +47,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -79,12 +78,19 @@ public class OneWayGNSSRangeTest {
             System.out.println("\nTest One-way GNSS range State Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 1.8e-10;
-        double refErrorsPMean   = 5.1e-10;
-        double refErrorsPMax    = 3.3e-08;
-        double refErrorsVMedian = 2.3e-03;
-        double refErrorsVMean   = 6.7e-03;
-        double refErrorsVMax    = 2.3e-01;
+        // the following relative tolerances for derivatives with respect to velocity
+        // may seem high, but they have been validated. The partial derivative of
+        // signal flight time with respect to velocity ∂τ/∂{vx, vy, vz} is about 10⁻¹³
+        // when the signal flight time τ is about 10⁻⁴, so finite differences lose
+        // about 9 significant figures, so it is expected that partial derivatives
+        // computed with finite differences will only have a few digits corrects and
+        // that there will be outliers
+        double refErrorsPMedian = 5.6e-09;
+        double refErrorsPMean   = 2.1e-08;
+        double refErrorsPMax    = 1.1e-06;
+        double refErrorsVMedian = 6.4e-04;
+        double refErrorsVMean   = 2.1e-03;
+        double refErrorsVMax    = 6.8e-02;
         this.genericTestStateDerivatives(printResults, 0,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -104,9 +110,9 @@ public class OneWayGNSSRangeTest {
             System.out.println("\nTest One-way GNSS range Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsMedian = 1.0e-15;
-        double refErrorsMean   = 1.0e-15;
-        double refErrorsMax    = 1.0e-15;
+        double refErrorsMedian = 5.8e-15;
+        double refErrorsMean   = 8.4e-15;
+        double refErrorsMax    = 3.3e-14;
         this.genericTestParameterDerivatives(printResults,
                                              refErrorsMedian, refErrorsMean, refErrorsMax);
 
@@ -148,8 +154,8 @@ public class OneWayGNSSRangeTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> absoluteErrors = new ArrayList<Double>();
-        final List<Double> relativeErrors = new ArrayList<Double>();
+        final List<Double> absoluteErrors = new ArrayList<>();
+        final List<Double> relativeErrors = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -171,8 +177,7 @@ public class OneWayGNSSRangeTest {
 
                     // Values of the range & errors
                     final double rangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                         new SpacecraftState[] {
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                              state,
                                                                                                              ephemeris.propagate(state.getDate())
                                                                                                          });
@@ -235,11 +240,11 @@ public class OneWayGNSSRangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 1.3e-7);
-        Assertions.assertEquals(0.0, absErrorsMin,    6.5e-6);
-        Assertions.assertEquals(0.0, absErrorsMax,    1.7e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 5.3e-12);
-        Assertions.assertEquals(0.0, relErrorsMax,    7.6e-11);
+        Assertions.assertEquals(0.0, absErrorsMedian, 1.4e-7);
+        Assertions.assertEquals(0.0, absErrorsMin,    6.6e-7);
+        Assertions.assertEquals(0.0, absErrorsMax,    1.5e-7);
+        Assertions.assertEquals(0.0, relErrorsMedian, 5.7e-12);
+        Assertions.assertEquals(0.0, relErrorsMax,    7.2e-11);
 
         // Test measurement type
         Assertions.assertEquals(OneWayGNSSRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
@@ -279,8 +284,8 @@ public class OneWayGNSSRangeTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> errorsP = new ArrayList<Double>();
-        final List<Double> errorsV = new ArrayList<Double>();
+        final List<Double> errorsP = new ArrayList<>();
+        final List<Double> errorsV = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -298,7 +303,7 @@ public class OneWayGNSSRangeTest {
                     // in order to validate the partial derivatives with respect
                     // to velocity.
                     final double            meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
-                    final AbsoluteDate      date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+                    final AbsoluteDate      date      = measurement.getDate().shiftedBy(-0.9 * meanDelay);
                     final SpacecraftState[] states    = {
                         interpolator.getInterpolatedState(date),
                         ephemeris.propagate(date)
@@ -309,14 +314,12 @@ public class OneWayGNSSRangeTest {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            final SpacecraftState[] s = states.clone();
-                            s[index] = state;
-                            return measurement.estimateWithoutDerivatives(0, 0, s).getEstimatedValue();
-                        }
+                    jacobianRef = Differentiation.differentiate(state -> {
+                        final SpacecraftState[] s = states.clone();
+                        s[index] = state;
+                        return measurement.estimateWithoutDerivatives(s).getEstimatedValue();
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
+                                                                OrbitType.CARTESIAN, PositionAngleType.TRUE, 8.0, 5).value(states[index]);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -373,8 +376,8 @@ public class OneWayGNSSRangeTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
-        final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsV = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
@@ -433,7 +436,7 @@ public class OneWayGNSSRangeTest {
                         EstimationTestUtils.createMeasurements(propagator, creator, 1.0, 3.0, 300.0);
 
         // List to store the results
-        final List<Double> relErrorList = new ArrayList<Double>();
+        final List<Double> relErrorList = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -475,10 +478,10 @@ public class OneWayGNSSRangeTest {
                                                 @Override
                                                 public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                     return measurement.
-                                                           estimateWithoutDerivatives(0, 0, states).
+                                                           estimateWithoutDerivatives(states).
                                                            getEstimatedValue()[0];
                                                 }
-                                            }, 3, 20.0 * drivers[i].getScale());
+                                            }, 5, 10.0 * drivers[i].getScale());
                             final double ref = dMkdP.value(drivers[i], date);
                             
                             if (printResults) {
@@ -519,7 +522,7 @@ public class OneWayGNSSRangeTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert error list to double[]
-        final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);

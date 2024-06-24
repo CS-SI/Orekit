@@ -154,7 +154,7 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
             // the Field Of View loop does not cross the body
             // either the body is outside of Field Of View, or it is fully contained
             // we check the center
-            final Vector3D bodyCenter = fovToBody.toStaticTransform().getInverse().transformPosition(Vector3D.ZERO);
+            final Vector3D bodyCenter = fovToBody.getStaticInverse().transformPosition(Vector3D.ZERO);
             if (offsetFromBoundary(bodyCenter, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) < 0.0) {
                 // the body is fully contained in the Field Of View
                 // the previous loop did compute the full limb as the footprint

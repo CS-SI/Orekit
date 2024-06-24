@@ -13,6 +13,7 @@ TRIMBLE NETR9       SWISSTOPO                               OBSERVER / AGENCY
 G   12 C1C L1C S1C C2W L2W S2W C2X L2X S2X C5X L5X S5X      SYS / # / OBS TYPES
     30.000                                                  INTERVAL
   2019     2     1     0     0    0.0000000     GPS         TIME OF FIRST OBS
+     1                                                      RCV CLOCK OFFS APPL
 G L2X -0.25000                                              SYS / PHASE SHIFT
 R L1P  0.25000                                              SYS / PHASE SHIFT
 R L2C -0.25000                                              SYS / PHASE SHIFT

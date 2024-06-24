@@ -23,17 +23,20 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical range-rate measurements with tropospheric delay.
+ * <p>
  * The effect of tropospheric correction on the range-rate is directly computed
  * through the computation of the tropospheric delay difference with respect to
  * time.
- *
+ * </p>
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Joris Olympio
  * @since 8.0
@@ -44,11 +47,29 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
     private final double fTwoWay;
 
     /** Constructor.
+    *
+    * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
+    * @param tw     Flag indicating whether the measurement is two-way.
+    * @deprecated as of 12.1, replaced byb {@link #RangeRateTroposphericDelayModifier(TroposphericModel, boolean)}
+    */
+    @Deprecated
+    public RangeRateTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model,
+                                              final boolean tw) {
+        super(model);
+        if (tw) {
+            fTwoWay = 2.;
+        } else {
+            fTwoWay = 1.;
+        }
+    }
+
+    /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
      * @param tw     Flag indicating whether the measurement is two-way.
+     * @since 12.1
      */
-    public RangeRateTroposphericDelayModifier(final DiscreteTroposphericModel model, final boolean tw) {
+    public RangeRateTroposphericDelayModifier(final TroposphericModel model, final boolean tw) {
         super(model);
         if (tw) {
             fTwoWay = 2.;
@@ -90,7 +111,7 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
         final RangeRate       measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
 
-        RangeRateModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeRateErrorTroposphericModel);
+        RangeRateModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeRateErrorTroposphericModel, this);
 
 
     }
@@ -107,7 +128,8 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
                                      new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                      station,
                                      this::rangeRateErrorTroposphericModel,
-                                     this::rangeRateErrorTroposphericModel);
+                                     this::rangeRateErrorTroposphericModel,
+                                     this);
 
 
     }

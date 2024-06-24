@@ -52,7 +52,7 @@ import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
-public class KeplerianOrbitTest {
+class KeplerianOrbitTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -61,7 +61,7 @@ public class KeplerianOrbitTest {
     private double mu;
 
     @Test
-    public void testKeplerianToKeplerian() {
+    void testKeplerianToKeplerian() {
 
         // elliptic orbit
         KeplerianOrbit kep =
@@ -120,7 +120,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test 
-    public void testKeplerianToCartesian() {
+    void testKeplerianToCartesian() {
 
         KeplerianOrbit kep =
             new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
@@ -139,7 +139,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testKeplerianToEquinoctial() {
+    void testKeplerianToEquinoctial() {
 
         KeplerianOrbit kep =
             new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
@@ -155,7 +155,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testAnomaly() {
+    void testAnomaly() {
 
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
@@ -237,7 +237,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testPositionVelocityNorms() {
+    void testPositionVelocityNorms() {
         double mu = 3.9860047e14;
 
         // elliptic and non equatorial orbit
@@ -293,7 +293,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testGeometry() {
+    void testGeometry() {
         double mu = 3.9860047e14;
 
         // elliptic and non equatorial orbit
@@ -397,7 +397,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testSymmetry() {
+    void testSymmetry() {
 
         // elliptic and non equatorial orbit
         Vector3D position = new Vector3D(-4947831., -3765382., -3708221.);
@@ -428,7 +428,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testNonInertialFrame() throws IllegalArgumentException {
+    void testNonInertialFrame() throws IllegalArgumentException {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             Vector3D position = new Vector3D(-4947831., -3765382., -3708221.);
             Vector3D velocity = new Vector3D(-2079., 5291., -7842.);
@@ -440,7 +440,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testPeriod() {
+    void testPeriod() {
         KeplerianOrbit orbit = new KeplerianOrbit(7654321.0, 0.1, 0.2, 0, 0, 0,
                                                   PositionAngleType.TRUE,
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -450,7 +450,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testHyperbola1() {
+    void testHyperbola1() {
         KeplerianOrbit orbit = new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
                                                   PositionAngleType.TRUE,
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -472,7 +472,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testHyperbola2() {
+    void testHyperbola2() {
         KeplerianOrbit orbit = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, -1.75,
                                                   PositionAngleType.MEAN,
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -497,7 +497,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testInconsistentHyperbola() {
+    void testInconsistentHyperbola() {
         try {
             new KeplerianOrbit(+10000000.0, 2.5, 0.3, 0, 0, 0.0,
                                                   PositionAngleType.TRUE,
@@ -512,7 +512,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testVeryLargeEccentricity() {
+    void testVeryLargeEccentricity() {
 
         final Frame eme2000 = FramesFactory.getEME2000();
         final double meanAnomaly = 1.;
@@ -543,7 +543,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testKeplerEquation() {
+    void testKeplerEquation() {
 
         for (double M = -6 * FastMath.PI; M < 6 * FastMath.PI; M += 0.01) {
             KeplerianOrbit pElliptic =
@@ -568,7 +568,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testOutOfRangeV() {
+    void testOutOfRangeV() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             new KeplerianOrbit(-7000434.460140012, 1.1999785407363386, 1.3962787004479158,
                     1.3962320168955138, 0.3490728321331678, -2.55593407037698,
@@ -579,7 +579,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testNumericalIssue25() {
+    void testNumericalIssue25() {
         Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
         Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);
         KeplerianOrbit orbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
@@ -591,7 +591,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testPerfectlyEquatorial() {
+    void testPerfectlyEquatorial() {
         Vector3D position = new Vector3D(6957904.3624652653594, 766529.11411558074507, 0);
         Vector3D velocity = new Vector3D(-7538.2817012412102845, 342.38751001881413381, 0.);
         KeplerianOrbit orbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
@@ -604,7 +604,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testJacobianReferenceEllipse() {
+    void testJacobianReferenceEllipse() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -685,7 +685,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testJacobianFinitedifferencesEllipse() {
+    void testJacobianFinitedifferencesEllipse() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -730,7 +730,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testJacobianReferenceHyperbola() {
+    void testJacobianReferenceHyperbola() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -815,7 +815,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testJacobianFinitedifferencesHyperbola() {
+    void testJacobianFinitedifferencesHyperbola() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -950,7 +950,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testPerfectlyEquatorialConversion() {
+    void testPerfectlyEquatorialConversion() {
         KeplerianOrbit initial = new KeplerianOrbit(13378000.0, 0.05, 0.0, 0.0, FastMath.PI,
                                                     0.0, PositionAngleType.MEAN,
                                                     FramesFactory.getEME2000(), date,
@@ -964,7 +964,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testKeplerianDerivatives() {
+    void testKeplerianDerivatives() {
 
         final KeplerianOrbit orbit = new KeplerianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
@@ -1046,7 +1046,7 @@ public class KeplerianOrbitTest {
      }
 
     @Test
-    public void testNonKeplerianEllipticDerivatives() {
+    void testNonKeplerianEllipticDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -1114,7 +1114,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testNonKeplerianHyperbolicDerivatives() {
+    void testNonKeplerianHyperbolicDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
         final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
@@ -1194,7 +1194,7 @@ public class KeplerianOrbitTest {
      }
 
     @Test
-    public void testPositionAngleDerivatives() {
+    void testPositionAngleDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -1237,7 +1237,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testPositionAngleHyperbolicDerivatives() {
+    void testPositionAngleHyperbolicDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
         final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
@@ -1280,7 +1280,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testSerialization()
+    void testSerialization()
             throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -1292,8 +1292,7 @@ public class KeplerianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 280);
-        Assertions.assertTrue(bos.size() < 330);
+        Assertions.assertEquals(bos.size(), 461);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -1317,7 +1316,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testSerializationWithDerivatives()
+    void testSerializationWithDerivatives()
             throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -1333,8 +1332,7 @@ public class KeplerianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 330);
-        Assertions.assertTrue(bos.size() < 380);
+        Assertions.assertEquals(bos.size(), 509);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -1358,7 +1356,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testEquatorialRetrograde() {
+    void testEquatorialRetrograde() {
         Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
         Vector3D velocity = new Vector3D(0.0, -6500.0, 1.0e-10);
         double r2 = position.getNormSq();
@@ -1380,7 +1378,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() {
+    void testDerivativesConversionSymmetry() {
         final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
         Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
@@ -1410,7 +1408,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetryHyperbolic() {
+    void testDerivativesConversionSymmetryHyperbolic() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
         final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
@@ -1439,7 +1437,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
@@ -1473,7 +1471,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() {
+    void testCopyNonKeplerianAcceleration() {
 
         final Frame eme2000     = FramesFactory.getEME2000();
 
@@ -1504,7 +1502,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testIssue674() {
+    void testIssue674() {
         try {
             new KeplerianOrbit(24464560.0, -0.7311, 0.122138, 3.10686, 1.00681,
                                0.048363, PositionAngleType.MEAN,
@@ -1520,7 +1518,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testNormalize() {
+    void testNormalize() {
         KeplerianOrbit withoutDerivatives =
                         new KeplerianOrbit(42166712.0, 0.005, 1.6,
                                            -0.3, 1.25, 0.4, PositionAngleType.MEAN,
@@ -1571,7 +1569,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testKeplerianToPvToKeplerian() {
+    void testKeplerianToPvToKeplerian() {
         // setup
         Frame eci = FramesFactory.getGCRF();
         AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
@@ -1592,6 +1590,79 @@ public class KeplerianOrbitTest {
 
     }
 
+    @Test
+    void testCoverageCachedPositionAngleTypeElliptic() {
+        testCoverageCachedPositionAngleType(1e4, 0.5);
+    }
+
+    @Test
+    void testCoverageCachedPositionAngleTypeHyperbolic() {
+        testCoverageCachedPositionAngleType(-1e4, 2);
+    }
+
+    private void testCoverageCachedPositionAngleType(final double a, final double e) {
+        // GIVEN
+        final double expectedAnomaly = 0.;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(a, e, 0., 0., 0.,
+                        expectedAnomaly, inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());
+                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getTrueAnomalyDot()));
+                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getEccentricAnomalyDot()));
+                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getMeanAnomalyDot()));
+            }
+        }
+    }
+
+    @Test
+    void testCoverageCachedPositionAngleTypeWithRates() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double eccentricity = 0.;
+        final double expectedAnomaly = 0.;
+        final double expectedAnomalyDot = 0.;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(semiMajorAxis, eccentricity, 0., 0., 0.,
+                        expectedAnomaly, 0., 0., 0., 0., 0., expectedAnomalyDot,
+                        inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getTrueAnomalyDot());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getEccentricAnomalyDot());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getMeanAnomalyDot());
+            }
+        }
+    }
+
+    @Test
+    void testCoverageCachedPositionAngleTypeWithRatesHyperbolic() {
+        // GIVEN
+        final double semiMajorAxis = -1e4;
+        final double eccentricity = 2.;
+        final double expectedAnomaly = 0.;
+        final double expectedAnomalyDot = 0.;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(semiMajorAxis, eccentricity, 0., 0., 0.,
+                        expectedAnomaly, 0., 0., 0., 0., 0., expectedAnomalyDot,
+                        inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getTrueAnomalyDot());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getEccentricAnomalyDot());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getMeanAnomalyDot());
+            }
+        }
+    }
 
     @BeforeEach
     public void setUp() {

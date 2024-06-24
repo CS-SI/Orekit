@@ -57,9 +57,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   clock offset is subtracted</li>
  *   <li>as range is evaluated using the total signal time of flight, for one-way
  *   measurements the observed range is the real physical signal time of flight to
- *   which (Δtg - Δts) ⨉ c is added, where Δtg (resp. Δts) is the clock offset for the
+ *   which (Δtg - Δts) ⨯ c is added, where Δtg (resp. Δts) is the clock offset for the
  *   receiving ground station (resp. emitting satellite). A similar effect exists in
- *   two-way measurements but it is computed as (Δtg - Δtg) ⨉ c / 2 as the same ground
+ *   two-way measurements but it is computed as (Δtg - Δtg) ⨯ c / 2 as the same ground
  *   station clock is used for initial emission and final reception and therefore it evaluates
  *   to zero.</li>
  * </ul>
@@ -107,7 +107,8 @@ public class Range extends GroundReceiverMeasurement<Range> {
             // Station at transit state date (derivatives of tauD taken into account)
             final TimeStampedPVCoordinates stationAtTransitDate = common.getStationDownlink().shiftedBy(-common.getTauD());
             // Uplink delay
-            final double tauU = signalTimeOfFlight(stationAtTransitDate, transitPV.getPosition(), transitPV.getDate());
+            final double tauU = signalTimeOfFlight(stationAtTransitDate, transitPV.getPosition(),
+                                                   transitPV.getDate(), common.getState().getFrame());
             final TimeStampedPVCoordinates stationUplink = common.getStationDownlink().shiftedBy(-common.getTauD() - tauU);
 
             // Prepare the evaluation
@@ -182,7 +183,8 @@ public class Range extends GroundReceiverMeasurement<Range> {
                             common.getStationDownlink().shiftedBy(common.getTauD().negate());
             // Uplink delay
             final Gradient tauU =
-                            signalTimeOfFlight(stationAtTransitDate, transitPV.getPosition(), transitPV.getDate());
+                            signalTimeOfFlight(stationAtTransitDate, transitPV.getPosition(), transitPV.getDate(),
+                                               state.getFrame());
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
                             common.getStationDownlink().shiftedBy(-common.getTauD().getValue() - tauU.getValue());
 
@@ -223,12 +225,11 @@ public class Range extends GroundReceiverMeasurement<Range> {
 
         estimated.setEstimatedValue(range.getValue());
 
-        // Range partial derivatives with respect to state
+        // Range first order derivatives with respect to state
         final double[] derivatives = range.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = common.getIndices().get(span.getData());

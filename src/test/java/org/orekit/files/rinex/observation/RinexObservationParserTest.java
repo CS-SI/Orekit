@@ -37,6 +37,8 @@ import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockOffset;
+import org.orekit.time.SampledClockModel;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
@@ -50,13 +52,24 @@ public class RinexObservationParserTest {
 
     @Test
     public void testDefaultLoadRinex2() {
-        Assertions.assertEquals(24, load("rinex/aiub0000.00o").getObservationDataSets().size());
+        final RinexObservation ro = load("rinex/aiub0000.00o");
+        Assertions.assertEquals(24, ro.getObservationDataSets().size());
+        final SampledClockModel clockModel = ro.extractClockModel(2);
+        Assertions.assertEquals(6, clockModel.getCache().getAll().size());
+        final ClockOffset offset =
+            clockModel.getOffset(new AbsoluteDate(2001, 3, 24, 13, 11, 57.0,
+                                                  TimeScalesFactory.getGPS()));
+        Assertions.assertEquals(-0.123456888, offset.getOffset(),       1.0e-15);
+        Assertions.assertEquals(-1.1e-8,      offset.getRate(),         1.0e-18);
+        Assertions.assertEquals( 0.0,         offset.getAcceleration(), 1.0e-20);
     }
 
     @Test
     public void testDefaultLoadRinex3() {
         Utils.setDataRoot("regular-data:rinex");
-        Assertions.assertEquals(5, load("rinex/brca083.06o").getObservationDataSets().size());
+        final RinexObservation ro = load("rinex/brca083.06o");
+        Assertions.assertEquals(5, ro.getObservationDataSets().size());
+        Assertions.assertNull(ro.extractClockModel(2));
     }
 
     @Test
@@ -82,7 +95,7 @@ public class RinexObservationParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
-            Assertions.assertEquals(9.99, ((Double) oe.getParts()[0]).doubleValue(), 0.001);
+            Assertions.assertEquals(9.99, (Double) oe.getParts()[0], 0.001);
         }
     }
 
@@ -207,9 +220,11 @@ public class RinexObservationParserTest {
         Assertions.assertEquals(0.0,                    header.getEccentricities().getX(), 1.0e-4);
         Assertions.assertEquals(0.0,                    header.getEccentricities().getY(), 1.0e-4);
         Assertions.assertEquals(30.0,                   header.getInterval(), 1.0e-15);
-        Assertions.assertEquals(-1,                     header.getClkOffset());
+        Assertions.assertFalse(header.getClockOffsetApplied());
         Assertions.assertEquals(18,                     header.getLeapSeconds());
-        Assertions.assertEquals(0.0, new AbsoluteDate(2017, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()), 1.0e-15);
+        Assertions.assertEquals(loaded.getObservationDataSets().get(0).getRcvrClkOffset(),
+                                new AbsoluteDate(2017, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()),
+                                1.0e-15);
         Assertions.assertTrue(Double.isInfinite(header.getTLastObs().durationFrom(header.getTFirstObs())));
 
     }
@@ -247,7 +262,7 @@ public class RinexObservationParserTest {
         Assertions.assertNull(header.getCenterMass());
         Assertions.assertEquals("DBHZ",                  header.getSignalStrengthUnit());
         Assertions.assertEquals(15.0,                    header.getInterval(), 1.0e-15);
-        Assertions.assertEquals(-1,                      header.getClkOffset());
+        Assertions.assertFalse(header.getClockOffsetApplied());
         Assertions.assertEquals(0,                       header.getListAppliedDCBS().size());
         Assertions.assertEquals(0,                       header.getListAppliedPCVS().size());
         Assertions.assertEquals(3,                       header.getPhaseShiftCorrections().size());
@@ -270,6 +285,20 @@ public class RinexObservationParserTest {
 
     }
 
+    @Deprecated
+    @Test
+    public void testDeprecatedMethods() {
+        final RinexObservation loaded = load("rinex/aaaa0000.00o");
+        final RinexObservationHeader header = loaded.getHeader();
+        Assertions.assertFalse(header.getClockOffsetApplied());
+        header.setClkOffset(2);
+        Assertions.assertTrue(header.getClockOffsetApplied());
+        Assertions.assertEquals(1, header.getClkOffset());
+        header.setClkOffset(0);
+        Assertions.assertFalse(header.getClockOffsetApplied());
+        Assertions.assertEquals(0, header.getClkOffset());
+    }
+
     @Test
     public void testGPSFile() {
 
@@ -279,31 +308,31 @@ public class RinexObservationParserTest {
 
         Assertions.assertEquals(44, list.size());
 
-        checkObservation(list.get(0),
+        checkObservation(list.get(0), false,
                          2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 2, -0.03,
                          typesobs, ObservationType.L1, 124458652.886, 4, 0);
-        checkObservation(list.get(0),
+        checkObservation(list.get(0), false,
                          2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 2, -0.03,
                          typesobs, ObservationType.P1, Double.NaN, 0, 0);
-        checkObservation(list.get(3),
+        checkObservation(list.get(3), false,
                          2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 6, -0.03,
                          typesobs, ObservationType.S2, 42.300, 4, 0);
-        checkObservation(list.get(11),
+        checkObservation(list.get(11), false,
                          2017, 1, 11, 0, 0, 30, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 2, -0.08,
                          typesobs, ObservationType.C1, 23688342.361, 4, 0);
-        checkObservation(list.get(23),
+        checkObservation(list.get(23), false,
                          2017, 1, 11, 0, 1, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 3, 0,
                          typesobs, ObservationType.P2, 25160656.959, 4, 0);
-        checkObservation(list.get(23),
+        checkObservation(list.get(23), false,
                          2017, 1, 11, 0, 1, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 3, 0,
                          typesobs, ObservationType.P1, Double.NaN, 0, 0);
-        checkObservation(list.get(43),
+        checkObservation(list.get(43), false,
                          2017, 1, 11, 0, 1, 30, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 30, 0,
                          typesobs, ObservationType.S1, 41.6, 4, 0);
@@ -339,31 +368,31 @@ public class RinexObservationParserTest {
 
         Assertions.assertEquals(24, list.size());
 
-        checkObservation(list.get(0),
+        checkObservation(list.get(0), true,
                          2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 12, -.123456789,
                          typesobs2, ObservationType.P1, 23629347.915, 0, 0);
-        checkObservation(list.get(1),
+        checkObservation(list.get(1), true,
                          2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 9, -.123456789,
                          typesobs2, ObservationType.L1, -0.12, 0, 9);
-        checkObservation(list.get(2),
+        checkObservation(list.get(2), true,
                          2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 6, -.123456789,
                          typesobs2, ObservationType.P2, 20607605.848, 4, 4);
-        checkObservation(list.get(3),
+        checkObservation(list.get(3), true,
                          2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 12, -.123456789,
                          typesobs2, ObservationType.L2, -41981.375, 0, 0);
-        checkObservation(list.get(6),
+        checkObservation(list.get(6), true,
                          2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 21, -.123456789,
                          typesobs2, ObservationType.P1, 21345678.576, 0, 0);
-        checkObservation(list.get(7),
+        checkObservation(list.get(7), true,
                          2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 22, -.123456789,
                          typesobs2, ObservationType.P2, Double.NaN, 0, 0);
-        checkObservation(list.get(23),
+        checkObservation(list.get(23), true,
                          2001, 3, 24, 13, 14, 48, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 6, -.123456234,
                          typesobs2, ObservationType.L1, 267583.678, 1, 7);
@@ -380,31 +409,31 @@ public class RinexObservationParserTest {
         String[] typesobsE = {"C1X","L1X","S1X","C5X","L5X","S5X","C7X","L7X","S7X","C8X","L8X","S8X"};
         String[] typesobsC = {"C1I","L1I","S1I","C7I","L7I","S7I","C6I","L6I","S6I"};
         Assertions.assertEquals(51, list.size());
-        checkObservation(list.get(0),
+        checkObservation(list.get(0), false,
                          2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 10, 0.0,
                          typesobsR, ObservationType.C1C, 23544632.969, 0, 6);
-        checkObservation(list.get(1),
+        checkObservation(list.get(1), false,
                          2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 27, 0.0,
                          typesobsG, ObservationType.C1C, 22399181.883, 0, 7);
-        checkObservation(list.get(9),
+        checkObservation(list.get(9), false,
                          2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 3, 0.0,
                          typesobsG, ObservationType.S5X,         47.600, 0, 0);
-        checkObservation(list.get(10),
+        checkObservation(list.get(10), false,
                          2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GALILEO, 14, 0.0,
                          typesobsE, ObservationType.L8X, 76221970.869, 0, 8);
-        checkObservation(list.get(25),
+        checkObservation(list.get(25), false,
                          2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.BEIDOU, 12, 0.0,
                          typesobsC, ObservationType.S7I, 31.100, 0, 0);
-        checkObservation(list.get(25),
+        checkObservation(list.get(25), false,
                          2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.BEIDOU, 12, 0.0,
                          typesobsC, ObservationType.S7I, 31.100, 0, 0);
-        checkObservation(list.get(50),
+        checkObservation(list.get(50), false,
                          2016, 1, 11, 0, 0, 15, TimeScalesFactory.getGPS(),
                          SatelliteSystem.BEIDOU, 11, 0.0,
                          typesobsC, ObservationType.C7I, 23697971.738, 0, 7);
@@ -425,43 +454,43 @@ public class RinexObservationParserTest {
         String[] typesobsJ2 = {"C1C","L1C","S1C","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
         Assertions.assertEquals(36, list.size());
 
-        checkObservation(list.get(0),
+        checkObservation(list.get(0), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 30, 0.0,
                          typesobsG2, ObservationType.C1C, 20422534.056, 0, 8);
-        checkObservation(list.get(2),
+        checkObservation(list.get(2), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 10, 0.0,
                          typesobsR2, ObservationType.S2C, 49.250, 0, 0);
-        checkObservation(list.get(2),
+        checkObservation(list.get(2), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 10, 0.0,
                          typesobsR2, ObservationType.C1C, 19186.904493, 0, 9);
-        checkObservation(list.get(7),
+        checkObservation(list.get(7), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GALILEO, 5, 0.0,
                          typesobsE2, ObservationType.L8Q, 103747111.324, 0, 8);
-        checkObservation(list.get(13),
+        checkObservation(list.get(13), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.BEIDOU, 4, 0.0,
                          typesobsC2, ObservationType.C7I, 41010665.465, 0, 5);
-        checkObservation(list.get(13),
+        checkObservation(list.get(13), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.BEIDOU, 4, 0.0,
                          typesobsC2, ObservationType.L2I, Double.NaN, 0, 0);
-        checkObservation(list.get(12),
+        checkObservation(list.get(12), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.SBAS, 138, 0.0,
                          typesobsS2, ObservationType.C1C, 40430827.124, 0, 6);
-        checkObservation(list.get(12),
+        checkObservation(list.get(12), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.SBAS, 138, 0.0,
                          typesobsS2, ObservationType.S5I, 39.750, 0, 0);
-        checkObservation(list.get(34),
+        checkObservation(list.get(34), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.QZSS, 193, 0.0,
                          typesobsJ2, ObservationType.L2L, 168639076.823, 0, 6);
-        checkObservation(list.get(32),
+        checkObservation(list.get(32), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 2, 0.0,
                          typesobsR2, ObservationType.S1C, 0.0445, 0, 0);
@@ -477,27 +506,27 @@ public class RinexObservationParserTest {
         String[] typesobsE4 = {"C1C","L1C","S1C","C6C","L6C","S6C","C5Q","L5Q","S5Q","C7Q","L7Q","S7Q","C8Q","L8Q","S8Q"};
         Assertions.assertEquals(36, list.size());
 
-        checkObservation(list.get(0),
+        checkObservation(list.get(0), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 30, 0.0,
                          typesobsG4, ObservationType.C1C, 20422534.056, 0, 8);
-        checkObservation(list.get(2),
+        checkObservation(list.get(2), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 10, 0.0,
                          typesobsR4, ObservationType.S2C, 49.250, 0, 0);
-        checkObservation(list.get(2),
+        checkObservation(list.get(2), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 10, 0.0,
                          typesobsR4, ObservationType.C1C, 19186904.493, 0, 9);
-        checkObservation(list.get(7),
+        checkObservation(list.get(7), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GALILEO, 5, 0.0,
                          typesobsE4, ObservationType.L8Q, 103747.111324, 0, 8);
-        checkObservation(list.get(26),
+        checkObservation(list.get(26), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GALILEO, 8, 0.0,
                          typesobsE4, ObservationType.C1C, 23499.584944, 0, 7);
-        checkObservation(list.get(26),
+        checkObservation(list.get(26), false,
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GALILEO, 8, 0.0,
                          typesobsE4, ObservationType.S8Q, 0.051, 0, 0);
@@ -839,7 +868,7 @@ public class RinexObservationParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_RINEX_FREQUENCY, oe.getSpecifier());
-            Assertions.assertEquals("AAA", (String) oe.getParts()[0]);
+            Assertions.assertEquals("AAA", oe.getParts()[0]);
             Assertions.assertEquals(14, ((Integer) oe.getParts()[2]).intValue());
         }
     }
@@ -1095,6 +1124,7 @@ public class RinexObservationParserTest {
     }
 
     private void checkObservation(final ObservationDataSet obser,
+                                  final boolean clockOffsetApplied,
                                   final int year, final int month, final int day,
                                   final int hour, final int minute, final double second,
                                   final TimeScale timescale,
@@ -1108,7 +1138,9 @@ public class RinexObservationParserTest {
 
         Assertions.assertEquals(system,         obser.getSatellite().getSystem());
         Assertions.assertEquals(prnNumber,      obser.getSatellite().getPRN());
-        Assertions.assertEquals(date,           obser.getDate());
+        Assertions.assertEquals(clockOffsetApplied ? 0.0 : rcvrClkOffset,
+                                date.durationFrom(obser.getDate()),
+                                1.0e-15);
         Assertions.assertEquals(rcvrClkOffset,  obser.getRcvrClkOffset(), 1.E-17);
         for (int i = 0; i < typesObs.length; i++) {
             final ObservationData od = obser.getObservationData().get(i);

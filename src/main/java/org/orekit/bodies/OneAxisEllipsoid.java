@@ -280,21 +280,21 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final T x  = point.getX();
         final T y  = point.getY();
         final T z  = point.getZ();
-        final T z2 = z.multiply(z);
-        final T r2 = x.multiply(x).add(y.multiply(y));
+        final T z2 = z.square();
+        final T r2 = x.square().add(y.square());
 
         final FieldVector3D<T> direction = lineInBodyFrame.getDirection();
         final T dx  = direction.getX();
         final T dy  = direction.getY();
         final T dz  = direction.getZ();
-        final T cz2 = dx.multiply(dx).add(dy.multiply(dy));
+        final T cz2 = dx.square().add(dy.square());
 
         // abscissa of the intersection as a root of a 2nd degree polynomial :
         // a k^2 - 2 b k + c = 0
         final T a  = cz2.multiply(e2).subtract(1.0).negate();
         final T b  = x.multiply(dx).add(y.multiply(dy)).multiply(g2).add(z.multiply(dz)).negate();
         final T c  = r2.subtract(ae2).multiply(g2).add(z2);
-        final T b2 = b.multiply(b);
+        final T b2 = b.square();
         final T ac = a.multiply(c);
         if (b2.getReal() < ac.getReal()) {
             return null;
@@ -683,8 +683,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                     sn = sn.scalb(-exp);
                     cn = cn.scalb(-exp);
 
-                    sn2 = sn.multiply(sn);
-                    cn2 = cn.multiply(cn);
+                    sn2 = sn.square();
+                    cn2 = cn.square();
                     an2 = cn2.add(sn2);
                     an  = an2.sqrt();
 
@@ -727,7 +727,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final Transform toBody = frame.getTransformTo(bodyFrame, date);
         final PVCoordinates pointInBodyFrame = toBody.transformPVCoordinates(point);
         final FieldVector3D<DerivativeStructure> p = pointInBodyFrame.toDerivativeStructureVector(2);
-        final DerivativeStructure   pr2 = p.getX().multiply(p.getX()).add(p.getY().multiply(p.getY()));
+        final DerivativeStructure   pr2 = p.getX().square().add(p.getY().square());
         final DerivativeStructure   pr  = pr2.sqrt();
         final DerivativeStructure   pz  = p.getZ();
 
@@ -735,7 +735,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final TimeStampedPVCoordinates groundPoint = projectToGround(new TimeStampedPVCoordinates(date, pointInBodyFrame),
                                                                      bodyFrame);
         final FieldVector3D<DerivativeStructure> gp = groundPoint.toDerivativeStructureVector(2);
-        final DerivativeStructure   gpr2 = gp.getX().multiply(gp.getX()).add(gp.getY().multiply(gp.getY()));
+        final DerivativeStructure   gpr2 = gp.getX().square().add(gp.getY().square());
         final DerivativeStructure   gpr  = gpr2.sqrt();
         final DerivativeStructure   gpz  = gp.getZ();
 

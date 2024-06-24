@@ -58,7 +58,7 @@ public class RelativisticClockInterSatellitesRangeModifier extends AbstractRelat
         // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] - dtRel * Constants.SPEED_OF_LIGHT;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 
 }

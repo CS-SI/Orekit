@@ -20,9 +20,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap.Transition;
+
+import java.util.function.Consumer;
 
 public class TimeSpanMapTest {
 
@@ -42,6 +46,8 @@ public class TimeSpanMapTest {
         Assertions.assertSame(single, map.get(AbsoluteDate.MODIFIED_JULIAN_EPOCH));
         Assertions.assertSame(single, map.get(AbsoluteDate.PAST_INFINITY));
         Assertions.assertEquals(1, map.getSpansNumber());
+        Assertions.assertSame(single, map.getFirstNonNullSpan().getData());
+        Assertions.assertSame(single, map.getLastNonNullSpan().getData());
     }
 
     @Test
@@ -666,6 +672,43 @@ public class TimeSpanMapTest {
         map.addValidBetween(1, AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         Assertions.assertEquals(1, map.getSpansNumber());
         Assertions.assertEquals(1, map.get(AbsoluteDate.ARBITRARY_EPOCH).intValue());
+    }
+
+    @Test
+    public void testFirstNonNull() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        checkException(map, TimeSpanMap::getFirstNonNullSpan, OrekitMessages.NO_CACHED_ENTRIES);
+        for (double dt = 0; dt < 10; dt += 0.25) {
+            map.addValidAfter(null, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(dt), false);
+        }
+        checkException(map, TimeSpanMap::getFirstNonNullSpan, OrekitMessages.NO_CACHED_ENTRIES);
+        map.addValidAfter(22, map.getLastTransition().getDate().shiftedBy( 60.0), false);
+        map.addValidAfter(17, map.getLastTransition().getDate().shiftedBy(-20.0), false);
+        Assertions.assertEquals(17, map.getFirstNonNullSpan().getData());
+    }
+
+    @Test
+    public void testLastNonNull() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        checkException(map, TimeSpanMap::getLastNonNullSpan, OrekitMessages.NO_CACHED_ENTRIES);
+        for (double dt = 0; dt < 10; dt += 0.25) {
+            map.addValidBefore(null, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-dt), false);
+        }
+        checkException(map, TimeSpanMap::getLastNonNullSpan, OrekitMessages.NO_CACHED_ENTRIES);
+        map.addValidBefore(22, map.getLastTransition().getDate().shiftedBy(-60.0), false);
+        map.addValidBefore(17, map.getLastTransition().getDate().shiftedBy( 20.0), false);
+        Assertions.assertEquals(17, map.getLastNonNullSpan().getData());
+    }
+
+    private <T> void checkException(final TimeSpanMap<T> map,
+                                    final Consumer<TimeSpanMap<T>> f,
+                                    OrekitMessages expected) {
+        try {
+            f.accept(map);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(expected, oe.getSpecifier());
+        }
     }
 
     private <T> void checkCountConsistency(final TimeSpanMap<T> map) {

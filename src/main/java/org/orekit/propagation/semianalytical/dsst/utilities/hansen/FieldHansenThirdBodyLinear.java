@@ -44,40 +44,34 @@ public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
      * The first vector of polynomials associated to Hansen coefficients and
      * derivatives.
      */
-    private PolynomialFunction[][] mpvec;
+    private final PolynomialFunction[][] mpvec;
 
     /** The second vector of polynomials associated only to derivatives. */
-    private PolynomialFunction[][] mpvecDeriv;
+    private final PolynomialFunction[][] mpvecDeriv;
 
     /** The Hansen coefficients used as roots. */
-    private T[][] hansenRoot;
+    private final T[][] hansenRoot;
 
     /** The derivatives of the Hansen coefficients used as roots. */
-    private T[][] hansenDerivRoot;
+    private final T[][] hansenDerivRoot;
 
     /** The number of slices needed to compute the coefficients. */
-    private int numSlices;
-
-    /** The maximum order of n indexes. */
-    private int nMax;
-
-    /** The index of the initial condition, Petre's paper. */
-    private int N0;
+    private final int numSlices;
 
     /** The s index. */
-    private int s;
+    private final int s;
 
     /** (-1)<sup>s</sup> * (2*s + 1)!! / (s+1)!  */
     private double twosp1dfosp1f;
 
     /** (-1)<sup>s</sup> * (2*s + 1)!! / (s+2)!  */
-    private double twosp1dfosp2f;
+    private final double twosp1dfosp2f;
 
     /** (-1)<sup>s</sup> * 2 * (2*s + 1)!! / (s+2)!  */
-    private double two2sp1dfosp2f;
+    private final double two2sp1dfosp2f;
 
     /** (2*s + 3). */
-    private double twosp3;
+    private final double twosp3;
 
     /**
      * Constructor.
@@ -88,13 +82,7 @@ public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
      */
     public FieldHansenThirdBodyLinear(final int nMax, final int s, final Field<T> field) {
         // initialise fields
-        this.nMax = nMax;
-        N0 = s;
         this.s = s;
-
-        // initialization of structures for stored data
-        mpvec = new PolynomialFunction[this.nMax + 1][];
-        mpvecDeriv = new PolynomialFunction[this.nMax + 1][];
 
         //Compute the fields that will be used to determine the initial values for the coefficients
         this.twosp1dfosp1f = (s % 2 == 0) ? 1.0 : -1.0;
@@ -107,8 +95,8 @@ public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
         this.two2sp1dfosp2f = 2 * this.twosp1dfosp2f;
 
         // initialization of structures for stored data
-        mpvec = new PolynomialFunction[this.nMax + 1][];
-        mpvecDeriv = new PolynomialFunction[this.nMax + 1][];
+        mpvec = new PolynomialFunction[nMax + 1][];
+        mpvecDeriv = new PolynomialFunction[nMax + 1][];
 
         this.numSlices  = FastMath.max(1, (nMax - s + SLICE - 2) / SLICE);
 
@@ -116,153 +104,9 @@ public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
         hansenDerivRoot = MathArrays.buildArray(field, numSlices, 2);
 
         // Prepare the database of the associated polynomials
-        generatePolynomials();
+        HansenUtilities.generateThirdBodyPolynomials(s, nMax, SLICE, s,
+                                                     mpvec, mpvecDeriv);
 
-    }
-
-    /**
-     * Compute polynomial coefficient a.
-     *
-     *  <p>
-     *  It is used to generate the coefficient for K₀<sup>n-1, s</sup> when computing K₀<sup>n, s</sup>
-     *  and the coefficient for dK₀<sup>n-1, s</sup> / d&Chi; when computing dK₀<sup>n, s</sup> / d&Chi;
-     *  </p>
-     *
-     *  <p>
-     *  See Danielson 2.7.3-(7c) and Collins 4-254 and 4-257
-     *  </p>
-     *
-     * @param n n value
-     * @return the polynomial
-     */
-    private PolynomialFunction a(final int n) {
-        // from recurrence Danielson 2.7.3-(7c), Collins 4-254
-        final double r1 = 2 * n + 1;
-        final double r2 = n + 1;
-
-        return new PolynomialFunction(new double[] {
-            r1 / r2
-        });
-    }
-
-    /**
-     * Compute polynomial coefficient b.
-     *
-     *  <p>
-     *  It is used to generate the coefficient for K₀<sup>n-2, s</sup> when computing K₀<sup>n, s</sup>
-     *  and the coefficient for dK₀<sup>n-2, s</sup> / d&Chi; when computing dK₀<sup>n, s</sup> / d&Chi;
-     *  </p>
-     *
-     *  <p>
-     *  See Danielson 2.7.3-(7c) and Collins 4-254 and 4-257
-     *  </p>
-     *
-     * @param n n value
-     * @return the polynomial
-     */
-    private PolynomialFunction b(final int n) {
-        // from recurrence Danielson 2.7.3-(7c), Collins 4-254
-        final double r1 = (n + s) * (n - s);
-        final double r2 = n * (n + 1);
-
-        return new PolynomialFunction(new double[] {
-            0.0, 0.0, -r1 / r2
-        });
-    }
-
-    /**
-     * Compute polynomial coefficient d.
-     *
-     *  <p>
-     *  It is used to generate the coefficient for K₀<sup>n-2, s</sup> when computing dK₀<sup>n, s</sup> / d&Chi;
-     *  </p>
-     *
-     *  <p>
-     *  See Danielson 2.7.3-(7c) and Collins 4-254 and 4-257
-     *  </p>
-     *
-     * @param n n value
-     * @return the polynomial
-     */
-    private PolynomialFunction d(final int n) {
-        // from Danielson 3.2-(3b)
-        final double r1 = 2 * (n + s) * (n - s);
-        final double r2 = n * (n + 1);
-
-        return new PolynomialFunction(new double[] {
-            0.0, 0.0, 0.0, r1 / r2
-        });
-    }
-
-    /**
-     * Generate the polynomials needed in the linear transformation.
-     *
-     * <p>
-     * See Petre's paper
-     * </p>
-     */
-    private void generatePolynomials() {
-
-        int sliceCounter = 0;
-
-        // Initialization of the matrices for linear transformations
-        // The final configuration of these matrices are obtained by composition
-        // of linear transformations
-
-        // the matrix A for the polynomials associated
-        // to Hansen coefficients, Petre's pater
-        PolynomialFunctionMatrix A = HansenUtilities.buildIdentityMatrix2();
-
-        // the matrix D for the polynomials associated
-        // to derivatives, Petre's paper
-        final PolynomialFunctionMatrix B = HansenUtilities.buildZeroMatrix2();
-        PolynomialFunctionMatrix D = HansenUtilities.buildZeroMatrix2();
-        PolynomialFunctionMatrix E = HansenUtilities.buildIdentityMatrix2();
-
-        // The matrix that contains the coefficients at each step
-        final PolynomialFunctionMatrix a = HansenUtilities.buildZeroMatrix2();
-        a.setElem(0, 1, HansenUtilities.ONE);
-
-        // The generation process
-        for (int i = N0 + 2; i <= nMax; i++) {
-            // Collins 4-254 or Danielson 2.7.3-(7)
-            // Petre's paper
-            // The matrix of the current linear transformation is actualized
-            a.setMatrixLine(1, new PolynomialFunction[] {
-                b(i), a(i)
-            });
-
-            // composition of the linear transformations to calculate
-            // the polynomials associated to Hansen coefficients
-            A = A.multiply(a);
-            // store the polynomials associated to Hansen coefficients
-            this.mpvec[i] = A.getMatrixLine(1);
-            // composition of the linear transformations to calculate
-            // the polynomials associated to derivatives
-            // Danielson 3.2-(3b) and Petre's paper
-            D = D.multiply(a);
-            if (sliceCounter % SLICE != 0) {
-                a.setMatrixLine(1, new PolynomialFunction[] {
-                    b(i - 1), a(i - 1)
-                });
-                E = E.multiply(a);
-            }
-
-            B.setElem(1, 0, d(i));
-            // F = E.prod(B);
-            D = D.add(E.multiply(B));
-            // store the polynomials associated to the derivatives
-            this.mpvecDeriv[i] = D.getMatrixLine(1);
-
-            if (++sliceCounter % SLICE == 0) {
-                // Re-Initialization of the matrices for linear transformations
-                // The final configuration of these matrices are obtained by composition
-                // of linear transformations
-                A = HansenUtilities.buildIdentityMatrix2();
-                D = HansenUtilities.buildZeroMatrix2();
-                E = HansenUtilities.buildIdentityMatrix2();
-            }
-        }
     }
 
     /**
@@ -285,7 +129,7 @@ public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
     public void computeInitValues(final T chitm1, final T chitm2, final T chitm3) {
         final Field<T> field = chitm2.getField();
         final T zero = field.getZero();
-        this.hansenRoot[0][0] = zero.add(twosp1dfosp1f);
+        this.hansenRoot[0][0] = zero.newInstance(twosp1dfosp1f);
         this.hansenRoot[0][1] = (chitm2.negate().add(this.twosp3)).multiply(this.twosp1dfosp2f);
         this.hansenDerivRoot[0][0] = zero;
         this.hansenDerivRoot[0][1] = chitm3.multiply(two2sp1dfosp2f);

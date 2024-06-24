@@ -17,9 +17,13 @@
 package org.orekit.time;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
+import java.util.concurrent.TimeUnit;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
@@ -31,8 +35,6 @@ import org.hipparchus.util.MathUtils.FieldSumAndResidual;
 import org.hipparchus.util.MathUtils.SumAndResidual;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
 /** This class represents a specific instant in time.
@@ -115,7 +117,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     private final  T offset;
 
     /** Field used by default.*/
-    private Field<T> field;
+    private final Field<T> field;
 
     /** Build an instance from an AbsoluteDate.
      * @param field used by default
@@ -227,15 +229,15 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         if (regularOffset.getReal() >= 0) {
             // regular case, the offset is between 0.0 and 1.0
             offset = regularOffset;
-            epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
-                            time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
+            epoch  = 60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
+                            time.getMinute() - time.getMinutesFromUTC() - 720L) + dl;
         } else {
             // very rare case, the offset is just before a whole second
             // we will loose some bits of accuracy when adding 1 second
             // but this will ensure the offset remains in the [0.0; 1.0] interval
             offset = regularOffset.add(1.0);
-            epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
-                            time.getMinute() - time.getMinutesFromUTC() - 720l) + dl - 1;
+            epoch  = 60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
+                            time.getMinute() - time.getMinutesFromUTC() - 720L) + dl - 1;
         }
         this.field = field;
 
@@ -327,8 +329,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public FieldAbsoluteDate(final Field<T> field, final Date location, final TimeScale timeScale) {
         this(field, new DateComponents(DateComponents.JAVA_EPOCH,
-                                       (int) (location.getTime() / 86400000l)),
-             new TimeComponents(0.001 * (location.getTime() % 86400000l)),
+                                       (int) (location.getTime() / 86400000L)),
+             new TimeComponents(0.001 * (location.getTime() % 86400000L)),
              timeScale);
     }
 
@@ -340,9 +342,32 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public FieldAbsoluteDate(final Field<T> field, final Instant instant, final TimeScale timeScale) {
         this(field, new DateComponents(DateComponents.JAVA_EPOCH,
-                                       (int) (instant.getEpochSecond() / 86400l)),
+                                       (int) (instant.getEpochSecond() / 86400L)),
              instantToTimeComponents(instant),
              timeScale);
+    }
+
+    /** Build an instance from an {@link Instant instant} in utc time scale.
+     * @param field field utilized as default
+     * @param instant instant in the utc timescale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public FieldAbsoluteDate(final Field<T> field, final Instant instant) {
+        this(field, instant, TimeScalesFactory.getUTC());
+    }
+
+    /** Build an instance from an {@link Instant instant} in the {@link UTCScale time scale}.
+     * @param field field utilized as default
+     * @param instant instant in the time scale
+     * @param utcScale utc time scale
+     * @since 12.1
+     */
+    public FieldAbsoluteDate(final Field<T> field, final Instant instant, final UTCScale utcScale) {
+        this(field, new DateComponents(DateComponents.JAVA_EPOCH,
+                (int) (instant.getEpochSecond() / 86400l)),
+            instantToTimeComponents(instant),
+            utcScale);
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -356,6 +381,19 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         this(since.epoch, elapsedDuration, since.offset);
     }
 
+    /** Build an instance from an elapsed duration since to another instant.
+     * <p>It is important to note that the elapsed duration is <em>not</em>
+     * the difference between two readings on a time scale.
+     * @param since start instant of the measured duration
+     * @param elapsedDuration physically elapsed duration from the <code>since</code>
+     * instant, as measured in a regular time scale
+     * @param timeUnit {@link TimeUnit} of the elapsed duration
+     * @since 12.1
+     */
+    public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final long elapsedDuration, final TimeUnit timeUnit) {
+        this(since.epoch, elapsedDuration, timeUnit, since.offset);
+    }
+
 
     /** Build an instance from an elapsed duration since to another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
@@ -366,6 +404,37 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public FieldAbsoluteDate(final AbsoluteDate since, final T elapsedDuration) {
         this(since.getEpoch(), since.getOffset(), elapsedDuration);
+    }
+
+    /** Build an instance from an elapsed duration since to another instant.
+     * <p>It is important to note that the elapsed duration is <em>not</em>
+     * the difference between two readings on a time scale.
+     * @param since start instant of the measured duration
+     * @param elapsedDuration physically elapsed duration from the <code>since</code>
+     * instant, as measured in a regular time scale
+     * @param timeUnit {@link TimeUnit} of the elapsed duration
+     * @param field field utilized by default
+     * @since 12.1
+     */
+    public FieldAbsoluteDate(final AbsoluteDate since,  final long elapsedDuration, final TimeUnit timeUnit, final Field<T> field) {
+        this.field = field;
+
+        final long elapsedDurationNanoseconds = TimeUnit.NANOSECONDS.convert(elapsedDuration, timeUnit);
+        final long deltaEpoch = elapsedDurationNanoseconds / TimeUnit.SECONDS.toNanos(1);
+        final double deltaOffset = (elapsedDurationNanoseconds - (deltaEpoch * TimeUnit.SECONDS.toNanos(1))) / (double) TimeUnit.SECONDS.toNanos(1);
+        final T newOffset = field.getZero().add(since.getOffset()).add(deltaOffset);
+
+        if (newOffset.getReal() >= 1.0) {
+            // newOffset is in [1.0, 2.0]
+            this.epoch = since.getEpoch() + deltaEpoch + 1L;
+            this.offset = newOffset.subtract(1.0);
+        } else if (newOffset.getReal() < 0) {
+            this.epoch = since.getEpoch() + deltaEpoch - 1L;
+            this.offset = newOffset.add(1.0);
+        } else {
+            this.epoch = since.getEpoch() + deltaEpoch;
+            this.offset = newOffset;
+        }
     }
 
     /** Build an instance from an apparent clock offset with respect to another
@@ -420,12 +489,40 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         }
     }
 
+    /** Build an instance from mixed double and field raw components.
+     * @param epoch reference epoch in seconds from 2000-01-01T12:00:00 TAI
+     * @param tA numeric part of offset since reference epoch
+     * @param tATimeUnit {@link TimeUnit} for tA
+     * @param tB field part of offset since reference epoch
+     * @since 12.1
+     */
+    private FieldAbsoluteDate(final long epoch, final long tA, final TimeUnit tATimeUnit, final T tB) {
+        this.field = tB.getField();
+
+        final long elapsedDurationNanoseconds = TimeUnit.NANOSECONDS.convert(tA, tATimeUnit);
+        final long deltaEpoch = elapsedDurationNanoseconds / TimeUnit.SECONDS.toNanos(1);
+        final double deltaOffset = (elapsedDurationNanoseconds - (deltaEpoch * TimeUnit.SECONDS.toNanos(1))) / (double) TimeUnit.SECONDS.toNanos(1);
+        final T newOffset = field.getZero().add(tB).add(deltaOffset);
+
+        if (newOffset.getReal() >= 1.0) {
+            // newOffset is in [1.0, 2.0]
+            this.epoch = epoch + deltaEpoch + 1L;
+            offset = newOffset.subtract(1.0);
+        } else if (newOffset.getReal() < 0) {
+            this.epoch = epoch + deltaEpoch - 1L;
+            offset = newOffset.add(1.0);
+        } else {
+            this.epoch = epoch + deltaEpoch;
+            offset = newOffset;
+        }
+    }
+
     /** Extract time components from an instant within the day.
      * @param instant instant to extract the number of seconds within the day
      * @return time components
      */
     private static TimeComponents instantToTimeComponents(final Instant instant) {
-        final int secInDay = (int) (instant.getEpochSecond() % 86400l);
+        final int secInDay = (int) (instant.getEpochSecond() % 86400L);
         return new TimeComponents(secInDay, 1.0e-9 * instant.getNano());
     }
 
@@ -505,58 +602,17 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return an instance corresponding to the specified date
      * @since 10.1
      */
-    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSUnsegmentedTimeCode(
-                                                                                                         final Field<T> field,
+    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSUnsegmentedTimeCode(final Field<T> field,
                                                                                                          final byte preambleField1,
                                                                                                          final byte preambleField2,
                                                                                                          final byte[] timeField,
                                                                                                          final FieldAbsoluteDate<T> agencyDefinedEpoch,
                                                                                                          final FieldAbsoluteDate<T> ccsdsEpoch) {
-
-        // time code identification and reference epoch
-        final FieldAbsoluteDate<T> epochF;
-        switch (preambleField1 & 0x70) {
-            case 0x10:
-                // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
-                epochF = ccsdsEpoch;
-                break;
-            case 0x20:
-                // the reference epoch is agency defined
-                if (agencyDefinedEpoch == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_DATE_MISSING_AGENCY_EPOCH);
-                }
-                epochF = agencyDefinedEpoch;
-                break;
-            default :
-                throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                          formatByte(preambleField1));
-        }
-
-        // time field lengths
-        int coarseTimeLength = 1 + ((preambleField1 & 0x0C) >>> 2);
-        int fineTimeLength   = preambleField1 & 0x03;
-
-        if ((preambleField1 & 0x80) != 0x0) {
-            // there is an additional octet in preamble field
-            coarseTimeLength += (preambleField2 & 0x60) >>> 5;
-            fineTimeLength   += (preambleField2 & 0x1C) >>> 2;
-        }
-
-        if (timeField.length != coarseTimeLength + fineTimeLength) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, coarseTimeLength + fineTimeLength);
-        }
-
-        T seconds = field.getZero();
-        for (int i = 0; i < coarseTimeLength; ++i) {
-            seconds = seconds.multiply(256).add(field.getZero().add(toUnsigned(timeField[i])));
-        }
-        T subseconds = field.getZero();
-        for (int i = timeField.length - 1; i >= coarseTimeLength; --i) {
-            subseconds = (subseconds.add(toUnsigned(timeField[i]))).divide(256);
-        }
-        return new FieldAbsoluteDate<>(epochF, seconds).shiftedBy(subseconds);
-
+        final CcsdsUnsegmentedTimeCode<FieldAbsoluteDate<T>> timeCode =
+            new CcsdsUnsegmentedTimeCode<>(preambleField1, preambleField2, timeField,
+                                           agencyDefinedEpoch, ccsdsEpoch);
+        return new FieldAbsoluteDate<>(timeCode.getEpoch(), timeCode.getSeconds()).
+               shiftedBy(timeCode.getSubSecond());
     }
 
     /** Build an instance from a CCSDS Day Segmented Time Code (CDS).
@@ -607,69 +663,16 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return an instance corresponding to the specified date
      * @since 10.1
      */
-    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(
-                                                                                                          final Field<T> field,
+    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(final Field<T> field,
                                                                                                           final byte preambleField,
                                                                                                           final byte[] timeField,
                                                                                                           final DateComponents agencyDefinedEpoch,
                                                                                                           final TimeScale utc) {
 
-        // time code identification
-        if ((preambleField & 0xF0) != 0x40) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
-        }
-
-        // reference epoch
-        final DateComponents epochDC;
-        if ((preambleField & 0x08) == 0x00) {
-            // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
-            epochDC = DateComponents.CCSDS_EPOCH;
-        } else {
-            // the reference epoch is agency defined
-            if (agencyDefinedEpoch == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_DATE_MISSING_AGENCY_EPOCH);
-            }
-            epochDC = agencyDefinedEpoch;
-        }
-
-        // time field lengths
-        final int daySegmentLength = ((preambleField & 0x04) == 0x0) ? 2 : 3;
-        final int subMillisecondLength = (preambleField & 0x03) << 1;
-        if (subMillisecondLength == 6) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
-        }
-        if (timeField.length != daySegmentLength + 4 + subMillisecondLength) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, daySegmentLength + 4 + subMillisecondLength);
-        }
-
-
-        int i   = 0;
-        int day = 0;
-        while (i < daySegmentLength) {
-            day = day * 256 + toUnsigned(timeField[i++]);
-        }
-
-        long milliInDay = 0l;
-        while (i < daySegmentLength + 4) {
-            milliInDay = milliInDay * 256 + toUnsigned(timeField[i++]);
-        }
-        final int milli   = (int) (milliInDay % 1000l);
-        final int seconds = (int) ((milliInDay - milli) / 1000l);
-
-        double subMilli = 0;
-        double divisor  = 1;
-        while (i < timeField.length) {
-            subMilli = subMilli * 256 + toUnsigned(timeField[i++]);
-            divisor *= 1000;
-        }
-
-        final DateComponents date = new DateComponents(epochDC, day);
-        final TimeComponents time = new TimeComponents(seconds);
-        return new FieldAbsoluteDate<>(field, date, time, utc).shiftedBy(milli * 1.0e-3 + subMilli / divisor);
-
+        final CcsdsSegmentedTimeCode timeCode = new CcsdsSegmentedTimeCode(preambleField, timeField,
+                                                                           agencyDefinedEpoch);
+        return new FieldAbsoluteDate<>(field, timeCode.getDate(), timeCode.getTime(), utc).
+               shiftedBy(timeCode.getSubSecond());
     }
 
     /** Build an instance from a CCSDS Calendar Segmented Time Code (CCS).
@@ -706,71 +709,12 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return an instance corresponding to the specified date
      * @since 10.1
      */
-    public FieldAbsoluteDate<T> parseCCSDSCalendarSegmentedTimeCode(
-                                                                    final byte preambleField,
+    public FieldAbsoluteDate<T> parseCCSDSCalendarSegmentedTimeCode(final byte preambleField,
                                                                     final byte[] timeField,
                                                                     final TimeScale utc) {
-
-        // time code identification
-        if ((preambleField & 0xF0) != 0x50) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
-        }
-
-        // time field length
-        final int length = 7 + (preambleField & 0x07);
-        if (length == 14) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
-        }
-        if (timeField.length != length) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, length);
-        }
-
-        // date part in the first four bytes
-        final DateComponents date;
-        if ((preambleField & 0x08) == 0x00) {
-            // month of year and day of month variation
-            date = new DateComponents(toUnsigned(timeField[0]) * 256 + toUnsigned(timeField[1]),
-                                      toUnsigned(timeField[2]),
-                                      toUnsigned(timeField[3]));
-        } else {
-            // day of year variation
-            date = new DateComponents(toUnsigned(timeField[0]) * 256 + toUnsigned(timeField[1]),
-                                      toUnsigned(timeField[2]) * 256 + toUnsigned(timeField[3]));
-        }
-
-        // time part from bytes 5 to last (between 7 and 13 depending on precision)
-        final TimeComponents time = new TimeComponents(toUnsigned(timeField[4]),
-                                                       toUnsigned(timeField[5]),
-                                                       toUnsigned(timeField[6]));
-        double subSecond = 0;
-        double divisor   = 1;
-        for (int i = 7; i < length; ++i) {
-            subSecond = subSecond * 100 + toUnsigned(timeField[i]);
-            divisor *= 100;
-        }
-
-        return new FieldAbsoluteDate<>(field, date, time, utc).shiftedBy(subSecond / divisor);
-
-    }
-
-    /** Decode a signed byte as an unsigned int value.
-     * @param b byte to decode
-     * @return an unsigned int value
-     */
-    private static int toUnsigned(final byte b) {
-        final int i = (int) b;
-        return (i < 0) ? 256 + i : i;
-    }
-
-    /** Format a byte as an hex string for error messages.
-     * @param data byte to format
-     * @return a formatted string
-     */
-    private static String formatByte(final byte data) {
-        return "0x" + Integer.toHexString(data).toUpperCase();
+        final CcsdsSegmentedTimeCode timeCode = new CcsdsSegmentedTimeCode(preambleField, timeField);
+        return new FieldAbsoluteDate<>(field, timeCode.getDate(), timeCode.getTime(), utc).
+               shiftedBy(timeCode.getSubSecond());
     }
 
     /** Build an instance corresponding to a Julian Day date.
@@ -785,6 +729,38 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
                                                                                         final TimeScale timeScale) {
         return new FieldAbsoluteDate<>(secondsSinceNoon.getField(), new DateComponents(DateComponents.JULIAN_EPOCH, jd),
                         TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
+    }
+
+    /** Build an instance corresponding to a Julian Day date.
+     * <p>
+     * This function should be preferred to {@link #createJDDate(int, CalculusFieldElement, TimeScale)} when the target time scale
+     * has a non-constant offset with respect to TAI.
+     * <p>
+     * The idea is to introduce a pivot time scale that is close to the target time scale but has a constant bias with TAI.
+     * <p>
+     * For example, to get a date from an MJD in TDB time scale, it's advised to use the TT time scale
+     * as a pivot scale. TT is very close to TDB and has constant offset to TAI.
+     * </p>
+     * @param jd Julian day
+     * @param secondsSinceNoon seconds in the Julian day
+     * (BEWARE, Julian days start at noon, so 0.0 is noon)
+     * @param timeScale time scale in which the seconds in day are defined
+     * @param pivotTimeScale pivot timescale used as intermediate timescale
+     * @return a new instant
+     * @param <T> the type of the field elements
+     */
+    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createJDDate(final int jd, final T secondsSinceNoon,
+                                                                                        final TimeScale timeScale,
+                                                                                        final TimeScale pivotTimeScale) {
+        // Get the date in pivot timescale
+        final FieldAbsoluteDate<T> dateInPivotTimeScale = createJDDate(jd, secondsSinceNoon, pivotTimeScale);
+
+        // Compare offsets to TAI of the two time scales
+        final T offsetFromTAI = timeScale.offsetFromTAI(dateInPivotTimeScale).
+                subtract(pivotTimeScale.offsetFromTAI(dateInPivotTimeScale));
+
+        // Return date in desired timescale
+        return dateInPivotTimeScale.shiftedBy(offsetFromTAI.multiply(-1.));
     }
 
     /** Build an instance corresponding to a Modified Julian Day date.
@@ -1011,10 +987,10 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
                         DataContext.getDefault().getTimeScales().getFiftiesEpoch());
     }
 
-    /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4):
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
+    /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4).
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data context}.
+     * </p>
      * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC).
      * @param <T> the type of the field elements
      * @param field field for the components
@@ -1186,6 +1162,35 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
      * double)} constructor.</p>
      * @param instant instant to subtract from the instance
+     * @param timeUnit {@link TimeUnit} precision for the offset
+     * @return offset in seconds between the two instants (positive
+     * if the instance is posterior to the argument)
+     * @see #offsetFrom(FieldAbsoluteDate, TimeScale)
+     * @see #FieldAbsoluteDate(FieldAbsoluteDate, double)
+     */
+    public T durationFrom(final FieldAbsoluteDate<T> instant, final TimeUnit timeUnit) {
+        final long deltaEpoch = timeUnit.convert(epoch - instant.epoch, TimeUnit.SECONDS);
+
+        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
+        final T deltaOffset = offset.getField().getZero().add(offset.subtract(instant.offset).multiply(multiplier).round());
+
+        return deltaOffset.add(deltaEpoch);
+    }
+
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the number of seconds physically
+     * elapsed between the two instants, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * <p>This method gives the same result (with less computation)
+     * as calling {@link #offsetFrom(FieldAbsoluteDate, TimeScale)}
+     * with a second argument set to one of the regular scales cited
+     * above.</p>
+     * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
+     * double)} constructor.</p>
+     * @param instant instant to subtract from the instance
      * @return offset in seconds between the two instants (positive
      * if the instance is posterior to the argument)
      * @see #offsetFrom(FieldAbsoluteDate, TimeScale)
@@ -1193,6 +1198,35 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public T durationFrom(final AbsoluteDate instant) {
         return offset.subtract(instant.getOffset()).add(epoch - instant.getEpoch());
+    }
+
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the number of seconds physically
+     * elapsed between the two instants, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * <p>This method gives the same result (with less computation)
+     * as calling {@link #offsetFrom(FieldAbsoluteDate, TimeScale)}
+     * with a second argument set to one of the regular scales cited
+     * above.</p>
+     * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
+     * double)} constructor.</p>
+     * @param instant instant to subtract from the instance
+     * @param timeUnit {@link TimeUnit} precision for the offset
+     * @return offset in the given timeunit between the two instants (positive
+     * if the instance is posterior to the argument), rounded to the nearest integer {@link TimeUnit}
+     * @see #FieldAbsoluteDate(FieldAbsoluteDate, long, TimeUnit)
+     * @since 12.1
+     */
+    public T durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
+        final long deltaEpoch = timeUnit.convert(epoch - instant.getEpoch(), TimeUnit.SECONDS);
+
+        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
+        final T deltaOffset = offset.getField().getZero().add(offset.subtract(instant.getOffset()).multiply(multiplier).round());
+
+        return deltaOffset.add(deltaEpoch);
     }
 
     /** Compute the apparent clock offset between two instant <em>in the
@@ -1251,6 +1285,36 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
     }
 
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public Instant toInstant() {
+        return toInstant(TimeScalesFactory.getTimeScales());
+    }
+
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @param timeScales the timescales to use
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    public Instant toInstant(final TimeScales timeScales) {
+        final UTCScale utc = timeScales.getUTC();
+        final String stringWithoutUtcOffset = toStringWithoutUtcOffset(utc, 9);
+
+        final LocalDateTime localDateTime = LocalDateTime.parse(stringWithoutUtcOffset, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return localDateTime.toInstant(ZoneOffset.UTC);
+    }
+
     /** Split the instance into date/time components.
      * @param timeScale time scale to use
      * @return date/time components
@@ -1275,16 +1339,16 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         // split date and time
         final long   carry = (long) FastMath.floor(sumAndResidual.getSum());
         double offset2000B = (sumAndResidual.getSum() - carry) + sumAndResidual.getResidual();
-        long   offset2000A = epoch + carry + 43200l;
+        long   offset2000A = epoch + carry + 43200L;
         if (offset2000B < 0) {
             offset2000A -= 1;
             offset2000B += 1;
         }
-        long time = offset2000A % 86400l;
-        if (time < 0l) {
-            time += 86400l;
+        long time = offset2000A % 86400L;
+        if (time < 0L) {
+            time += 86400L;
         }
-        final int date = (int) ((offset2000A - time) / 86400l);
+        final int date = (int) ((offset2000A - time) / 86400L);
 
         // extract calendar elements
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
@@ -1628,6 +1692,29 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         return getComponents(timeZone, utc).toString(minuteDuration);
     }
 
+    /**
+     * Return a string representation of this date-time, rounded to the given precision.
+     *
+     * <p>The format used is ISO8601 without the UTC offset.</p>
+     *
+     *
+     * @param timeScale      to use to compute components.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must be
+     *                       greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toString(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
+     * @see DateTimeComponents#toStringWithoutUtcOffset(int, int)
+     * @since 12.2
+     */
+    public String toStringWithoutUtcOffset(final TimeScale timeScale,
+        final int fractionDigits) {
+        return this.getComponents(timeScale)
+            .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
+    }
+
     /** Get a time-shifted date.
      * <p>
      * Calling this method is equivalent to call <code>new FieldAbsoluteDate(this, dt)</code>.
@@ -1642,6 +1729,23 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @Override
     public FieldAbsoluteDate<T> shiftedBy(final double dt) {
         return new FieldAbsoluteDate<>(this, dt);
+    }
+
+    /** Get a time-shifted date.
+     * <p>
+     * Calling this method is equivalent to call <code>new FieldAbsoluteDate(this, dt, timeUnit)</code>.
+     * </p>
+     * @param dt time shift in time units
+     * @param timeUnit {@link TimeUnit} for dt
+     * @return a new date, shifted with respect to instance (which is immutable)
+     * @see org.orekit.utils.FieldPVCoordinates#shiftedBy(double)
+     * @see org.orekit.attitudes.FieldAttitude#shiftedBy(double)
+     * @see org.orekit.orbits.FieldOrbit#shiftedBy(double)
+     * @see org.orekit.propagation.FieldSpacecraftState#shiftedBy(double)
+     * @since 12.1
+     */
+    public FieldAbsoluteDate<T> shiftedBy(final long dt, final TimeUnit timeUnit) {
+        return new FieldAbsoluteDate<>(this, dt, timeUnit);
     }
 
 

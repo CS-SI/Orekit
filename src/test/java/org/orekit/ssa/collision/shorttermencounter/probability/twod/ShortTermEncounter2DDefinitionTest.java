@@ -24,9 +24,11 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -48,6 +50,11 @@ class ShortTermEncounter2DDefinitionTest {
      * Threshold below which values are considered equal to zero.
      */
     private final double DEFAULTZEROTHRESHOLD = 5e-14;
+
+    @BeforeAll
+    static void initializeOrekitData() {
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     @DisplayName("Test the combined radius (sum of each collision object sphere equivalent radius)")

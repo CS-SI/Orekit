@@ -40,8 +40,8 @@ import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -54,7 +54,6 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -126,8 +125,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -147,12 +145,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 3.63e-6;
+        final double   posEps            = 2.7e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.42e-9;
-        final double[] expectedsigmasPos = {1.762E-7, 1.899E-7, 7.398E-7};
+        final double   velEps            = 9.7e-11;
+        final double[] expectedsigmasPos = {0.0, 0.0, 0.0};
         final double   sigmaPosEps       = 1.0e-10;
-        final double[] expectedSigmasVel = {0.90962E-10, 2.61847E-10, 0.37545E-10};
+        final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngleType,
@@ -202,8 +200,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                0.0, 1.0, 300.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -276,8 +273,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -298,12 +294,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 8.35e-7;
+        final double   posEps            = 6.2e-8;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 3.39e-10;
-        final double[] expectedsigmasPos = {0.1938703E-8, 12.7585598E-8, 17.0372647E-8};
+        final double   velEps            = 2.7e-11;
+        final double[] expectedsigmasPos = {0.0, 0.0, 0.0};
         final double   sigmaPosEps       = 1.0e-15;
-        final double[] expectedSigmasVel = {3.32084E-11, 0.3787E-11, 8.0020E-11};
+        final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngleType,
@@ -349,8 +345,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -371,12 +366,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.74e-6;
+        final double   posEps            = 4.0e-8;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 6.06e-10;
-        final double[] expectedsigmasPos = {8.869538E-9, 1.18524507E-7, 4.32132152E-8};
+        final double   velEps            = 1.4e-11;
+        final double[] expectedsigmasPos = {0.0, 0.0, 0.0};
         final double   sigmaPosEps       = 1.0e-15;
-        final double[] expectedSigmasVel = {1.5213E-11, 7.738E-12, 4.0380E-11};
+        final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngleType,
@@ -426,8 +421,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -462,12 +456,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.43e-6;
+        final double   posEps            = 2.0e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.96e-9;
+        final double   velEps            = 7.3e-10;
         final double[] expectedSigmasPos = {0.324407, 1.347014, 1.743326};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {2.85688e-4,  5.765933e-4, 5.056124e-4};
+        final double[] expectedSigmasVel = {2.85688e-4,  5.765934e-4, 5.056124e-4};
         final double   sigmaVelEps       = 1e-10;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngleType,
@@ -514,8 +508,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                0.0, 1.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -603,8 +596,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                0.0, 1.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -640,12 +632,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 6.05e-7;
+        final double   posEps            = 1.5e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.07e-10;
-        final double[] expectedSigmasPos = {0.012134, 0.511243, 0.264925};
+        final double   velEps            = 5.2e-11;
+        final double[] expectedSigmasPos = {0.045182, 0.615288, 0.295163};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {5.72891E-5, 1.58811E-5, 15.98658E-5};
+        final double[] expectedSigmasVel = {7.25356E-5, 3.11525E-5, 19.81870E-5};
         final double   sigmaVelEps       = 1e-10;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngleType,
@@ -746,24 +738,20 @@ public class UnscentedKalmanEstimatorTest {
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
-            propagatorBuilder1.
-            buildPropagator(propagatorBuilder1.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
-            propagatorBuilder2.
-            buildPropagator(propagatorBuilder2.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
         };
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
                                            new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
-                                               { 1.5e-7, 0.6e-7, 4.2e-7 },
-                                               { 1.5e-7, 0.5e-7, 4.2e-7 }
+                                               { 0.0, 0.0, 0.0 },
+                                               { 0.0, 0.0, 0.0 }
                                            }, new double[] { 1e-8, 1e-8 },
                                            new double[][] {
-                                               { 1.9e-11, 17.5e-11, 3.1e-11 },
-                                               { 2.0e-11, 17.5e-11, 2.8e-11 }
+                                               { 0.0, 0.0, 0.0 },
+                                               { 0.0, 0.0, 0.0 }
                                            }, new double[] { 1.0e-12, 1.0e-12 });
 
         // after the call to estimate, the parameters lacking a user-specified reference date

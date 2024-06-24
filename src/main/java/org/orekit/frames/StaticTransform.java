@@ -129,6 +129,19 @@ public interface StaticTransform extends TimeStamped {
     StaticTransform getInverse();
 
     /**
+     * Get the inverse transform of the instance in static form (without rates).
+     * This enables to create a purely static inverse, as inheritors such as {@link Transform} may
+     * have a relatively computationally-heavy #getInverse() method.
+     *
+     * @return inverse static transform of the instance
+     * @since 12.1
+     */
+    default StaticTransform getStaticInverse() {
+        final Rotation rotation = getRotation();
+        return StaticTransform.of(getDate(), rotation.applyTo(getTranslation()).negate(), rotation.revert());
+    }
+
+    /**
      * Build a transform by combining two existing ones.
      * <p>
      * Note that the dates of the two existing transformed are <em>ignored</em>,

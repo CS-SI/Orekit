@@ -53,11 +53,14 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Phase";
 
-    /** Name for ambiguity driver. */
+    /** Name for ambiguity driver.
+     * @deprecated as of 12.1 not used anymore
+     */
+    @Deprecated
     public static final String AMBIGUITY_NAME = "ambiguity";
 
     /** Driver for ambiguity. */
-    private final ParameterDriver ambiguityDriver;
+    private final AmbiguityDriver ambiguityDriver;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
@@ -71,14 +74,37 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @since 9.3
+     * @deprecated as of 12.1, replaced by {@link #Phase(GroundStation,
+     * AbsoluteDate, double, double, double, double, ObservableSatellite,
+     * AmbiguityCache)}
      */
+    @Deprecated
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite) {
+        this(station, date, phase, wavelength, sigma, baseWeight, satellite,
+             AmbiguityCache.DEFAULT_CACHE);
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param phase observed value (cycles)
+     * @param wavelength phase observed value wavelength (m)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @param cache from which ambiguity drive should come
+     * @since 12.1
+     */
+    public Phase(final GroundStation station, final AbsoluteDate date,
+                 final double phase, final double wavelength, final double sigma,
+                 final double baseWeight, final ObservableSatellite satellite,
+                 final AmbiguityCache cache) {
         super(station, false, date, phase, sigma, baseWeight, satellite);
-        ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME,
-                                               0.0, 1.0,
-                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        ambiguityDriver = cache.getAmbiguity(satellite.getName(),
+                                             station.getBaseFrame().getName(),
+                                             wavelength);
         addParameterDriver(ambiguityDriver);
         this.wavelength = wavelength;
     }
@@ -94,7 +120,7 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
      * @return the driver for phase ambiguity
      * @since 10.3
      */
-    public ParameterDriver getAmbiguityDriver() {
+    public AmbiguityDriver getAmbiguityDriver() {
         return ambiguityDriver;
     }
 
@@ -153,13 +179,13 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
 
         // prepare the evaluation
         final EstimatedMeasurement<Phase> estimated =
-                        new EstimatedMeasurement<Phase>(this, iteration, evaluation,
-                                                        new SpacecraftState[] {
-                                                            common.getTransitState()
-                                                        }, new TimeStampedPVCoordinates[] {
-                                                            common.getTransitPV().toTimeStampedPVCoordinates(),
-                                                            common.getStationDownlink().toTimeStampedPVCoordinates()
-                                                        });
+                        new EstimatedMeasurement<>(this, iteration, evaluation,
+                                                   new SpacecraftState[] {
+                                                       common.getTransitState()
+                                                   }, new TimeStampedPVCoordinates[] {
+                                                       common.getTransitPV().toTimeStampedPVCoordinates(),
+                                                       common.getStationDownlink().toTimeStampedPVCoordinates()
+                                                   });
 
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
@@ -173,12 +199,11 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
 
         estimated.setEstimatedValue(phase.getValue());
 
-        // Phase partial derivatives with respect to state
+        // Phase first order derivatives with respect to state
         final double[] derivatives = phase.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 

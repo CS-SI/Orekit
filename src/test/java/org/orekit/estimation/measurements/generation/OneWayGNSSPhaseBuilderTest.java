@@ -16,7 +16,9 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.lang.reflect.Field;
 import java.util.SortedSet;
+import java.util.function.Function;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -33,6 +35,8 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.gnss.Frequency;
@@ -65,8 +69,10 @@ public class OneWayGNSSPhaseBuilderTest {
                                                                                                                1.0e-10,
                                                                                                                new GaussianRandomGenerator(random)),
                                                    receiver, remote,
-                                                   date -> 1.0e-16,
-                                                   WAVELENGTH, SIGMA, 1.0);
+                                                   new QuadraticClockModel(AbsoluteDate.ARBITRARY_EPOCH,
+                                                                           1.0e-16, 0, 0),
+                                                   WAVELENGTH, SIGMA, 1.0,
+                                                   new AmbiguityCache());
         b.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -75,14 +81,43 @@ public class OneWayGNSSPhaseBuilderTest {
         return b;
     }
 
+    @Deprecated
+    @Test
+    public void testDeprecated() {
+    final QuadraticClockModel refQuadratic = new QuadraticClockModel(AbsoluteDate.GALILEO_EPOCH,
+                                                                   1.0e-16, 2.0e-17, -7.0e-18);
+        MeasurementBuilder<OneWayGNSSPhase> b =
+            new OneWayGNSSPhaseBuilder(null,
+                                       new ObservableSatellite(0),
+                                       new ObservableSatellite(1),
+                                       date -> refQuadratic.getOffset(date).getOffset(),
+                                       WAVELENGTH, SIGMA, 1.0);
+        try {
+            Field clockBuilderField = OneWayGNSSPhaseBuilder.class.getDeclaredField("clockBuilder");
+            clockBuilderField.setAccessible(true);
+            Function<AbsoluteDate, QuadraticClockModel> clockBuilder =
+                (Function<AbsoluteDate, QuadraticClockModel>) clockBuilderField.get(b);
+            QuadraticClockModel rebuilt = clockBuilder.apply(AbsoluteDate.GALILEO_EPOCH);
+            for (double dt = -3; dt < 3; dt += 0.01) {
+                final AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH.shiftedBy(dt);
+                Assertions.assertEquals(refQuadratic.getOffset(date).getOffset(),
+                                        rebuilt.getOffset(date).getOffset(),
+                                        1.0e-30);
+            }
+
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Assertions.fail(e.getLocalizedMessage());
+        }
+    }
+
     @Test
     public void testForward() {
-        doTest(0x812bfe784826bab3l, 0.0, 1.2, 3.4 * SIGMA);
+        doTest(0x812bfe784826bab3L, 0.0, 1.2, 3.4 * SIGMA);
     }
 
     @Test
     public void testBackward() {
-        doTest(0xb54896c361d88441l, 0.0, -1.0, 2.8 * SIGMA);
+        doTest(0xb54896c361d88441L, 0.0, -1.0, 2.8 * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -145,8 +180,7 @@ public class OneWayGNSSPhaseBuilderTest {
                 }
             }
             previous = date;
-            double[] e = measurement.estimateWithoutDerivatives(0, 0,
-                                                                new SpacecraftState[] {
+            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                     propagator1.propagate(date),
                                                                     propagator2.propagate(date)
                                                                 }).getEstimatedValue();

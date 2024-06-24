@@ -16,16 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
@@ -58,6 +48,16 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 
 /** Third body attraction perturbation to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -212,9 +212,9 @@ public class DSSTThirdBody implements DSSTForceModel {
         final int jMax = staticContext.getMaxAR3Pow() + 1;
         shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
                                                               staticContext.getMaxFreqF(), body.getName(),
-                                                              new TimeSpanMap<Slot>(new Slot(jMax, INTERPOLATION_POINTS)));
+                                                              new TimeSpanMap<>(new Slot(jMax, INTERPOLATION_POINTS)));
 
-        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> list = new ArrayList<>();
         list.add(shortPeriods);
         return list;
 
@@ -1642,7 +1642,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             //initialise fields
             c = auxiliaryElements.getEcc().multiply(context.getb());
-            final T c2 = c.multiply(c);
+            final T c2 = c.square();
 
             //b² * χ
             final T b2Chi = context.getb().multiply(context.getb()).multiply(context.getX());
@@ -1667,8 +1667,8 @@ public class DSSTThirdBody implements DSSTForceModel {
             opc2tn = MathArrays.buildArray(field, staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 2);
             final T omc2 = c2.negate().add(1.);
             final T opc2 = c2.add(1.);
-            omc2tn[0] = zero.add(1.);
-            opc2tn[0] = zero.add(1.);
+            omc2tn[0] = zero.newInstance(1.);
+            opc2tn[0] = zero.newInstance(1.);
             for (int i = 1; i <= staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 1; i++) {
                 omc2tn[i] = omc2tn[i - 1].multiply(omc2);
                 opc2tn[i] = opc2tn[i - 1].multiply(opc2);
@@ -1676,7 +1676,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             //Compute the powers of b
             btjms = MathArrays.buildArray(field, staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 1);
-            btjms[0] = zero.add(1.);
+            btjms[0] = zero.newInstance(1.);
             for (int i = 1; i <= staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF(); i++) {
                 btjms[i] = btjms[i - 1].multiply(context.getb());
             }
@@ -1715,15 +1715,15 @@ public class DSSTThirdBody implements DSSTForceModel {
             final T factCoef;
             if (absS > absJ) {
                 //factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact[n - j]);
-                factCoef = zero.add((CombinatoricsUtils.factorialDouble(n + s) / CombinatoricsUtils.factorialDouble(n + j)) * (CombinatoricsUtils.factorialDouble(n - s) / CombinatoricsUtils.factorialDouble(n - j)));
+                factCoef = zero.newInstance((CombinatoricsUtils.factorialDouble(n + s) / CombinatoricsUtils.factorialDouble(n + j)) * (CombinatoricsUtils.factorialDouble(n - s) / CombinatoricsUtils.factorialDouble(n - j)));
                 l = n - absS;
             } else {
-                factCoef = zero.add(1.);
+                factCoef = zero.newInstance(1.);
                 l = n - absJ;
             }
 
             // (-1)<sup>|j-s|</sup>
-            final T sign = absJmS % 2 != 0 ? zero.add(-1.) : zero.add(1.);
+            final T sign = absJmS % 2 != 0 ? zero.newInstance(-1.) : zero.newInstance(1.);
             //(1 - c²)<sup>n-|s|</sup> / (1 + c²)<sup>n</sup>
             final T coef1 = omc2tn[l].divide(opc2tn[n]);
             //-b<sup>|j-s|</sup>
@@ -1782,13 +1782,13 @@ public class DSSTThirdBody implements DSSTForceModel {
         private final int sMax;
 
         /** The coefficients G<sub>n,s</sub>. */
-        private final double gns[][];
+        private final double[][] gns;
 
         /** The derivatives of the coefficients G<sub>n,s</sub> by a. */
-        private final double dgnsda[][];
+        private final double[][] dgnsda;
 
         /** The derivatives of the coefficients G<sub>n,s</sub> by γ. */
-        private final double dgnsdgamma[][];
+        private final double[][] dgnsdgamma;
 
         /** Standard constructor.
          *
@@ -1901,13 +1901,13 @@ public class DSSTThirdBody implements DSSTForceModel {
         private final int sMax;
 
         /** The coefficients G<sub>n,s</sub>. */
-        private final T gns[][];
+        private final T[][] gns;
 
         /** The derivatives of the coefficients G<sub>n,s</sub> by a. */
-        private final T dgnsda[][];
+        private final T[][] dgnsda;
 
         /** The derivatives of the coefficients G<sub>n,s</sub> by γ. */
-        private final T dgnsdgamma[][];
+        private final T[][] dgnsdgamma;
 
         /** Standard constructor.
          *
@@ -1960,7 +1960,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                     // compute the coefficients only if (n - s) % 2 == 0
                     if ( (n - s) % 2 == 0 ) {
                         // Kronecker symbol (2 - delta(0,s))
-                        final T delta0s = (s == 0) ? zero.add(1.) : zero.add(2.);
+                        final T delta0s = (s == 0) ? zero.newInstance(1.) : zero.newInstance(2.);
                         final double vns = Vns.get(new NSKey(n, s));
                         final T coef0 = aoR3Pow[n].multiply(vns).multiply(context.getMuoR3()).multiply(delta0s);
                         final T coef1 = coef0.multiply(qns[n][s]);
@@ -2036,19 +2036,19 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /** The coeficient sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final double coefAandDeriv[];
+        private final double[] coefAandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final double coefBandDeriv[];
+        private final double[] coefBandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final double coefDandDeriv[];
+        private final double[] coefDandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final double coefEandDeriv[];
+        private final double[] coefEandDeriv;
 
         /**
          * Standard constructor.
@@ -2294,19 +2294,19 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /** The coeficient sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final T coefAandDeriv[];
+        private final T[] coefAandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final T coefBandDeriv[];
+        private final T[] coefBandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final T coefDandDeriv[];
+        private final T[] coefDandDeriv;
 
         /** The coeficient C<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h)
          * and its derivative by k, h, α and β. */
-        private final T coefEandDeriv[];
+        private final T[] coefEandDeriv;
 
         /**
          * Standard constructor.
@@ -3255,7 +3255,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             // select the coefficients slot
             final Slot slot = slots.get(date);
 
-            final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxFreqF + 1);
+            final Map<String, double[]> coefficients = new HashMap<>(2 * maxFreqF + 1);
             storeIfSelected(coefficients, selected, slot.cij[0].value(date), "c", 0);
             for (int j = 1; j <= maxFreqF; j++) {
                 storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
@@ -3360,15 +3360,15 @@ public class DSSTThirdBody implements DSSTForceModel {
             final T F = meanOrbit.getLE();
 
             //initialize the short periodic contribution with the corresponding C⁰ coeficient
-            final T[] shortPeriodic = (T[]) slot.cij[0].value(meanOrbit.getDate());
+            final T[] shortPeriodic = slot.cij[0].value(meanOrbit.getDate());
 
             // Add the cos and sin dependent terms
             for (int j = 1; j <= maxFreqF; j++) {
                 //compute cos and sin
                 final FieldSinCos<T> scjF = FastMath.sinCos(F.multiply(j));
 
-                final T[] c = (T[]) slot.cij[j].value(meanOrbit.getDate());
-                final T[] s = (T[]) slot.sij[j].value(meanOrbit.getDate());
+                final T[] c = slot.cij[j].value(meanOrbit.getDate());
+                final T[] s = slot.sij[j].value(meanOrbit.getDate());
                 for (int i = 0; i < 6; i++) {
                     shortPeriodic[i] = shortPeriodic[i].add(c[i].multiply(scjF.cos()).add(s[i].multiply(scjF.sin())));
                 }
@@ -3398,7 +3398,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             // select the coefficients slot
             final FieldSlot<T> slot = slots.get(date);
 
-            final Map<String, T[]> coefficients = new HashMap<String, T[]>(2 * maxFreqF + 1);
+            final Map<String, T[]> coefficients = new HashMap<>(2 * maxFreqF + 1);
             storeIfSelected(coefficients, selected, slot.cij[0].value(date), "c", 0);
             for (int j = 1; j <= maxFreqF; j++) {
                 storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
@@ -3782,14 +3782,14 @@ public class DSSTThirdBody implements DSSTForceModel {
                 }
 
                 // Kronecker symbol (2 - delta(0,s))
-                final T delta0s = zero.add((s == 0) ? 1. : 2.);
+                final T delta0s = zero.newInstance((s == 0) ? 1. : 2.);
 
                 for (int n = FastMath.max(2, s); n <= staticContext.getMaxAR3Pow(); n++) {
                     // (n - s) must be even
                     if ((n - s) % 2 == 0) {
                         // Extract data from previous computation :
-                        final T kns   = (T) hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
-                        final T dkns  = (T) hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
+                        final T kns   = hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
+                        final T dkns  = hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
 
                         final double vns = Vns.get(new NSKey(n, s));
                         final T coef0 = delta0s.multiply(vns).multiply(aoR3Pow[n]);

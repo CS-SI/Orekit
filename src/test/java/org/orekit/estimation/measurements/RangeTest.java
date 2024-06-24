@@ -31,9 +31,9 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
-import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
-import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -47,14 +47,14 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class RangeTest {
+class RangeTest {
 
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range Values\n");
@@ -68,7 +68,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -76,8 +76,8 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsPMedian = 6.0e-10;
-        double refErrorsPMean   = 3.0e-09;
+        double refErrorsPMedian = 6.7e-10;
+        double refErrorsPMean   = 3.1e-09;
         double refErrorsPMax    = 1.0e-07;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;
@@ -92,7 +92,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesWithModifier() {
+    void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -100,9 +100,9 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 7.5e-10;
-        double refErrorsPMean   = 3.2e-09;
-        double refErrorsPMax    = 9.2e-08;
+        double refErrorsPMedian = 7.9e-10;
+        double refErrorsPMean   = 2.6e-09;
+        double refErrorsPMax    = 9.3e-08;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;
         double refErrorsVMax    = 5.2e-02;
@@ -116,7 +116,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -139,7 +139,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivativesWithModifier() {
+    void testParameterDerivativesWithModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -162,7 +162,7 @@ public class RangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivativesWithEstimatedModifier() {
+    void testParameterDerivativesWithEstimatedModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -174,7 +174,7 @@ public class RangeTest {
         boolean isModifier = true;
         double refErrorsMedian = 1.2e-9;
         double refErrorsMean   = 1.9e-9;
-        double refErrorsMax    = 6.6e-9;
+        double refErrorsMax    = 6.9e-9;
         this.genericTestEstimatedParameterDerivatives(isModifier, printResults,
                                                       refErrorsMedian, refErrorsMean, refErrorsMax);
 
@@ -184,6 +184,7 @@ public class RangeTest {
      * Generic test function for values of the range
      * @param printResults Print the results ?
      */
+    @SuppressWarnings("deprecation")
     void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -232,8 +233,7 @@ public class RangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                         new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(3, participants.length);
@@ -250,6 +250,17 @@ public class RangeTest {
                     final double absoluteError = RangeEstimated-RangeObserved;
                     absoluteErrors.add(absoluteError);
                     relativeErrors.add(FastMath.abs(absoluteError)/FastMath.abs(RangeObserved));
+
+                    // test deprecated method (just for test coverage)
+                    // here, the frame is not the same in both calls, but results should be the same as both are inertial frames
+                    Assertions.assertEquals(AbstractMeasurement.signalTimeOfFlight(estimated.getParticipants()[0],
+                                                                                   estimated.getParticipants()[1].getPosition(),
+                                                                                   estimated.getParticipants()[1].getDate()),
+                                            AbstractMeasurement.signalTimeOfFlight(estimated.getParticipants()[0],
+                                                                                   estimated.getParticipants()[1].getPosition(),
+                                                                                   estimated.getParticipants()[1].getDate(),
+                                                                                   state.getFrame()),
+                                            1.0e-6);
 
                     // Print results on console ?
                     if (printResults) {
@@ -374,7 +385,7 @@ public class RangeTest {
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) {
                             return measurement.
-                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                    getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -544,7 +555,7 @@ public class RangeTest {
                                             @Override
                                             public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.
-                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                        getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
@@ -642,14 +653,14 @@ public class RangeTest {
 
                     // Add modifiers if test implies it
                     final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-                    final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
+                    final EstimatedModel            tropoModel      = new EstimatedModel(mappingFunction, 5.0);
 
                     final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
                     for (ParameterDriver driver : parameters) {
                         driver.setSelected(true);
                     }
 
-                    parameters.get(0).setName(stationName + "/" + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                    parameters.get(0).setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
@@ -686,7 +697,7 @@ public class RangeTest {
                                             @Override
                                             public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.
-                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                        getEstimatedValue()[0];
                                             }
                                         }, 3, 0.1 * drivers[i].getScale());

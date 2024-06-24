@@ -23,7 +23,7 @@ import org.orekit.time.AbsoluteDate;
  * <p>
  * Two interfaces are provided to distinguish between normalized and un-normalized
  * coefficients: {@link NormalizedSphericalHarmonicsProvider} and {@link
- * UnnormalizedSphericalHarmonicsProvider}. To account for gravity pertubations all
+ * UnnormalizedSphericalHarmonicsProvider}. To account for gravity perturbations all
  * providers are capable of providing the coefficients on specific dates, using the {@link
  * NormalizedSphericalHarmonicsProvider#onDate(AbsoluteDate) onDate(AbsoluteDate)}
  * methods.
@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
  * Typical usage when evaluating the geopotential:
  * <pre><code>
  *     NormalizedSphericalHarmonicsProvider provider = ...;
- *     NormalizedShpericalHarmonics coeffs = provider.onDate(date);
+ *     NormalizedSphericalHarmonics coeffs = provider.onDate(date);
  *     double c20 = coeffs.getNormalizedCnm(2, 0);
  * </code></pre>
  *

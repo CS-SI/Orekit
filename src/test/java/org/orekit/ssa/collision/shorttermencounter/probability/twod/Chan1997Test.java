@@ -20,8 +20,10 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.Binary64;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.ssa.metrics.FieldProbabilityOfCollision;
 import org.orekit.ssa.metrics.ProbabilityOfCollision;
 
@@ -31,6 +33,11 @@ class Chan1997Test {
      * Chan's method to compute probability of collision.
      */
     private final ShortTermEncounter2DPOCMethod method = new Chan1997();
+
+    @BeforeAll
+    static void initializeOrekitData() {
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     @DisplayName("Chan test case 01")

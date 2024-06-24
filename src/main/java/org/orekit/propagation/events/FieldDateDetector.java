@@ -89,7 +89,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     @SafeVarargs
     public FieldDateDetector(final Field<T> field, final FieldTimeStamped<T>... dates) {
-        this(s -> DEFAULT_MAX_CHECK, field.getZero().newInstance(DEFAULT_THRESHOLD),
+        this(FieldAdaptableInterval.of(DEFAULT_MAX_CHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER, new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
     }
 
@@ -158,7 +158,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     public T g(final FieldSpacecraftState<T> s) {
         gDate = s.getDate();
         if (currentIndex < 0) {
-            return s.getA().getField().getZero().add(-1);
+            return s.getA().getField().getZero().newInstance(-1);
         } else {
             final FieldEventDate<T> event = getClosest(gDate);
             return event.isgIncrease() ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);

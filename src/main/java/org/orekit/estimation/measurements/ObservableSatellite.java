@@ -32,6 +32,11 @@ public class ObservableSatellite {
     /** Prefix for clock drift parameter driver, the propagator index will be appended to it. */
     public static final String CLOCK_DRIFT_PREFIX = "clock-drift-satellite-";
 
+    /** Prefix for clock acceleration parameter driver, the propagator index will be appended to it.
+     * @since 12.1
+     */
+    public static final String CLOCK_ACCELERATION_PREFIX = "clock-acceleration-satellite-";
+
     /** Clock offset scaling factor.
      * <p>
      * We use a power of 2 to avoid numeric noise introduction
@@ -39,6 +44,9 @@ public class ObservableSatellite {
      * </p>
      */
     private static final double CLOCK_OFFSET_SCALE = FastMath.scalb(1.0, -10);
+
+    /** Prefix for satellite names. */
+    private static final String SAT_PREFIX = "sat-";
 
     /** Index of the propagator related to this satellite. */
     private final int propagatorIndex;
@@ -48,6 +56,11 @@ public class ObservableSatellite {
 
     /** Parameter driver for satellite clock drift. */
     private final ParameterDriver clockDriftDriver;
+
+    /** Parameter driver for satellite clock acceleration.
+     * @since 12.1
+     */
+    private final ParameterDriver clockAccelerationDriver;
 
     /** Simple constructor.
      * @param propagatorIndex index of the propagator related to this satellite
@@ -60,6 +73,22 @@ public class ObservableSatellite {
         this.clockDriftDriver = new ParameterDriver(CLOCK_DRIFT_PREFIX + propagatorIndex,
                                                     0.0, CLOCK_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.clockAccelerationDriver = new ParameterDriver(CLOCK_ACCELERATION_PREFIX + propagatorIndex,
+                                                           0.0, CLOCK_OFFSET_SCALE,
+                                                           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+    }
+
+    /** Build a name for the satellite.
+     * <p>
+     * This is mainly useful to build the arguments for {@link
+     * org.orekit.estimation.measurements.gnss.AmbiguityCache#getAmbiguity(String,
+     * String, double)}
+     * </p>
+     * @return name for the satellite (built from the propagator index)
+     * @since 12.1
+     */
+    public String getName() {
+        return SAT_PREFIX + propagatorIndex;
     }
 
     /** Get the index of the propagator related to this satellite.
@@ -85,11 +114,29 @@ public class ObservableSatellite {
      * <p>
      * The drift is negative if the satellite clock is slowing down and positive if it is speeding up.
      * </p>
-     * @return clock offset parameter driver
+     * @return clock drift parameter driver
      * @since 10.3
      */
     public ParameterDriver getClockDriftDriver() {
         return clockDriftDriver;
+    }
+
+    /** Get the clock acceleration parameter driver.
+     * @return clock acceleration parameter driver
+     * @since 12.1
+     */
+    public ParameterDriver getClockAccelerationDriver() {
+        return clockAccelerationDriver;
+    }
+
+    /** Get a quadratic clock model valid at some date.
+     * @return quadratic clock model
+     * @since 12.1
+     */
+    public QuadraticClockModel getQuadraticClockModel() {
+        return new QuadraticClockModel(clockOffsetDriver,
+                                       clockDriftDriver,
+                                       clockAccelerationDriver);
     }
 
     /** {@inheritDoc}

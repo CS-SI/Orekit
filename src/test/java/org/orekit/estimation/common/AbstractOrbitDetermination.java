@@ -73,8 +73,8 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
-import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -97,16 +97,17 @@ import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRDHeader;
 import org.orekit.files.ilrs.CRDHeader.RangeType;
+import org.orekit.files.ilrs.CRDParser;
 import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservation;
 import org.orekit.files.rinex.observation.RinexObservationParser;
-import org.orekit.files.ilrs.CRDParser;
 import org.orekit.files.sinex.SinexLoader;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.EOPHistory;
@@ -118,6 +119,8 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
+import org.orekit.models.earth.Geoid;
+import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
@@ -131,15 +134,21 @@ import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.ionosphere.SingleLayerModelMappingFunction;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
-import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
-import org.orekit.models.earth.troposphere.MappingFunction;
 import org.orekit.models.earth.troposphere.MendesPavlisModel;
-import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
-import org.orekit.models.earth.troposphere.TimeSpanEstimatedTroposphericModel;
-import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
+import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.TimeSpanEstimatedModel;
+import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
+import org.orekit.models.earth.troposphere.TroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.GlobalPressureTemperature;
+import org.orekit.models.earth.weather.PressureTemperature;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -166,6 +175,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.units.Unit;
 
 /** Base class for Orekit orbit determination tutorials.
  * @param <T> type of the propagator builder
@@ -960,9 +970,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
          }
 
          // Build the reference propagator
-         final Propagator propagator =
-                         propagatorBuilder.buildPropagator(propagatorBuilder.
-                                                           getSelectedNormalizedParameters());
+         final Propagator propagator = propagatorBuilder.buildPropagator();
 
          // Propagate until last date and return the orbit
          return propagator.propagate(finalDate).getOrbit();
@@ -1390,7 +1398,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
         final Map<String, StationData> stations       = new HashMap<String, StationData>();
 
-        final boolean   useTimeSpanTroposphericModel      = parser.getBoolean(ParameterKey.USE_TIME_SPAN_TROPOSPHERIC_MODEL);
+        final boolean   useTimeSpanModel      = parser.getBoolean(ParameterKey.USE_TIME_SPAN_TROPOSPHERIC_MODEL);
         final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
         final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
         final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
@@ -1420,7 +1428,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final double[]  stationElevationBiasMax           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
         final boolean[] stationAzElBiasesEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
         final boolean[] stationElevationRefraction        = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
-        final boolean[] stationTroposphericModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
+        final boolean[] stationModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
         final double[]  stationTroposphericZenithDelay    = parser.getDoubleArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY);
         final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
         final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
@@ -1459,7 +1467,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         final EOPHistory eopHistory = FramesFactory.findEOP(body.getBodyFrame());
-
+        Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(9, 9),
+                                ReferenceEllipsoid.getWgs84(body.getBodyFrame()));
+        final GlobalPressureTemperature gpt = new GlobalPressureTemperature(geoid, TimeScalesFactory.getUTC());
         for (int i = 0; i < stationNames.length; ++i) {
 
             // displacements
@@ -1498,7 +1508,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 position = new GeodeticPoint(stationLatitudes[i], stationLongitudes[i], stationAltitudes[i]);
             }
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
-            final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            final PressureTemperatureHumidityProvider pth0Provider =
+                            TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER;
+            final GroundStation station = new GroundStation(topo, pth0Provider, eopHistory, displacements);
             station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
@@ -1511,7 +1523,15 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             // Take into consideration station eccentricities if not null
             if (sinexEcc != null) {
                 final Station stationEcc = sinexEcc.getStation(stationNames[i]);
-                final Vector3D eccentricities = stationEcc.getEccentricities(refDate);
+                final Vector3D eccentricities;
+                if (stationEcc.getEccRefSystem() == Station.ReferenceSystem.UNE) {
+                    eccentricities = stationEcc.getEccentricities(refDate);
+                } else {
+                    final Vector3D xyz = stationEcc.getEccentricities(refDate);
+                    eccentricities = new Vector3D(Vector3D.dotProduct(xyz, position.getZenith()),
+                                                  Vector3D.dotProduct(xyz, position.getNorth()),
+                                                  Vector3D.dotProduct(xyz, position.getEast()));
+                }
                 station.getZenithOffsetDriver().setValue(eccentricities.getX());
                 station.getZenithOffsetDriver().setReferenceValue(eccentricities.getX());
                 station.getNorthOffsetDriver().setValue(eccentricities.getY());
@@ -1588,15 +1608,15 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final RangeTroposphericDelayModifier rangeTroposphericCorrection;
             if (stationRangeTropospheric[i]) {
 
-                MappingFunction mappingModel = null;
+                TroposphereMappingFunction mappingModel = null;
                 if (stationGlobalMappingFunction[i]) {
                     mappingModel = new GlobalMappingFunctionModel();
                 } else if (stationNiellMappingFunction[i]) {
                     mappingModel = new NiellMappingFunctionModel();
                 }
 
-                final DiscreteTroposphericModel troposphericModel;
-                if (stationTroposphericModelEstimated[i] && mappingModel != null) {
+                final TroposphericModel model;
+                if (stationModelEstimated[i] && mappingModel != null) {
                     // Estimated tropospheric model
 
                     // Compute pressure and temperature for estimated tropospheric model
@@ -1604,11 +1624,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     final double temperature;
                     if (stationWeatherEstimated[i]) {
                         // Empirical models to compute the pressure and the temperature
-                        final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
-                                                                                                          stationLongitudes[i],
-                                                                                                          body.getBodyFrame());
-                        weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
-                                                                                      TimeScalesFactory.getUTC()));
+                        PressureTemperature weather = gpt.getWeatherParameters(station.getBaseFrame().getPoint(),
+                                                                               parser.getDate(ParameterKey.ORBIT_DATE,
+                                                                                              TimeScalesFactory.getUTC()));
                         temperature = weather.getTemperature();
                         pressure    = weather.getPressure();
 
@@ -1618,13 +1636,14 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         pressure    = 1013.25;
                     }
 
-                    if (useTimeSpanTroposphericModel) {
+                    if (useTimeSpanModel) {
                         // Initial model used to initialize the time span tropospheric model
-                        final EstimatedTroposphericModel initialModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                       stationTroposphericZenithDelay[i]);
+                        final EstimatedModel initialModel = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
+                                                                               temperature, pressure, mappingModel,
+                                                                               stationTroposphericZenithDelay[i]);
 
                         // Initialize the time span tropospheric model
-                        final TimeSpanEstimatedTroposphericModel timeSpanModel = new TimeSpanEstimatedTroposphericModel(initialModel);
+                        final TimeSpanEstimatedModel timeSpanModel = new TimeSpanEstimatedModel(initialModel);
 
                         // Median date
                         final AbsoluteDate epoch = parser.getDate(ParameterKey.TROPOSPHERIC_CORRECTION_DATE, TimeScalesFactory.getUTC());
@@ -1633,18 +1652,20 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         final String subName = stationNames[i].substring(0, 5);
 
                         // Estimated tropospheric model BEFORE the median date
-                        final EstimatedTroposphericModel modelBefore = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                      stationTroposphericZenithDelay[i]);
+                        final EstimatedModel modelBefore = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
+                                                                              temperature, pressure, mappingModel,
+                                                                              stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
                         totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
-                        totalDelayBefore.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                        totalDelayBefore.setName(subName + TimeSpanEstimatedModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedModel.TOTAL_ZENITH_DELAY);
 
                         // Estimated tropospheric model AFTER the median date
-                        final EstimatedTroposphericModel modelAfter = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                     stationTroposphericZenithDelay[i]);
+                        final EstimatedModel modelAfter = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
+                                                                             temperature, pressure, mappingModel,
+                                                                             stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
                         totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
-                        totalDelayAfter.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                        totalDelayAfter.setName(subName + TimeSpanEstimatedModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedModel.TOTAL_ZENITH_DELAY);
 
                         // Add models to the time span tropospheric model
                         // A very ugly trick is used when no measurements are available for a specific time span.
@@ -1664,24 +1685,24 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                             timeSpanModel.addTroposphericModelValidAfter(modelAfter, epoch);
                         }
 
-                        troposphericModel = timeSpanModel;
+                        model = timeSpanModel;
 
                     } else {
 
-                        troposphericModel = new EstimatedTroposphericModel(temperature, pressure,
-                                                                           mappingModel, stationTroposphericZenithDelay[i]);
-                        final ParameterDriver driver = troposphericModel.getParametersDrivers().get(0);
-                        driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                        model = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
+                                                   temperature, pressure, mappingModel, stationTroposphericZenithDelay[i]);
+                        final ParameterDriver driver = model.getParametersDrivers().get(0);
+                        driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedModel.TOTAL_ZENITH_DELAY);
                         driver.setSelected(stationZenithDelayEstimated[i]);
 
                     }
 
                 } else {
                     // Empirical tropospheric model
-                    troposphericModel = ModifiedSaastamoinenModel.getStandardModel();
+                    model = ModifiedSaastamoinenModel.getStandardModel();
                 }
 
-                rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);
+                rangeTroposphericCorrection = new RangeTroposphericDelayModifier(model);
             } else {
                 rangeTroposphericCorrection = null;
             }
@@ -2141,7 +2162,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                           weights.getRangeBaseWeight(), satellite);
                             if (stationData.getIonosphericModel() != null) {
                                 final RangeIonosphericDelayModifier ionoModifier = new RangeIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                     od.getObservationType().getFrequency(system).getMHzFrequency() * 1.0e6);
+                                                                                                                     od.getObservationType().getFrequency(system).getFrequency());
                                           range.addModifier(ionoModifier);
                             }
                             if (satAntennaRangeModifier != null) {
@@ -2174,7 +2195,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                                       weights.getRangeRateBaseWeight(), false, satellite);
                             if (stationData.getIonosphericModel() != null) {
                                 final RangeRateIonosphericDelayModifier ionoModifier = new RangeRateIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                             od.getObservationType().getFrequency(system).getMHzFrequency() * 1.0e6,
+                                                                                                                             od.getObservationType().getFrequency(system).getFrequency(),
                                                                                                                              false);
                                 rangeRate.addModifier(ionoModifier);
                             }
@@ -2310,12 +2331,21 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 }
 
                 // Tropospheric model
-                final DiscreteTroposphericModel model;
+                final TroposphericModel model;
                 if (meteoData != null) {
-                    model = new MendesPavlisModel(meteoData.getTemperature(), meteoData.getPressure() * 1000.0,
-                                                  0.01 * meteoData.getHumidity(), wavelength * 1.0e6);
+                    final PressureTemperatureHumidity pth =
+                                    new PressureTemperatureHumidity(stationData.getStation().getBaseFrame().getPoint().getAltitude(),
+                                                                    Unit.BAR.toSI(meteoData.getPressure()),
+                                                                    meteoData.getTemperature(),
+                                                                    new CIPM2007().
+                                                                    waterVaporPressure(Unit.BAR.toSI(meteoData.getPressure()),
+                                                                                       meteoData.getTemperature(),
+                                                                                       0.01 * meteoData.getHumidity()),
+                                                                    Double.NaN, Double.NaN);
+                    model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                                  wavelength, Unit.METRE);
                 } else {
-                    model = MendesPavlisModel.getStandardModel(wavelength * 1.0e6);
+                    model = MendesPavlisModel.getStandardModel(wavelength, Unit.METRE);
                 }
                 measurement.addModifier(new RangeTroposphericDelayModifier(model));
 

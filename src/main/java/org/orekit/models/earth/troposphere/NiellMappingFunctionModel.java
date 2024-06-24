@@ -26,10 +26,14 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The Niell Mapping Function  model for radio wavelengths.
  *  This model is an empirical mapping function. It only needs the
@@ -45,7 +49,8 @@ import org.orekit.time.TimeScale;
  * @author Bryan Cazabonne
  *
  */
-public class NiellMappingFunctionModel implements MappingFunction {
+@SuppressWarnings("deprecation")
+public class NiellMappingFunctionModel implements MappingFunction, TroposphereMappingFunction {
 
     /** Values for the ah average function. */
     private static final double[] VALUES_FOR_AH_AVERAGE = {
@@ -160,7 +165,19 @@ public class NiellMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final AbsoluteDate date) {
+        return mappingFactors(new TrackingCoordinates(0.0, elevation, 0.0),
+                              point,
+                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                              date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
+                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
@@ -188,13 +205,17 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final double[] function = new double[2];
 
         // Hydrostatic mapping factor
-        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, trackingCoordinates.getElevation());
 
         // Wet mapping factor
-        function[1] = TroposphericModelUtils.mappingFunction(awFunction.value(absLatidude), bwFunction.value(absLatidude), cwFunction.value(absLatidude), elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(awFunction.value(absLatidude),
+                                                             bwFunction.value(absLatidude),
+                                                             cwFunction.value(absLatidude),
+                                                             trackingCoordinates.getElevation());
 
         // Apply height correction
-        final double correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude());
+        final double correction = TroposphericModelUtils.computeHeightCorrection(trackingCoordinates.getElevation(),
+                                                                                 point.getAltitude());
         function[0] = function[0] + correction;
 
         return function;
@@ -202,8 +223,22 @@ public class NiellMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final FieldAbsoluteDate<T> date) {
+                                                                  final FieldAbsoluteDate<T> date) {
+        return mappingFactors(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                              point,
+                              new FieldPressureTemperatureHumidity<>(date.getField(),
+                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                              date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                  final FieldGeodeticPoint<T> point,
+                                                                  final FieldPressureTemperatureHumidity<T> weather,
+                                                                  final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 
@@ -233,14 +268,17 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final T[] function = MathArrays.buildArray(field, 2);
 
         // Hydrostatic mapping factor
-        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch,
+                                                             trackingCoordinates.getElevation());
 
         // Wet mapping factor
-        function[1] = TroposphericModelUtils.mappingFunction(zero.add(awFunction.value(absLatidude)), zero.add(bwFunction.value(absLatidude)),
-                                                             zero.add(cwFunction.value(absLatidude)), elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(zero.newInstance(awFunction.value(absLatidude)), zero.newInstance(bwFunction.value(absLatidude)),
+                                                             zero.newInstance(cwFunction.value(absLatidude)), trackingCoordinates.getElevation());
 
         // Apply height correction
-        final T correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude(), field);
+        final T correction = TroposphericModelUtils.computeHeightCorrection(trackingCoordinates.getElevation(),
+                                                                            point.getAltitude(),
+                                                                            field);
         function[0] = function[0].add(correction);
 
         return function;

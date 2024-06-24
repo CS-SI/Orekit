@@ -352,7 +352,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         final double   rightAscension     = baseRightAscension + twoPiWrap;
 
         // New estimated values
-        estimated.setEstimatedValue(rightAscension, naturalRaDec[1]);
+        estimated.modifyEstimatedValue(this, rightAscension, naturalRaDec[1]);
 
     }
 
@@ -400,7 +400,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         final Gradient rightAscension = baseRightAscension.add(twoPiWrap);
 
         // New estimated values
-        estimated.setEstimatedValue(rightAscension.getValue(), naturalRaDec[1].getValue());
+        estimated.modifyEstimatedValue(this, rightAscension.getValue(), naturalRaDec[1].getValue());
 
         // Derivatives (only parameter, no state)
         final double[] raDerivatives = rightAscension.getGradient();

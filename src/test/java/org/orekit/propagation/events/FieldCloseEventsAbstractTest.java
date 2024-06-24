@@ -1959,7 +1959,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
     private abstract class AbstractTestDetector<D extends AbstractTestDetector<D>> extends FieldAbstractDetector<D, T> {
         AbstractTestDetector(final double maxCheck, final double tolerance, final List<Event<T>> events) {
-            super(s -> maxCheck, v(tolerance), 100, new FieldRecordAndContinue<>(events));
+            super(FieldAdaptableInterval.of(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events));
         }
 
         @Override
@@ -2390,7 +2390,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
          * @param eventTs event times past epoch.
          */
         public TimeDetector(double... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), toDates(eventTs));
         }
 
@@ -2401,7 +2401,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
          */
         @SafeVarargs
         public TimeDetector(FieldAbsoluteDate<T>... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), Arrays.asList(eventTs));
         }
 
@@ -2449,13 +2449,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         private final FieldEventDetector<T> g;
 
         public FlatDetector(double... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), new TimeDetector(eventTs));
         }
 
         @SafeVarargs
         public FlatDetector(FieldAbsoluteDate<T>... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), new TimeDetector(eventTs));
         }
 
@@ -2490,7 +2490,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         private final List<FieldAbsoluteDate<T>> eventTs;
 
         public ContinuousDetector(double... eventTs) {
-            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), toDates(eventTs));
         }
 
@@ -2624,7 +2624,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         int count;
 
         public ResetChangesSignGenerator(final FieldAbsoluteDate<T> t0, final double y1, final double y2, final double change) {
-            this(s -> DEFAULT_MAXCHECK,
+            this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
                  t0.getField().getZero().newInstance(DEFAULT_THRESHOLD),
                  DEFAULT_MAX_ITER,
                  new FieldContinueOnEvent<>(), t0, y1, y2, change);

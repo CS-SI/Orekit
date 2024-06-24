@@ -75,10 +75,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
      */
     public FieldAngularCoordinates(final FieldRotation<T> rotation,
                                    final FieldVector3D<T> rotationRate) {
-        this(rotation, rotationRate,
-             new FieldVector3D<>(rotation.getQ0().getField().getZero(),
-                                 rotation.getQ0().getField().getZero(),
-                                 rotation.getQ0().getField().getZero()));
+        this(rotation, rotationRate, FieldVector3D.getZero(rotation.getQ0().getField()));
     }
 
     /** Builds a rotation / rotation rate / rotation acceleration triplet.
@@ -523,7 +520,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
         FieldVector3D<T> estimateRate(final FieldRotation<T> start,
                                       final FieldRotation<T> end,
                                       final double dt) {
-        return estimateRate(start, end, start.getQ0().getField().getZero().add(dt));
+        return estimateRate(start, end, start.getQ0().getField().getZero().newInstance(dt));
     }
 
     /** Estimate rotation rate between two orientations.
@@ -608,7 +605,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
         // frame seem to rotate in the opposite direction
         final FieldRotation<T> quadraticContribution =
                 new FieldRotation<>(rotationAcceleration,
-                        acc.multiply(dt).multiply(dt).multiply(0.5),
+                        acc.multiply(dt.square()).multiply(0.5),
                         RotationConvention.FRAME_TRANSFORM);
 
         // the quadratic contribution is a small rotation:
@@ -632,7 +629,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
      */
     @Override
     public FieldAngularCoordinates<T> shiftedBy(final double dt) {
-        return shiftedBy(rotation.getQ0().getField().getZero().add(dt));
+        return shiftedBy(rotation.getQ0().getField().getZero().newInstance(dt));
     }
 
     /** Get a time-shifted state.
@@ -688,7 +685,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
         // frame seem to rotate in the opposite direction
         final FieldAngularCoordinates<T> quadraticContribution =
                 new FieldAngularCoordinates<>(new FieldRotation<>(rotationAcceleration,
-                                                                  acc.multiply(dt.multiply(0.5).multiply(dt)),
+                                                                  acc.multiply(dt.square().multiply(0.5)),
                                                                   RotationConvention.FRAME_TRANSFORM),
                                               new FieldVector3D<>(dt, rotationAcceleration),
                                               rotationAcceleration);
@@ -998,7 +995,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
     public static <T extends CalculusFieldElement<T>>  FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r) {
 
         // rotation
-        final T rSquared = r[0][0].multiply(r[0][0]).add(r[0][1].multiply(r[0][1])).add(r[0][2].multiply(r[0][2]));
+        final T rSquared = r[0][0].square().add(r[0][1].square()).add(r[0][2].square());
         final T oPQ0     = rSquared.add(1).reciprocal().multiply(2);
         final T q0       = oPQ0.subtract(1);
         final T q1       = oPQ0.multiply(r[0][0]);
@@ -1016,9 +1013,9 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
         final T oZ       = q0.linearCombination(q3.negate(), q0Dot,  q2, q1Dot, q1.negate(), q2Dot,  q0, q3Dot).multiply(2);
 
         // rotation acceleration
-        final T q0DotDot = q0.subtract(1).negate().divide(oPQ0).multiply(q0Dot).multiply(q0Dot).
+        final T q0DotDot = q0.subtract(1).negate().divide(oPQ0).multiply(q0Dot.square()).
                            subtract(oPQ02.multiply(q0.linearCombination(r[0][0], r[2][0], r[0][1], r[2][1], r[0][2], r[2][2]))).
-                           subtract(q1Dot.multiply(q1Dot).add(q2Dot.multiply(q2Dot)).add(q3Dot.multiply(q3Dot)));
+                           subtract(q1Dot.square().add(q2Dot.square()).add(q3Dot.square()));
         final T q1DotDot = q0.linearCombination(oPQ0, r[2][0], r[1][0].add(r[1][0]), q0Dot, r[0][0], q0DotDot);
         final T q2DotDot = q0.linearCombination(oPQ0, r[2][1], r[1][1].add(r[1][1]), q0Dot, r[0][1], q0DotDot);
         final T q3DotDot = q0.linearCombination(oPQ0, r[2][2], r[1][2].add(r[1][2]), q0Dot, r[0][2], q0DotDot);

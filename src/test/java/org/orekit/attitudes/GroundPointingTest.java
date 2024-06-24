@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Romain Serra
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,8 +38,14 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.*;
-
+import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 class GroundPointingTest {
     
@@ -72,8 +78,9 @@ class GroundPointingTest {
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv, FieldAbsoluteDate<T> date, Frame frame) {
-            return new TimeStampedFieldPVCoordinates<T>(date, FieldPVCoordinates.getZero(date.getField()));
+        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
+            getTargetPV(FieldPVCoordinatesProvider<T> pvProv, FieldAbsoluteDate<T> date, Frame frame) {
+            return new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates.getZero(date.getField()));
         }
         
     }
@@ -195,7 +202,7 @@ class GroundPointingTest {
                                                                                         final EquinoctialOrbit orbit) {
         final T zero = field.getZero();
         final T fieldSemiMajorAxis = zero.add(orbit.getA());
-        final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<T>(field, orbit.getDate());
+        final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<>(field, orbit.getDate());
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final T fieldAngle = zero.add(orbit.getL(positionAngleType));
         return new FieldEquinoctialOrbit<>(fieldSemiMajorAxis, zero, zero, zero, zero, fieldAngle,

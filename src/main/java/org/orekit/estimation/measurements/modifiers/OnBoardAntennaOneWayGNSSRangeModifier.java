@@ -24,42 +24,42 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
-import org.orekit.frames.StaticTransform;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** On-board antenna offset effect on one-way GNSS range measurements.
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class OnBoardAntennaOneWayGNSSRangeModifier implements EstimationModifier<OneWayGNSSRange> {
-
-    /** Position of the Antenna Phase Center in satellite 1 frame. */
-    private final Vector3D antennaPhaseCenter1;
-
-    /** Position of the Antenna Phase Center in satellite 2 frame. */
-    private final Vector3D antennaPhaseCenter2;
-
-    /** Attitude provider of the emitting satellite. */
-    private final AttitudeProvider attitude;
+public class OnBoardAntennaOneWayGNSSRangeModifier
+    extends PhaseCentersOneWayGNSSBaseModifier<OneWayGNSSRange>
+    implements EstimationModifier<OneWayGNSSRange> {
 
     /** Simple constructor.
-     * @param antennaPhaseCenter1 position of the Antenna Phase Center in satellite 1 frame
+     * @param receiverPhaseCenter position of the Antenna Phase Center in satellite 1 frame
      * (i.e. the satellite which receives the signal and performs the measurement)
-     * @param antennaPhaseCenter2 position of the Antenna Phase Center in satellite 2 frame
+     * @param emitterPhaseCenter position of the Antenna Phase Center in satellite 2 frame
      * (i.e. the satellite which simply emits the signal)
-     * @param attitude attitude provider of the emitting satellite
+     * @param attitudeProvider attitude provider of the emitting satellite
      */
-    public OnBoardAntennaOneWayGNSSRangeModifier(final Vector3D antennaPhaseCenter1,
-                                                 final Vector3D antennaPhaseCenter2,
-                                                 final AttitudeProvider attitude) {
-        this.antennaPhaseCenter1 = antennaPhaseCenter1;
-        this.antennaPhaseCenter2 = antennaPhaseCenter2;
-        this.attitude            = attitude;
+    public OnBoardAntennaOneWayGNSSRangeModifier(final Vector3D receiverPhaseCenter,
+                                                 final Vector3D emitterPhaseCenter,
+                                                 final AttitudeProvider attitudeProvider) {
+        this(new FrequencyPattern(receiverPhaseCenter, null),
+             new FrequencyPattern(emitterPhaseCenter, null),
+             attitudeProvider);
+    }
+
+    /** Simple constructor.
+     * @param receiverPattern pattern for receiver satellite
+     * @param emitterPattern  pattern for emitter satellite
+     * @param attitudeProvider attitude provider of the emitting satellite
+     * @since 12.1
+     */
+    public OnBoardAntennaOneWayGNSSRangeModifier(final FrequencyPattern receiverPattern,
+                                                 final FrequencyPattern emitterPattern,
+                                                 final AttitudeProvider attitudeProvider) {
+        super(receiverPattern, emitterPattern, attitudeProvider);
     }
 
     /** {@inheritDoc} */
@@ -71,48 +71,9 @@ public class OnBoardAntennaOneWayGNSSRangeModifier implements EstimationModifier
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSRange> estimated) {
-
-        // The participants are remote satellite at emission, local satellite at reception
-        final TimeStampedPVCoordinates[] participants  = estimated.getParticipants();
-        final AbsoluteDate               emissionDate  = participants[0].getDate();
-        final AbsoluteDate               receptionDate = participants[1].getDate();
-
-        // Transforms from spacecraft to inertial frame at reception date
-        final SpacecraftState refStateLocal              = estimated.getStates()[0];
-        final SpacecraftState receptionState             = refStateLocal.shiftedBy(receptionDate.durationFrom(refStateLocal.getDate()));
-        final StaticTransform       receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
-
-        // Orbit of the remote satellite
-        final Orbit orbitRemote = new CartesianOrbit(participants[0], refStateLocal.getFrame(), receptionState.getMu());
-
-        // Transforms from spacecraft to inertial frame at emission date
-        final SpacecraftState refStateRemote             = new SpacecraftState(orbitRemote,
-                                                                               attitude.getAttitude(orbitRemote,
-                                                                                                    orbitRemote.getDate(),
-                                                                                                    orbitRemote.getFrame()));
-        final SpacecraftState emissionState              = refStateRemote.shiftedBy(emissionDate.durationFrom(refStateRemote.getDate()));
-        final StaticTransform       emissionSpacecraftToInert  = emissionState.toStaticTransform().getInverse();
-
-        // Compute the geometrical value of the one-way GNSS range directly from participants positions.
-        // Note that this may be different from the value returned by estimated.getEstimatedValue(),
-        // because other modifiers may already have been taken into account
-        final Vector3D pSpacecraftReception = receptionSpacecraftToInert.transformPosition(Vector3D.ZERO);
-        final Vector3D pSpacecraftEmission  = emissionSpacecraftToInert.transformPosition(Vector3D.ZERO);
-        final double oneWayGNSSRangeUsingSpacecraftCenter = Vector3D.distance(pSpacecraftEmission, pSpacecraftReception);
-
-        // Compute the geometrical value of the range replacing
-        // the spacecraft positions with antenna phase center positions
-        final Vector3D pAPCReception = receptionSpacecraftToInert.transformPosition(antennaPhaseCenter1);
-        final Vector3D pAPCEmission  = emissionSpacecraftToInert.transformPosition(antennaPhaseCenter2);
-        final double oneWayGNSSRangeUsingAntennaPhaseCenter = Vector3D.distance(pAPCEmission, pAPCReception);
-
-        // Get the estimated value before this modifier is applied
-        final double[] value = estimated.getEstimatedValue();
-
-        // Modify the value
-        value[0] += oneWayGNSSRangeUsingAntennaPhaseCenter - oneWayGNSSRangeUsingSpacecraftCenter;
-        estimated.setEstimatedValue(value);
-
+        estimated.modifyEstimatedValue(this,
+                                       estimated.getEstimatedValue()[0] +
+                                       oneWayDistanceModification(estimated));
     }
 
 }

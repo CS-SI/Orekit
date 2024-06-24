@@ -17,11 +17,18 @@
 package org.orekit.ssa.collision.shorttermencounter.probability.twod;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.files.ccsds.definitions.PocMethodType;
 
 class ShortTermEncounter2DPOCMethodTypeTest {
+
+    @BeforeAll
+    static void initializeOrekitData() {
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     @DisplayName("Test Alfano2005 enum")

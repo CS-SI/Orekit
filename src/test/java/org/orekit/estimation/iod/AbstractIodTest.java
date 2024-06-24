@@ -31,6 +31,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -79,9 +80,11 @@ public abstract class AbstractIodTest {
         // The ground station is set to Austin, Texas, U.S.A
         final OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
-        this.observer = new GroundStation(
-                new TopocentricFrame(body, new GeodeticPoint(FastMath.toRadians(40), FastMath.toRadians(-110),
-                                                             2000.0), ""));
+        this.observer = new GroundStation(new TopocentricFrame(body,
+                                                               new GeodeticPoint(FastMath.toRadians(40),
+                                                                                 FastMath.toRadians(-110),
+                                                                                 2000.0), ""),
+                                          TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         this.observer.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
@@ -101,7 +104,7 @@ public abstract class AbstractIodTest {
         final AngularAzEl azEl = new AngularAzEl(observer, date, new double[] { 0.0, 0.0 },
                                                  new double[] { 1.0, 1.0 }, new double[] { 1.0, 1.0 },
                                                  satellite);
-        EstimatedMeasurementBase<AngularAzEl> estimated = azEl.estimateWithoutDerivatives(0, 0, new SpacecraftState[] {prop.propagate(date)});
+        EstimatedMeasurementBase<AngularAzEl> estimated = azEl.estimateWithoutDerivatives(new SpacecraftState[] {prop.propagate(date)});
         return new AngularAzEl(observer, date, estimated.getEstimatedValue(), azEl.getBaseWeight(),
                                azEl.getTheoreticalStandardDeviation(), satellite);
     }
@@ -132,7 +135,7 @@ public abstract class AbstractIodTest {
         final TimeStampedPVCoordinates satPV       = pvProvider.getPVCoordinates(date, outputFrame);
         final AbsolutePVCoordinates    satPVInGCRF = new AbsolutePVCoordinates(outputFrame, satPV);
         final SpacecraftState[]        satState    = new SpacecraftState[] { new SpacecraftState(satPVInGCRF) };
-        final double[]                 angular     = raDec.estimateWithoutDerivatives(0, 0, satState).getEstimatedValue();
+        final double[]                 angular     = raDec.estimateWithoutDerivatives(satState).getEstimatedValue();
 
         // Rotate LOS from RADEC reference frame to output frame
         return raDec.getReferenceFrame().getStaticTransformTo(outputFrame, date)

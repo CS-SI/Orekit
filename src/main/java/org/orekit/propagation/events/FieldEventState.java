@@ -399,9 +399,9 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
                         final Interval interval =
                                 solver.solveInterval(maxIterationCount, f, tbDouble, 0);
                         beforeRootT = date.apply(interval.getRightAbscissa());
-                        beforeRootG = zero.add(interval.getRightValue());
+                        beforeRootG = zero.newInstance(interval.getRightValue());
                         afterRootT  = date.apply(interval.getLeftAbscissa());
-                        afterRootG  = zero.add(interval.getLeftValue());
+                        afterRootG  = zero.newInstance(interval.getLeftValue());
                         // CHECKSTYLE: stop IllegalCatch check
                     } catch (RuntimeException e) {
                         // CHECKSTYLE: resume IllegalCatch check

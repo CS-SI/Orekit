@@ -143,7 +143,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
                                  final OneAxisEllipsoid body,
                                  final boolean atSeaLevel,
                                  final DataContext dataContext) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              limit, model, body, atSeaLevel, dataContext);
     }
 

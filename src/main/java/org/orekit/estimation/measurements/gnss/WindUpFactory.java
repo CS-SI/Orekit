@@ -51,30 +51,15 @@ public class WindUpFactory {
     public WindUp getWindUp(final SatelliteSystem system, final int prnNumber,
                             final Dipole emitterDipole, final String receiverName) {
         // select satellite system
-        Map<Integer, Map<String, WindUp>> systemModifiers = modifiers.get(system);
-        if (systemModifiers == null) {
-            // build a new map for this satellite system
-            systemModifiers = new HashMap<>();
-            modifiers.put(system, systemModifiers);
-        }
+        final Map<Integer, Map<String, WindUp>> systemModifiers =
+                modifiers.computeIfAbsent(system, s -> new HashMap<>());
 
         // select satellite
-        Map<String, WindUp> satelliteModifiers = systemModifiers.get(prnNumber);
-        if (satelliteModifiers == null) {
-            // build a new map for this satellite
-            satelliteModifiers = new HashMap<>();
-            systemModifiers.put(prnNumber, satelliteModifiers);
-        }
+        final Map<String, WindUp> satelliteModifiers =
+                systemModifiers.computeIfAbsent(prnNumber, n -> new HashMap<>());
 
         // select receiver
-        WindUp receiverModifier = satelliteModifiers.get(receiverName);
-        if (receiverModifier == null) {
-            // build a new wind-up modifier
-            receiverModifier = new WindUp(emitterDipole);
-            satelliteModifiers.put(receiverName, receiverModifier);
-        }
-
-        return receiverModifier;
+        return satelliteModifiers.computeIfAbsent(receiverName, r -> new WindUp(emitterDipole));
 
     }
 

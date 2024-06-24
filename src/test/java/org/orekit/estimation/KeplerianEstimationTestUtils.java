@@ -116,7 +116,7 @@ public class KeplerianEstimationTestUtils {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
         }
 
-        return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        return propagatorBuilder.buildPropagator();
 
     }
 

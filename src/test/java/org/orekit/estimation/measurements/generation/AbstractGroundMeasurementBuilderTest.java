@@ -60,8 +60,8 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.get(0), satellite),
                                                         new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                         generator.getPropagator(satellite),
-                                                        new ElevationDetector(context.stations.get(0).getBaseFrame()).
-                                                        withConstantElevation(FastMath.toRadians(5.0)).
+                                                        EstimationTestUtils.getElevationDetector(context.stations.get(0).getBaseFrame(),
+                                                                                                 FastMath.toRadians(5.0)).
                                                         withHandler(new ContinueOnEvent()),
                                                         SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
        final GatheringSubscriber gatherer = new GatheringSubscriber();
@@ -93,7 +93,7 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
            }
            previous = date;
            SpacecraftState state = propagator.propagate(date);
-           double[] e = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+           double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state }).getEstimatedValue();
            for (int i = 0; i < m.length; ++i) {
                maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
            }

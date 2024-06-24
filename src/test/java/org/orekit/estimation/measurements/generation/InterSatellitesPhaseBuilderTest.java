@@ -31,6 +31,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.gnss.Frequency;
@@ -64,7 +65,8 @@ public class InterSatellitesPhaseBuilderTest {
                         new InterSatellitesPhaseBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                                     1.0e-10,
                                                                                                                     new GaussianRandomGenerator(random)),
-                                                        receiver, remote, WAVELENGTH, SIGMA, 1.0);
+                                                        receiver, remote, WAVELENGTH, SIGMA, 1.0,
+                                                        new AmbiguityCache());
         isrb.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -75,12 +77,12 @@ public class InterSatellitesPhaseBuilderTest {
 
     @Test
     public void testForward() {
-        doTest(0xc82a56322345dc25l, 0.0, 1.2, 2.8 * SIGMA);
+        doTest(0xc82a56322345dc25L, 0.0, 1.2, 2.8 * SIGMA);
     }
 
     @Test
     public void testBackward() {
-        doTest(0x95c10149c4891232l, 0.0, -1.0, 2.6 * SIGMA);
+        doTest(0x95c10149c4891232L, 0.0, -1.0, 2.6 * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -143,8 +145,7 @@ public class InterSatellitesPhaseBuilderTest {
                 }
             }
             previous = date;
-            double[] e = measurement.estimateWithoutDerivatives(0, 0,
-                                                                new SpacecraftState[] {
+            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                     propagator1.propagate(date),
                                                                     propagator2.propagate(date)
                                                                 }).getEstimatedValue();

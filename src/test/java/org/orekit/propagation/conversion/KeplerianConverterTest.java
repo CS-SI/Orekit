@@ -36,7 +36,7 @@ import org.orekit.utils.PVCoordinates;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KeplerianConverterTest {
+class KeplerianConverterTest {
 
     private Orbit orbit;
 
@@ -45,17 +45,17 @@ public class KeplerianConverterTest {
     private final static double mu = 3.9860047e14;
 
     @Test
-    public void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.901e-8);
+    void testConversionPositionVelocity() {
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 7.812e-9);
     }
 
     @Test
-    public void testConversionPositionOnly() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.691e-8);
+    void testConversionPositionOnly() {
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.337e-8);
     }
 
     @Test
-    public void testConversionWithFreeParameter() {
+    void testConversionWithFreeParameter() {
         Assertions.assertThrows(OrekitException.class, () -> {
             checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto");
         });

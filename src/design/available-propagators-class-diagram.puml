@@ -91,6 +91,10 @@
           AbstractAnalyticalPropagator <|-- GNSSPropagator
         }
 
+        package intelsat #CCCCC7 {
+          AbstractAnalyticalPropagator <|-- IntelsatElevenElementsPropagator
+        }
+
      }
 
      package integration #CBDBC8 {

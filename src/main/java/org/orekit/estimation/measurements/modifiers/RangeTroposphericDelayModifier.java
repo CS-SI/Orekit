@@ -22,15 +22,18 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical range measurement with tropospheric delay.
+ * <p>
  * The effect of tropospheric correction on the range is directly computed
  * through the computation of the tropospheric delay.
- *
+ * </p>
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Maxime Journot
  * @author Joris Olympio
@@ -41,8 +44,19 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @deprecated as of 12.1, replaced by {@link #RangeTroposphericDelayModifier(TroposphericModel)}
      */
-    public RangeTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    public RangeTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @since 12.1
+     */
+    public RangeTroposphericDelayModifier(final TroposphericModel model) {
         super(model);
     }
 
@@ -53,7 +67,9 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
         final Range         measurement = estimated.getObservedMeasurement();
         final GroundStation station     = measurement.getStation();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeErrorTroposphericModel);
+        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station,
+                                                   this::rangeErrorTroposphericModel,
+                                                   this);
 
 
     }
@@ -70,7 +86,8 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
                                  new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                  station,
                                  this::rangeErrorTroposphericModel,
-                                 this::rangeErrorTroposphericModel);
+                                 this::rangeErrorTroposphericModel,
+                                 this);
 
 
     }

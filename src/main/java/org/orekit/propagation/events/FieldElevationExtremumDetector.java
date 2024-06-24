@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.FieldEventSlopeFilter;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -71,7 +71,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      */
     public FieldElevationExtremumDetector(final T maxCheck, final T threshold,
                                           final TopocentricFrame topo) {
-        this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
+        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              topo);
     }
 
@@ -128,8 +128,8 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
     public T g(final FieldSpacecraftState<T> s) {
 
         // get position, velocity acceleration of spacecraft in topocentric frame
-        final FieldTransform<T> inertToTopo = s.getFrame().getTransformTo(topo, s.getDate());
-        final TimeStampedFieldPVCoordinates<T> pvTopo = inertToTopo.transformPVCoordinates(s.getPVCoordinates());
+        final FieldKinematicTransform<T> inertToTopo = s.getFrame().getKinematicTransformTo(topo, s.getDate());
+        final TimeStampedFieldPVCoordinates<T> pvTopo = inertToTopo.transformOnlyPV(s.getPVCoordinates());
 
         // convert the coordinates to UnivariateDerivative1 based vector
         // instead of having vector position, then vector velocity then vector acceleration

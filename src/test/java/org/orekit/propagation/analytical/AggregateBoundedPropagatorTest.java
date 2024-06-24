@@ -16,29 +16,37 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.TimeSpanMap;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * Tests for {@link AggregateBoundedPropagator}.
@@ -58,11 +66,9 @@ public class AggregateBoundedPropagatorTest {
     /**
      * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} when the
      * constituent propagators are exactly adjacent.
-     *
-     * @throws Exception on error.
      */
     @Test
-    public void testAdjacent() throws Exception {
+    public void testAdjacent() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
@@ -92,21 +98,23 @@ public class AggregateBoundedPropagatorTest {
                 actual.propagate(date.shiftedBy(20)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(20)).getPVCoordinates(), ulps));
 
-        Assertions.assertEquals(2, actual.getPropagators().size());
-        for (final Map.Entry<AbsoluteDate, ? extends BoundedPropagator> entry : actual.getPropagators().entrySet()) {
-            Assertions.assertEquals(entry.getKey(), entry.getValue().getMinDate());
+        for (TimeSpanMap.Span<BoundedPropagator> span = actual.getPropagatorsMap().getFirstNonNullSpan();
+             span != null;
+             span = span.next()) {
+            Assertions.assertEquals(span.getStart(), span.getData().getMinDate());
         }
+
+        // test deprecated method
+        Assertions.assertEquals(2, actual.getPropagators().size());
 
     }
 
     /**
      * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} when the
      * constituent propagators overlap.
-     *
-     * @throws Exception on error.
      */
     @Test
-    public void testOverlap() throws Exception {
+    public void testOverlap() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(25), 0);
@@ -140,11 +148,9 @@ public class AggregateBoundedPropagatorTest {
     /**
      * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} with a gap
      * between the constituent propagators.
-     *
-     * @throws Exception on error.
      */
     @Test
-    public void testGap() throws Exception {
+    public void testGap() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(1), 0);
@@ -181,7 +187,7 @@ public class AggregateBoundedPropagatorTest {
     }
 
     @Test
-    public void testOutsideBounds() throws Exception {
+    public void testOutsideBounds() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
@@ -315,9 +321,87 @@ public class AggregateBoundedPropagatorTest {
         double gm = Constants.EGM96_EARTH_MU;
         KeplerianPropagator propagator = new KeplerianPropagator(new KeplerianOrbit(
                 6778137, 0, 0, 0, 0, v, PositionAngleType.TRUE, frame, start, gm));
+        propagator.setAttitudeProvider(new LofOffset(frame, LOFType.LVLH_CCSDS));
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(start, end);
         return generator.getGeneratedEphemeris();
+    }
+
+    @Test
+    void testAttitude() {
+        AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        AbsoluteDate end = date.shiftedBy(20);
+        BoundedPropagator p1 = createPropagator(date, end, 0);
+        BoundedPropagator p2 = createPropagator(date.shiftedBy(10), end, 0);
+        final BoundedPropagator actual = new AggregateBoundedPropagator(Arrays.asList(p1, p2));
+
+        // using the attitude providers from the underlying propagator
+        final SpacecraftState s0 = actual.propagate(date.shiftedBy(15));
+        Assertions.assertEquals(0,
+                                Vector3D.angle(s0.getPosition(),
+                                               s0.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
+                                3.0e-16);
+
+        // overriding explicitly the global attitude provider
+        actual.setAttitudeProvider(new FrameAlignedProvider(p1.getInitialState().getFrame()));
+        final SpacecraftState s1 = actual.propagate(date.shiftedBy(15));
+        Assertions.assertEquals(0,
+                                Vector3D.angle(Vector3D.MINUS_K,
+                                               s1.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
+                                3.0e-16);
+        Assertions.assertEquals(1.570796,
+                                Vector3D.angle(s1.getPosition(),
+                                               s1.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
+                                1.0e-6);
+
+    }
+
+    @Test
+    void testPropagateOrbit() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final Orbit expectedOrbit = Mockito.mock(Orbit.class);
+        Mockito.when(mockedState.getOrbit()).thenReturn(expectedOrbit);
+        final BoundedPropagator mockedBoundedPropagator = mockBoundedPropagator(date, mockedState);
+        final List<BoundedPropagator> boundedPropagatorList = new ArrayList<>();
+        boundedPropagatorList.add(mockedBoundedPropagator);
+        final AggregateBoundedPropagator propagator = new AggregateBoundedPropagator(boundedPropagatorList);
+
+        // WHEN
+        final Orbit actualOrbit = propagator.propagateOrbit(date);
+
+        // THEN
+        Assertions.assertEquals(expectedOrbit, actualOrbit);
+    }
+
+    @Test
+    void testGetPosition() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final Vector3D expectedPosition = new Vector3D(1, 2, 3);
+        Mockito.when(mockedState.getPosition(mockedFrame)).thenReturn(expectedPosition);
+        final BoundedPropagator mockedBoundedPropagator = mockBoundedPropagator(date, mockedState);
+        final List<BoundedPropagator> boundedPropagatorList = new ArrayList<>();
+        boundedPropagatorList.add(mockedBoundedPropagator);
+        final AggregateBoundedPropagator propagator = new AggregateBoundedPropagator(boundedPropagatorList);
+
+        // WHEN
+        final Vector3D actualPosition = propagator.getPosition(date, mockedFrame);
+
+        // THEN
+        Assertions.assertEquals(expectedPosition, actualPosition);
+    }
+
+    private BoundedPropagator mockBoundedPropagator(final AbsoluteDate date, final SpacecraftState state) {
+        final BoundedPropagator mockedBoundedPropagator = Mockito.mock(BoundedPropagator.class);
+        Mockito.when(mockedBoundedPropagator.getMinDate()).thenReturn(AbsoluteDate.PAST_INFINITY);
+        Mockito.when(mockedBoundedPropagator.getMinDate()).thenReturn(AbsoluteDate.FUTURE_INFINITY);
+        Mockito.when(mockedBoundedPropagator.propagate(date)).thenReturn(state);
+        Mockito.when(mockedBoundedPropagator.getInitialState()).thenReturn(state);
+        return mockedBoundedPropagator;
     }
 
 }

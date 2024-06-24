@@ -33,9 +33,6 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
 
-    /** The body to consider. */
-    private final CelestialBody body;
-
     /** Simple constructor.
      * @param body the third body to consider
      * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
@@ -43,7 +40,6 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
      */
     public ThirdBodyAttractionEpoch(final CelestialBody body) {
         super(body);
-        this.body = body;
     }
 
     /** Compute acceleration.
@@ -56,7 +52,7 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
         final double gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
+        final Vector3D centralToBody = getBody().getPosition(s.getDate(), s.getFrame());
 
         // Spacecraft Position
         final double rx = centralToBody.getX();
@@ -87,7 +83,7 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
     public double[] getDerivativesToEpoch(final SpacecraftState s, final double[] parameters) {
 
         final FieldVector3D<Gradient> acc = accelerationToEpoch(s, parameters);
-        final Vector3D centralToBodyVelocity = body.getPVCoordinates(s.getDate(), s.getFrame()).getVelocity();
+        final Vector3D centralToBodyVelocity = getBody().getPVCoordinates(s.getDate(), s.getFrame()).getVelocity();
 
         final double[] dAccxdR1i = acc.getX().getGradient();
         final double[] dAccydR1i = acc.getY().getGradient();

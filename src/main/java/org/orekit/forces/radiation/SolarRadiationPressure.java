@@ -16,9 +16,6 @@
  */
 package org.orekit.forces.radiation;
 
-import java.lang.reflect.Array;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -35,6 +32,9 @@ import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FrameAdapter;
 import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.ParameterDriver;
+
+import java.lang.reflect.Array;
+import java.util.List;
 
 /** Solar radiation pressure force model.
  * <p>
@@ -116,6 +116,21 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         this.kRef = pRef * dRef * dRef;
         this.sun  = sun;
         this.spacecraft = spacecraft;
+    }
+
+    /**
+     * Getter for radiation-sensitive spacecraft.
+     * @return radiation-sensitive model
+     * @since 12.1
+     */
+    public RadiationSensitive getRadiationSensitiveSpacecraft() {
+        return spacecraft;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnPositionOnly() {
+        return spacecraft instanceof IsotropicRadiationClassicalConvention || spacecraft instanceof IsotropicRadiationCNES95Convention || spacecraft instanceof IsotropicRadiationSingleCoefficient;
     }
 
     /** {@inheritDoc} */

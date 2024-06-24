@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Compute the S<sub>j</sub>(k, h) and the C<sub>j</sub>(k, h) series
  *  and their partial derivatives with respect to k and h.
@@ -59,8 +59,8 @@ public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
     public FieldCjSjCoefficient(final T k, final T h, final Field<T> field) {
         zero = field.getZero();
         kih  = new FieldComplex<>(k, h);
-        cjsj = new ArrayList<FieldComplex<T>>();
-        cjsj.add(new FieldComplex<>(zero.add(1.), zero));
+        cjsj = new ArrayList<>();
+        cjsj.add(new FieldComplex<>(zero.newInstance(1.), zero));
         cjsj.add(kih);
         jLast = 1;
     }
@@ -178,7 +178,6 @@ public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
          * @param imaginaryPart Imaginary part.
          * @return a new complex number instance.
          *
-         * @see #valueOf(double, double)
          */
         protected FieldComplex<T> createComplex(final T realPart, final T imaginaryPart) {
             return new FieldComplex<>(realPart, imaginaryPart);

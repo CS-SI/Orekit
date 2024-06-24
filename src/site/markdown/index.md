@@ -53,6 +53,7 @@
 
     * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
+    * Walker constellations (including in-orbit spares with shifted position)
     * Two-Line Elements (TLE)
     * Two-Line Elements generation using Fixed-Point algorithm or Least Squares Fitting
     * transparent conversion between all parameters
@@ -89,6 +90,7 @@
           and the perturbative acceleration due to atmospheric drag
         * SDP4/SGP4 with 2006 corrections
         * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
+        * Intelsat's 11 elements
     * numerical propagators
         * central attraction
         * gravity models including time-dependent like trends and pulsations
@@ -148,6 +150,7 @@
           step handler alongside the operational ones
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
+    * adaptable max checking interval for discrete events detection
     * predefined discrete events
         * eclipse (both umbra and penumbra)
         * ascending and descending node crossing
@@ -173,6 +176,8 @@
         * impulse maneuvers occurrence
         * geomagnetic intensity
 		* extremum approach for TCA (Time of Closest Approach) computing
+        * beta angle
+        * relative distance with another object
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
@@ -224,7 +229,7 @@
     * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
     * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
-    * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
+    * initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
     * ground stations displacements due to plate tectonics
@@ -237,6 +242,7 @@
         * position-velocity
         * position
         * inter-satellites range (one way and two way)
+        * inter-satellites GNSS one way range rate
         * inter-satellites GNSS phase
         * GNSS code
         * GNSS phase with integer ambiguity resolution and wind-up effect
@@ -255,7 +261,9 @@
         * biases
         * delays
         * Antenna Phase Center
+        * Phase ambiguity
         * Shapiro relativistic effect
+        * aberration of light in telescope measurements
     * possibility to add custom measurement modifiers (even for predefined events)
     * combination of GNSS measurements
         * dual frequency combination of measurements
@@ -278,7 +286,7 @@
     * loading and writing of RINEX observation files (version 2, 3, and 4)
     * loading of RINEX navigation files (version 2, 3, and 4)
     * support for Hatanaka compact RINEX format
-    * loading of SINEX file (can load station positions, eccentricities, EOPs, and Differential Code Biases)
+    * loading of SINEX file (can load station positions, velocities, eccentricities, Post-Seismic Deformation models, EOPs, and Differential Code Biases)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
     * parsing of RTCM messages (both ephemeris and correction messages)
@@ -289,7 +297,8 @@
 
   * Orbit file handling
   
-    * loading and writing of SP3 orbit files (from version a to d)
+    * loading and writing of SP3 orbit files (from version a to d, including extension to a few inertial frames)
+    * splicing and interpolation of SP3 files
     * loading and writing of CCSDS Orbit Data Messages (OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM and OCM file formats
@@ -309,7 +318,7 @@
     * Global Ionospheric Map (GIM) model
     * NeQuick ionospheric model
     * VTEC estimated ionospheric model with Single Layer Model (SLM) ionospheric mapping function
-    * Global Pression and Temperature models (GPT and GPT2)
+    * Global Pressure and Temperature models (GPT, GPT2, GPT2w, GPT3)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
     * displacement of ground points due to tides
@@ -320,7 +329,7 @@
   * Collisions
 
     * loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)
-    * 2D probability of collision computing methods assuming short term encounter and spherical bodies :
+    * 2D probability of collision computing methods assuming short term encounter and spherical bodies:
       
       * Chan 1997
       * Alfriend 1999
@@ -345,6 +354,7 @@
 
   * Localized in several languages
 
+    * Catalan
     * Danish
     * English
     * French

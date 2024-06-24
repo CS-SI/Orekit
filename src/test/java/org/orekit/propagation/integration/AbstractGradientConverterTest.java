@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Romain Serra
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,7 +28,11 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +106,7 @@ class AbstractGradientConverterTest {
         final SpacecraftState state = Mockito.mock(SpacecraftState.class);
         Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
         final TimeStampedPVCoordinates pvCoordinates = new TimeStampedPVCoordinates(state.getDate(),
-                new PVCoordinates());
+                                                                                    new PVCoordinates(Vector3D.PLUS_I));
         Mockito.when(state.getPVCoordinates()).thenReturn(pvCoordinates);
         Mockito.when(state.getPosition()).thenReturn(pvCoordinates.getPosition());
         Mockito.when(state.isOrbitDefined()).thenReturn(isOrbitDefined);

@@ -20,12 +20,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.Precision;
 import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -33,6 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
+import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -654,6 +655,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
      * must be defined with an osculating orbit.</p>
      * @see #resetInitialState(SpacecraftState, PropagationType)
      */
+    @Override
     public void resetInitialState(final SpacecraftState state) {
         resetInitialState(state, PropagationType.OSCULATING);
     }
@@ -680,7 +682,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         this.initialModel = (stateType == PropagationType.MEAN) ?
                              new BLModel(keplerian, state.getMass(), referenceRadius, mu, ck0) :
                              computeMeanParameters(keplerian, state.getMass(), epsilon, maxIterations);
-        this.models = new TimeSpanMap<BLModel>(initialModel);
+        this.models = new TimeSpanMap<>(initialModel);
     }
 
     /** {@inheritDoc} */
@@ -761,7 +763,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                                      current.mean.getPerigeeArgument() + deltaOmega,
                                                      current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                                                      current.mean.getMeanAnomaly() + deltaAnom,
-                                                     PositionAngleType.MEAN,
+                                                     PositionAngleType.MEAN, PositionAngleType.MEAN,
                                                      current.mean.getFrame(),
                                                      current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
@@ -781,7 +783,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
     /** {@inheritDoc} */
     public KeplerianOrbit propagateOrbit(final AbsoluteDate date) {
-        // compute keplerian parameters, taking derivatives into account
+        // compute Keplerian parameters, taking derivatives into account
         final BLModel current = models.get(date);
         return current.propagateParameters(date);
     }
@@ -846,6 +848,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
      * Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
      * @return names of the parameters (i.e. columns) of the Jacobian matrix
      */
+    @Override
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ParameterDriver driver : getParametersDrivers()) {
@@ -873,7 +876,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // preprocessed values
 
         // Constant for secular terms l'', g'', h''
-        // l standing for true anomaly, g for perigee argument and h for raan
+        // l standing for mean anomaly, g for perigee argument and h for raan
         private final double xnotDot;
         private final double n;
         private final double lt;
@@ -1141,93 +1144,17 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         }
 
         /**
-         * Accurate computation of E - e sin(E).
-         *
-         * @param E eccentric anomaly
-         * @return E - e sin(E)
-         */
-        private UnivariateDerivative2 eMeSinE(final UnivariateDerivative2 E) {
-            UnivariateDerivative2 x = E.sin().multiply(1 - mean.getE());
-            final UnivariateDerivative2 mE2 = E.negate().multiply(E);
-            UnivariateDerivative2 term = E;
-            UnivariateDerivative2 d    = E.getField().getZero();
-            // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-            for (UnivariateDerivative2 x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(Double.valueOf(x0.getValue()));) {
-                d = d.add(2);
-                term = term.multiply(mE2.divide(d.multiply(d.add(1))));
-                x0 = x;
-                x = x.subtract(term);
-            }
-            return x;
-        }
-
-        /**
          * Gets eccentric anomaly from mean anomaly.
-         * <p>The algorithm used to solve the Kepler equation has been published in:
-         * "Procedures for  solving Kepler's Equation", A. W. Odell and R. H. Gooding,
-         * Celestial Mechanics 38 (1986) 307-334</p>
-         * <p>It has been copied from the OREKIT library (KeplerianOrbit class).</p>
-         *
          * @param mk the mean anomaly (rad)
          * @return the eccentric anomaly (rad)
          */
-        private UnivariateDerivative2 getEccentricAnomaly(final UnivariateDerivative2 mk) {
-            final double k1 = 3 * FastMath.PI + 2;
-            final double k2 = FastMath.PI - 1;
-            final double k3 = 6 * FastMath.PI - 1;
-            final double A  = 3.0 * k2 * k2 / k1;
-            final double B  = k3 * k3 / (6.0 * k1);
+        private UnivariateDerivative1 getEccentricAnomaly(final UnivariateDerivative1 mk) {
             // reduce M to [-PI PI] interval
-            final UnivariateDerivative2 reducedM = new UnivariateDerivative2(MathUtils.normalizeAngle(mk.getValue(), 0.0),
-                                                                             mk.getFirstDerivative(),
-                                                                             mk.getSecondDerivative());
+            final UnivariateDerivative1 reducedM = new UnivariateDerivative1(MathUtils.normalizeAngle(mk.getValue(), 0.0),
+                                                                             mk.getFirstDerivative());
 
-            // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-            UnivariateDerivative2 ek;
-            if (FastMath.abs(reducedM.getValue()) < 1.0 / 6.0) {
-                if (FastMath.abs(reducedM.getValue()) < Precision.SAFE_MIN) {
-                    // this is an Orekit change to the S12 starter.
-                    // If reducedM is 0.0, the derivative of cbrt is infinite which induces NaN appearing later in
-                    // the computation. As in this case E and M are almost equal, we initialize ek with reducedM
-                    ek = reducedM;
-                } else {
-                    // this is the standard S12 starter
-                    ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(mean.getE()));
-                }
-            } else {
-                if (reducedM.getValue() < 0) {
-                    final UnivariateDerivative2 w = reducedM.add(FastMath.PI);
-                    ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(mean.getE()));
-                } else {
-                    final UnivariateDerivative2 minusW = reducedM.subtract(FastMath.PI);
-                    ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(mean.getE()));
-                }
-            }
-
-            final double e1 = 1 - mean.getE();
-            final boolean noCancellationRisk = (e1 + ek.getValue() * ek.getValue() / 6) >= 0.1;
-
-            // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
-            for (int j = 0; j < 2; ++j) {
-                final UnivariateDerivative2 f;
-                UnivariateDerivative2 fd;
-                final UnivariateDerivative2 fdd  = ek.sin().multiply(mean.getE());
-                final UnivariateDerivative2 fddd = ek.cos().multiply(mean.getE());
-                if (noCancellationRisk) {
-                    f  = ek.subtract(fdd).subtract(reducedM);
-                    fd = fddd.subtract(1).negate();
-                } else {
-                    f  = eMeSinE(ek).subtract(reducedM);
-                    final UnivariateDerivative2 s = ek.multiply(0.5).sin();
-                    fd = s.multiply(s).multiply(2 * mean.getE()).add(e1);
-                }
-                final UnivariateDerivative2 dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
-
-                // update eccentric anomaly, using expressions that limit underflow problems
-                final UnivariateDerivative2 w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
-                fd = fd.add(dee.multiply(fdd.add(dee.multiply(0.5).multiply(fdd))));
-                ek = ek.subtract(f.subtract(dee.multiply(fd.subtract(w))).divide(fd));
-            }
+            final UnivariateDerivative1 meanE = new UnivariateDerivative1(mean.getE(), 0.);
+            UnivariateDerivative1 ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(meanE, mk);
 
             // expand the result back to original range
             ek = ek.add(mk.getValue() - reducedM.getValue());
@@ -1281,98 +1208,97 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             final double m2 = M2Driver.getValue();
 
             // Keplerian evolution
-            final UnivariateDerivative2 dt = new UnivariateDerivative2(date.durationFrom(mean.getDate()), 1.0, 0.0);
-            final UnivariateDerivative2 xnot = dt.multiply(xnotDot);
+            final UnivariateDerivative1 dt = new UnivariateDerivative1(date.durationFrom(mean.getDate()), 1.0);
+            final UnivariateDerivative1 xnot = dt.multiply(xnotDot);
 
             //____________________________________
             // secular effects
 
             // mean mean anomaly (with drag Eq. 2.38 of Phipps' 1992 thesis)
-            final UnivariateDerivative2 dtM2  = dt.multiply(m2);
-            final UnivariateDerivative2 dt2M2 = dt.multiply(dtM2);
-            final UnivariateDerivative2 lpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue() + dt2M2.getValue(), 0),
-                                                                      lt * xnotDot + 2.0 * dtM2.getValue(),
-                                                                      2.0 * m2);
+            final UnivariateDerivative1 dtM2  = dt.multiply(m2);
+            final UnivariateDerivative1 dt2M2 = dt.multiply(dtM2);
+            final UnivariateDerivative1 lpp = new UnivariateDerivative1(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue() + dt2M2.getValue(), 0),
+                                                                      lt * xnotDot + 2.0 * dtM2.getValue());
             // mean argument of perigee
-            final UnivariateDerivative2 gpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getPerigeeArgument() + gt * xnot.getValue(), 0),
-                                                                      gt * xnotDot,
-                                                                      0.0);
+            final UnivariateDerivative1 gpp = new UnivariateDerivative1(MathUtils.normalizeAngle(mean.getPerigeeArgument() + gt * xnot.getValue(), 0),
+                                                                      gt * xnotDot);
             // mean longitude of ascending node
-            final UnivariateDerivative2 hpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ht * xnot.getValue(), 0),
-                                                                      ht * xnotDot,
-                                                                      0.0);
+            final UnivariateDerivative1 hpp = new UnivariateDerivative1(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ht * xnot.getValue(), 0),
+                                                                      ht * xnotDot);
 
             // ________________________________________________
             // secular rates of the mean semi-major axis and eccentricity
 
             // semi-major axis
-            final UnivariateDerivative2 appDrag = dt.multiply(aRate * m2);
+            final UnivariateDerivative1 appDrag = dt.multiply(aRate * m2);
 
             // eccentricity
-            final UnivariateDerivative2 eppDrag = dt.multiply(eRate * m2);
+            final UnivariateDerivative1 eppDrag = dt.multiply(eRate * m2);
 
             //____________________________________
             // Long periodical terms
-            final UnivariateDerivative2 cg1 = gpp.cos();
-            final UnivariateDerivative2 sg1 = gpp.sin();
-            final UnivariateDerivative2 c2g = cg1.multiply(cg1).subtract(sg1.multiply(sg1));
-            final UnivariateDerivative2 s2g = cg1.multiply(sg1).add(sg1.multiply(cg1));
-            final UnivariateDerivative2 c3g = c2g.multiply(cg1).subtract(s2g.multiply(sg1));
-            final UnivariateDerivative2 sg2 = sg1.multiply(sg1);
-            final UnivariateDerivative2 sg3 = sg1.multiply(sg2);
+            final FieldSinCos<UnivariateDerivative1> sinCosCg1 = gpp.sinCos();
+            final UnivariateDerivative1 cg1 = sinCosCg1.cos();
+            final UnivariateDerivative1 sg1 = sinCosCg1.sin();
+            final UnivariateDerivative1 c2g = cg1.square().subtract(sg1.square());
+            final UnivariateDerivative1 s2g = cg1.multiply(sg1).add(sg1.multiply(cg1));
+            final UnivariateDerivative1 c3g = c2g.multiply(cg1).subtract(s2g.multiply(sg1));
+            final UnivariateDerivative1 sg2 = sg1.square();
+            final UnivariateDerivative1 sg3 = sg1.multiply(sg2);
 
 
             // de eccentricity
-            final UnivariateDerivative2 d1e = sg3.multiply(dei3sg).
+            final UnivariateDerivative1 d1e = sg3.multiply(dei3sg).
                                               add(sg1.multiply(deisg)).
                                               add(sg2.multiply(de2sg)).
                                               add(de);
 
             // l' + g'
-            final UnivariateDerivative2 lp_p_gp = s2g.multiply(dlgs2g).
+            final UnivariateDerivative1 lpPGp = s2g.multiply(dlgs2g).
                                                add(c3g.multiply(dlgc3g)).
                                                add(cg1.multiply(dlgcg)).
                                                add(lpp).
                                                add(gpp);
 
             // h'
-            final UnivariateDerivative2 hp = sg2.multiply(cg1).multiply(dh2sgcg).
+            final UnivariateDerivative1 hp = sg2.multiply(cg1).multiply(dh2sgcg).
                                                add(sg1.multiply(cg1).multiply(dhsgcg)).
                                                add(cg1.multiply(dhcg)).
                                                add(hpp);
 
             // Short periodical terms
             // eccentric anomaly
-            final UnivariateDerivative2 Ep = getEccentricAnomaly(lpp);
-            final UnivariateDerivative2 cf1 = (Ep.cos().subtract(mean.getE())).divide(Ep.cos().multiply(-mean.getE()).add(1.0));
-            final UnivariateDerivative2 sf1 = (Ep.sin().multiply(n)).divide(Ep.cos().multiply(-mean.getE()).add(1.0));
-            final UnivariateDerivative2 f = FastMath.atan2(sf1, cf1);
+            final UnivariateDerivative1 Ep = getEccentricAnomaly(lpp);
+            final FieldSinCos<UnivariateDerivative1> sinCosEp = Ep.sinCos();
+            final UnivariateDerivative1 cf1 = (sinCosEp.cos().subtract(mean.getE())).divide(sinCosEp.cos().multiply(-mean.getE()).add(1.0));
+            final UnivariateDerivative1 sf1 = (sinCosEp.sin().multiply(n)).divide(sinCosEp.cos().multiply(-mean.getE()).add(1.0));
+            final UnivariateDerivative1 f = FastMath.atan2(sf1, cf1);
 
-            final UnivariateDerivative2 c2f = cf1.multiply(cf1).subtract(sf1.multiply(sf1));
-            final UnivariateDerivative2 s2f = cf1.multiply(sf1).add(sf1.multiply(cf1));
-            final UnivariateDerivative2 c3f = c2f.multiply(cf1).subtract(s2f.multiply(sf1));
-            final UnivariateDerivative2 s3f = c2f.multiply(sf1).add(s2f.multiply(cf1));
-            final UnivariateDerivative2 cf2 = cf1.multiply(cf1);
-            final UnivariateDerivative2 cf3 = cf1.multiply(cf2);
+            final UnivariateDerivative1 cf2 = cf1.square();
+            final UnivariateDerivative1 c2f = cf2.subtract(sf1.multiply(sf1));
+            final UnivariateDerivative1 s2f = cf1.multiply(sf1).add(sf1.multiply(cf1));
+            final UnivariateDerivative1 c3f = c2f.multiply(cf1).subtract(s2f.multiply(sf1));
+            final UnivariateDerivative1 s3f = c2f.multiply(sf1).add(s2f.multiply(cf1));
+            final UnivariateDerivative1 cf3 = cf1.multiply(cf2);
 
-            final UnivariateDerivative2 c2g1f = cf1.multiply(c2g).subtract(sf1.multiply(s2g));
-            final UnivariateDerivative2 c2g2f = c2f.multiply(c2g).subtract(s2f.multiply(s2g));
-            final UnivariateDerivative2 c2g3f = c3f.multiply(c2g).subtract(s3f.multiply(s2g));
-            final UnivariateDerivative2 s2g1f = cf1.multiply(s2g).add(c2g.multiply(sf1));
-            final UnivariateDerivative2 s2g2f = c2f.multiply(s2g).add(c2g.multiply(s2f));
-            final UnivariateDerivative2 s2g3f = c3f.multiply(s2g).add(c2g.multiply(s3f));
+            final UnivariateDerivative1 c2g1f = cf1.multiply(c2g).subtract(sf1.multiply(s2g));
+            final UnivariateDerivative1 c2g2f = c2f.multiply(c2g).subtract(s2f.multiply(s2g));
+            final UnivariateDerivative1 c2g3f = c3f.multiply(c2g).subtract(s3f.multiply(s2g));
+            final UnivariateDerivative1 s2g1f = cf1.multiply(s2g).add(c2g.multiply(sf1));
+            final UnivariateDerivative1 s2g2f = c2f.multiply(s2g).add(c2g.multiply(s2f));
+            final UnivariateDerivative1 s2g3f = c3f.multiply(s2g).add(c2g.multiply(s3f));
 
-            final UnivariateDerivative2 eE = (Ep.cos().multiply(-mean.getE()).add(1.0)).reciprocal();
-            final UnivariateDerivative2 eE3 = eE.multiply(eE).multiply(eE);
-            final UnivariateDerivative2 sigma = eE.multiply(n * n).multiply(eE).add(eE);
+            final UnivariateDerivative1 eE = (sinCosEp.cos().multiply(-mean.getE()).add(1.0)).reciprocal();
+            final UnivariateDerivative1 eE3 = eE.square().multiply(eE);
+            final UnivariateDerivative1 sigma = eE.multiply(n * n).multiply(eE).add(eE);
 
             // Semi-major axis (with drag Eq. 2.41 of Phipps' 1992 thesis)
-            final UnivariateDerivative2 a = eE3.multiply(aCbis).add(appDrag.add(mean.getA())).
+            final UnivariateDerivative1 a = eE3.multiply(aCbis).add(appDrag.add(mean.getA())).
                                             add(aC).
                                             add(eE3.multiply(c2g2f).multiply(ac2g2f));
 
             // Eccentricity (with drag Eq. 2.45 of Phipps' 1992 thesis)
-            final UnivariateDerivative2 e = d1e.add(eppDrag.add(mean.getE())).
+            final UnivariateDerivative1 e = d1e.add(eppDrag.add(mean.getE())).
                                             add(eC).
                                             add(cf1.multiply(ecf)).
                                             add(cf2.multiply(e2cf)).
@@ -1385,14 +1311,14 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                             add(c2g3f.multiply(ec2g3f));
 
             // Inclination
-            final UnivariateDerivative2 i = d1e.multiply(ide).
+            final UnivariateDerivative1 i = d1e.multiply(ide).
                                             add(mean.getI()).
                                             add(sf1.multiply(s2g2f.multiply(isfs2f2g))).
                                             add(cf1.multiply(c2g2f.multiply(icfc2f2g))).
                                             add(c2g2f.multiply(ic2f2g));
 
-            // Argument of perigee + True anomaly
-            final UnivariateDerivative2 g_p_l = lp_p_gp.add(f.multiply(glf)).
+            // Argument of perigee + mean anomaly
+            final UnivariateDerivative1 gPL = lpPGp.add(f.multiply(glf)).
                                                 add(lpp.multiply(gll)).
                                                 add(sf1.multiply(glsf)).
                                                 add(sigma.multiply(sf1).multiply(glosf)).
@@ -1404,14 +1330,14 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
 
             // Longitude of ascending node
-            final UnivariateDerivative2 h = hp.add(f.multiply(hf)).
+            final UnivariateDerivative1 h = hp.add(f.multiply(hf)).
                                             add(lpp.multiply(hl)).
                                             add(sf1.multiply(hsf)).
                                             add(cf1.multiply(s2g2f).multiply(hcfs2g2f)).
                                             add(s2g2f.multiply(hs2g2f)).
                                             add(c2g2f.multiply(sf1).multiply(hsfc2g2f));
 
-            final UnivariateDerivative2 edl = s2g.multiply(edls2g).
+            final UnivariateDerivative1 edl = s2g.multiply(edls2g).
                                             add(cg1.multiply(edlcg)).
                                             add(c3g.multiply(edlc3g)).
                                             add(sf1.multiply(edlsf)).
@@ -1421,14 +1347,15 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                             add(s2g1f.multiply(sigma).multiply(-edls2gf)).
                                             add(s2g3f.multiply(sigma).multiply(3.0 * edls2g3f));
 
-            final UnivariateDerivative2 A = e.multiply(lpp.cos()).subtract(edl.multiply(lpp.sin()));
-            final UnivariateDerivative2 B = e.multiply(lpp.sin()).add(edl.multiply(lpp.cos()));
+            final FieldSinCos<UnivariateDerivative1> sinCosLpp = lpp.sinCos();
+            final UnivariateDerivative1 A = e.multiply(sinCosLpp.cos()).subtract(edl.multiply(sinCosLpp.sin()));
+            final UnivariateDerivative1 B = e.multiply(sinCosLpp.sin()).add(edl.multiply(sinCosLpp.cos()));
 
-            // True anomaly
-            final UnivariateDerivative2 l = FastMath.atan2(B, A);
+            // Mean anomaly
+            final UnivariateDerivative1 l = FastMath.atan2(B, A);
 
             // Argument of perigee
-            final UnivariateDerivative2 g = g_p_l.subtract(l);
+            final UnivariateDerivative1 g = gPL.subtract(l);
 
             // Return a Keplerian orbit
             return new KeplerianOrbit(a.getValue(), e.getValue(), i.getValue(),

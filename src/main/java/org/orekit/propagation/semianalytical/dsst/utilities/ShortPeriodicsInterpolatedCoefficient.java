@@ -16,11 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.ArrayList;
-
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.ArrayList;
 
 /** Interpolated short periodics coefficients.
  * <p>
@@ -53,8 +53,8 @@ public class ShortPeriodicsInterpolatedCoefficient {
      */
     public ShortPeriodicsInterpolatedCoefficient(final int interpolationPoints) {
         this.interpolationPoints = interpolationPoints;
-        this.abscissae = new ArrayList<AbsoluteDate>();
-        this.values = new ArrayList<double[]>();
+        this.abscissae = new ArrayList<>();
+        this.values = new ArrayList<>();
         this.latestClosestNeighbor = 0;
     }
 
@@ -133,7 +133,7 @@ public class ShortPeriodicsInterpolatedCoefficient {
         //with an input date evolving often continuously in time, there is a high
         //probability that the result will be the same as for last call of
         //this method.
-        int closestNeighbor = latestClosestNeighbor;
+        final int closestNeighbor;
 
         //case where the date is before the available points
         if (date.compareTo(abscissae.get(0)) <= 0) {

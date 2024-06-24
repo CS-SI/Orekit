@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 
 /** Container for azimut/elevation/range coordinates as seen from a ground point.
  * @param <T> the type of the field elements
@@ -43,6 +44,17 @@ public class FieldTrackingCoordinates<T extends CalculusFieldElement<T>> {
         this.azimuth   = azimuth;
         this.elevation = elevation;
         this.range     = range;
+    }
+
+    /** Build a new instance from a {@link TrackingCoordinates}.
+     * @param field field to which the elements belong
+     * @param trackingCoordinates tracking coordinates to convert
+     * @since 12.1
+     */
+    public FieldTrackingCoordinates(final Field<T> field, final TrackingCoordinates trackingCoordinates) {
+        this(field.getZero().newInstance(trackingCoordinates.getAzimuth()),
+             field.getZero().newInstance(trackingCoordinates.getElevation()),
+             field.getZero().newInstance(trackingCoordinates.getRange()));
     }
 
     /** Get the azimuth.

@@ -92,7 +92,7 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE = date neașteptate la linia {0} din fișierul {
 NON_CHRONOLOGICAL_DATES_IN_FILE = date necronologice în fișierul {0}, linia {1}
 
 # inconsistent sampling date: expected {0} but got {1}
-INCONSISTENT_SAMPLING_DATE = <MISSING TRANSLATION>
+INCONSISTENT_SAMPLING_DATE = dat[ de e;antionare invalidă: așteptat {0} dar primit {1}
 
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = datele istorice UTC-TAI nu sunt încărcate
@@ -155,7 +155,10 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grad prea mare (n = {0}, gradul maxim al po
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordin prea mare (n = {0}, ordinul maxim al potențialului este {1})
 
 # no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
-WRONG_DEGREE_OR_ORDER = <MISSING TRANSLATION>
+WRONG_DEGREE_OR_ORDER = nu există termenul ({0}, {1}) în decompozitia armonicilor sferice de {2}x{3}
+
+# wrong orbital elements for averaging theory
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY = elemente orbitale invalide pentru teoria de mediere
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = mai multe date de referință ({0} and {1} separate de {3,number,0.0##############E0} s) descoperite în fișierul de câmp gravitațional {2}
@@ -284,10 +287,10 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = date neașteptate, două valor
 UNSUPPORTED_PARAMETER_NAME = parametrul {0} necunoscut, parametrii cunoscuți: {1}
 
 # {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
-PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES = <MISSING TRANSLATION>
+PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES = parametrul {0} conține mai multe intervale în valoarea sa TimeSpanMap, trebuie apelată metoda {1}
 
 # setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
-PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = <MISSING TRANSLATION>
+PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = metoda setPeriod a fost deja apelată o dată pentru parametrul {0}, alt parametru trebuie creat dacă intervalele trebuie modificate
 
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = factorul de scalare pentru parametrul {0} este prea mic: {1}
@@ -353,7 +356,7 @@ CCSDS_UNKNOWN_CONVENTIONS = convențiile IERS nu au fost inițializate înainte 
 CCSDS_INVALID_FRAME = sistemul de referință {0} nu este valid în contextul acestui fișier CCSDS
 
 # this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
-CCSDS_DIFFERENT_LVLH_DEFINITION = <MISSING TRANSLATION>
+CCSDS_DIFFERENT_LVLH_DEFINITION = acest sistem de referință local LVLH folosește o definiție diferită, vă rugăm să utilizați în schimb LVLH_CCSDS
 
 # inconsistent time systems: {0} ≠ {1}
 CCSDS_INCONSISTENT_TIME_SYSTEMS = sisteme de timp incoerente : {0} ≠ {1}
@@ -368,7 +371,7 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = niciun convertor de unitate pseudo-dis
 CCSDS_TIME_SYSTEM_NOT_READ_YET = Sistemul de timp ar fi trebuit deja configurat înaintea liniei {0} din fișierul {1}
 
 # cannot estimate precession without proper derivatives
-CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = <MISSING TRANSLATION>
+CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = imposibil de estimar precesia fără derivate adecvate
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = numele "{0}" este deja folosit pentru o stare adițională
@@ -392,25 +395,28 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Orbita curentă are o eccentricitate {0
 SP3_UNSUPPORTED_VERSION = versiune neacceptată a fișierului sp3 "{0}"
 
 # invalid header entry {0} "{1}" in file {2} (format version {3})
-SP3_INVALID_HEADER_ENTRY = <MISSING TRANSLATION>
+SP3_INVALID_HEADER_ENTRY = înregistrarea {0} "{1}" din antetul fișierului {2} este invalidă (versiune de format {3})
 
 # version "{0}" supports only up to {1} satellites, found {2} in file {3}
-SP3_TOO_MANY_SATELLITES_FOR_VERSION = <MISSING TRANSLATION>
+SP3_TOO_MANY_SATELLITES_FOR_VERSION = versiunea "{0}" permite maxim {1} sateliți, au fost găsiți {2} în fișierul {3}
 
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = au fost găsite {0} date de referință în fișierul {1}, așteptate {2}
 
 # cannot splice sp3 files with incompatible metadata
-SP3_INCOMPATIBLE_FILE_METADATA = <MISSING TRANSLATION>
+SP3_INCOMPATIBLE_FILE_METADATA = imposibil de concatenat fișiere sp3 cu metadate incompatibile
 
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
-SP3_INCOMPATIBLE_SATELLITE_MEDATADA = <MISSING TRANSLATION>
+SP3_INCOMPATIBLE_SATELLITE_MEDATADA = imposibil de concatenat fișiere sp3 cu metadate incompatibile pentru satelitul {0}
+
+# frame {0} not allowed here
+FRAME_NOT_ALLOWED = sistemul de referință {0} nu este permis aici
 
 # STK coordinate system "{0}" is invalid or not yet supported
-STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = sistemul de soordonate STK "{0}" este invalid sau nu este suportat încă
 
 # STK coordinate system "{0}" has not been mapped to an Orekit frame
-STK_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+STK_UNMAPPED_COORDINATE_SYSTEM = sistemul de coordonate STK "{0}" nu a fost mapat la un sistem de referință Orekit
 
 # unexpected end of STK file (after line {0})
 STK_UNEXPECTED_END_OF_FILE = sfârșit neașteptat al fișierului STK (după linia {0})
@@ -419,7 +425,7 @@ STK_UNEXPECTED_END_OF_FILE = sfârșit neașteptat al fișierului STK (după lin
 CLOCK_FILE_UNSUPPORTED_VERSION = versiune neacceptată a fișierului de ceas {0}
 
 # version {0} from file {1} is not supported, supported version: {2}
-UNSUPPORTED_FILE_FORMAT_VERSION = <MISSING TRANSLATION>
+UNSUPPORTED_FILE_FORMAT_VERSION = versiunea {0} din fișierul {1} nu este suportată, versiune suportată: {2}
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = fișierul de model geomagnetic {0} inexistent pentru anul {1}
@@ -453,6 +459,12 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposibil de generat noi date înainte de {0
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = imposibil de calculat anomalia excentrică hiperbolică pornind de la anomalia medie după {0} iterații
+
+# unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT = unable to compute eccentric longitude argument from the mean one after {0} iterations
+
+# unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT = unable to compute eccentric latitude argument from the mean one after {0} iterations
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = imposibil de calculat orbita medie din orbita osculatorie după {0} iterații
@@ -500,10 +512,10 @@ NOT_ENOUGH_GNSS_FOR_DOP = numai {0} orbite GNSS sunt oferite în timp ce {1} sun
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = utilizarea sistemului de timp {0} în fișierele CCSDS necesită un ICD adițional și nu este disponibil în Orekit 
 
 # unknown attitude type {0}
-CCSDS_UNKNOWN_ATTITUDE_TYPE = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_ATTITUDE_TYPE = tipul de atitudine {0} este necunoscut
 
 # incomplete data
-CCSDS_INCOMPLETE_DATA = <MISSING TRANSLATION>
+CCSDS_INCOMPLETE_DATA = date incomplete
 
 # invalid rotation sequence {0} at line {1} of file {2}
 CCSDS_INVALID_ROTATION_SEQUENCE = secvență de rotație {0} invalidă la linia {1} din fișierul {2}
@@ -521,19 +533,19 @@ CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = număr greșit al unităților pentru
 CCSDS_MANEUVER_MISSING_TIME = lipsește câmpul de timp  pentru manevra {0}
 
 # attitude type {0} and rate type {1} calls for {2} states, got {3}
-CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = <MISSING TRANSLATION>
+CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = tipul de atitudine {0} și tipul de rată {1} necesită {2} stări, sunt definite {3}
 
 # incompatible keys {0} and {1} should not both be used
-CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = <MISSING TRANSLATION>
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = nu ar trebui folosite ambele chei incompatibile {0} și {1}
 
 # sensor index {0} is already used
-CCSDS_SENSOR_INDEX_ALREADY_USED = <MISSING TRANSLATION>
+CCSDS_SENSOR_INDEX_ALREADY_USED = senzorul cu indice {0} este deja utilizat
 
 # missing sensor index {0}
-CCSDS_MISSING_SENSOR_INDEX = <MISSING TRANSLATION>
+CCSDS_MISSING_SENSOR_INDEX = lipsește senzorul cu indice {0}
 
 # inconsistent number of elements: expected {0}, got {1}
-INCONSISTENT_NUMBER_OF_ELEMENTS = <MISSING TRANSLATION>
+INCONSISTENT_NUMBER_OF_ELEMENTS = numărul de elemente este inconsistent: așteptat {0}, existent {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Crearea unui propagator combinator necesită cel puțin un propagator, dar nici unul nu a fost definit.
@@ -569,7 +581,7 @@ UNKNOWN_SATELLITE_SYSTEM = sistemul de sateliți {0} este necunoscut
 UNKNOWN_TIME_SYSTEM = sistem de timp necunoscut {0}
 
 # unknown UTC Id {0}
-UNKNOWN_UTC_ID = <MISSING TRANSLATION>
+UNKNOWN_UTC_ID = identificator UTC {0} necunoscut
 
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tip de date de ceas necunoscut {0}
@@ -590,7 +602,7 @@ UNKNOWN_RINEX_FREQUENCY = frecventa RINEX {0} din fișierul {1}, linia {2} este 
 MISMATCHED_FREQUENCIES = frecvențe nepotrivite în fișierul {0}, linia {1} (așteptate {2}, găsite {3})
 
 # wrong parsing type for file {0}
-WRONG_PARSING_TYPE = <MISSING TRANSLATION>
+WRONG_PARSING_TYPE = metodă de parsare eronată pentru fișierul {0}
 
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
 WRONG_COLUMNS_NUMBER = număr incorect de coloane în fișierul {0}, linia {1} (așteptate {2} coloane, găsite {3} coloane)
@@ -760,10 +772,10 @@ UNEXPECTED_CONTENT_TYPE = tip de conținut {0} neașteptat
 CANNOT_PARSE_GNSS_DATA = imposibil de analizat datele GNSS de la {0}
 
 # invalid GNSS data: {0}
-INVALID_GNSS_DATA = <MISSING TRANSLATION>
+INVALID_GNSS_DATA = valoare GNSS invalidă: {0}
 
 # GNSS parity error on word {0}
-GNSS_PARITY_ERROR = <MISSING TRANSLATION>
+GNSS_PARITY_ERROR = Eroare de paritate GNSS la cuvântul {0}
 
 # unknown host {0}
 UNKNOWN_HOST = mașina gazdă {0} este necunoscută
@@ -802,67 +814,76 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = încercare de generare a fișierului {0} ce
 FIND_ROOT = {0} nu a găsit rădăcina între {1} (g={2,number,0.0##############E0}) și {3} (g={4,number,0.0##############E0})\nUltima iterație la {5} (g={6,number,0.0##############E0})
 
 # missing station data for epoch {0}
-MISSING_STATION_DATA_FOR_EPOCH = <MISSING TRANSLATION>
+MISSING_STATION_DATA_FOR_EPOCH = lipsă date referitoare la stație pentru data {0}
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
-INCONSISTENT_SELECTION = <MISSING TRANSLATION>
+INCONSISTENT_SELECTION = selecție inconsecventă a parametrilor între perechile {0}/{1} și {2}/{3}
 
 # no unscented transform configured
-NO_UNSCENTED_TRANSFORM_CONFIGURED = <MISSING TRANSLATION>
+NO_UNSCENTED_TRANSFORM_CONFIGURED = nicio transformare unscented configurată
 
 # value is not strictly positive: {0}
-NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
+NOT_STRICTLY_POSITIVE = valoarea nu este strict pozitivă: {0}
 
 # transform from {0} to {1} is not implemented
-UNSUPPORTED_TRANSFORM = <MISSING TRANSLATION>
+UNSUPPORTED_TRANSFORM = transformarea de la {0} la {1} nu este implementată
 
 # orbital parameters type: {0} is different from expected orbital type : {1}
-WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
+WRONG_ORBIT_PARAMETERS_TYPE = tipul prametrilor orbitali: {0} este diferit de tipul parametrilor orbitali: {1}
 
 # {0} expects {1} elements, got {2}
-WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+WRONG_NB_COMPONENTS = {0} așteaptă {1} elemente, găsite {2}
 
 # cannot change covariance type if defined in a local orbital frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = imposibil de schimbat tipul de covarianță dacă este definit într-un sistem de referință orbital local
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = <MISSING TRANSLATION>
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = imposibil de schimbat tipul de covarianță dacă este definit într-un sistem de referință care nu este pseudo-inertial
 
 # primary collision object time of closest approach is different from the secondary collision object's one
-DIFFERENT_TIME_OF_CLOSEST_APPROACH = <MISSING TRANSLATION>
+DIFFERENT_TIME_OF_CLOSEST_APPROACH = data de apropiere maximă a primului obiect este diferită de cea a celui de-al doilea obiect
 
 # first date {0} does not match second date {1}
-DATES_MISMATCH = <MISSING TRANSLATION>
+DATES_MISMATCH = prima dată {0} nu este identicp cu cea de-a doua dată {1}
 
 # first orbit mu {0} does not match second orbit mu {1}
-ORBITS_MUS_MISMATCH = <MISSING TRANSLATION>
+ORBITS_MUS_MISMATCH = valoarea {0} a lui mu pentru prima orbită nu este egală cu vloarea {1} a lui mu pentru a doua orbită
 
 # one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
-DIFFERENT_STATE_DEFINITION = <MISSING TRANSLATION>
+DIFFERENT_STATE_DEFINITION = o stare este definită folosind parametrii orbitali, în timp ce cealaltă este definită folosind valori absolute pentru poziție-viteză-accelerație
 
 # state date {0} does not match its covariance date {1}
-STATE_AND_COVARIANCE_DATES_MISMATCH = <MISSING TRANSLATION>
+STATE_AND_COVARIANCE_DATES_MISMATCH = data de început {0} nu este identică cu data de covarianță {1}
 
 # creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
-NO_INTERPOLATOR_FOR_STATE_DEFINITION = <MISSING TRANSLATION>
+NO_INTERPOLATOR_FOR_STATE_DEFINITION = crearea unui interpolator pentru starea navetei necesită cel puțin un interpolator pentru parametrii orbitali sau un interpolator pentru valori absolute pentru poziție-viteză-accelerație
 
 # wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
-WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = <MISSING TRANSLATION>
+WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = interpolator incorect definit pentru tipul curent de stare a navetei )parametrii orbitali sau valori abolute PV
 
 # multiple interpolators are used so they may use different numbers of interpolation points
-MULTIPLE_INTERPOLATOR_USED = <MISSING TRANSLATION>
+MULTIPLE_INTERPOLATOR_USED = mai multi interpolatori sunt folosiți și aceștia ar putea utiliza un număr diferit de puncte de interpolare
 
 # header for file {0} has not been written yet
-HEADER_NOT_WRITTEN = <MISSING TRANSLATION>
+HEADER_NOT_WRITTEN = antetul pentru fișierul {0} nu a fost încă scris
 
 # header for file {0} has already been written
-HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>
+HEADER_ALREADY_WRITTEN = antetul pentru fișierul {0} a fost deja scris
 
 # Cannot start the propagation from an infinitely far date
-CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
+CANNOT_START_PROPAGATION_FROM_INFINITY = nu se poate începe o propagare de la o dată infinit îndepărtată
+
+# Too long time gap between data points: {0} s
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = diferență de timp prea mare între date: {0} s
 
 # invalid satellite id {0}
-INVALID_SATELLITE_ID = <MISSING TRANSLATION>
+INVALID_SATELLITE_ID = identificatorul satelitului {0} este invalid
 
 # EOP interpolation degree must be of the form 4k-1, got {0}
-WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>
+WRONG_EOP_INTERPOLATION_DEGREE = gradul pentru interpolatorul EOP trebuie sa fie de forma 4k-1, definit {0}
+
+# number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
+WALKER_INCONSISTENT_PLANES = numărul de planuri {0} este neconsecvent cu numărul de sateliți {1} în constelația Walker
+
+# Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+INFINITE_NRLMSISE00_DENSITY = valori infinite au fost detectate în timpul calculului densității atmosferice pentru modelul NRLMSISE00

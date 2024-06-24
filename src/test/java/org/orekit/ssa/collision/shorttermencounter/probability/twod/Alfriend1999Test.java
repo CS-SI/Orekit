@@ -29,8 +29,10 @@ import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -60,6 +62,11 @@ class Alfriend1999Test {
      * Simple method to compute probability of collision assuming a constant density of probability of collision.
      */
     private final ShortTermEncounter2DPOCMethod method = new Alfriend1999();
+
+    @BeforeAll
+    static void initializeOrekitData() {
+        Utils.setDataRoot("regular-data");
+    }
 
     /**
      * This method use the data from the appendix (p.13) of "Armellin, R. (2021). Collision Avoidance Maneuver Optimization
@@ -247,8 +254,8 @@ class Alfriend1999Test {
                         armellinDataRowList);
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 8.844620688058309E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 3.606826996118531E-9);
+        Assertions.assertTrue(statistics.getMean() <= 8.8446207E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 3.6068271E-9);
     }
 
     /**

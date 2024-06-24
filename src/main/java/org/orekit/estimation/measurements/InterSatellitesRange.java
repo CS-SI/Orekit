@@ -53,9 +53,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  *   offset is subtracted</li>
  *   <li>as range is evaluated using the total signal time of flight, for one-way
  *   measurements the observed range is the real physical signal time of flight to
- *   which (Δtl - Δtr) ⨉ c is added, where Δtl (resp. Δtr) is the clock offset for the
+ *   which (Δtl - Δtr) ⨯ c is added, where Δtl (resp. Δtr) is the clock offset for the
  *   local satellite (resp. remote satellite). A similar effect exists in
- *   two-way measurements but it is computed as (Δtl - Δtl) ⨉ c / 2 as the local satellite
+ *   two-way measurements but it is computed as (Δtl - Δtl) ⨯ c / 2 as the local satellite
  *   clock is used for both initial emission and final reception and therefore it evaluates
  *   to zero.</li>
  * </ul>
@@ -94,9 +94,13 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         super(date, range, sigma, baseWeight, Arrays.asList(local, remote));
         // for one way and two ways measurements, the local satellite clock offsets affects the measurement
         addParameterDriver(local.getClockOffsetDriver());
+        addParameterDriver(local.getClockDriftDriver());
+        addParameterDriver(local.getClockAccelerationDriver());
         if (!twoWay) {
             // for one way measurements, the remote satellite clock offsets also affects the measurement
             addParameterDriver(remote.getClockOffsetDriver());
+            addParameterDriver(remote.getClockDriftDriver());
+            addParameterDriver(remote.getClockAccelerationDriver());
         }
         this.twoway = twoWay;
     }
@@ -130,7 +134,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         final TimeStampedPVCoordinates s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate, local.getFrame());
 
         // Transit state
         final double delta      = getDate().durationFrom(remote.getDate());
@@ -147,7 +151,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             // uplink delay
             final double tauU = signalTimeOfFlight(pvaL,
                                                    transitState.getPosition(),
-                                                   transitState.getDate());
+                                                   transitState.getDate(),
+                                                   local.getFrame());
             estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
                                                            local.shiftedBy(deltaMTauD),
@@ -191,7 +196,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                                                                final int evaluation,
                                                                                final SpacecraftState[] states) {
 
-        // Range derivatives are computed with respect to spacecrafts states in inertial frame
+        // Range derivatives are computed with respect to spacecraft states in inertial frame
         // ----------------------
         //
         // Parameters:
@@ -230,7 +235,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+        final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(),
+                                                 arrivalDate, local.getFrame());
 
         // Transit state
         final double              delta      = getDate().durationFrom(remote.getDate());
@@ -247,7 +253,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             // uplink delay
             final Gradient tauU = signalTimeOfFlight(pvaL,
                                                      transitStateDS.getPosition(),
-                                                     transitStateDS.getDate());
+                                                     transitStateDS.getDate(),
+                                                     local.getFrame());
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        local.shiftedBy(deltaMTauD.getValue()),
@@ -281,12 +288,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         }
         estimated.setEstimatedValue(range.getValue());
 
-        // Range partial derivatives with respect to states
+        // Range first order derivatives with respect to states
         final double[] derivatives = range.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0,  6));
         estimated.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 6, 12));
 
-        // Set partial derivatives with respect to parameters
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());

@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.CalculusFieldElement;
-
 /** QZSS time scale.
  * <p>By convention, TQZSS = TAI - 19 s.</p>
  * <p>The time scale is defined in <a
@@ -29,45 +27,15 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public class QZSSScale implements TimeScale {
+public class QZSSScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
-
-    /** Offset from TAI. */
-    private static final double OFFSET = -19;
+    private static final long serialVersionUID = 20240321L;
 
     /** Package private constructor for the factory.
      */
     QZSSScale() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(OFFSET);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return -OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    public String getName() {
-        return "QZSS";
-    }
-
-    /** {@inheritDoc} */
-    public String toString() {
-        return getName();
+        super("QZSS", -19);
     }
 
 }

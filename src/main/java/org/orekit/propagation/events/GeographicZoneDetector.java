@@ -77,7 +77,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     public GeographicZoneDetector(final double maxCheck, final double threshold,
                                   final BodyShape body,
                                   final SphericalPolygonsSet zone,  final double margin) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, zone, zone.getEnclosingCap(), margin);
     }
 

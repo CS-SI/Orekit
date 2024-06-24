@@ -27,28 +27,13 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class GroundReceiverCommonParametersWithDerivatives {
-
-    /** Spacecraft state. */
-    private final SpacecraftState state;
-
-    /** Derivatives indices map. */
-    private final Map<String, Integer> indices;
+public class GroundReceiverCommonParametersWithDerivatives extends CommonParametersWithDerivatives {
 
     /** Transform between station and inertial frame. */
     private final FieldTransform<Gradient> offsetToInertialDownlink;
 
     /** Station position in inertial frame at end of the downlink leg. */
     private final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
-
-    /** Downlink delay. */
-    private final Gradient tauD;
-
-    /** Transit state. */
-    private final SpacecraftState transitState;
-
-    /** Transit state. */
-    private final TimeStampedFieldPVCoordinates<Gradient> transitPV;
 
     /** Simple constructor.
     * @param state spacecraft state
@@ -66,27 +51,9 @@ public class GroundReceiverCommonParametersWithDerivatives {
                                                          final Gradient tauD,
                                                          final SpacecraftState transitState,
                                                          final TimeStampedFieldPVCoordinates<Gradient> transitPV) {
-        this.state                    = state;
-        this.indices                  = indices;
+        super(state, indices, tauD, transitState, transitPV);
         this.offsetToInertialDownlink = offsetToInertialDownlink;
         this.stationDownlink          = stationDownlink;
-        this.tauD                     = tauD;
-        this.transitState             = transitState;
-        this.transitPV                = transitPV;
-    }
-
-    /** Get spacecraft state.
-     * @return spacecraft state
-     */
-    public SpacecraftState getState() {
-        return state;
-    }
-
-    /** Get derivatives indices map.
-     * @return derivatives indices map
-     */
-    public Map<String, Integer> getIndices() {
-        return indices;
     }
 
     /** Get transform between station and inertial frame.
@@ -101,27 +68,6 @@ public class GroundReceiverCommonParametersWithDerivatives {
      */
     public TimeStampedFieldPVCoordinates<Gradient> getStationDownlink() {
         return stationDownlink;
-    }
-
-    /** Get downlink delay.
-     * @return ownlink delay
-     */
-    public Gradient getTauD() {
-        return tauD;
-    }
-
-    /** Get transit state.
-     * @return transit state
-     */
-    public SpacecraftState getTransitState() {
-        return transitState;
-    }
-
-    /** Get transit position/velocity.
-     * @return transit position/velocity
-     */
-    public TimeStampedFieldPVCoordinates<Gradient> getTransitPV() {
-        return transitPV;
     }
 
 }

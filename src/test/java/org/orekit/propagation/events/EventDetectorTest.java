@@ -171,7 +171,7 @@ public class EventDetectorTest {
         final int    n    = 100;
         NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(step));
         propagator.resetInitialState(new SpacecraftState(orbit));
-        GCallsCounter counter = new GCallsCounter(s -> 100000.0, 1.0e-6, 20, new StopOnEvent());
+        GCallsCounter counter = new GCallsCounter(AdaptableInterval.of(100000.0), 1.0e-6, 20, new StopOnEvent());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(n * step));
         Assertions.assertEquals(n + 1, counter.getCount());
@@ -188,7 +188,7 @@ public class EventDetectorTest {
         final double step = 60.0;
         final int    n    = 100;
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        GCallsCounter counter = new GCallsCounter(s -> 100000.0, 1.0e-6, 20, new StopOnEvent());
+        GCallsCounter counter = new GCallsCounter(AdaptableInterval.of(100000.0), 1.0e-6, 20, new StopOnEvent());
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(n * step));
@@ -331,7 +331,7 @@ public class EventDetectorTest {
 
             @Override
             public AdaptableInterval getMaxCheckInterval() {
-                return s -> 60;
+                return AdaptableInterval.of(60.);
             }
 
             @Override

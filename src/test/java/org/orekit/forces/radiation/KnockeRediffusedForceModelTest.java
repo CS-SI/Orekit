@@ -62,7 +62,7 @@ import org.orekit.utils.PVCoordinates;
  * However, the complete reproduction of the LAGEOS-1 test case is much too long for it to be implemented in test class.
  * Then, only
  */
-public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
+class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
     @BeforeEach
     public void setUp() {
@@ -71,7 +71,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
 
     @Test
-    public void testJacobianVsFiniteDifferences() {
+    void testJacobianVsFiniteDifferences() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -103,7 +103,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
     }
 
     @Test
-    public void testParameterIsotropicSingle() {
+    void testParameterIsotropicSingle() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -130,7 +130,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
     }
 
     @Test
-    public void testGlobalStateJacobianIsotropicSingle()
+    void testGlobalStateJacobianIsotropicSingle()
         {
 
         // initialization
@@ -171,7 +171,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
     }
 
     @Test
-    public void testRealField() {
+    void testRealField() {
 
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
@@ -236,13 +236,13 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 300., NP, FNP,
-                                  1.0e-30, 1.3e-8, 6.7e-11, 1.4e-10,
+                                  1.0e-15, 1.3e-8, 6.7e-11, 1.4e-10,
                                   1, false);
     }
 
 
     @Test
-    public void testRealFieldGradient() {
+    void testRealFieldGradient() {
 
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
@@ -306,17 +306,17 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 300., NP, FNP,
-                                          1.0e-30, 1.3e-2, 9.6e-5, 1.4e-4,
+                                          1.0e-15, 1.3e-2, 9.6e-5, 1.4e-4,
                                           1, false);
     }
 
-    /** Roughtly compare Knocke model accelerations against results from "EARTH RADIATION PRESSURE EFFECTS ON SATELLITES",
+    /** Roughly compare Knocke model accelerations against results from "EARTH RADIATION PRESSURE EFFECTS ON SATELLITES",
      *  1988, by P. C. Knocke, J. C. Ries, and B. D. Tapley.
      *  The case is as close as possible from what it might be in the paper. Orbit and date have been artifically set so that the angle between
      *  the orbital plan and Earth-Sun direction is almost equal to zero.
      */
     @Test
-    public void testRoughtAcceleration() {
+    void testRoughAcceleration() {
 
         // LAGEOS-1
         final double mass = 406.9;

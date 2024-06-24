@@ -279,7 +279,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         // prime meridian shift parameters
         final T theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
-        final T thetaDot = zero.add(primeMeridianDriftDriver.getValue());
+        final T thetaDot = zero.newInstance(primeMeridianDriftDriver.getValue());
 
         // pole shift parameters
         final T xpNeg    = linearModel(date, polarOffsetXDriver, polarDriftXDriver).negate();

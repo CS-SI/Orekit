@@ -750,9 +750,7 @@ public class SpacecraftState
      */
     public Transform toTransform() {
         final TimeStampedPVCoordinates pv = getPVCoordinates();
-        return new Transform(pv.getDate(),
-                             new Transform(pv.getDate(), pv.negate()),
-                             new Transform(pv.getDate(), attitude.getOrientation()));
+        return new Transform(pv.getDate(), pv.negate(), attitude.getOrientation());
     }
 
     /** Compute the static transform from state defining frame to spacecraft frame.

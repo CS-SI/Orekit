@@ -471,11 +471,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-            return propagate(date).getPVCoordinates(frame);
-        }
-
-        /** {@inheritDoc} */
         public void resetInitialState(final SpacecraftState state) {
             super.resetInitialState(state);
             AbstractAnalyticalPropagator.this.resetInitialState(state);

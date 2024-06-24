@@ -42,7 +42,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  * </p>
  * @author Bryan Cazabonne
  * @since 10.2
+ * @deprecated as of 12.1, replaced by {@link TimeSpanEstimatedModel}
  */
+@Deprecated
 public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** Prefix for dates before in the tropospheric parameter drivers' name. */

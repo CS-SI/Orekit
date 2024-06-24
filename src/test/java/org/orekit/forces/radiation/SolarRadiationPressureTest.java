@@ -37,6 +37,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
@@ -157,7 +158,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLightingInterplanetary() throws ParseException {
+    void testLightingInterplanetary() throws ParseException {
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
@@ -168,7 +169,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, new OneAxisEllipsoid(1.0e-10, 0.0, FramesFactory.getICRF()),
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
-        Assertions.assertFalse(srp.dependsOnPositionOnly());
 
         // Test lighting ratio method with double
         Assertions.assertEquals(1.0,
@@ -184,7 +184,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLighting() throws ParseException {
+    void testLighting() throws ParseException {
 
         // Given
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
@@ -233,7 +233,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianIsotropicSingle() {
+    void testGlobalStateJacobianIsotropicSingle() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -267,7 +267,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVs80Implementation() {
+    void testLocalJacobianIsotropicClassicalVs80Implementation() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -293,7 +293,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVs80ImplementationGradient() {
+    void testLocalJacobianIsotropicClassicalVs80ImplementationGradient() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -319,39 +319,39 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight() {
+    void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight() {
         // here, lighting ratio is exactly 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(250.0, 1000.0, 3.0e-8, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientFullLight() {
+    void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientFullLight() {
         // here, lighting ratio is exactly 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(250.0, 1000.0, 3.0e-8, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesPenumbra() {
+    void testLocalJacobianIsotropicClassicalVsFiniteDifferencesPenumbra() {
         // here, lighting ratio is about 0.57,
         // and remains strictly between 0 and 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(275.5, 100.0, 8.0e-7, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientPenumbra() {
+    void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientPenumbra() {
         // here, lighting ratio is about 0.57,
         // and remains strictly between 0 and 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(275.5, 100.0, 8.0e-7, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesEclipse() {
+    void testLocalJacobianIsotropicClassicalVsFiniteDifferencesEclipse() {
         // here, lighting ratio is exactly 0 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(300.0, 1000.0, 1.0e-50, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientEclipse() {
+    void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientEclipse() {
         // here, lighting ratio is exactly 0 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(300.0, 1000.0, 1.0e-50, false);
     }
@@ -409,7 +409,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianIsotropicClassical() {
+    void testGlobalStateJacobianIsotropicClassical() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -443,7 +443,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianIsotropicCnes() {
+    void testGlobalStateJacobianIsotropicCnes() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -477,7 +477,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeBox() {
+    void testParameterDerivativeBox() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -500,7 +500,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradientBox() {
+    void testParameterDerivativeGradientBox() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -523,7 +523,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianBox() {
+    void testGlobalStateJacobianBox() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -558,7 +558,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testRoughOrbitalModifs() {
+    void testRoughOrbitalModifs() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
@@ -767,7 +767,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testFlatteningLEO() {
+    void testFlatteningLEO() {
 
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
         NormalizedSphericalHarmonicsProvider gravityField = GravityFieldFactory.getNormalizedProvider(20, 20);
@@ -808,6 +808,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final NumericalPropagator propagator =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-9, 60.0, tol[0], tol[1]));
         propagator.setOrbitType(OrbitType.CIRCULAR);
+        propagator.setPositionAngleType(PositionAngleType.TRUE);
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(earth.getBodyFrame(), gravityField));
         propagator.addForceModel(new ThirdBodyAttraction(sun));
         propagator.addForceModel(new ThirdBodyAttraction(moon));
@@ -853,13 +854,28 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     }
 
+    @Test
+    void testDependsOnlyOnPosition() {
+        // GIVEN
+        final IsotropicRadiationSingleCoefficient mockedSpacecraft = Mockito.mock(IsotropicRadiationSingleCoefficient.class);
+        final SolarRadiationPressure radiationPressure = new SolarRadiationPressure(null, null, mockedSpacecraft);
+        // WHEN
+        final boolean actualValue = radiationPressure.dependsOnPositionOnly();
+        // THEN
+        Assertions.assertEquals(mockedSpacecraft, radiationPressure.getRadiationSensitiveSpacecraft());
+        Assertions.assertTrue(actualValue);
+        final BoxAndSolarArraySpacecraft mockedBoxSpacecraft = Mockito.mock(BoxAndSolarArraySpacecraft.class);
+        final SolarRadiationPressure boxRadiationPressure = new SolarRadiationPressure(null, null, mockedBoxSpacecraft);
+        Assertions.assertFalse(boxRadiationPressure.dependsOnPositionOnly());
+    }
+
     /** Testing if eclipses due to Moon are considered.
      * Reference values are presented in "A Study of Solar Radiation Pressure acting on GPS Satellites"
      * written by Laurent Olivier Froideval in 2009.
      * Modifications of the step handler and time span able to print lighting ratios other a year and get a reference like graph.
      */
     @Test
-    public void testMoonPenumbra() {
+    void testMoonPenumbra() {
         final AbsoluteDate date  = new AbsoluteDate(2007, 1, 19, 5,  0, 0, TimeScalesFactory.getGPS());
         final Vector3D     p     = new Vector3D(12538484.957505366, 15515522.98001655, -17884023.51839292);
         final Vector3D     v     = new Vector3D(-3366.9009055533616, 769.5389825219049,  -1679.3840677789601);
@@ -869,7 +885,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testEarthPenumbraOnly() {
+    void testEarthPenumbraOnly() {
         final AbsoluteDate date  = new AbsoluteDate(2007, 3, 13, 17, 14, 0, TimeScalesFactory.getGPS());
         final Vector3D     p     = new Vector3D(-26168647.4977583, -1516554.3304749255, -3206794.210706205);
         final Vector3D     v     = new Vector3D(-213.65557094060222, -2377.3633988328584,  3079.4740070013495);
@@ -879,7 +895,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testEarthPenumbraAndUmbra() {
+    void testEarthPenumbraAndUmbra() {
         final AbsoluteDate date  = new AbsoluteDate(2007, 3, 14,  5,  8, 0, TimeScalesFactory.getGPS());
         final Vector3D     p     = new Vector3D(-26101379.998276696, -947280.678355501, -3940992.754483608);
         final Vector3D     v     = new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567);
@@ -1042,7 +1058,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      * Modifications of the step handler and time span able to print lighting ratios other a year and get a reference like graph.
      */
     @Test
-    public void testFieldMoonPenumbra() {
+    void testFieldMoonPenumbra() {
         Field<Binary64> field = Binary64Field.getInstance();
         final FieldAbsoluteDate<Binary64> date  = new FieldAbsoluteDate<>(field, 2007, 1, 19, 5,  0, 0, TimeScalesFactory.getGPS());
         final FieldVector3D<Binary64>     p     = new FieldVector3D<>(field, new Vector3D(12538484.957505366, 15515522.98001655, -17884023.51839292));
@@ -1055,7 +1071,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testFieldEarthPenumbraOnly() {
+    void testFieldEarthPenumbraOnly() {
         Field<Binary64> field = Binary64Field.getInstance();
         final FieldAbsoluteDate<Binary64> date  = new FieldAbsoluteDate<>(field, 2007, 3, 13, 17, 14, 0, TimeScalesFactory.getGPS());
         final FieldVector3D<Binary64>     p     = new FieldVector3D<>(field, new Vector3D(-26168647.4977583, -1516554.3304749255, -3206794.210706205));
@@ -1068,7 +1084,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testFieldEarthPenumbraAndUmbra() {
+    void testFieldEarthPenumbraAndUmbra() {
         Field<Binary64> field = Binary64Field.getInstance();
         final FieldAbsoluteDate<Binary64> date  = new FieldAbsoluteDate<>(field, 2007, 3, 14,  5,  8, 0, TimeScalesFactory.getGPS());
         final FieldVector3D<Binary64>     p     = new FieldVector3D<>(field, new Vector3D(-26101379.998276696, -947280.678355501, -3940992.754483608));

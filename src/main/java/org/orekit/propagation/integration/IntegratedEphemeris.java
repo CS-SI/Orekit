@@ -33,7 +33,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.
@@ -195,11 +194,6 @@ public class IntegratedEphemeris
     /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Get the first date of the range.

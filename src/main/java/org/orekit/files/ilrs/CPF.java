@@ -114,8 +114,7 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      * @since 11.0.1
      */
     public void addSatelliteCoordinates(final String id, final List<CPFCoordinate> coord) {
-        createIfNeeded(id);
-        ephemeris.get(id).coordinates.addAll(coord);
+        ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i)).coordinates.addAll(coord);
     }
 
     /**
@@ -125,8 +124,7 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      * @since 11.0.1
      */
     public void addSatelliteCoordinate(final String id, final CPFCoordinate coord) {
-        createIfNeeded(id);
-        ephemeris.get(id).coordinates.add(coord);
+        ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i)).coordinates.add(coord);
     }
 
     /**
@@ -179,16 +177,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      */
     public void setFilter(final CartesianDerivativesFilter filter) {
         this.filter = filter;
-    }
-
-    /**
-     * Create the satellite ephemeris corresponding to the given ID (if needed).
-     * @param id satellite ILRS identifier
-     */
-    private void createIfNeeded(final String id) {
-        if (ephemeris.get(id) == null) {
-            ephemeris.put(id, new CPFEphemeris(id));
-        }
     }
 
     /** An ephemeris entry  for a single satellite contains in a CPF file. */

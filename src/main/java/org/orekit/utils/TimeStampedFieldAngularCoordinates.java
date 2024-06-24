@@ -191,7 +191,7 @@ public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public TimeStampedFieldAngularCoordinates<T> shiftedBy(final double dt) {
-        return shiftedBy(getDate().getField().getZero().add(dt));
+        return shiftedBy(getDate().getField().getZero().newInstance(dt));
     }
 
     /** Get a time-shifted state.

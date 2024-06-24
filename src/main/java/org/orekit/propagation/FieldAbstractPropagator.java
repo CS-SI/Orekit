@@ -34,7 +34,6 @@ import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Common handling of {@link Propagator} methods for analytical propagators.
  * <p>
@@ -48,7 +47,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>> implements FieldPropagator<T> {
 
     /** Multiplexer for step handlers. */
-    private FieldStepHandlerMultiplexer<T> multiplexer;
+    private final FieldStepHandlerMultiplexer<T> multiplexer;
 
     /** Start date. */
     private FieldAbsoluteDate<T> startDate;
@@ -199,7 +198,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
                 }
             } else {
                 // we can use this provider right now
-                updated    = updated.addAdditionalState(provider.getName(), provider.getAdditionalState(updated));
+                updated    = provider.update(updated);
                 yieldCount = 0;
             }
         }
@@ -244,11 +243,6 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
             startDate = getInitialState().getDate();
         }
         return propagate(startDate, target);
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Initialize propagation.

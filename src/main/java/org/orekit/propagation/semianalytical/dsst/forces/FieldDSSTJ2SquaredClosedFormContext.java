@@ -73,7 +73,7 @@ public class FieldDSSTJ2SquaredClosedFormContext<T extends CalculusFieldElement<
         this.eta = FastMath.sqrt(auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc()).negate().add(1.0));
 
         final T a2 = auxiliaryElements.getSma().multiply(auxiliaryElements.getSma());
-        this.a4 = a2.multiply(a2);
+        this.a4 = a2.square();
     }
 
     /**

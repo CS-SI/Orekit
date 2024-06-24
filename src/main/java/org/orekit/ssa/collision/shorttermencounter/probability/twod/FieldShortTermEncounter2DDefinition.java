@@ -30,6 +30,8 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldKinematicTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOF;
@@ -277,7 +279,10 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
 
         // Get PVCoordinates in the same frame
         final FieldPVCoordinates<T> referencePV                = referenceAtTCA.getPVCoordinates();
-        final FieldPVCoordinates<T> otherPVInReferenceInertial = otherAtTCA.getPVCoordinates(referenceInertial);
+        final FieldKinematicTransform<T> kinematicTransform    = otherAtTCA.getFrame()
+            .getKinematicTransformTo(referenceInertial, referenceAtTCA.getDate());
+        final FieldPVCoordinates<T> otherPVInReferenceInertial = kinematicTransform
+            .transformOnlyPV(otherAtTCA.getPVCoordinates());
 
         // Create relative pv expressed in the reference inertial frame
         final FieldVector3D<T> relativePosition = otherPVInReferenceInertial.getPosition()
@@ -300,8 +305,8 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
     public FieldMatrix<T> computeReferenceInertialToCollisionPlaneProjectionMatrix() {
 
         // Create transform from reference inertial frame to encounter local orbital frame
-        final FieldTransform<T> referenceInertialToEncounterFrameTransform =
-                new FieldTransform<>(tca,
+        final FieldStaticTransform<T> referenceInertialToEncounterFrameTransform =
+                FieldStaticTransform.compose(tca,
                                      computeReferenceInertialToReferenceTNWTransform(),
                                      computeReferenceTNWToEncounterFrameTransform());
 
@@ -334,7 +339,7 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
 
         final T crossTerm = covarianceMatrixToDiagonalize.getEntry(0, 1);
         final T recurrentTerm = sigmaXSquared.subtract(sigmaYSquared).multiply(0.5).pow(2)
-                                             .add(crossTerm.multiply(crossTerm)).sqrt();
+                                             .add(crossTerm.square()).sqrt();
 
         final T eigenValueX = sigmaXSquared.add(sigmaYSquared).multiply(0.5).subtract(recurrentTerm);
         final T eigenValueY = sigmaXSquared.add(sigmaYSquared).multiply(0.5).add(recurrentTerm);
@@ -381,18 +386,17 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
     public FieldVector2D<T> computeOtherPositionInCollisionPlane() {
 
         // Express other in reference inertial
-        final FieldPVCoordinates<T> otherInReferenceInertial = otherAtTCA.getPVCoordinates(referenceAtTCA.getFrame());
+        final FieldVector3D<T> otherInReferenceInertial = otherAtTCA.getPosition(referenceAtTCA.getFrame());
 
         // Express other in reference TNW local orbital frame
-        final FieldPVCoordinates<T> otherPVInReferenceTNW =
-                computeReferenceInertialToReferenceTNWTransform().transformPVCoordinates(otherInReferenceInertial);
+        final FieldVector3D<T> otherPositionInReferenceTNW =
+                computeReferenceInertialToReferenceTNWTransform().transformPosition(otherInReferenceInertial);
 
         // Express other in encounter local orbital frame
-        final FieldPVCoordinates<T> otherPVInEncounterFrame =
-                computeReferenceTNWToEncounterFrameTransform().transformPVCoordinates(
-                        otherPVInReferenceTNW);
+        final FieldVector3D<T> otherPositionInEncounterFrame =
+                computeReferenceTNWToEncounterFrameTransform().transformPosition(otherPositionInReferenceTNW);
 
-        return encounterFrame.projectOntoCollisionPlane(otherPVInEncounterFrame.getPosition());
+        return encounterFrame.projectOntoCollisionPlane(otherPositionInEncounterFrame);
 
     }
 
@@ -455,7 +459,7 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
     public T computeCoppolaEncounterDuration() {
 
         // Default value for γ = 1e-16
-        final T DEFAULT_ALPHA_C = instanceField.getOne().multiply(5.864);
+        final T DEFAULT_ALPHA_C = instanceField.getZero().newInstance(5.864);
 
         final FieldMatrix<T> combinedPositionalCovarianceMatrix = computeCombinedCovarianceInEncounterFrame()
                 .getMatrix().getSubMatrix(0, 2, 0, 2);
@@ -670,7 +674,7 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
         else {
             // Rotation in order to have sigmaXSquared < sigmaYSquared
             if (sigmaXSquared.subtract(sigmaYSquared).getReal() > 0) {
-                theta = tca.getField().getOne().multiply(MathUtils.SEMI_PI);
+                theta = tca.getField().getZero().newInstance(MathUtils.SEMI_PI);
             }
             // Else, there is no need for a rotation
             else {

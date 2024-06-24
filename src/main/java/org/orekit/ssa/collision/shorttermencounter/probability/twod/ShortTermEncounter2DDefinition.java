@@ -29,6 +29,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOF;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.KinematicTransform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.frames.encounter.EncounterLOF;
 import org.orekit.frames.encounter.EncounterLOFType;
@@ -250,7 +252,9 @@ public class ShortTermEncounter2DDefinition {
 
         // Get PVCoordinates in the same frame
         final PVCoordinates referencePV                = referenceAtTCA.getPVCoordinates();
-        final PVCoordinates otherPVInReferenceInertial = otherAtTCA.getPVCoordinates(referenceInertial);
+        final KinematicTransform kinematicTransform = otherAtTCA.getFrame().getKinematicTransformTo(referenceInertial,
+            otherAtTCA.getDate());
+        final PVCoordinates otherPVInReferenceInertial = kinematicTransform.transformOnlyPV(otherAtTCA.getPVCoordinates());
 
         // Create relative pv expressed in the reference inertial frame
         final Vector3D relativePosition = otherPVInReferenceInertial.getPosition().subtract(referencePV.getPosition());
@@ -271,9 +275,8 @@ public class ShortTermEncounter2DDefinition {
     public RealMatrix computeReferenceInertialToCollisionPlaneProjectionMatrix() {
 
         // Create transform from reference inertial frame to encounter local orbital frame
-        final Transform referenceInertialToEncounterFrameTransform =
-                new Transform(tca,
-                              computeReferenceInertialToReferenceTNWTransform(),
+        final StaticTransform referenceInertialToEncounterFrameTransform =
+                StaticTransform.compose(tca, computeReferenceInertialToReferenceTNWTransform(),
                               computeReferenceTNWToEncounterFrameTransform());
 
         // Create rotation matrix from reference inertial frame to encounter local orbital frame
@@ -333,18 +336,17 @@ public class ShortTermEncounter2DDefinition {
     public Vector2D computeOtherPositionInCollisionPlane() {
 
         // Express other in reference inertial
-        final PVCoordinates otherInReferenceInertial = otherAtTCA.getPVCoordinates(referenceAtTCA.getFrame());
+        final Vector3D otherInReferenceInertial = otherAtTCA.getPosition(referenceAtTCA.getFrame());
 
         // Express other in reference TNW local orbital frame
-        final PVCoordinates otherPVInReferenceTNW =
-                computeReferenceInertialToReferenceTNWTransform().transformPVCoordinates(otherInReferenceInertial);
+        final Vector3D otherPositionInReferenceTNW =
+                computeReferenceInertialToReferenceTNWTransform().transformPosition(otherInReferenceInertial);
 
         // Express other in encounter local orbital frame
-        final PVCoordinates otherPVInEncounterFrame =
-                computeReferenceTNWToEncounterFrameTransform().transformPVCoordinates(
-                        otherPVInReferenceTNW);
+        final Vector3D otherPositionInEncounterFrame =
+                computeReferenceTNWToEncounterFrameTransform().transformPosition(otherPositionInReferenceTNW);
 
-        return encounterFrame.projectOntoCollisionPlane(otherPVInEncounterFrame.getPosition());
+        return encounterFrame.projectOntoCollisionPlane(otherPositionInEncounterFrame);
 
     }
 

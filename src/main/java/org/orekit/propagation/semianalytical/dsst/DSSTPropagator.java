@@ -16,14 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEStateAndDerivative;
@@ -66,6 +58,14 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -204,7 +204,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                           final PropagationType propagationType,
                           final AttitudeProvider attitudeProvider) {
         super(integrator, propagationType);
-        forceModels = new ArrayList<DSSTForceModel>();
+        forceModels = new ArrayList<>();
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
@@ -310,8 +310,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * (null means no coefficients are selected, empty set means all coefficients are selected)
      */
     public void setSelectedCoefficients(final Set<String> selectedCoefficients) {
-        mapper.setSelectedCoefficients(selectedCoefficients == null ?
-                                       null : new HashSet<String>(selectedCoefficients));
+        mapper.setSelectedCoefficients(selectedCoefficients == null ? null : new HashSet<>(selectedCoefficients));
     }
 
     /** Get the selected short periodic coefficients that must be stored as additional states.
@@ -653,7 +652,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final AuxiliaryElements aux = new AuxiliaryElements(mean.getOrbit(), I);
 
         // Set the force models
-        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
             shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(mean.getDate())));
@@ -790,7 +789,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
 
         // initialize all perturbing forces
-        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forceModels) {
             shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(initialState.getDate())));
         }
@@ -803,7 +802,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             for (DSSTForceModel forceModel : forceModels) {
                 forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(), initialState);
             }
-            final Collection<ODEStepHandler> stepHandlers = new ArrayList<ODEStepHandler>();
+            final Collection<ODEStepHandler> stepHandlers = new ArrayList<>();
             stepHandlers.add(spHandler);
             final ODEIntegrator integrator = getIntegrator();
             final Collection<ODEStepHandler> existing = integrator.getStepHandlers();
@@ -823,7 +822,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     protected void afterIntegration() {
         // remove the special short periodics step handler if added before
         if (getPropagationType() == PropagationType.OSCULATING) {
-            final List<ODEStepHandler> preserved = new ArrayList<ODEStepHandler>();
+            final List<ODEStepHandler> preserved = new ArrayList<>();
             final ODEIntegrator integrator = getIntegrator();
             for (final ODEStepHandler sp : integrator.getStepHandlers()) {
                 if (!(sp instanceof ShortPeriodicsHandler)) {
@@ -882,7 +881,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final AuxiliaryElements aux = new AuxiliaryElements(meanOrbit, I);
 
             // Set the force models
-            final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+            final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
             for (final DSSTForceModel force : forceModels) {
                 shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
                 force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
@@ -897,7 +896,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final double deltaEy = osculating.getEquinoctialEy() - rebuilt.getEquinoctialEy();
             final double deltaHx = osculating.getHx() - rebuilt.getHx();
             final double deltaHy = osculating.getHy() - rebuilt.getHy();
-            final double deltaLv = MathUtils.normalizeAngle(osculating.getLv() - rebuilt.getLv(), 0.0);
+            final double deltaLM = MathUtils.normalizeAngle(osculating.getLM() - rebuilt.getLM(), 0.0);
 
             // check convergence
             if (FastMath.abs(deltaA)  < thresholdA &&
@@ -905,7 +904,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 FastMath.abs(deltaEy) < thresholdE &&
                 FastMath.abs(deltaHx) < thresholdI &&
                 FastMath.abs(deltaHy) < thresholdI &&
-                FastMath.abs(deltaLv) < thresholdL) {
+                FastMath.abs(deltaLM) < thresholdL) {
                 return meanOrbit;
             }
 
@@ -915,8 +914,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                              meanOrbit.getEquinoctialEy() + deltaEy,
                                              meanOrbit.getHx() + deltaHx,
                                              meanOrbit.getHy() + deltaHy,
-                                             meanOrbit.getLv() + deltaLv,
-                                             PositionAngleType.TRUE, meanOrbit.getFrame(),
+                                             meanOrbit.getLM() + deltaLM,
+                                             PositionAngleType.MEAN, meanOrbit.getFrame(),
                                              meanOrbit.getDate(), meanOrbit.getMu());
         }
 

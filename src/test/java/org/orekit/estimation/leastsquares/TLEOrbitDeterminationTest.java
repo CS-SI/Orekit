@@ -222,7 +222,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test on statistic for the range residuals
         final long nbRange = 8211;
-        final double[] RefStatRange = { -14.448, 18.736, 0.132, 6.323 };
+        final double[] RefStatRange = { -14.448, 18.706, 0.132, 6.322 };
         Assertions.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);

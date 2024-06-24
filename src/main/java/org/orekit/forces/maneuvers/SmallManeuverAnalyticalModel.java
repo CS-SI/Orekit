@@ -68,8 +68,7 @@ import org.orekit.utils.Constants;
  * </p>
  * @author Luc Maisonobe
  */
-public class SmallManeuverAnalyticalModel
-    implements AdapterPropagator.DifferentialEffect {
+public class SmallManeuverAnalyticalModel implements AdapterPropagator.DifferentialEffect {
 
     /** State at maneuver date (before maneuver occurrence). */
     private final SpacecraftState state0;
@@ -92,7 +91,7 @@ public class SmallManeuverAnalyticalModel
     /** Mean anomaly change factor. */
     private final double ksi;
 
-    /** Build a maneuver defined in spacecraft frame.
+    /** Build a maneuver defined in spacecraft frame with default orbit type.
      * @param state0 state at maneuver date, <em>before</em> the maneuver
      * is performed
      * @param dV velocity increment in spacecraft frame
@@ -101,6 +100,21 @@ public class SmallManeuverAnalyticalModel
     public SmallManeuverAnalyticalModel(final SpacecraftState state0,
                                         final Vector3D dV, final double isp) {
         this(state0, state0.getFrame(),
+             state0.getAttitude().getRotation().applyInverseTo(dV),
+             isp);
+    }
+
+    /** Build a maneuver defined in spacecraft frame.
+     * @param state0 state at maneuver date, <em>before</em> the maneuver
+     * is performed
+     * @param orbitType orbit type to be used later on in Jacobian conversions
+     * @param dV velocity increment in spacecraft frame
+     * @param isp engine specific impulse (s)
+     * @since 12.1 orbit type added as input
+     */
+    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType orbitType,
+                                        final Vector3D dV, final double isp) {
+        this(state0, orbitType, state0.getFrame(),
              state0.getAttitude().getRotation().applyInverseTo(dV),
              isp);
     }
@@ -114,17 +128,30 @@ public class SmallManeuverAnalyticalModel
      */
     public SmallManeuverAnalyticalModel(final SpacecraftState state0, final Frame frame,
                                         final Vector3D dV, final double isp) {
+        // No orbit type specified, use equinoctial orbit type if possible, Keplerian if nearly hyperbolic orbits
+        this(state0, (state0.getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN, frame, dV, isp);
+    }
+
+    /** Build a maneuver defined in user-specified frame.
+     * @param state0 state at maneuver date, <em>before</em> the maneuver
+     * is performed
+     * @param orbitType orbit type to be used later on in Jacobian conversions
+     * @param frame frame in which velocity increment is defined
+     * @param dV velocity increment in specified frame
+     * @param isp engine specific impulse (s)
+     * @since 12.1 orbit type added as input
+     */
+    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType orbitType,
+                                        final Frame frame, final Vector3D dV, final double isp) {
 
         this.state0    = state0;
         this.massRatio = FastMath.exp(-dV.getNorm() / (Constants.G0_STANDARD_GRAVITY * isp));
-
-        // use equinoctial orbit type if possible, Keplerian if nearly hyperbolic orbits
-        type = (state0.getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN;
+        this.type = orbitType;
 
         // compute initial Jacobian
         final double[][] fullJacobian = new double[6][6];
         j0 = new double[6][3];
-        final Orbit orbit0 = type.convertType(state0.getOrbit());
+        final Orbit orbit0 = orbitType.convertType(state0.getOrbit());
         orbit0.getJacobianWrtCartesian(PositionAngleType.MEAN, fullJacobian);
         for (int i = 0; i < j0.length; ++i) {
             System.arraycopy(fullJacobian[i], 3, j0[i], 0, 3);
@@ -135,7 +162,7 @@ public class SmallManeuverAnalyticalModel
 
         // compute maneuver effect on Keplerian (or equinoctial) elements
         inertialDV = frame.getStaticTransformTo(state0.getFrame(), state0.getDate())
-                .transformVector(dV);
+                        .transformVector(dV);
 
         // compute mean anomaly change: dM(t1) = dM(t0) + ksi * da * (t1 - t0)
         final double mu = state0.getMu();
@@ -293,8 +320,8 @@ public class SmallManeuverAnalyticalModel
             for (int i = 0; i < 6; ++i) {
                 for (int j = 0; j < 4; ++j) {
                     pvJacobian[i][j] = j2[i][0] * jacobian[0][j] + j2[i][1] * jacobian[1][j] +
-                                       j2[i][2] * jacobian[2][j] + j2[i][3] * jacobian[3][j] +
-                                       j2[i][4] * jacobian[4][j] + j2[i][5] * jacobian[5][j];
+                                    j2[i][2] * jacobian[2][j] + j2[i][3] * jacobian[3][j] +
+                                    j2[i][4] * jacobian[4][j] + j2[i][5] * jacobian[5][j];
                 }
             }
 
@@ -304,8 +331,8 @@ public class SmallManeuverAnalyticalModel
             for (int j = 0; j < 4; ++j) {
                 for (int i = 0; i < 6; ++i) {
                     jacobian[i][j] = j3[i][0] * pvJacobian[0][j] + j3[i][1] * pvJacobian[1][j] +
-                                     j3[i][2] * pvJacobian[2][j] + j3[i][3] * pvJacobian[3][j] +
-                                     j3[i][4] * pvJacobian[4][j] + j3[i][5] * pvJacobian[5][j];
+                                    j3[i][2] * pvJacobian[2][j] + j3[i][3] * pvJacobian[3][j] +
+                                    j3[i][4] * pvJacobian[4][j] + j3[i][5] * pvJacobian[5][j];
                 }
             }
 

@@ -35,6 +35,11 @@ import org.orekit.utils.ParameterDriver;
  */
 public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
 
+    /** Cache for ambiguities.
+     * @since 12.1
+     */
+    private final AmbiguityCache cache;
+
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
@@ -53,15 +58,39 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
+     * @deprecated as of 12.1, replaced by {@link #PhaseBuilder(CorrelatedRandomVectorGenerator,
+     * GroundStation, double, double, double, ObservableSatellite,
+     * AmbiguityCache)}
      */
+    @Deprecated
     public PhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                         final GroundStation station, final double wavelength,
                         final double sigma, final double baseWeight,
                         final ObservableSatellite satellite) {
+        this(noiseSource, station, wavelength, sigma, baseWeight, satellite,
+             AmbiguityCache.DEFAULT_CACHE);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param station ground station from which measurement is performed
+     * @param wavelength phase observed value wavelength (m)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this builder
+     * @param cache from which ambiguity drive should come
+     * @since 12.1
+     */
+    public PhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                        final GroundStation station, final double wavelength,
+                        final double sigma, final double baseWeight,
+                        final ObservableSatellite satellite,
+                        final AmbiguityCache cache) {
         super(noiseSource, sigma, baseWeight, satellite);
         this.station    = station;
         this.wavelength = wavelength;
         this.satellite  = satellite;
+        this.cache      = cache;
     }
 
     /** {@inheritDoc} */
@@ -73,7 +102,8 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
 
         // create a dummy measurement
-        final Phase dummy = new Phase(station, relevant[0].getDate(), Double.NaN, wavelength, sigma, baseWeight, satellite);
+        final Phase dummy = new Phase(station, relevant[0].getDate(), Double.NaN, wavelength,
+                                      sigma, baseWeight, satellite, cache);
         for (final EstimationModifier<Phase> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -88,7 +118,7 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         }
 
         // estimate the perfect value of the measurement
-        double phase = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
+        double phase = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();
@@ -97,7 +127,8 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         }
 
         // generate measurement
-        final Phase measurement = new Phase(station, relevant[0].getDate(), phase, wavelength, sigma, baseWeight, satellite);
+        final Phase measurement = new Phase(station, relevant[0].getDate(), phase, wavelength,
+                                            sigma, baseWeight, satellite, cache);
         for (final EstimationModifier<Phase> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

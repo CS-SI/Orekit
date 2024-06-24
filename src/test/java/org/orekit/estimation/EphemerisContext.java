@@ -31,6 +31,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -76,6 +77,7 @@ public class EphemerisContext implements StationDataProvider {
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name),
+                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                                  ut1.getEOPHistory(), displacements);
     }
 

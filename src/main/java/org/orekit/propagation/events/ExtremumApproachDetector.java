@@ -89,7 +89,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      *                            approach.
      */
     public ExtremumApproachDetector(final PVCoordinatesProvider secondaryPVProvider) {
-        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing(), secondaryPVProvider);
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing(), secondaryPVProvider);
     }
 
     /**
@@ -128,11 +128,25 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * Compute the relative PV between primary and secondary objects.
      *
      * @param s Spacecraft state.
+     *
      * @return Relative position between primary (=s) and secondaryPVProvider.
+     *
+     * @deprecated The output type of this method shall be modified in the future to improve code efficiency (though it will
+     * still give access to the relative position and velocity)
      */
+    @Deprecated
     public PVCoordinates computeDeltaPV(final SpacecraftState s) {
-        return new PVCoordinates(s.getPVCoordinates(),
-                                 secondaryPVProvider.getPVCoordinates(s.getDate(), s.getFrame()));
+        final Vector3D primaryPos = s.getPosition();
+        final Vector3D primaryVel = s.getPVCoordinates().getVelocity();
+
+        final PVCoordinates secondaryPV  = secondaryPVProvider.getPVCoordinates(s.getDate(), s.getFrame());
+        final Vector3D      secondaryPos = secondaryPV.getPosition();
+        final Vector3D      secondaryVel = secondaryPV.getVelocity();
+
+        final Vector3D relativePos = secondaryPos.subtract(primaryPos);
+        final Vector3D relativeVel  = secondaryVel.subtract(primaryVel);
+
+        return new PVCoordinates(relativePos, relativeVel);
     }
 
     /** {@inheritDoc} */

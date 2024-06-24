@@ -195,13 +195,13 @@ public class L1TransformProvider implements TransformProvider {
         final T zero             = primaryToSecondary.getX().getField().getZero();
         final T[] searchInterval = UnivariateSolverUtils.bracket(l1Equation,
                                                                  baseR, zero, bigR.multiply(2),
-                                                                 bigR.multiply(0.01), zero.add(1),
+                                                                 bigR.multiply(0.01), zero.newInstance(1),
                                                                  MAX_EVALUATIONS);
 
 
-        final T relativeAccuracy = zero.add(RELATIVE_ACCURACY);
-        final T absoluteAccuracy = zero.add(ABSOLUTE_ACCURACY);
-        final T functionAccuracy = zero.add(FUNCTION_ACCURACY);
+        final T relativeAccuracy = zero.newInstance(RELATIVE_ACCURACY);
+        final T absoluteAccuracy = zero.newInstance(ABSOLUTE_ACCURACY);
+        final T functionAccuracy = zero.newInstance(FUNCTION_ACCURACY);
 
         final FieldBracketingNthOrderBrentSolver<T> solver =
                         new FieldBracketingNthOrderBrentSolver<>(relativeAccuracy,

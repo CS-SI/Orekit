@@ -468,12 +468,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         @Override
-        public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-            return propagate(date).getPVCoordinates(frame);
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public void resetInitialState(final FieldSpacecraftState<T> state) {
             super.resetInitialState(state);
             FieldAbstractAnalyticalPropagator.this.resetInitialState(state);

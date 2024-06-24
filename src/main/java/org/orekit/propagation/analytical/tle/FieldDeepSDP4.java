@@ -222,12 +222,12 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
         zmos = MathUtils.normalizeAngle(6.2565837 + 0.017201977 * daysSince1900, pi.getReal());
 
         // Do solar terms
-        savtsn = zero.add(1e20);
+        savtsn = zero.newInstance(1e20);
 
-        T zcosi = zero.add(0.91744867);
-        T zsini = zero.add(0.39785416);
-        T zsing = zero.add(-0.98088458);
-        T zcosg = zero.add(0.1945905);
+        T zcosi = zero.newInstance(0.91744867);
+        T zsini = zero.newInstance(0.39785416);
+        T zsing = zero.newInstance(-0.98088458);
+        T zcosg = zero.newInstance(0.1945905);
 
         T se =  zero;
         T sgh = zero;
@@ -258,9 +258,9 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
             final T x6  = a6.multiply(sing);
             final T x7  = a5.multiply(cosg);
             final T x8  = a6.multiply(cosg);
-            final T z31 = x1.multiply(x1).multiply(12).subtract(x3.multiply(x3).multiply(3));
+            final T z31 = x1.square().multiply(12).subtract(x3.square().multiply(3));
             final T z32 = x1.multiply(x2).multiply(24).subtract(x3.multiply(x4).multiply(6));
-            final T z33 = x2.multiply(x2).multiply(12).subtract(x4.multiply(x4).multiply(3));
+            final T z33 = x2.square().multiply(12).subtract(x4.square().multiply(3));
             final T z11 = a1.multiply(-6).multiply(a5).add(e0sq.multiply(x1.multiply(x7).multiply(-24).add(x3.multiply(x5).multiply(-6))));
             final T z12 = a1.multiply(a6).add(a3.multiply(a5)).multiply(-6).add(
                                 e0sq.multiply(x2.multiply(x7).add(x1.multiply(x8)).multiply(-24).add(
@@ -280,9 +280,9 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
             final T s5  = x1.multiply(x3).add(x2.multiply(x4));
             final T s6  = x2.multiply(x3).add(x1.multiply(x4));
             final T s7  = x2.multiply(x4).subtract(x1.multiply(x3));
-            T z1 = a1.multiply(a1).add(a2.multiply(a2)).multiply(3).add(z31.multiply(e0sq));
+            T z1 = a1.square().add(a2.square()).multiply(3).add(z31.multiply(e0sq));
             T z2 = a1.multiply(a3).add(a2.multiply(a4)).multiply(6).add(z32.multiply(e0sq));
-            T z3 = a3.multiply(a3).add(a4.multiply(a4)).multiply(3).add(z33.multiply(e0sq));
+            T z3 = a3.square().add(a4.square()).multiply(3).add(z33.multiply(e0sq));
 
             z1 = z1.add(z1).add(beta02.multiply(z31));
             z2 = z2.add(z2).add(beta02.multiply(z32));
@@ -328,10 +328,10 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
                 sh3 = xh3;
                 sl4 = xl4;
                 sgh4 = xgh4;
-                zcosg = zero.add(zcosgl);
-                zsing = zero.add(zsingl);
-                zcosi = zero.add(zcosil);
-                zsini = zero.add(zsinil);
+                zcosg = zero.newInstance(zcosgl);
+                zsing = zero.newInstance(zsingl);
+                zcosi = zero.newInstance(zcosil);
+                zsini = zero.newInstance(zsinil);
                 zcosh = cosq.multiply(zcoshl).add(sinq.multiply(zsinhl));
                 zsinh = sinq.multiply(zcoshl).subtract(cosq.multiply(zsinhl));
                 zn = TLEConstants.ZNL;
@@ -520,7 +520,7 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
 
                 final T xldot = xni.add(xfact);
 
-                T xlpow = t.getField().getZero().add(1.);
+                T xlpow = t.getField().getOne();
                 xli = xli.add(xldot.multiply(delt));
                 xni = xni.add(derivs[0].multiply(delt));
                 double delt_factor = delt;

@@ -17,22 +17,27 @@
 package org.orekit.propagation.analytical;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -47,7 +52,8 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
     /** Constituent propagators. */
-    private final NavigableMap<AbsoluteDate, ? extends BoundedPropagator> propagators;
+    private final TimeSpanMap<BoundedPropagator> map;
+
     /** Minimum date for {@link #getMinDate()}. */
     private final AbsoluteDate min;
     /** Maximum date for {@link #getMaxDate()}. */
@@ -67,19 +73,14 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      *                    propagator with the latest {@link BoundedPropagator#getMinDate()}
      *                    is used.
      */
-    public AggregateBoundedPropagator(
-            final Collection<? extends BoundedPropagator> propagators) {
-        super(defaultAttitude(propagators));
-        final NavigableMap<AbsoluteDate, BoundedPropagator> map =
-                new TreeMap<>();
-        for (final BoundedPropagator propagator : propagators) {
-            map.put(propagator.getMinDate(), propagator);
-        }
-        this.propagators = map;
-        this.min = map.firstEntry().getValue().getMinDate();
-        this.max = map.lastEntry().getValue().getMaxDate();
-        super.resetInitialState(
-                this.propagators.firstEntry().getValue().getInitialState());
+    public AggregateBoundedPropagator(final Collection<? extends BoundedPropagator> propagators) {
+        super(null);
+        map = new TimeSpanMap<>(null);
+        propagators.forEach(p -> map.addValidAfter(p, p.getMinDate(), false));
+        setAttitudeProvider(new AggregateAttitudeProvider());
+        this.min = map.getFirstNonNullSpan().getData().getMinDate();
+        this.max = map.getLastNonNullSpan().getData().getMaxDate();
+        super.resetInitialState(getInitialState());
     }
 
     /**
@@ -93,31 +94,23 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      * @param min         the value for {@link #getMinDate()}.
      * @param max         the value for {@link #getMaxDate()}.
      */
-    public AggregateBoundedPropagator(
-            final NavigableMap<AbsoluteDate, ? extends BoundedPropagator> propagators,
-            final AbsoluteDate min,
-            final AbsoluteDate max) {
-        super(defaultAttitude(propagators.values()));
-        this.propagators = propagators;
+    public AggregateBoundedPropagator(final NavigableMap<AbsoluteDate, ? extends BoundedPropagator> propagators,
+                                      final AbsoluteDate min, final AbsoluteDate max) {
+        super(null);
+        map = new TimeSpanMap<>(null);
+        propagators.forEach((d, p) -> map.addValidAfter(p, p.getMinDate(), false));
+        setAttitudeProvider(new AggregateAttitudeProvider());
         this.min = min;
         this.max = max;
-        super.resetInitialState(
-                this.propagators.firstEntry().getValue().getInitialState());
+        super.resetInitialState(getInitialState());
     }
 
-    /**
-     * Helper function for the constructor.
-     * @param propagators to consider.
-     * @return attitude provider.
+    /** Get the propagators map.
+     * @return propagators map
+     * @since 12.1
      */
-    private static AttitudeProvider defaultAttitude(
-            final Collection<? extends Propagator> propagators) {
-        // this check is needed here because it can't be before the super() call in the
-        // constructor.
-        if (propagators.isEmpty()) {
-            throw new OrekitException(OrekitMessages.NOT_ENOUGH_PROPAGATORS);
-        }
-        return new FrameAlignedProvider(propagators.iterator().next().getFrame());
+    public TimeSpanMap<BoundedPropagator> getPropagatorsMap() {
+        return map;
     }
 
     /** Get an unmodifiable view of the propagators map.
@@ -127,9 +120,15 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      * </p>
      * @return unmodifiable view of the propagators map
      * @since 12.0
+     * @deprecated as of 12.1, replaced by {@link #getPropagatorsMap()}
      */
-    public NavigableMap<AbsoluteDate, ? extends BoundedPropagator> getPropagators() {
-        return Collections.unmodifiableNavigableMap(propagators);
+    @Deprecated
+    public NavigableMap<AbsoluteDate, BoundedPropagator> getPropagators() {
+        final NavigableMap<AbsoluteDate, BoundedPropagator> nm = new TreeMap<>();
+        for (TimeSpanMap.Span<BoundedPropagator> span = map.getFirstNonNullSpan(); span != null; span = span.next()) {
+            nm.put(span.getData().getMinDate(), span.getData());
+        }
+        return nm;
     }
 
     @Override
@@ -163,6 +162,11 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        return getPropagator(date).propagate(date).getPosition(frame);
+    }
+
+    @Override
     protected Orbit propagateOrbit(final AbsoluteDate date) {
         return getPropagator(date).propagate(date).getOrbit();
     }
@@ -184,7 +188,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
 
     @Override
     public SpacecraftState getInitialState() {
-        return propagators.firstEntry().getValue().getInitialState();
+        return map.getFirstNonNullSpan().getData().getInitialState();
     }
 
     @Override
@@ -205,13 +209,46 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      * @return propagator to use on date.
      */
     private BoundedPropagator getPropagator(final AbsoluteDate date) {
-        final Entry<AbsoluteDate, ? extends BoundedPropagator> entry =
-                propagators.floorEntry(date);
-        if (entry != null) {
-            return entry.getValue();
+        final BoundedPropagator propagator = map.get(date);
+        if (propagator != null) {
+            return propagator;
         } else {
             // let the first propagator throw the exception
-            return propagators.firstEntry().getValue();
+            return map.getFirstNonNullSpan().getData();
+        }
+    }
+
+    /** Local attitude provider. */
+    private class AggregateAttitudeProvider implements AttitudeProvider {
+
+        /** {@inheritDoc} */
+        @Override
+        public Attitude getAttitude(final PVCoordinatesProvider pvProv,
+                                    final AbsoluteDate date,
+                                    final Frame frame) {
+            return getPropagator(date).getAttitudeProvider().getAttitude(pvProv, date, frame);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                final FieldAbsoluteDate<T> date,
+                                                                                final Frame frame) {
+            return getPropagator(date.toAbsoluteDate()).getAttitudeProvider().getAttitude(pvProv, date, frame);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+            return getPropagator(date).getAttitudeProvider().getAttitudeRotation(pvProv, date, frame);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                        final FieldAbsoluteDate<T> date,
+                                                                                        final Frame frame) {
+            return getPropagator(date.toAbsoluteDate()).getAttitudeProvider().getAttitudeRotation(pvProv, date, frame);
         }
     }
 

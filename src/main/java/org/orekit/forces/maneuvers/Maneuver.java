@@ -295,7 +295,7 @@ public class Maneuver implements ForceModel {
      * @param parameters parameters' array called in by ForceModel interface
      * @return propulsion model parameters
      */
-    private double[] getPropulsionModelParameters(final double[] parameters) {
+    public double[] getPropulsionModelParameters(final double[] parameters) {
         return Arrays.copyOfRange(parameters, 0, propulsionModel.getParametersDrivers().size());
     }
 
@@ -305,7 +305,7 @@ public class Maneuver implements ForceModel {
      * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return propulsion model parameters
      */
-    private <T extends CalculusFieldElement<T>> T[] getPropulsionModelParameters(final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> T[] getPropulsionModelParameters(final T[] parameters) {
         return Arrays.copyOfRange(parameters, 0, propulsionModel.getParametersDrivers().size());
     }
 
@@ -314,7 +314,7 @@ public class Maneuver implements ForceModel {
      * @param parameters parameters' array called in by ForceModel interface
      * @return maneuver triggers' parameters
      */
-    private double[] getManeuverTriggersParameters(final double[] parameters) {
+    public double[] getManeuverTriggersParameters(final double[] parameters) {
         final int nbPropulsionModelDrivers = propulsionModel.getParametersDrivers().size();
         return Arrays.copyOfRange(parameters, nbPropulsionModelDrivers,
                                   nbPropulsionModelDrivers + maneuverTriggers.getParametersDrivers().size());
@@ -326,7 +326,7 @@ public class Maneuver implements ForceModel {
      * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return maneuver triggers' parameters
      */
-    private <T extends CalculusFieldElement<T>> T[] getManeuverTriggersParameters(final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> T[] getManeuverTriggersParameters(final T[] parameters) {
         final int nbPropulsionModelDrivers = propulsionModel.getParametersDrivers().size();
         return Arrays.copyOfRange(parameters, nbPropulsionModelDrivers,
                                   nbPropulsionModelDrivers + maneuverTriggers.getParametersDrivers().size());

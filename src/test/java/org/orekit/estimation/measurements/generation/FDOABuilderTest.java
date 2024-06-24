@@ -99,10 +99,10 @@ public class FDOABuilderTest {
         generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), emitter, receiver, satellite),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(satellite),
-                                                         BooleanDetector.andCombine(new ElevationDetector(emitter.getBaseFrame()).
-                                                                                    withConstantElevation(FastMath.toRadians(5.0)),
-                                                                                    new ElevationDetector(receiver.getBaseFrame()).
-                                                                                    withConstantElevation(FastMath.toRadians(5.0))),
+                                                         BooleanDetector.andCombine(EstimationTestUtils.getElevationDetector(emitter.getBaseFrame(),
+                                                                                                                             FastMath.toRadians(5.0)),
+                                                                                    EstimationTestUtils.getElevationDetector(receiver.getBaseFrame(),
+                                                                                                                             FastMath.toRadians(5.0))),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
         final GatheringSubscriber gatherer = new GatheringSubscriber();
         generator.addSubscriber(gatherer);
@@ -132,7 +132,7 @@ public class FDOABuilderTest {
             }
             previous = date;
             SpacecraftState state = propagator.propagate(date);
-            double[] e = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state }).getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }

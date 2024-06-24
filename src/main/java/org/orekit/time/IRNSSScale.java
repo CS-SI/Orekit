@@ -16,9 +16,6 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.CalculusFieldElement;
-
-
 /** IRNSS time scale (also called IRNWT for IRNSS NetWork Time).
  * <p>By convention, TIRNSS = TAI - 19 s.</p>
  * <p>This is intended to be accessed thanks to {@link TimeScales},
@@ -26,45 +23,15 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public class IRNSSScale implements TimeScale {
+public class IRNSSScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20180323L;
-
-    /** Offset from TAI. */
-    private static final double OFFSET = -19;
+    private static final long serialVersionUID = 20240321L;
 
     /** Package private constructor for the factory.
      */
     IRNSSScale() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(OFFSET);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return -OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    public String getName() {
-        return "IRNSS";
-    }
-
-    /** {@inheritDoc} */
-    public String toString() {
-        return getName();
+        super("IRNSS", -19);
     }
 
 }

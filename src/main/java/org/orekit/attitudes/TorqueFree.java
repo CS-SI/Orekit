@@ -516,11 +516,11 @@ public class TorqueFree implements AttitudeProvider {
             final T       o1                = FieldVector3D.dotProduct(omega0, n1);
             final T       o2                = FieldVector3D.dotProduct(omega0, n2);
             final T       o3                = FieldVector3D.dotProduct(omega0, n3);
-            final T       o12               = o1.multiply(o1);
-            final T       o22               = o2.multiply(o2);
-            final T       o32               = o3.multiply(o3);
+            final T       o12               = o1.square();
+            final T       o22               = o2.square();
+            final T       o32               = o3.square();
             final T       twoE              = fI1.multiply(o12).add(fI2.multiply(o22)).add(fI3.multiply(o32));
-            final T       m2                = fI1.multiply(fI1).multiply(o12).add(fI2.multiply(fI2).multiply(o22)).add(fI3.multiply(fI3).multiply(o32));
+            final T       m2                = fI1.square().multiply(o12).add(fI2.square().multiply(o22)).add(fI3.square().multiply(o32));
             final T       separatrixInertia = (twoE.isZero()) ? zero : m2.divide(twoE);
             final boolean clockwise;
             if (separatrixInertia.subtract(tmpInertia.getInertiaAxis2().getI()).getReal() < 0) {
@@ -651,7 +651,7 @@ public class TorqueFree implements AttitudeProvider {
                 public T[] computeDerivatives(final T t, final T[] y) {
                     final T sn = jacobi.valuesN(t.subtract(dtRef).multiply(tScale)).sn();
                     final T[] yDot = MathArrays.buildArray(dtRef.getField(), 1);
-                    yDot[0] = b.divide(c.add(d.multiply(sn).multiply(sn)));
+                    yDot[0] = b.divide(c.add(d.multiply(sn.square())));
                     return yDot;
                 }
 

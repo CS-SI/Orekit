@@ -246,7 +246,7 @@ public class TimeStampedFieldAngularCoordinatesHermiteInterpolator<KK extends Ca
                 // we need to offset all rotations to avoid the singularity
                 offset = offset.addOffset(
                         new FieldAngularCoordinates<>(new FieldRotation<>(FieldVector3D.getPlusI(field),
-                                                                          one.multiply(epsilon),
+                                                                          one.newInstance(epsilon),
                                                                           RotationConvention.VECTOR_OPERATOR),
                                                       FieldVector3D.getZero(field), FieldVector3D.getZero(field)));
             } else {

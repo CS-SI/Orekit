@@ -83,13 +83,13 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
         // apply the bias to the measurement value
         final double[] value = estimated.getEstimatedValue();
         int nb = 0;
-        for (int i = 0; i < drivers.size(); ++i) {
-            final ParameterDriver driver = drivers.get(i);
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        for (final ParameterDriver driver : drivers) {
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan();
+                 span != null; span = span.next()) {
                 value[nb++] += driver.getValue(span.getStart());
             }
         }
-        estimated.setEstimatedValue(value);
+        estimated.modifyEstimatedValue(this, value);
 
     }
 
@@ -99,12 +99,13 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
 
         // apply the bias to the measurement value
         int nb = 0;
-        for (int i = 0; i < drivers.size(); ++i) {
-            final ParameterDriver driver = drivers.get(i);
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        for (final ParameterDriver driver : drivers) {
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan();
+                 span != null; span = span.next()) {
                 if (driver.isSelected()) {
                     // add the partial derivatives
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[nb++]);
+                    estimated.setParameterDerivatives(driver, span.getStart(),
+                                                      derivatives[nb++]);
                 }
             }
         }

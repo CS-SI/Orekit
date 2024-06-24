@@ -21,6 +21,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import java.util.concurrent.TimeUnit;
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
@@ -154,6 +155,41 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
 
     }
 
+    /** Build an instance from a seconds offset with respect to another one.
+     * @param reference reference date/time
+     * @param offset offset from the reference
+     * @param timeUnit the {@link TimeUnit} for the offset
+     * @see #offsetFrom(DateTimeComponents, TimeUnit)
+     * @since 12.1
+     */
+    public DateTimeComponents(final DateTimeComponents reference,
+        final long offset, final TimeUnit timeUnit) {
+
+        // extract linear data from reference date/time
+        int    day     = reference.getDate().getJ2000Day();
+        double seconds = reference.getTime().getSecondsInLocalDay();
+
+        // apply offset
+        long offsetInNanos = TimeUnit.NANOSECONDS.convert(offset, timeUnit);
+        final long daysInNanoseconds = TimeUnit.NANOSECONDS.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+        final int nanoDayShift = (int) FastMath.floorDiv(offsetInNanos, daysInNanoseconds);
+        offsetInNanos -= daysInNanoseconds * nanoDayShift;
+
+        seconds += offsetInNanos / (double) TimeUnit.SECONDS.toNanos(1);
+
+        // fix range
+        final int dayShift = (int) FastMath.floor(seconds / Constants.JULIAN_DAY);
+        seconds -= Constants.JULIAN_DAY * dayShift;
+        day     += dayShift + nanoDayShift;
+        final TimeComponents tmpTime = new TimeComponents(seconds);
+
+        // set up components
+        this.date = new DateComponents(day);
+        this.time = new TimeComponents(tmpTime.getHour(), tmpTime.getMinute(), tmpTime.getSecond(),
+            reference.getTime().getMinutesFromUTC());
+
+    }
+
     /** Parse a string in ISO-8601 format to build a date/time.
      * <p>The supported formats are all date formats supported by {@link DateComponents#parseDate(String)}
      * and all time formats supported by {@link TimeComponents#parseTime(String)} separated
@@ -187,6 +223,24 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
         final double timeOffset = time.getSecondsInUTCDay() - dateTime.time.getSecondsInUTCDay();
         return Constants.JULIAN_DAY * dateOffset + timeOffset;
+    }
+
+    /** Compute the seconds offset between two instances.
+     * @param dateTime dateTime to subtract from the instance
+     * @param timeUnit the desired {@link TimeUnit}
+     * @return offset in the given timeunit between the two instants (positive
+     * if the instance is posterior to the argument), rounded to the nearest integer {@link TimeUnit}
+     * @see #DateTimeComponents(DateTimeComponents, long, TimeUnit)
+     * @since 12.1
+     */
+    public long offsetFrom(final DateTimeComponents dateTime, final TimeUnit timeUnit) {
+        final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
+        final double timeOffset = time.getSecondsInUTCDay() - dateTime.time.getSecondsInUTCDay();
+
+        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
+
+        return timeUnit.convert(Math.round(Constants.JULIAN_DAY * dateOffset), TimeUnit.SECONDS) +
+            FastMath.round(timeOffset * multiplier);
     }
 
     /** Get the date component.

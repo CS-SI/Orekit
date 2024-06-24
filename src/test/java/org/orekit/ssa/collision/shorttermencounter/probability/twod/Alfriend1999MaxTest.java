@@ -29,8 +29,10 @@ import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -60,6 +62,11 @@ class Alfriend1999MaxTest {
      * Simple method to compute probability of collision assuming a constant density of probability of collision.
      */
     private final ShortTermEncounter2DPOCMethod method = new Alfriend1999Max();
+
+    @BeforeAll
+    static void initializeOrekitData() {
+        Utils.setDataRoot("regular-data");
+    }
 
     /**
      * This method use the data from the appendix (p.13) of "Armellin, R. (2021). Collision Avoidance Maneuver Optimization

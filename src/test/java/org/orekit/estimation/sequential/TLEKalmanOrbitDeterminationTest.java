@@ -205,7 +205,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final boolean print = false;
 
         // input in resources directory
-        final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -319,7 +319,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final boolean print = false;
 
         // input in resources directory
-        final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();
+        final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -361,7 +361,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 1053.6m
-        final double distanceAccuracy = 67.33;
+        final double distanceAccuracy = 67.48;
 
         // Tests
 

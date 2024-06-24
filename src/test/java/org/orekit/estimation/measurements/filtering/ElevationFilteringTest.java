@@ -46,6 +46,7 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -133,7 +134,8 @@ public class ElevationFilteringTest {
         final OneAxisEllipsoid body = new OneAxisEllipsoid(equatorialRadius, flattening, bodyFrame);
         final GeodeticPoint position = new GeodeticPoint(29.868112727, -89.673232869, -14.853146);
         final TopocentricFrame topo = new TopocentricFrame(body, position, "SBCH");
-        final GroundStation station = new GroundStation(topo);
+        final GroundStation station = new GroundStation(topo,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         final double noise = 0.1;
         Generator generatorThreshold = getGenerator(orbit, station, topo, noise, threshold);
         final GatheringSubscriber gathererThreshold = new GatheringSubscriber();

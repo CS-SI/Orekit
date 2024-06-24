@@ -68,7 +68,8 @@ public class PhaseCentersPhaseModifierTest {
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01,
                                                                                            ambiguity, satClockOffset),
                                                                1.0, 3.0, 300.0);
 
@@ -78,7 +79,8 @@ public class PhaseCentersPhaseModifierTest {
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01,
                                                                                            ambiguity, satClockOffset,
                                                                                            Vector3D.ZERO, null,
                                                                                            new Vector3D(xOffset, 0, 0), null),
@@ -112,7 +114,8 @@ public class PhaseCentersPhaseModifierTest {
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01,
                                                                                            ambiguity, satClockOffset,
                                                                                            Vector3D.ZERO, null,
                                                                                            Vector3D.ZERO, null),
@@ -135,7 +138,8 @@ public class PhaseCentersPhaseModifierTest {
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01,
                                                                                            ambiguity, satClockOffset,
                                                                                            stationMeanPosition,   stationPCV,
                                                                                            satelliteMeanPosition, satellitePCV),
@@ -151,8 +155,7 @@ public class PhaseCentersPhaseModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Phase sr = (Phase) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<Phase> estimated = sr.estimateWithoutDerivatives(0, 0,
-                                                                                      new SpacecraftState[] { p3.propagate(sr.getDate()) });
+            EstimatedMeasurementBase<Phase> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.1e-5);

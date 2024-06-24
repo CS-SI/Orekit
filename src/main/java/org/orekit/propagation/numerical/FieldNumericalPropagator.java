@@ -28,6 +28,7 @@ import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -126,7 +127,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * </pre>
  * <p>By default, at the end of the propagation, the propagator resets the initial state to the final state,
  * thus allowing a new propagation to be started from there without recomputing the part already performed.
- * This behaviour can be chenged by calling {@link #setResetAtEnd(boolean)}.
+ * This behaviour can be changed by calling {@link #setResetAtEnd(boolean)}.
  * </p>
  * <p>Beware the same instance cannot be used simultaneously by different threads, the class is <em>not</em>
  * thread-safe.</p>
@@ -155,6 +156,11 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
     /** boolean to ignore or not the creation of a NewtonianAttraction. */
     private boolean ignoreCentralAttraction = false;
+
+    /**
+     * boolean to know if a full attitude (with rates) is needed when computing derivatives for the ODE.
+     */
+    private boolean needFullAttitudeForDerivatives = true;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
@@ -196,7 +202,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                                     final AttitudeProvider attitudeProvider) {
         super(field, integrator, PropagationType.OSCULATING);
         this.field = field;
-        forceModels = new ArrayList<ForceModel>();
+        forceModels = new ArrayList<>();
         initMapper(field);
         setAttitudeProvider(attitudeProvider);
         setMu(field.getZero().add(Double.NaN));
@@ -213,16 +219,17 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         this.ignoreCentralAttraction = ignoreCentralAttraction;
     }
 
-     /** Set the central attraction coefficient μ.
-      * <p>
-      * Setting the central attraction coefficient is
-      * equivalent to {@link #addForceModel(ForceModel) add}
-      * a {@link NewtonianAttraction} force model.
-      * </p>
+    /** Set the central attraction coefficient μ.
+     * <p>
+     * Setting the central attraction coefficient is
+     * equivalent to {@link #addForceModel(ForceModel) add}
+     * a {@link NewtonianAttraction} force model.
+     * </p>
      * @param mu central attraction coefficient (m³/s²)
      * @see #addForceModel(ForceModel)
      * @see #getAllForceModels()
      */
+    @Override
     public void setMu(final T mu) {
         if (ignoreCentralAttraction) {
             superSetMu(mu);
@@ -268,13 +275,13 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().add(driver.getValue(date)));
+                        superSetMu(field.getZero().newInstance(driver.getValue(date)));
                     }
                     /** {@inheritDoc} */
                     @Override
                     public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().add(driver.getValue()));
+                        superSetMu(field.getZero().newInstance(driver.getValue()));
                     }
                 });
             } catch (OrekitException oe) {
@@ -327,6 +334,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
+    @Override
     public void setOrbitType(final OrbitType orbitType) {
         super.setOrbitType(orbitType);
     }
@@ -334,6 +342,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
+    @Override
     public OrbitType getOrbitType() {
         return superGetOrbitType();
     }
@@ -354,6 +363,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
+    @Override
     public void setPositionAngleType(final PositionAngleType positionAngleType) {
         super.setPositionAngleType(positionAngleType);
     }
@@ -361,6 +371,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
+    @Override
     public PositionAngleType getPositionAngleType() {
         return super.getPositionAngleType();
     }
@@ -373,6 +384,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
+    @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
@@ -382,8 +394,11 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
+    @Override
+    protected AttitudeProvider initializeAttitudeProviderForDerivatives() {
+        final AttitudeProvider attitudeProvider = getAttitudeProvider();
+        return needFullAttitudeForDerivatives ? attitudeProvider :
+            AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
     }
 
     /** {@inheritDoc} */
@@ -488,6 +503,9 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
         private T[][] jacobian;
 
+        /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
+        private boolean recomputingJacobian;
+
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
@@ -495,17 +513,16 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
             this.yDot     = MathArrays.buildArray(getField(),  7);
             this.jacobian = MathArrays.buildArray(getField(),  6, 6);
+            this.recomputingJacobian = true;
+
             for (final ForceModel forceModel : forceModels) {
                 forceModel.getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
-            if (superGetOrbitType() == null) {
-                // propagation uses absolute position-velocity-acceleration
-                // we can set Jacobian once and for all
-                for (int i = 0; i < jacobian.length; ++i) {
-                    Arrays.fill(jacobian[i], getField().getZero());
-                    jacobian[i][i] = getField().getOne();
-                }
+            // default value for Jacobian is identity
+            for (int i = 0; i < jacobian.length; ++i) {
+                Arrays.fill(jacobian[i], getField().getZero());
+                jacobian[i][i] = getField().getOne();
             }
 
         }
@@ -513,7 +530,21 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         /** {@inheritDoc} */
         @Override
         public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+            needFullAttitudeForDerivatives = forceModels.stream().anyMatch(ForceModel::dependsOnAttitudeRate);
+
             forceModels.forEach(fm -> fm.init(initialState, target));
+
+            final int numberOfForces = forceModels.size();
+            final OrbitType orbitType = superGetOrbitType();
+            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
+                if (numberOfForces > 1) {
+                    recomputingJacobian = true;
+                } else {
+                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
+                }
+            } else {
+                recomputingJacobian = false;
+            }
         }
 
         /** {@inheritDoc} */
@@ -522,8 +553,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             final T zero = state.getA().getField().getZero();
             currentState = state;
             Arrays.fill(yDot, zero);
-            if (superGetOrbitType() != null) {
-                // propagation uses regular orbits
+            if (recomputingJacobian) {
+                // propagation uses Jacobian matrix of orbital parameters w.r.t. Cartesian ones
                 currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
             }
 

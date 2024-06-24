@@ -21,6 +21,7 @@ import java.util.Arrays;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -48,11 +49,31 @@ class TDOAModifierUtil {
      * @param primeStation prime station
      * @param secondStation second station
      * @param modelEffect model effect
+     * @deprecated as of 12.1, replaced by {@link #modifyWithoutDerivatives(EstimatedMeasurementBase,
+     * GroundStation, GroundStation, ParametricModelEffect, EstimationModifier)}
      */
+    @Deprecated
     public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
                                                                                    final GroundStation primeStation,
                                                                                    final GroundStation secondStation,
                                                                                    final ParametricModelEffect modelEffect) {
+        modifyWithoutDerivatives(estimated, primeStation, secondStation, modelEffect, null);
+    }
+
+    /** Apply a modifier to an estimated measurement.
+     * @param <T> type of the measurement
+     * @param estimated estimated measurement to modify
+     * @param primeStation prime station
+     * @param secondStation second station
+     * @param modelEffect model effect
+     * @param modifier applied modifier
+     * @since 12.1
+     */
+    public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
+                                                                                   final GroundStation primeStation,
+                                                                                   final GroundStation secondStation,
+                                                                                   final ParametricModelEffect modelEffect,
+                                                                                   final EstimationModifier<T> modifier) {
 
         final SpacecraftState state       = estimated.getStates()[0];
         final double[]        oldValue    = estimated.getEstimatedValue();
@@ -64,7 +85,7 @@ class TDOAModifierUtil {
         final double[] newValue = oldValue.clone();
         newValue[0] += primeDelay;
         newValue[0] -= secondDelay;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(modifier, newValue);
     }
 
     /** Apply a modifier to an estimated measurement.
@@ -76,13 +97,40 @@ class TDOAModifierUtil {
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
      * @param modelEffectGradient model effect gradient
+     * @deprecated as of 12.1, replaced by {@link #modify(EstimatedMeasurement,
+     * ParameterDriversProvider, AbstractGradientConverter, GroundStation, GroundStation,
+     * ParametricModelEffect, ParametricModelEffectGradient, EstimationModifier)}
      */
+    @Deprecated
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
                                                                  final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
                                                                  final GroundStation primeStation, final GroundStation secondStation,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient) {
+        modify(estimated, parametricModel, converter, primeStation, secondStation,
+               modelEffect, modelEffectGradient, null);
+    }
+
+    /** Apply a modifier to an estimated measurement.
+     * @param <T> type of the measurement
+     * @param estimated estimated measurement to modify
+     * @param primeStation prime station
+     * @param secondStation second station
+     * @param converter gradient converter
+     * @param parametricModel parametric modifier model
+     * @param modelEffect model effect
+     * @param modelEffectGradient model effect gradient
+     * @param modifier applied modifier
+     * @since 12.1
+     */
+    public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
+                                                                 final ParameterDriversProvider parametricModel,
+                                                                 final AbstractGradientConverter converter,
+                                                                 final GroundStation primeStation, final GroundStation secondStation,
+                                                                 final ParametricModelEffect modelEffect,
+                                                                 final ParametricModelEffectGradient modelEffectGradient,
+                                                                 final EstimationModifier<T> modifier) {
 
         final SpacecraftState state    = estimated.getStates()[0];
         final double[]        oldValue = estimated.getEstimatedValue();
@@ -155,7 +203,7 @@ class TDOAModifierUtil {
         final double[] newValue = oldValue.clone();
         newValue[0] += primeGDelay.getReal();
         newValue[0] -= secondGDelay.getReal();
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(modifier, newValue);
     }
 
 }

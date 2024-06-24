@@ -85,7 +85,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
                             final double threshold,
                             final double altitude,
                             final BodyShape bodyShape) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
              altitude, bodyShape);
     }
 

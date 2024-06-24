@@ -38,11 +38,14 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modifying theoretical TurnAroundRange measurement with ionospheric delay.
+ * <p>
  * The effect of ionospheric correction on the TurnAroundRange is directly computed
  * through the computation of the ionospheric delay.
- *
+ * </p>
+ * <p>
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
+ * </p>
  * <p>
  * Since 10.0, state derivatives and ionospheric parameters derivates are computed
  * using automatic differentiation.
@@ -79,8 +82,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // Delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
-        return delay;
+        return ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
     }
 
     /** Compute the measurement error due to ionosphere.
@@ -96,8 +98,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // Delay in meters
-        final T delay = ionoModel.pathDelay(state, baseFrame, frequency, parameters);
-        return delay;
+        return ionoModel.pathDelay(state, baseFrame, frequency, parameters);
     }
 
     /** Compute the Jacobian of the delay term wrt state using
@@ -150,14 +151,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
     private double[] rangeErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
         // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
         // freeStateParameters ... n     -> derivatives of the delay wrt ionospheric parameters
-        final int dim = derivatives.length - freeStateParameters;
-        final double[] rangeError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[freeStateParameters + i];
-        }
-
-        return rangeError;
+        return Arrays.copyOfRange(derivatives, freeStateParameters, derivatives.length);
     }
 
     /** {@inheritDoc} */
@@ -180,7 +174,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         final double primaryDelay   = rangeErrorIonosphericModel(primaryStation, state);
         final double secondaryDelay = rangeErrorIonosphericModel(secondaryStation, state);
         newValue[0] = newValue[0] + primaryDelay + secondaryDelay;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
 
     }
 
@@ -274,7 +268,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         // The ionospheric delay is directly added to the TurnAroundRange.
         final double[] newValue = estimated.getEstimatedValue();
         newValue[0] = newValue[0] + primaryGDelay.getReal() + secondaryGDelay.getReal();
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 
 }

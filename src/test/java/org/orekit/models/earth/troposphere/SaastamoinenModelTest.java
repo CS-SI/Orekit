@@ -31,11 +31,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 @Deprecated
 public class SaastamoinenModelTest {
 
-    private static double epsilon = 1e-6;
+    private static final double epsilon = 1e-6;
 
     private double[][] expectedValues;
 
@@ -61,12 +63,21 @@ public class SaastamoinenModelTest {
     public void testFixedElevation() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        TroposphericModel adapted = new TroposphericModelAdapter(model);
+        Assertions.assertTrue(adapted.getParametersDrivers().isEmpty());
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
-            final double delay = model.pathDelay(FastMath.toRadians(5), new GeodeticPoint(0.0, 0.0, height), null, AbsoluteDate.J2000_EPOCH);
+            final double elevation = FastMath.toRadians(5);
+            final GeodeticPoint point = new GeodeticPoint(0.0, 0.0, height);
+            final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+            final double delay = model.pathDelay(elevation, point, null, date);
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
+            Assertions.assertEquals(delay,
+                                    adapted.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                                                      point, null, null, date).getDelay(),
+                                    1.0e-10);
         }
     }
 
@@ -79,12 +90,20 @@ public class SaastamoinenModelTest {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        TroposphericModel adapted = new TroposphericModelAdapter(model);
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
-            final T delay = model.pathDelay(zero.add(FastMath.toRadians(5)), new FieldGeodeticPoint<>(zero, zero, zero.add(height)), null, FieldAbsoluteDate.getJ2000Epoch(field));
+            final T elevation = zero.newInstance(FastMath.toRadians(5));
+            final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero, zero, zero.newInstance(height));
+            final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
+            final T delay = model.pathDelay(elevation, point, null, date);
             Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
+            Assertions.assertEquals(delay.getReal(),
+                                    adapted.pathDelay(new FieldTrackingCoordinates<>(zero, elevation, zero),
+                                                      point, null, null, date).getDelay().getReal(),
+                                    1.0e-10);
         }
     }
 
@@ -148,10 +167,8 @@ public class SaastamoinenModelTest {
             FastMath.toRadians(70.0), FastMath.toRadians(75.0), FastMath.toRadians(80.0),
             FastMath.toRadians(85.0), FastMath.toRadians(90.0)
         };
-        for (int h = 0; h < heights.length; h++) {
-            for (int e = 0; e < elevations.length; e++) {
-                double height = heights[h];
-                double elevation = elevations[e];
+        for (double height : heights) {
+            for (double elevation : elevations) {
                 double expectedValue = defaultModel.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height), null, AbsoluteDate.J2000_EPOCH);
                 double actualValue = loadedModel.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height), null, AbsoluteDate.J2000_EPOCH);
                 Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
@@ -232,7 +249,9 @@ public class SaastamoinenModelTest {
                 double height = heights[h];
                 double elevation = elevations[e];
                 double expectedValue = expectedValues[h][e];
-                double actualValue = model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height), null, AbsoluteDate.J2000_EPOCH);
+                final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
+                final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+                double actualValue = model.pathDelay(elevation, location, null, date);
                 Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation) + " precision not met");
             }
@@ -254,7 +273,9 @@ public class SaastamoinenModelTest {
                 T height = zero.add(heights[h]);
                 T elevation = zero.add(elevations[e]);
                 double expectedValue = expectedValues[h][e];
-                T actualValue = model.pathDelay(elevation, new FieldGeodeticPoint<>(zero, zero, zero.add(height)), null, FieldAbsoluteDate.getJ2000Epoch(field));
+                FieldGeodeticPoint<T> location = new FieldGeodeticPoint<>(zero, zero, zero.add(height));
+                FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
+                T actualValue = model.pathDelay(elevation, location, null, date);
                 Assertions.assertEquals(expectedValue, actualValue.getReal(), epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation.getReal()) + " precision not met");
             }

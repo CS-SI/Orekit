@@ -55,8 +55,8 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
      * @param field on which this detector is defined.
      */
     public FieldFunctionalDetector(final Field<T> field) {
-        this(s -> DEFAULT_MAXCHECK,
-             field.getZero().add(DEFAULT_THRESHOLD),
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
+             field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER,
              new FieldContinueOnEvent<>(), value -> field.getOne());
     }

@@ -22,7 +22,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical bistatic range-rate measurements with tropospheric delay.
@@ -35,13 +35,25 @@ import org.orekit.propagation.SpacecraftState;
  * @author Pascal Parraud
  * @since 11.2
  */
-public class BistaticRangeRateTroposphericDelayModifier extends BaseRangeRateTroposphericDelayModifier implements EstimationModifier<BistaticRangeRate> {
+public class BistaticRangeRateTroposphericDelayModifier
+    extends BaseRangeRateTroposphericDelayModifier implements EstimationModifier<BistaticRangeRate> {
 
     /** Constructor.
      *
      * @param model Tropospheric delay model appropriate for the current range-rate measurement method.
+     * @deprecated as of 12.1, replaced by {@link #BistaticRangeRateTroposphericDelayModifier(TroposphericModel)}
      */
-    public BistaticRangeRateTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    public BistaticRangeRateTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model Tropospheric delay model appropriate for the current range-rate measurement method.
+     * @since 12.1
+     */
+    public BistaticRangeRateTroposphericDelayModifier(final TroposphericModel model) {
         super(model);
     }
 
@@ -53,7 +65,8 @@ public class BistaticRangeRateTroposphericDelayModifier extends BaseRangeRateTro
         final GroundStation     emitter     = measurement.getEmitterStation();
         final GroundStation     receiver    = measurement.getReceiverStation();
 
-        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeRateErrorTroposphericModel);
+        BistaticModifierUtil.modify(estimated, emitter, receiver,
+                                    this::rangeRateErrorTroposphericModel, this);
 
     }
 
@@ -70,7 +83,8 @@ public class BistaticRangeRateTroposphericDelayModifier extends BaseRangeRateTro
                                     new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                     emitter, receiver,
                                     this::rangeRateErrorTroposphericModel,
-                                    this::rangeRateErrorTroposphericModel);
+                                    this::rangeRateErrorTroposphericModel,
+                                    this);
 
     }
 

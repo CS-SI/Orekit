@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.Arrays;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -49,6 +47,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.Arrays;
 
 /**
  * This class propagates GLONASS orbits using numerical integration.
@@ -214,13 +214,11 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                 dataContext.getFrames().getPZ9011(IERSConventions.IERS_2010, true),
                 stateInInertial.getDate(), pvInPZ90);
         final TimeStampedPVCoordinates pvInInertial = absPV.getPVCoordinates(eci);
-        final SpacecraftState transformedState = new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GNSSConstants.GLONASS_MU),
-                                                                     stateInInertial.getAttitude(),
-                                                                     stateInInertial.getMass(),
-                                                                     stateInInertial.getAdditionalStatesValues(),
-                                                                     stateInInertial.getAdditionalStatesDerivatives());
-
-        return transformedState;
+        return new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GNSSConstants.GLONASS_MU),
+                                                      stateInInertial.getAttitude(),
+                                                      stateInInertial.getMass(),
+                                                      stateInInertial.getAdditionalStatesValues(),
+                                                      stateInInertial.getAdditionalStatesDerivatives());
     }
 
     /**
@@ -464,7 +462,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         double term = E;
         double d    = 0;
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (double x0 = Double.NaN; !Double.valueOf(x).equals(Double.valueOf(x0));) {
+        for (double x0 = Double.NaN; !Double.valueOf(x).equals(x0);) {
             d += 2;
             term *= mE2 / (d * (d + 1));
             x0 = x;

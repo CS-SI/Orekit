@@ -38,10 +38,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implements EstimationModifier<T> {
 
     /** Emitter dipole. */
-    private Dipole emitter;
+    private final Dipole emitter;
 
     /** Receiver dipole. */
-    private Dipole receiver;
+    private final Dipole receiver;
 
     /** Cached angular value of wind-up. */
     private double angularWindUp;
@@ -104,13 +104,13 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
         final double correction = FastMath.copySign(Vector3D.angle(dEmitter, dReceiver),
                                                     Vector3D.dotProduct(los, Vector3D.crossProduct(dEmitter, dReceiver)));
 
-        // ensure continuity accross measurements
+        // ensure continuity across measurements
         // we assume the various measurements are close enough in time
         // (less the one satellite half-turn) so the angles remain close
         angularWindUp = MathUtils.normalizeAngle(correction, angularWindUp);
 
         // update estimate
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] + angularWindUp / MathUtils.TWO_PI);
+        estimated.modifyEstimatedValue(this, estimated.getEstimatedValue()[0] + angularWindUp / MathUtils.TWO_PI);
 
     }
 

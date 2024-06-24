@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -33,6 +34,7 @@ import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
@@ -291,5 +293,17 @@ public interface Propagator extends PVCoordinatesProvider {
      * @return propagated state
      */
     SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target);
+
+    /** {@inheritDoc} */
+    @Override
+    default TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+        return propagate(date).getPVCoordinates(frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default Vector3D getPosition(AbsoluteDate date, Frame frame) {
+        return propagate(date).getPosition(frame);
+    }
 
 }

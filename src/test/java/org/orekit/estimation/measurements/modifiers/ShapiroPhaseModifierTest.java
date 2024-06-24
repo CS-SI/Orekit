@@ -66,7 +66,8 @@ public class ShapiroPhaseModifierTest {
         final double satClockOffset    = 345.0e-6;
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, FREQUENCY,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           FREQUENCY,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
@@ -94,7 +95,7 @@ public class ShapiroPhaseModifierTest {
                 found = found || existing == modifier;
             }
             Assertions.assertTrue(found);
-            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(0, 0,  new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives( new SpacecraftState[] { refstate });
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 

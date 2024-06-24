@@ -274,7 +274,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         //definition of the accuracy for the test
 
         final double distanceAccuracy = 1.06;
-        final double velocityAccuracy = 2.26e-3;
+        final double velocityAccuracy = 2.27e-3;
 
         //test on the convergence
         final int numberOfIte  = 2;
@@ -294,7 +294,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test on statistic for the range residuals
         final long nbRangeInit     = 8981;
         final long nbRangeExcluded = 305;
-        final double[] RefStatRange = { -3.847, 8.307, 0.0, 0.873 };
+        final double[] RefStatRange = { -3.853, 8.307, 0.0, 0.873 };
         Assertions.assertEquals(nbRangeInit - nbRangeExcluded, odGNSS.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
@@ -332,8 +332,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odsatW3.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odsatW3.getEstimatedPV().getVelocity();
-        final Vector3D refPos = new Vector3D(-40541446.255, -9905357.41, 206777.413);
-        final Vector3D refVel = new Vector3D(759.0685, -1476.5156, 54.793);
+        final Vector3D refPos = new Vector3D(-40541446.236, -9905357.943, 206777.082);
+        final Vector3D refVel = new Vector3D(759.0685, -1476.5156, 54.7931);
         Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
@@ -346,12 +346,12 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
                                      propagatorParameters.getDrivers().get(3).getValue(),
                                      propagatorParameters.getDrivers().get(5).getValue());
         //Assertions.assertEquals(7.215e-6, leakAcceleration.getNorm(), 1.0e-8);
-        Assertions.assertEquals(8.002e-6, leakAcceleration0.getNorm(), 1.0e-8);
+        Assertions.assertEquals(8.005e-6, leakAcceleration0.getNorm(), 1.0e-8);
         final Vector3D leakAcceleration1 =
                         new Vector3D(propagatorParameters.getDrivers().get(2).getValue(),
                                      propagatorParameters.getDrivers().get(4).getValue(),
                                      propagatorParameters.getDrivers().get(6).getValue());
-        Assertions.assertEquals(3.058e-10, leakAcceleration1.getNorm(), 1.0e-12);
+        Assertions.assertEquals(3.060e-10, leakAcceleration1.getNorm(), 1.0e-12);
 
         //test on measurements parameters
         final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
@@ -360,35 +360,35 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         //station CastleRock
         final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
-        final double   CastleRangeBias = 11274.4677;
+        final double   CastleRangeBias = 11274.4195;
         Assertions.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
         Assertions.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
         Assertions.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 
         //station Fucino
         final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
-        final double   FucRangeBias = 13467.8256;
+        final double   FucRangeBias = 13467.8361;
         Assertions.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
         Assertions.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
         Assertions.assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
 
         //station Kumsan
         final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
-        final double   KumRangeBias = 13512.57594;
+        final double   KumRangeBias = 13512.4898;
         Assertions.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
         Assertions.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
         Assertions.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
 
         //station Pretoria
         final double[] PreAzElBias = { 0.030201539, 0.009747877 };
-        final double PreRangeBias = 13594.11889;
+        final double PreRangeBias = 13594.1758;
         Assertions.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
         Assertions.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
         Assertions.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
 
         //station Uralla
         final double[] UraAzElBias = { 0.167814449, -0.12305252 };
-        final double UraRangeBias = 13450.26738;
+        final double UraRangeBias = 13450.2320;
         Assertions.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
         Assertions.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
         Assertions.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);

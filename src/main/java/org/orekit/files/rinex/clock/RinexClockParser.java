@@ -19,9 +19,7 @@ package org.orekit.files.rinex.clock;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.io.Reader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +31,10 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
@@ -43,6 +43,7 @@ import org.orekit.files.rinex.clock.RinexClock.ClockDataType;
 import org.orekit.files.rinex.clock.RinexClock.Receiver;
 import org.orekit.files.rinex.clock.RinexClock.ReferenceClock;
 import org.orekit.frames.Frame;
+import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
@@ -51,7 +52,6 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
-import org.orekit.utils.IERSConventions;
 
 /** A parser for the clock file from the IGS.
  * This parser handles versions 2.0 to 3.04 of the RINEX clock files.
@@ -74,7 +74,7 @@ public class RinexClockParser {
     private static final List<Double> HANDLED_VERSIONS = Arrays.asList(2.00, 3.00, 3.01, 3.02, 3.04);
 
     /** Pattern for date format yyyy-mm-dd hh:mm. */
-    private static final Pattern DATE_PATTERN_1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");;
+    private static final Pattern DATE_PATTERN_1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
 
     /** Pattern for date format yyyymmdd hhmmss zone or YYYYMMDD  HHMMSS zone. */
     private static final Pattern DATE_PATTERN_2 = Pattern.compile("^[0-9]{8}\\s{1,2}[0-9]{6}.*$");
@@ -103,23 +103,22 @@ public class RinexClockParser {
     /** Set of time scales. */
     private final TimeScales timeScales;
 
-    /**
-     * Create an clock file parser using default values.
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
+    /** Create a clock file parser using default values.
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data context},
+     * and {@link IGSUtils#guessFrame}.
+     * </p>
      * @see #RinexClockParser(Function)
      */
     @DefaultDataContext
     public RinexClockParser() {
-        this(RinexClockParser::guessFrame);
+        this(IGSUtils::guessFrame);
     }
 
-    /**
-     * Create a clock file parser and specify the frame builder.
-     *
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
+    /** Create a clock file parser and specify the frame builder.
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data context}.
+     * </p>
      * @param frameBuilder is a function that can construct a frame from a clock file
      *                     coordinate system string. The coordinate system can be
      *                     any 5 character string e.g. ITR92, IGb08.
@@ -137,33 +136,9 @@ public class RinexClockParser {
      * @param timeScales   the set of time scales used for parsing dates.
      */
     public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder,
-                           final TimeScales timeScales) {
-
+                            final TimeScales timeScales) {
         this.frameBuilder = frameBuilder;
         this.timeScales   = timeScales;
-    }
-
-    /**
-     * Default string to {@link Frame} conversion for {@link #CLockFileParser()}.
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param name of the frame.
-     * @return by default, return ITRF based on 2010 conventions,
-     *         with tidal effects considered during EOP interpolation.
-     * <p>If String matches to other already recorded frames, it will return the corresponding frame.</p>
-     * Already embedded frames are:
-     * <p> - ITRF96
-     */
-    @DefaultDataContext
-    private static Frame guessFrame(final String name) {
-        if (name.equals("ITRF96")) {
-            return DataContext.getDefault().getFrames()
-                              .getITRF(IERSConventions.IERS_1996, false);
-        } else {
-            return DataContext.getDefault().getFrames()
-                              .getITRF(IERSConventions.IERS_2010, false);
-        }
     }
 
     /**
@@ -175,29 +150,24 @@ public class RinexClockParser {
      *
      * @param stream to read the IGS clock file from
      * @return a parsed IGS clock file
-     * @throws IOException if {@code stream} throws one
      * @see #parse(String)
      * @see #parse(BufferedReader, String)
+     * @see #parse(DataSource)
      */
-    public RinexClock parse(final InputStream stream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return parse(reader, stream.toString());
-        }
+    public RinexClock parse(final InputStream stream) {
+        return parse(new DataSource("<stream>", () -> stream));
     }
 
     /**
      * Parse an IGS clock file from a file on the local file system.
      * @param fileName file name
      * @return a parsed IGS clock file
-     * @throws IOException if one is thrown while opening or reading from {@code fileName}
      * @see #parse(InputStream)
      * @see #parse(BufferedReader, String)
+     * @see #parse(DataSource)
      */
-    public RinexClock parse(final String fileName) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
-                                                             StandardCharsets.UTF_8)) {
-            return parse(reader, fileName);
-        }
+    public RinexClock parse(final String fileName) {
+        return parse(new DataSource(Paths.get(fileName).toFile()));
     }
 
     /**
@@ -205,39 +175,56 @@ public class RinexClockParser {
      * @param reader containing the clock file
      * @param fileName file name
      * @return a parsed IGS clock file
-     * @throws IOException if {@code reader} throws one
      * @see #parse(InputStream)
      * @see #parse(String)
+     * @see #parse(DataSource)
      */
-    public RinexClock parse(final BufferedReader reader,
-                           final String fileName) throws IOException {
+    public RinexClock parse(final BufferedReader reader, final String fileName) {
+        return parse(new DataSource(fileName, () -> reader));
+    }
+
+    /** Parse an IGS clock file from a {@link DataSource}.
+     * @param source source for clock file
+     * @return a parsed IGS clock file
+     * @see #parse(InputStream)
+     * @see #parse(String)
+     * @see #parse(BufferedReader, String)
+     * @since 12.1
+     */
+    public RinexClock parse(final DataSource source) {
 
         // initialize internal data structures
         final ParseInfo pi = new ParseInfo();
 
-        int lineNumber = 0;
-        Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
-        nextLine:
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++lineNumber;
-            for (final LineParser candidate : candidateParsers) {
-                if (candidate.canHandle(line)) {
-                    try {
-                        candidate.parse(line, pi);
-                        candidateParsers = candidate.allowedNext();
-                        continue nextLine;
-                    } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
-                        throw new OrekitException(e,
-                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, fileName, line);
+        try (Reader reader = source.getOpener().openReaderOnce();
+             BufferedReader br = new BufferedReader(reader)) {
+            pi.lineNumber = 0;
+            Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
+            nextLine:
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                ++pi.lineNumber;
+                for (final LineParser candidate : candidateParsers) {
+                    if (candidate.canHandle(line)) {
+                        try {
+                            candidate.parse(line, pi);
+                            candidateParsers = candidate.allowedNext();
+                            continue nextLine;
+                        } catch (StringIndexOutOfBoundsException |
+                            NumberFormatException | InputMismatchException e) {
+                            throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      pi.lineNumber, source.getName(), line);
+                        }
                     }
                 }
+
+                // no parsers found for this line
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          pi.lineNumber, source.getName(), line);
+
             }
 
-            // no parsers found for this line
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      lineNumber, fileName, line);
-
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
         }
 
         return pi.file;
@@ -247,11 +234,14 @@ public class RinexClockParser {
     /** Transient data used for parsing a clock file. */
     private class ParseInfo {
 
+        /** Current line number of the navigation message. */
+        private int lineNumber;
+
         /** Set of time scales for parsing dates. */
         private final TimeScales timeScales;
 
         /** The corresponding clock file object. */
-        private RinexClock file;
+        private final RinexClock file;
 
         /** Current satellite system for observation type parsing. */
         private SatelliteSystem currentSatelliteSystem;
@@ -262,8 +252,8 @@ public class RinexClockParser {
         /** Current end date for reference clocks. */
         private AbsoluteDate referenceClockEndDate;
 
-        /** Current reference clock list. */
-        private List<ReferenceClock> currentReferenceClocks;
+        /** Pending reference clocks list. */
+        private List<ReferenceClock> pendingReferenceClocks;
 
         /** Current clock data type. */
         private ClockDataType currentDataType;
@@ -287,6 +277,7 @@ public class RinexClockParser {
         protected ParseInfo () {
             this.timeScales = RinexClockParser.this.timeScales;
             this.file = new RinexClock(frameBuilder);
+            this.pendingReferenceClocks = new ArrayList<>();
         }
     }
 
@@ -320,11 +311,13 @@ public class RinexClockParser {
                     final String satelliteSystemString = line.substring(40, 45).trim();
 
                     // Check satellite if system is recorded
-                    if (!satelliteSystemString.equals("")) {
+                    if (!satelliteSystemString.isEmpty()) {
                         // Record satellite system and default time system in clock file object
                         final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(satelliteSystemString);
                         pi.file.setSatelliteSystem(satelliteSystem);
-                        pi.file.setTimeScale(satelliteSystem.getObservationTimeScale().getTimeScale(pi.timeScales));
+                        if (satelliteSystem.getObservationTimeScale() != null) {
+                            pi.file.setTimeScale(satelliteSystem.getObservationTimeScale().getTimeScale(pi.timeScales));
+                        }
                     }
                     // Set time scale to UTC by default
                     if (pi.file.getTimeScale() == null) {
@@ -501,24 +494,26 @@ public class RinexClockParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
+                // First element, if present, is the related satellite system
+                final String system = line.substring(0, 1);
+                if (!" ".equals(system)) {
+                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(system);
 
-                // First element is the related satellite system
-                final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(line.substring(0, 1));
+                    // Second element is the program name
+                    final String progDCBS = line.substring(2, 20).trim();
 
-                // Second element is the program name
-                final String progDCBS = line.substring(2, 20).trim();
+                    // Third element is the source of the corrections
+                    String sourceDCBS = "";
+                    if (pi.file.getFormatVersion() < 3.04) {
+                        sourceDCBS = line.substring(19, 60).trim();
+                    } else {
+                        sourceDCBS = line.substring(22, 65).trim();
+                    }
 
-                // Third element is the source of the corrections
-                String sourceDCBS = "";
-                if (pi.file.getFormatVersion() < 3.04) {
-                    sourceDCBS = line.substring(19, 60).trim();
-                } else {
-                    sourceDCBS = line.substring(22, 65).trim();
-                }
-
-                // Check if sought fields were not actually blanks
-                if (!progDCBS.equals("")) {
-                    pi.file.addAppliedDCBS(new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
+                    // Check if sought fields were not actually blanks
+                    if (!progDCBS.isEmpty()) {
+                        pi.file.addAppliedDCBS(new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
+                    }
                 }
             }
 
@@ -531,23 +526,26 @@ public class RinexClockParser {
             @Override
             public void parse(final String line, final ParseInfo pi) {
 
-                // First element is the related satellite system
-                final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(line.substring(0, 1));
+                // First element, if present, is the related satellite system
+                final String system = line.substring(0, 1);
+                if (!" ".equals(system)) {
+                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(system);
 
-                // Second element is the program name
-                final String progPCVS = line.substring(2, 20).trim();
+                    // Second element is the program name
+                    final String progPCVS = line.substring(2, 20).trim();
 
-                // Third element is the source of the corrections
-                String sourcePCVS = "";
-                if (pi.file.getFormatVersion() < 3.04) {
-                    sourcePCVS = line.substring(19, 60).trim();
-                } else {
-                    sourcePCVS = line.substring(22, 65).trim();
-                }
+                    // Third element is the source of the corrections
+                    String sourcePCVS = "";
+                    if (pi.file.getFormatVersion() < 3.04) {
+                        sourcePCVS = line.substring(19, 60).trim();
+                    } else {
+                        sourcePCVS = line.substring(22, 65).trim();
+                    }
 
-                // Check if sought fields were not actually blanks
-                if (!progPCVS.equals("") || !sourcePCVS.equals("")) {
-                    pi.file.addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
+                    // Check if sought fields were not actually blanks
+                    if (!progPCVS.isEmpty() || !sourcePCVS.isEmpty()) {
+                        pi.file.addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
+                    }
                 }
             }
 
@@ -646,8 +644,12 @@ public class RinexClockParser {
                      Scanner s2      = s1.useDelimiter(SPACES);
                      Scanner scanner = s2.useLocale(Locale.US)) {
 
-                    // Initialize current reference clock list corresponding to the period
-                    pi.currentReferenceClocks = new ArrayList<ReferenceClock>();
+                    if (!pi.pendingReferenceClocks.isEmpty()) {
+                        // Modify time span map of the reference clocks to accept the pending reference clock
+                        pi.file.addReferenceClockList(pi.pendingReferenceClocks,
+                                                      pi.referenceClockStartDate);
+                        pi.pendingReferenceClocks = new ArrayList<>();
+                    }
 
                     // First element is the number of reference clocks corresponding to the period
                     scanner.nextInt();
@@ -715,10 +717,8 @@ public class RinexClockParser {
                     // Add reference clock to current reference clock list
                     final ReferenceClock referenceClock = new ReferenceClock(referenceName, clockID, clockConstraint,
                                                                              pi.referenceClockStartDate, pi.referenceClockEndDate);
-                    pi.currentReferenceClocks.add(referenceClock);
+                    pi.pendingReferenceClocks.add(referenceClock);
 
-                    // Modify time span map of the reference clocks to accept the new reference clock
-                    pi.file.addReferenceClockList(pi.currentReferenceClocks, pi.referenceClockStartDate);
                 }
             }
 
@@ -835,7 +835,10 @@ public class RinexClockParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // do nothing...
+                if (!pi.pendingReferenceClocks.isEmpty()) {
+                    // Modify time span map of the reference clocks to accept the pending reference clock
+                    pi.file.addReferenceClockList(pi.pendingReferenceClocks, pi.referenceClockStartDate);
+                }
             }
 
             /** {@inheritDoc} */
@@ -1013,7 +1016,7 @@ public class RinexClockParser {
                 time = dateString.substring(9, 16).trim();
                 zone = dateString.substring(16).trim();
 
-                if (!zone.equals("")) {
+                if (!zone.isEmpty()) {
                     // Get date and time components
                     dateComponents = new DateComponents(Integer.parseInt(date.substring(0, 4)),
                                                         Integer.parseInt(date.substring(4, 6)),

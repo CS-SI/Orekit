@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Romain Serra
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,6 +78,8 @@ class AtmosphereTest {
 
     private static class TestAtmosphere implements Atmosphere {
 
+        private static final long serialVersionUID = 1L;
+
         @Override
         public Frame getFrame() {
             return FramesFactory.getITRF(IERSConventions.IERS_2003, false);
@@ -91,7 +93,7 @@ class AtmosphereTest {
         @Override
         public <T extends CalculusFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
             final CalculusFieldElement<T> zero = date.getField().getZero();
-            return zero.add(getDensity(date.toAbsoluteDate(), position.toVector3D(), frame));
+            return zero.newInstance(getDensity(date.toAbsoluteDate(), position.toVector3D(), frame));
         }
     }
 

@@ -86,7 +86,7 @@ public class OneWayRangeMeasurementCreator extends MeasurementCreator {
             for (final GroundStation station : context.stations) {
                 final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
-                final Vector3D         position  = currentState.toTransform().toStaticTransform().getInverse().transformPosition(satelliteMeanPosition);
+                final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(satelliteMeanPosition);
 
                 if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

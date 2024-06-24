@@ -28,7 +28,10 @@ import org.orekit.utils.ParameterDriver;
  *
  * @author Luc Maisonobe
  * @since 9.2
+ * @deprecated as of 12.1 ambiguity is managed directly by raw measurements
+ * {@link org.orekit.estimation.measurements.gnss.Phase}
  */
+@Deprecated
 public class PhaseAmbiguityModifier extends AbstractAmbiguityModifier implements EstimationModifier<Phase> {
 
     /** Constructor.
@@ -54,12 +57,12 @@ public class PhaseAmbiguityModifier extends AbstractAmbiguityModifier implements
 
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
-        doModifyWithoutDerivatives(estimated);
+        doModifyWithoutDerivatives(this, estimated);
     }
 
     @Override
     public void modify(final EstimatedMeasurement<Phase> estimated) {
-        doModify(estimated);
+        doModify(this, estimated);
     }
 
 }

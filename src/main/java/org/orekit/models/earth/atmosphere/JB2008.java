@@ -544,9 +544,9 @@ public class JB2008 implements Atmosphere {
 
         // Equation (17)
         final T cos     = eta.cos();
-        final T cosEta  = cos.multiply(cos).multiply(cos.sqrt());
+        final T cosEta  = cos.square().multiply(cos.sqrt());
         final T sin     = theta.sin();
-        final T sinTeta = sin.multiply(sin).multiply(sin.sqrt());
+        final T sinTeta = sin.square().multiply(sin.sqrt());
         final T cosTau  = tau.multiply(0.5).cos().abs();
         final T df      = sinTeta.add(cosEta.subtract(sinTeta).multiply(cosTau).multiply(cosTau).multiply(cosTau));
         final T tsubl   = df.multiply(0.31).add(1).multiply(tsubc);
@@ -576,7 +576,7 @@ public class JB2008 implements Atmosphere {
         tc[3] = gsubx.divide(tc[2]);
 
         // Equation (5)
-        final T z1 = field.getZero().add(90.);
+        final T z1 = field.getZero().newInstance(90.);
         final T z2 = min(105.0, altKm);
         T al = z2.divide(z1).log();
         int n = 1 + (int) FastMath.floor(al.getReal() / R1);
@@ -826,7 +826,7 @@ public class JB2008 implements Atmosphere {
             final T h = satAlt.subtract(200.0).divide(50.0);
             dTc = poly1CDTC(fs, st, cs).multiply(h).add(poly2CDTC(fs, st, cs));
         } else if (satAlt.getReal() > 240.0 && satAlt.getReal() <= 300.0) {
-            final T h = solarTime.getField().getZero().add(0.8);
+            final T h = solarTime.getField().getZero().newInstance(0.8);
             final T bb = poly1CDTC(fs, st, cs);
             final T aa = bb.multiply(h).add(poly2CDTC(fs, st, cs));
             final T p2BDT = poly2BDTC(st);
@@ -998,7 +998,7 @@ public class JB2008 implements Atmosphere {
      */
     private static <T extends CalculusFieldElement<T>>  T mBar(final T z) {
         final T dz = z.subtract(100.);
-        T amb = z.getField().getZero().add(CMB[6]);
+        T amb = z.getField().getZero().newInstance(CMB[6]);
         for (int i = 5; i >= 0; --i) {
             amb = dz.multiply(amb).add(CMB[i]);
         }
@@ -1182,7 +1182,7 @@ public class JB2008 implements Atmosphere {
      * @return min value
      */
     private <T extends CalculusFieldElement<T>> T min(final double d, final T f) {
-        return (f.getReal() > d) ? f.getField().getZero().add(d) : f;
+        return (f.getReal() > d) ? f.getField().getZero().newInstance(d) : f;
     }
 
     /** Compute max of two values, one double and one field element.
@@ -1192,7 +1192,7 @@ public class JB2008 implements Atmosphere {
      * @return max value
      */
     private <T extends CalculusFieldElement<T>> T max(final double d, final T f) {
-        return (f.getReal() <= d) ? f.getField().getZero().add(d) : f;
+        return (f.getReal() <= d) ? f.getField().getZero().newInstance(d) : f;
     }
 
     /** Get the local density.

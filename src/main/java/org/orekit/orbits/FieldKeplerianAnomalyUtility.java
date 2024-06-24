@@ -195,13 +195,13 @@ public class FieldKeplerianAnomalyUtility {
      */
     private static <T extends CalculusFieldElement<T>> T eMeSinE(final T e, final T E) {
         T x = (e.negate().add(1)).multiply(E.sin());
-        final T mE2 = E.negate().multiply(E);
+        final T mE2 = E.square().negate();
         T term = E;
         double d = 0;
         // the inequality test below IS intentional and should NOT be replaced by a
         // check with a small tolerance
         for (T x0 = E.getField().getZero().add(Double.NaN); !Double.valueOf(x.getReal())
-                .equals(Double.valueOf(x0.getReal()));) {
+                .equals(x0.getReal());) {
             d += 2;
             term = term.multiply(mE2.divide(d * (d + 1)));
             x0 = x;
@@ -290,11 +290,11 @@ public class FieldKeplerianAnomalyUtility {
         final Field<T> field = e.getField();
         final T zero = field.getZero();
         final T one = field.getOne();
-        final T two = zero.add(2.0);
-        final T three = zero.add(3.0);
-        final T half = zero.add(0.5);
-        final T onePointFive = zero.add(1.5);
-        final T fourThirds = zero.add(4.0).divide(zero.add(3.0));
+        final T two = zero.newInstance(2.0);
+        final T three = zero.newInstance(3.0);
+        final T half = zero.newInstance(0.5);
+        final T onePointFive = zero.newInstance(1.5);
+        final T fourThirds = zero.newInstance(4.0).divide(3.0);
 
         // Solve L = S - g * asinh(S) for S = sinh(H).
         final T L = M.divide(e);
@@ -324,14 +324,14 @@ public class FieldKeplerianAnomalyUtility {
 
             T f;
             T fd;
-            if (s0.divide(zero.add(6.0)).add(g1).getReal() >= 0.5) {
+            if (s0.divide(6.0).add(g1).getReal() >= 0.5) {
                 f = S.subtract(g.multiply(S.asinh())).subtract(L);
                 fd = one.subtract(g.divide(s2));
             } else {
                 // Accurate computation of S - (1 - g1) * asinh(S)
                 // when (g1, S) is close to (0, 0).
                 final T t = S.divide(one.add(one.add(S.multiply(S)).sqrt()));
-                final T tsq = t.multiply(t);
+                final T tsq = t.square();
                 T x = S.multiply(g1.add(g.multiply(tsq)));
                 T term = two.multiply(g).multiply(t);
                 T twoI1 = one;

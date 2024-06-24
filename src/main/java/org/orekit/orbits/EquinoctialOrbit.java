@@ -57,7 +57,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * parameters are still unambiguously defined whereas some Keplerian elements
  * (more precisely ω and Ω) become ambiguous. For this reason, equinoctial
  * parameters are the recommended way to represent orbits. Note however than
- *  * the present implementation does not handle non-elliptical cases.
+ * the present implementation does not handle non-elliptical cases.
  * </p>
  * <p>
  * The instance <code>EquinoctialOrbit</code> is guaranteed to be immutable.
@@ -92,8 +92,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     /** Second component of the inclination vector. */
     private final double hy;
 
-    /** True longitude argument (rad). */
-    private final double lv;
+    /** Cached longitude argument (rad). */
+    private final double cachedL;
+
+    /** Cache type of position angle (longitude argument). */
+    private final PositionAngleType cachedPositionAngleType;
 
     /** Semi-major axis derivative (m/s). */
     private final double aDot;
@@ -110,13 +113,40 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     /** Second component of the inclination vector derivative. */
     private final double hyDot;
 
-    /** True longitude argument derivative (rad/s). */
-    private final double lvDot;
+    /** Derivative of cached longitude argument (rad/s). */
+    private final double cachedLDot;
 
     /** Partial Cartesian coordinates (position and velocity are valid, acceleration may be missing). */
     private transient PVCoordinates partialPV;
 
     /** Creates a new instance.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(ω + Ω), first component of eccentricity vector
+     * @param ey e sin(ω + Ω), second component of eccentricity vector
+     * @param hx tan(i/2) cos(Ω), first component of inclination vector
+     * @param hy tan(i/2) sin(Ω), second component of inclination vector
+     * @param l  (M or E or v) + ω + Ω, mean, eccentric or true longitude argument (rad)
+     * @param type type of longitude argument
+     * @param cachedPositionAngleType type of cached longitude argument
+     * @param frame the frame in which the parameters are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     * @since 12.1
+     */
+    public EquinoctialOrbit(final double a, final double ex, final double ey,
+                            final double hx, final double hy, final double l,
+                            final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
+                            final Frame frame, final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        this(a, ex, ey, hx, hy, l,
+             Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
+             type, cachedPositionAngleType, frame, date, mu);
+    }
+
+    /** Creates a new instance without derivatives and with cached position angle same as value inputted.
      * @param a  semi-major axis (m)
      * @param ex e cos(ω + Ω), first component of eccentricity vector
      * @param ey e sin(ω + Ω), second component of eccentricity vector
@@ -135,13 +165,71 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                             final double hx, final double hy, final double l,
                             final PositionAngleType type,
                             final Frame frame, final AbsoluteDate date, final double mu)
-        throws IllegalArgumentException {
-        this(a, ex, ey, hx, hy, l,
-             Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-             type, frame, date, mu);
+            throws IllegalArgumentException {
+        this(a, ex, ey, hx, hy, l, type, type, frame, date, mu);
     }
 
     /** Creates a new instance.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(ω + Ω), first component of eccentricity vector
+     * @param ey e sin(ω + Ω), second component of eccentricity vector
+     * @param hx tan(i/2) cos(Ω), first component of inclination vector
+     * @param hy tan(i/2) sin(Ω), second component of inclination vector
+     * @param l  (M or E or v) + ω + Ω, mean, eccentric or true longitude argument (rad)
+     * @param aDot  semi-major axis derivative (m/s)
+     * @param exDot d(e cos(ω + Ω))/dt, first component of eccentricity vector derivative
+     * @param eyDot d(e sin(ω + Ω))/dt, second component of eccentricity vector derivative
+     * @param hxDot d(tan(i/2) cos(Ω))/dt, first component of inclination vector derivative
+     * @param hyDot d(tan(i/2) sin(Ω))/dt, second component of inclination vector derivative
+     * @param lDot  d(M or E or v) + ω + Ω)/dr, mean, eccentric or true longitude argument  derivative (rad/s)
+     * @param type type of longitude argument
+     * @param cachedPositionAngleType of cached longitude argument
+     * @param frame the frame in which the parameters are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     * @since 12.1
+     */
+    public EquinoctialOrbit(final double a, final double ex, final double ey,
+                            final double hx, final double hy, final double l,
+                            final double aDot, final double exDot, final double eyDot,
+                            final double hxDot, final double hyDot, final double lDot,
+                            final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
+                            final Frame frame, final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        super(frame, date, mu);
+        if (ex * ex + ey * ey >= 1.0) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
+                                                     getClass().getName());
+        }
+        this.cachedPositionAngleType = cachedPositionAngleType;
+        this.a     = a;
+        this.aDot  = aDot;
+        this.ex    = ex;
+        this.exDot = exDot;
+        this.ey    = ey;
+        this.eyDot = eyDot;
+        this.hx    = hx;
+        this.hxDot = hxDot;
+        this.hy    = hy;
+        this.hyDot = hyDot;
+
+        if (hasDerivatives()) {
+            final UnivariateDerivative1 alphaUD = initializeCachedL(l, lDot, type);
+            this.cachedL = alphaUD.getValue();
+            this.cachedLDot = alphaUD.getFirstDerivative();
+        } else {
+            this.cachedL = initializeCachedL(l, type);
+            this.cachedLDot = Double.NaN;
+        }
+
+        this.partialPV = null;
+
+    }
+
+    /** Creates a new instance with derivatives and with cached position angle same as value inputted.
      * @param a  semi-major axis (m)
      * @param ex e cos(ω + Ω), first component of eccentricity vector
      * @param ey e sin(ω + Ω), second component of eccentricity vector
@@ -168,62 +256,8 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                             final double hxDot, final double hyDot, final double lDot,
                             final PositionAngleType type,
                             final Frame frame, final AbsoluteDate date, final double mu)
-        throws IllegalArgumentException {
-        super(frame, date, mu);
-        if (ex * ex + ey * ey >= 1.0) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
-                                                     getClass().getName());
-        }
-        this.a     = a;
-        this.aDot  = aDot;
-        this.ex    = ex;
-        this.exDot = exDot;
-        this.ey    = ey;
-        this.eyDot = eyDot;
-        this.hx    = hx;
-        this.hxDot = hxDot;
-        this.hy    = hy;
-        this.hyDot = hyDot;
-
-        if (hasDerivatives()) {
-            final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
-            final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
-            final UnivariateDerivative1 lUD  = new UnivariateDerivative1(l,  lDot);
-            final UnivariateDerivative1 lvUD;
-            switch (type) {
-                case MEAN :
-                    lvUD = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lUD, exUD, eyUD), exUD, eyUD);
-                    break;
-                case ECCENTRIC :
-                    lvUD = FieldEquinoctialOrbit.eccentricToTrue(lUD, exUD, eyUD);
-                    break;
-                case TRUE :
-                    lvUD = lUD;
-                    break;
-                default : // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            this.lv    = lvUD.getValue();
-            this.lvDot = lvUD.getDerivative(1);
-        } else {
-            switch (type) {
-                case MEAN :
-                    this.lv = eccentricToTrue(meanToEccentric(l, ex, ey), ex, ey);
-                    break;
-                case ECCENTRIC :
-                    this.lv = eccentricToTrue(l, ex, ey);
-                    break;
-                case TRUE :
-                    this.lv = l;
-                    break;
-                default : // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            this.lvDot = Double.NaN;
-        }
-
-        this.partialPV = null;
-
+            throws IllegalArgumentException {
+        this(a, ex, ey, hx, hy, l, aDot, exDot, eyDot, hxDot, hyDot, lDot, type, type, frame, date, mu);
     }
 
     /** Constructor from Cartesian parameters.
@@ -269,9 +303,10 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         hy =  d * w.getX();
 
         // compute true longitude argument
+        cachedPositionAngleType = PositionAngleType.TRUE;
         final double cLv = (pvP.getX() - d * pvP.getZ() * w.getX()) / r;
         final double sLv = (pvP.getY() - d * pvP.getZ() * w.getY()) / r;
-        lv = FastMath.atan2(sLv, cLv);
+        cachedL = FastMath.atan2(sLv, cLv);
 
         // compute eccentricity vector
         final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(mu * a);
@@ -301,15 +336,15 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             hxDot = jacobian[3][3] * aX + jacobian[3][4] * aY + jacobian[3][5] * aZ;
             hyDot = jacobian[4][3] * aX + jacobian[4][4] * aY + jacobian[4][5] * aZ;
 
-            // in order to compute true anomaly derivative, we must compute
-            // mean anomaly derivative including Keplerian motion and convert to true anomaly
+            // in order to compute true longitude argument derivative, we must compute
+            // mean longitude argument derivative including Keplerian motion and convert to true longitude argument
             final double lMDot = getKeplerianMeanMotion() +
                                  jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
             final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
             final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
             final UnivariateDerivative1 lMUD = new UnivariateDerivative1(getLM(), lMDot);
-            final UnivariateDerivative1 lvUD = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lMUD, exUD, eyUD), exUD, eyUD);
-            lvDot = lvUD.getDerivative(1);
+            final UnivariateDerivative1 lvUD = FieldEquinoctialLongitudeArgumentUtility.meanToTrue(exUD, eyUD, lMUD);
+            cachedLDot = lvUD.getFirstDerivative();
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -320,7 +355,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             eyDot = Double.NaN;
             hxDot = Double.NaN;
             hyDot = Double.NaN;
-            lvDot = Double.NaN;
+            cachedLDot = Double.NaN;
         }
 
     }
@@ -361,102 +396,213 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         hxDot     = op.getHxDot();
         hy        = op.getHy();
         hyDot     = op.getHyDot();
-        lv        = op.getLv();
-        lvDot     = op.getLvDot();
+        cachedPositionAngleType = PositionAngleType.TRUE;
+        cachedL   = op.getLv();
+        cachedLDot = op.getLvDot();
         partialPV = null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public OrbitType getType() {
         return OrbitType.EQUINOCTIAL;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getA() {
         return a;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getADot() {
         return aDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEx() {
         return ex;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialExDot() {
         return exDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEy() {
         return ey;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEyDot() {
         return eyDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHx() {
         return hx;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHxDot() {
         return hxDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHy() {
         return hy;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHyDot() {
         return hyDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLv() {
-        return lv;
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                return cachedL;
+
+            case ECCENTRIC:
+                return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
+
+            case MEAN:
+                return EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLvDot() {
-        return lvDot;
+        switch (cachedPositionAngleType) {
+            case ECCENTRIC:
+                final UnivariateDerivative1 lEUD = new UnivariateDerivative1(cachedL, cachedLDot);
+                final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 lvUD = FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(exUD, eyUD,
+                        lEUD);
+                return lvUD.getFirstDerivative();
+
+            case TRUE:
+                return cachedLDot;
+
+            case MEAN:
+                final UnivariateDerivative1 lMUD = new UnivariateDerivative1(cachedL, cachedLDot);
+                final UnivariateDerivative1 exUD2    = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD2    = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 lvUD2 = FieldEquinoctialLongitudeArgumentUtility.meanToTrue(exUD2,
+                        eyUD2, lMUD);
+                return lvUD2.getFirstDerivative();
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLE() {
-        return trueToEccentric(lv, ex, ey);
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
+
+            case ECCENTRIC:
+                return cachedL;
+
+            case MEAN:
+                return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLEDot() {
-        final UnivariateDerivative1 lVUD = new UnivariateDerivative1(lv, lvDot);
-        final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
-        final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
-        final UnivariateDerivative1 lEUD = FieldEquinoctialOrbit.trueToEccentric(lVUD, exUD, eyUD);
-        return lEUD.getDerivative(1);
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                final UnivariateDerivative1 lvUD = new UnivariateDerivative1(cachedL, cachedLDot);
+                final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 lEUD = FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(exUD, eyUD,
+                        lvUD);
+                return lEUD.getFirstDerivative();
+
+            case ECCENTRIC:
+                return cachedLDot;
+
+            case MEAN:
+                final UnivariateDerivative1 lMUD = new UnivariateDerivative1(cachedL, cachedLDot);
+                final UnivariateDerivative1 exUD2    = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD2    = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 lEUD2 = FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(exUD2,
+                        eyUD2, lMUD);
+                return lEUD2.getFirstDerivative();
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLM() {
-        return eccentricToMean(trueToEccentric(lv, ex, ey), ex, ey);
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                return EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
+
+            case MEAN:
+                return cachedL;
+
+            case ECCENTRIC:
+                return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLMDot() {
-        final UnivariateDerivative1 lVUD = new UnivariateDerivative1(lv, lvDot);
-        final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
-        final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
-        final UnivariateDerivative1 lMUD = FieldEquinoctialOrbit.eccentricToMean(FieldEquinoctialOrbit.trueToEccentric(lVUD, exUD, eyUD), exUD, eyUD);
-        return lMUD.getDerivative(1);
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                final UnivariateDerivative1 lvUD = new UnivariateDerivative1(cachedL, cachedLDot);
+                final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 lMUD = FieldEquinoctialLongitudeArgumentUtility.trueToMean(exUD, eyUD, lvUD);
+                return lMUD.getFirstDerivative();
+
+            case MEAN:
+                return cachedLDot;
+
+            case ECCENTRIC:
+                final UnivariateDerivative1 lEUD = new UnivariateDerivative1(cachedL, cachedLDot);
+                final UnivariateDerivative1 exUD2    = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD2    = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 lMUD2 = FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(exUD2,
+                        eyUD2, lEUD);
+                return lMUD2.getFirstDerivative();
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** Get the longitude argument.
@@ -485,12 +631,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @param ey second component of the eccentricity vector
      * @return the true longitude argument
      */
+    @Deprecated
     public static double eccentricToTrue(final double lE, final double ex, final double ey) {
-        final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final SinCos scLE    = FastMath.sinCos(lE);
-        final double num     = ex * scLE.sin() - ey * scLE.cos();
-        final double den     = epsilon + 1 - ex * scLE.cos() - ey * scLE.sin();
-        return lE + 2 * FastMath.atan(num / den);
+        return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, lE);
     }
 
     /** Computes the eccentric longitude argument from the true longitude argument.
@@ -499,12 +642,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @param ey second component of the eccentricity vector
      * @return the eccentric longitude argument
      */
+    @Deprecated
     public static double trueToEccentric(final double lv, final double ex, final double ey) {
-        final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final SinCos scLv    = FastMath.sinCos(lv);
-        final double num     = ey * scLv.cos() - ex * scLv.sin();
-        final double den     = epsilon + 1 + ex * scLv.cos() + ey * scLv.sin();
-        return lv + 2 * FastMath.atan(num / den);
+        return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
     }
 
     /** Computes the eccentric longitude argument from the mean longitude argument.
@@ -513,31 +653,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @param ey second component of the eccentricity vector
      * @return the eccentric longitude argument
      */
+    @Deprecated
     public static double meanToEccentric(final double lM, final double ex, final double ey) {
-        // Generalization of Kepler equation to equinoctial parameters
-        // with lE = PA + RAAN + E and
-        //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
-        double lE = lM;
-        double shift = 0.0;
-        double lEmlM = 0.0;
-        SinCos scLE  = FastMath.sinCos(lE);
-        int iter = 0;
-        do {
-            final double f2 = ex * scLE.sin() - ey * scLE.cos();
-            final double f1 = 1.0 - ex * scLE.cos() - ey * scLE.sin();
-            final double f0 = lEmlM - f2;
-
-            final double f12 = 2.0 * f1;
-            shift = f0 * f12 / (f1 * f12 - f0 * f2);
-
-            lEmlM -= shift;
-            lE     = lM + lEmlM;
-            scLE   = FastMath.sinCos(lE);
-
-        } while (++iter < 50 && FastMath.abs(shift) > 1.0e-12);
-
-        return lE;
-
+        return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM);
     }
 
     /** Computes the mean longitude argument from the eccentric longitude argument.
@@ -546,27 +664,31 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @param ey second component of the eccentricity vector
      * @return the mean longitude argument
      */
+    @Deprecated
     public static double eccentricToMean(final double lE, final double ex, final double ey) {
-        final SinCos scLE = FastMath.sinCos(lE);
-        return lE - ex * scLE.sin() + ey * scLE.cos();
+        return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, lE);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getE() {
         return FastMath.sqrt(ex * ex + ey * ey);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEDot() {
         return (ex * exDot + ey * eyDot) / FastMath.sqrt(ex * ex + ey * ey);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getI() {
         return 2 * FastMath.atan(FastMath.sqrt(hx * hx + hy * hy));
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getIDot() {
         final double h2 = hx * hx + hy * hy;
         final double h  = FastMath.sqrt(h2);
@@ -629,6 +751,95 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
 
     }
 
+    /** Initialize cached argument of longitude with rate.
+     * @param l input argument of longitude
+     * @param lDot rate of input argument of longitude
+     * @param inputType position angle type passed as input
+     * @return argument of longitude to cache with rate
+     * @since 12.1
+     */
+    private UnivariateDerivative1 initializeCachedL(final double l, final double lDot,
+                                                    final PositionAngleType inputType) {
+        if (cachedPositionAngleType == inputType) {
+            return new UnivariateDerivative1(l, lDot);
+
+        } else {
+            final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
+            final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
+            final UnivariateDerivative1 lUD = new UnivariateDerivative1(l, lDot);
+
+            switch (cachedPositionAngleType) {
+
+                case ECCENTRIC:
+                    if (inputType == PositionAngleType.MEAN) {
+                        return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(exUD, eyUD, lUD);
+                    } else {
+                        return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(exUD, eyUD, lUD);
+                    }
+
+                case TRUE:
+                    if (inputType == PositionAngleType.MEAN) {
+                        return FieldEquinoctialLongitudeArgumentUtility.meanToTrue(exUD, eyUD, lUD);
+                    } else {
+                        return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(exUD, eyUD, lUD);
+                    }
+
+                case MEAN:
+                    if (inputType == PositionAngleType.TRUE) {
+                        return FieldEquinoctialLongitudeArgumentUtility.trueToMean(exUD, eyUD, lUD);
+                    } else {
+                        return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(exUD, eyUD, lUD);
+                    }
+
+                default:
+                    throw new OrekitInternalError(null);
+
+            }
+
+        }
+
+    }
+
+    /** Initialize cached argument of longitude.
+     * @param l input argument of longitude
+     * @param positionAngleType position angle type passed as input
+     * @return argument of longitude to cache
+     * @since 12.1
+     */
+    private double initializeCachedL(final double l, final PositionAngleType positionAngleType) {
+        if (positionAngleType == cachedPositionAngleType) {
+            return l;
+
+        } else {
+            switch (cachedPositionAngleType) {
+
+                case ECCENTRIC:
+                    if (positionAngleType == PositionAngleType.MEAN) {
+                        return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, l);
+                    } else {
+                        return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, l);
+                    }
+
+                case MEAN:
+                    if (positionAngleType == PositionAngleType.TRUE) {
+                        return EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, l);
+                    } else {
+                        return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, l);
+                    }
+
+                case TRUE:
+                    if (positionAngleType == PositionAngleType.MEAN) {
+                        return EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, l);
+                    } else {
+                        return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, l);
+                    }
+
+                default:
+                    throw new OrekitInternalError(null);
+            }
+        }
+    }
+
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
      * <p>
      * This method should be called only when {@link #hasDerivatives()} returns true.
@@ -653,6 +864,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Vector3D initPosition() {
 
         // get equinoctial parameters
@@ -694,6 +906,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // position and velocity
@@ -711,12 +924,14 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public EquinoctialOrbit shiftedBy(final double dt) {
 
         // use Keplerian-only motion
         final EquinoctialOrbit keplerianShifted = new EquinoctialOrbit(a, ex, ey, hx, hy,
                                                                        getLM() + getKeplerianMeanMotion() * dt,
-                                                                       PositionAngleType.MEAN, getFrame(),
+                                                                       PositionAngleType.MEAN, cachedPositionAngleType,
+                                                                       getFrame(),
                                                                        getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
@@ -748,6 +963,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
 
         final double[][] jacobian = new double[6][6];
@@ -836,6 +1052,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
 
         // start by computing the Jacobian with mean angle
@@ -863,15 +1080,16 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
 
         // start by computing the Jacobian with eccentric angle
         final double[][] jacobian = computeJacobianEccentricWrtCartesian();
 
         // Differentiating the eccentric longitude equation
-        // tan((lV - lE)/2) = [ex sin lE - ey cos lE] / [sqrt(1-ex^2-ey^2) + 1 - ex cos lE - ey sin lE]
+        // tan((lv - lE)/2) = [ex sin lE - ey cos lE] / [sqrt(1-ex^2-ey^2) + 1 - ex cos lE - ey sin lE]
         // leads to
-        // cT (dlV - dlE) = cE dlE + cX dex + cY dey
+        // cT (dlv - dlE) = cE dlE + cX dex + cY dey
         // with
         // cT = [d^2 + (ex sin lE - ey cos lE)^2] / 2
         // d  = 1 + sqrt(1-ex^2-ey^2) - ex cos lE - ey sin lE
@@ -879,7 +1097,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         // cX =  sin lE (sqrt(1-ex^2-ey^2) + 1) - ey + ex (ex sin lE - ey cos lE) / sqrt(1-ex^2-ey^2)
         // cY = -cos lE (sqrt(1-ex^2-ey^2) + 1) + ex + ey (ex sin lE - ey cos lE) / sqrt(1-ex^2-ey^2)
         // which can be solved to find the differential of the true longitude
-        // dlV = (cT + cE) / cT dlE + cX / cT deX + cY / cT deX
+        // dlv = (cT + cE) / cT dlE + cX / cT deX + cY / cT deX
         final SinCos scLe      = FastMath.sinCos(getLE());
         final double cosLe     = scLe.cos();
         final double sinLe     = scLe.sin();
@@ -910,22 +1128,24 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
         final double oMe2;
         final double ksi;
         final double n  = FastMath.sqrt(gm / a) / a;
-        final SinCos sc = FastMath.sinCos(lv);
+        final SinCos sc;
         switch (type) {
             case MEAN :
                 pDot[5] += n;
                 break;
             case ECCENTRIC :
-                oMe2 = 1 - ex * ex - ey * ey;
-                ksi  = 1 + ex * sc.cos() + ey * sc.sin();
-                pDot[5] += n * ksi / oMe2;
+                sc = FastMath.sinCos(getLE());
+                ksi  = 1. / (1 - ex * sc.cos() - ey * sc.sin());
+                pDot[5] += n * ksi;
                 break;
             case TRUE :
+                sc = FastMath.sinCos(getLv());
                 oMe2 = 1 - ex * ex - ey * ey;
                 ksi  = 1 + ex * sc.cos() + ey * sc.sin();
                 pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
@@ -943,14 +1163,14 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                                   append("a: ").append(a).
                                   append("; ex: ").append(ex).append("; ey: ").append(ey).
                                   append("; hx: ").append(hx).append("; hy: ").append(hy).
-                                  append("; lv: ").append(FastMath.toDegrees(lv)).
+                                  append("; lv: ").append(FastMath.toDegrees(getLv())).
                                   append(";}").toString();
     }
 
     /** {@inheritDoc} */
     @Override
     public PositionAngleType getCachedPositionAngleType() {
-        return PositionAngleType.TRUE;
+        return cachedPositionAngleType;
     }
 
     /** {@inheritDoc} */
@@ -980,13 +1200,16 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20170414L;
+        private static final long serialVersionUID = 20231217L;
 
         /** Double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Frame in which are defined the orbital parameters. */
         private final Frame frame;
+
+        /** Cached type of position angle. */
+        private final PositionAngleType positionAngleType;
 
         /** Simple constructor.
          * @param orbit instance to serialize
@@ -994,6 +1217,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         private DTO(final EquinoctialOrbit orbit) {
 
             final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
+            positionAngleType = orbit.cachedPositionAngleType;
 
             // decompose date
             final AbsoluteDate j2000Epoch =
@@ -1006,16 +1230,16 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                 this.d = new double[] {
                     epoch, offset, orbit.getMu(),
                     orbit.a, orbit.ex, orbit.ey,
-                    orbit.hx, orbit.hy, orbit.lv,
+                    orbit.hx, orbit.hy, orbit.cachedL,
                     orbit.aDot, orbit.exDot, orbit.eyDot,
-                    orbit.hxDot, orbit.hyDot, orbit.lvDot
+                    orbit.hxDot, orbit.hyDot, orbit.cachedLDot
                 };
             } else {
                 // we don't have derivatives
                 this.d = new double[] {
                     epoch, offset, orbit.getMu(),
                     orbit.a, orbit.ex, orbit.ey,
-                    orbit.hx, orbit.hy, orbit.lv
+                    orbit.hx, orbit.hy, orbit.cachedL
                 };
             }
 
@@ -1033,12 +1257,12 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                 // we have derivatives
                 return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                             d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                            PositionAngleType.TRUE,
+                                            positionAngleType,
                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                             d[2]);
             } else {
                 // we don't have derivatives
-                return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8], PositionAngleType.TRUE,
+                return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8], positionAngleType,
                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                             d[2]);
             }

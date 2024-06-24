@@ -147,10 +147,10 @@ class SpacecraftStateInterpolatorTest {
                 new SpacecraftStateInterpolator(interpolationPoints1, intertialFrame, intertialFrame);
 
         final SpacecraftStateInterpolator interpolator2 =
-                new SpacecraftStateInterpolator(interpolationPoints2, intertialFrame, intertialFrame);
+                new SpacecraftStateInterpolator(interpolationPoints2, SpacecraftStateInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, intertialFrame, intertialFrame);
 
         final SpacecraftStateInterpolator interpolator3 =
-                new SpacecraftStateInterpolator(interpolationPoints3, intertialFrame, intertialFrame);
+                new SpacecraftStateInterpolator(interpolationPoints3, SpacecraftStateInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, intertialFrame);
 
         // When & Then
         checkInterpolationError(interpolationPoints1, 106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, 450 * 450,
@@ -473,6 +473,56 @@ class SpacecraftStateInterpolatorTest {
 
     @Test
     void testGetNbInterpolationsWithMultipleSubInterpolators() {
+        // GIVEN
+        // Create mock interpolators
+        final Frame frame = Mockito.mock(Frame.class);
+
+        final TimeInterpolator<Orbit> orbitInterpolator = Mockito.mock(OrbitHermiteInterpolator.class);
+
+        final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator =
+                Mockito.mock(AbsolutePVCoordinatesHermiteInterpolator.class);
+
+        final TimeInterpolator<TimeStampedDouble> massInterpolator =
+                Mockito.mock(TimeStampedDoubleHermiteInterpolator.class);
+
+        final TimeInterpolator<Attitude> attitudeInterpolator = Mockito.mock(AttitudeInterpolator.class);
+
+        final TimeInterpolator<TimeStampedDouble> additionalStateInterpolator =
+                Mockito.mock(TimeStampedDoubleHermiteInterpolator.class);
+
+        // Implement mocks behaviours
+        final int orbitNbInterpolationPoints           = 2;
+        final int absPVANbInterpolationPoints          = 3;
+        final int massNbInterpolationPoints            = 4;
+        final int AttitudeNbInterpolationPoints        = 5;
+        final int AdditionalStateNbInterpolationPoints = 6;
+
+        Mockito.when(orbitInterpolator.getNbInterpolationPoints()).thenReturn(orbitNbInterpolationPoints);
+        Mockito.when(absPVAInterpolator.getNbInterpolationPoints()).thenReturn(absPVANbInterpolationPoints);
+        Mockito.when(massInterpolator.getNbInterpolationPoints()).thenReturn(massNbInterpolationPoints);
+        Mockito.when(attitudeInterpolator.getNbInterpolationPoints()).thenReturn(AttitudeNbInterpolationPoints);
+        Mockito.when(additionalStateInterpolator.getNbInterpolationPoints()).thenReturn(AdditionalStateNbInterpolationPoints);
+
+        Mockito.when(orbitInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(orbitInterpolator));
+        Mockito.when(absPVAInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(absPVAInterpolator));
+        Mockito.when(massInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(massInterpolator));
+        Mockito.when(attitudeInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(attitudeInterpolator));
+        Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
+
+        final SpacecraftStateInterpolator stateInterpolator =
+                new SpacecraftStateInterpolator(2, 1.0e-3, frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
+                        attitudeInterpolator, additionalStateInterpolator);
+
+        // WHEN
+        final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
+
+        // THEN
+        Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void testGetNbInterpolationsWithMultipleSubInterpolatorsDeprecated() {
         // GIVEN
         // Create mock interpolators
         final Frame frame = Mockito.mock(Frame.class);

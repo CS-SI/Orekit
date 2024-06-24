@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.Map;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -41,6 +42,10 @@ import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.models.earth.displacement.StationDisplacement;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.UT1Scale;
@@ -92,6 +97,11 @@ public class GroundStation {
     /** Suffix for ground clock drift parameters name. */
     public static final String DRIFT_SUFFIX = "-drift-clock";
 
+    /** Suffix for ground clock drift parameters name.
+     * @since 12.1
+     */
+    public static final String ACCELERATION_SUFFIX = "-acceleration-clock";
+
     /** Suffix for ground station intermediate frame name. */
     public static final String INTERMEDIATE_SUFFIX = "-intermediate";
 
@@ -114,6 +124,11 @@ public class GroundStation {
     /** Provider for Earth frame whose EOP parameters can be estimated. */
     private final EstimatedEarthFrameProvider estimatedEarthFrameProvider;
 
+    /** Provider for weather parameters.
+     * @since 12.1
+     */
+    private final PressureTemperatureHumidityProvider pthProvider;
+
     /** Earth frame whose EOP parameters can be estimated. */
     private final Frame estimatedEarthFrame;
 
@@ -132,6 +147,11 @@ public class GroundStation {
     /** Driver for clock drift. */
     private final ParameterDriver clockDriftDriver;
 
+    /** Driver for clock acceleration.
+     * @since 12.1
+     */
+    private final ParameterDriver clockAccelerationDriver;
+
     /** Driver for position offset along the East axis. */
     private final ParameterDriver eastOffsetDriver;
 
@@ -142,6 +162,10 @@ public class GroundStation {
     private final ParameterDriver zenithOffsetDriver;
 
     /** Build a ground station ignoring {@link StationDisplacement station displacements}.
+     * <p>
+     * Calls {@link #GroundStation(TopocentricFrame, PressureTemperatureHumidityProvider)}
+     * with {@link TroposphericModelUtils#STANDARD_ATMOSPHERE_PROVIDER} as the provider.
+     * </p>
      * <p>
      * The initial values for the pole and prime meridian parametric linear models
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
@@ -159,7 +183,31 @@ public class GroundStation {
      * @see #GroundStation(TopocentricFrame, EOPHistory, StationDisplacement...)
      */
     public GroundStation(final TopocentricFrame baseFrame) {
-        this(baseFrame, FramesFactory.findEOP(baseFrame), new StationDisplacement[0]);
+        this(baseFrame, TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
+             FramesFactory.findEOP(baseFrame), new StationDisplacement[0]);
+    }
+
+    /** Build a ground station ignoring {@link StationDisplacement station displacements}.
+     * <p>
+     * The initial values for the pole and prime meridian parametric linear models
+     * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}) are set to 0.
+     * The initial values for the station offset model ({@link #getClockOffsetDriver()},
+     * {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * {@link #getZenithOffsetDriver()}) are set to 0.
+     * This implies that as long as these values are not changed, the offset frame is
+     * the same as the {@link #getBaseFrame() base frame}. As soon as some of these models
+     * are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
+     * </p>
+     * @param baseFrame base frame associated with the station, without *any* parametric
+     * model (no station offset, no polar motion, no meridian shift)
+     * @param pthProvider provider for weather parameters
+     * @see #GroundStation(TopocentricFrame, EOPHistory, StationDisplacement...)
+     * @since 12.1
+     */
+    public GroundStation(final TopocentricFrame baseFrame, final PressureTemperatureHumidityProvider pthProvider) {
+        this(baseFrame, pthProvider, FramesFactory.findEOP(baseFrame), new StationDisplacement[0]);
     }
 
     /** Simple constructor.
@@ -181,11 +229,43 @@ public class GroundStation {
      * @param displacements ground station displacement model (tides, ocean loading,
      * atmospheric loading, thermal effects...)
      * @since 9.1
+     * @deprecated as of 12.1, replaced by {@link #GroundStation(TopocentricFrame,
+     * PressureTemperatureHumidityProvider, EOPHistory, StationDisplacement...)}
      */
+    @Deprecated
     public GroundStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
                          final StationDisplacement... displacements) {
+        this(baseFrame, TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER, eopHistory, displacements);
+    }
 
-        this.baseFrame = baseFrame;
+    /** Simple constructor.
+     * <p>
+     * The initial values for the pole and prime meridian parametric linear models
+     * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}) are set to 0.
+     * The initial values for the station offset model ({@link #getClockOffsetDriver()},
+     * {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
+     * {@link #getZenithOffsetDriver()}, {@link #getClockOffsetDriver()}) are set to 0.
+     * This implies that as long as these values are not changed, the offset frame is
+     * the same as the {@link #getBaseFrame() base frame}. As soon as some of these models
+     * are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
+     * </p>
+     * @param baseFrame base frame associated with the station, without *any* parametric
+     * model (no station offset, no polar motion, no meridian shift)
+     * @param pthProvider provider for weather parameters
+     * @param eopHistory EOP history associated with Earth frames
+     * @param displacements ground station displacement model (tides, ocean loading,
+     * atmospheric loading, thermal effects...)
+     * @since 12.1
+     */
+    public GroundStation(final TopocentricFrame baseFrame,
+                         final PressureTemperatureHumidityProvider pthProvider,
+                         final EOPHistory eopHistory,
+                         final StationDisplacement... displacements) {
+
+        this.baseFrame   = baseFrame;
+        this.pthProvider = pthProvider;
 
         if (eopHistory == null) {
             throw new OrekitException(OrekitMessages.NO_EARTH_ORIENTATION_PARAMETERS);
@@ -215,6 +295,10 @@ public class GroundStation {
                                                     0.0, CLOCK_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
+        this.clockAccelerationDriver = new ParameterDriver(baseFrame.getName() + ACCELERATION_SUFFIX,
+                                                    0.0, CLOCK_OFFSET_SCALE,
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, POSITION_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -227,6 +311,25 @@ public class GroundStation {
                                                       0.0, POSITION_OFFSET_SCALE,
                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
+    }
+
+    /** Get the weather parameters.
+     * @param date date at which weather parameters are requested
+     * @return weather parameters
+     * @since 12.1
+     */
+    public PressureTemperatureHumidity getPressureTemperatureHumidity(final AbsoluteDate date) {
+        return pthProvider.getWeatherParamerers(getOffsetGeodeticPoint(date), date);
+    }
+
+    /** Get the weather parameters.
+     * @param <T> type of the field elements
+     * @param date date at which weather parameters are requested
+     * @return weather parameters
+     * @since 12.1
+     */
+    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getPressureTemperatureHumidity(final FieldAbsoluteDate<T> date) {
+        return pthProvider.getWeatherParamerers(getOffsetGeodeticPoint(date), date);
     }
 
     /** Get the displacement models.
@@ -251,6 +354,14 @@ public class GroundStation {
      */
     public ParameterDriver getClockDriftDriver() {
         return clockDriftDriver;
+    }
+
+    /** Get a driver allowing to change station clock acceleration (which is related to measurement date).
+     * @return driver for station clock acceleration
+     * @since 12.1
+     */
+    public ParameterDriver getClockAccelerationDriver() {
+        return clockAccelerationDriver;
     }
 
     /** Get a driver allowing to change station position along East axis.
@@ -419,6 +530,28 @@ public class GroundStation {
         if (date != null) {
             origin = origin.add(computeDisplacement(date, origin));
         }
+
+        return baseShape.transform(origin, baseShape.getBodyFrame(), date);
+
+    }
+
+    /** Get the geodetic point at the center of the offset frame.
+     * @param <T> type of the field elements
+     * @param date current date(<em>must</em> be non-null, which is a more stringent condition
+     *      *                    than in {@link #getOffsetGeodeticPoint(AbsoluteDate)}
+     * @return geodetic point at the center of the offset frame
+     * @since 12.1
+     */
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getOffsetGeodeticPoint(final FieldAbsoluteDate<T> date) {
+
+        // take station offset into account
+        final double    x          = eastOffsetDriver.getValue();
+        final double    y          = northOffsetDriver.getValue();
+        final double    z          = zenithOffsetDriver.getValue();
+        final BodyShape baseShape  = baseFrame.getParentShape();
+        final FieldStaticTransform<T> baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
+        FieldVector3D<T> origin    = baseToBody.transformPosition(new Vector3D(x, y, z));
+        origin = origin.add(computeDisplacement(date.toAbsoluteDate(), origin.toVector3D()));
 
         return baseShape.transform(origin, baseShape.getBodyFrame(), date);
 

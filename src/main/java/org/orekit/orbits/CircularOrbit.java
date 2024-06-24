@@ -75,7 +75,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20170414L;
+    private static final long serialVersionUID = 20231217L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -92,8 +92,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     /** Right Ascension of Ascending Node (rad). */
     private final double raan;
 
-    /** True latitude argument (rad). */
-    private final double alphaV;
+    /** Cached latitude argument (rad). */
+    private final double cachedAlpha;
+
+    /** Type of cached position angle (latitude argument). */
+    private final PositionAngleType cachedPositionAngleType;
 
     /** Semi-major axis derivative (m/s). */
     private final double aDot;
@@ -111,7 +114,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     private final double raanDot;
 
     /** True latitude argument derivative (rad/s). */
-    private final double alphaVDot;
+    private final double cachedAlphaDot;
 
     /** Indicator for {@link PVCoordinates} serialization. */
     private final boolean serializePV;
@@ -120,6 +123,33 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     private transient PVCoordinates partialPV;
 
     /** Creates a new instance.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(ω), first component of circular eccentricity vector
+     * @param ey e sin(ω), second component of circular eccentricity vector
+     * @param i inclination (rad)
+     * @param raan right ascension of ascending node (Ω, rad)
+     * @param alpha  an + ω, mean, eccentric or true latitude argument (rad)
+     * @param type type of latitude argument
+     * @param cachedPositionAngleType type of cached latitude argument
+     * @param frame the frame in which are defined the parameters
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     * @since 12.1
+     */
+    public CircularOrbit(final double a, final double ex, final double ey,
+                         final double i, final double raan, final double alpha,
+                         final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
+                         final Frame frame, final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        this(a, ex, ey, i, raan, alpha,
+             Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
+             type, cachedPositionAngleType, frame, date, mu);
+    }
+
+    /** Creates a new instance without derivatives and with cached position angle same as value inputted.
      * @param a  semi-major axis (m)
      * @param ex e cos(ω), first component of circular eccentricity vector
      * @param ey e sin(ω), second component of circular eccentricity vector
@@ -138,13 +168,72 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                          final double i, final double raan, final double alpha,
                          final PositionAngleType type,
                          final Frame frame, final AbsoluteDate date, final double mu)
-        throws IllegalArgumentException {
-        this(a, ex, ey, i, raan, alpha,
-             Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-             type, frame, date, mu);
+            throws IllegalArgumentException {
+        this(a, ex, ey, i, raan, alpha, type, type, frame, date, mu);
     }
 
     /** Creates a new instance.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(ω), first component of circular eccentricity vector
+     * @param ey e sin(ω), second component of circular eccentricity vector
+     * @param i inclination (rad)
+     * @param raan right ascension of ascending node (Ω, rad)
+     * @param alpha  an + ω, mean, eccentric or true latitude argument (rad)
+     * @param aDot  semi-major axis derivative (m/s)
+     * @param exDot d(e cos(ω))/dt, first component of circular eccentricity vector derivative
+     * @param eyDot d(e sin(ω))/dt, second component of circular eccentricity vector derivative
+     * @param iDot inclination  derivative(rad/s)
+     * @param raanDot right ascension of ascending node derivative (rad/s)
+     * @param alphaDot  d(an + ω), mean, eccentric or true latitude argument derivative (rad/s)
+     * @param type type of latitude argument
+     * @param cachedPositionAngleType type of cached latitude argument
+     * @param frame the frame in which are defined the parameters
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     * @since 12.1
+     */
+    public CircularOrbit(final double a, final double ex, final double ey,
+                         final double i, final double raan, final double alpha,
+                         final double aDot, final double exDot, final double eyDot,
+                         final double iDot, final double raanDot, final double alphaDot,
+                         final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
+                         final Frame frame, final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        super(frame, date, mu);
+        if (ex * ex + ey * ey >= 1.0) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
+                                                     getClass().getName());
+        }
+        this.a       =  a;
+        this.aDot    =  aDot;
+        this.ex      = ex;
+        this.exDot   = exDot;
+        this.ey      = ey;
+        this.eyDot   = eyDot;
+        this.i       = i;
+        this.iDot    = iDot;
+        this.raan    = raan;
+        this.raanDot = raanDot;
+        this.cachedPositionAngleType = cachedPositionAngleType;
+
+        if (hasDerivatives()) {
+            final UnivariateDerivative1 alphaUD = initializeCachedAlpha(alpha, alphaDot, type);
+            this.cachedAlpha = alphaUD.getValue();
+            this.cachedAlphaDot = alphaUD.getFirstDerivative();
+        } else {
+            this.cachedAlpha = initializeCachedAlpha(alpha, type);
+            this.cachedAlphaDot = Double.NaN;
+        }
+
+        serializePV = false;
+        partialPV   = null;
+
+    }
+
+    /** Creates a new instance with derivatives and with cached position angle same as value inputted.
      * @param a  semi-major axis (m)
      * @param ex e cos(ω), first component of circular eccentricity vector
      * @param ey e sin(ω), second component of circular eccentricity vector
@@ -171,63 +260,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                          final double iDot, final double raanDot, final double alphaDot,
                          final PositionAngleType type,
                          final Frame frame, final AbsoluteDate date, final double mu)
-        throws IllegalArgumentException {
-        super(frame, date, mu);
-        if (ex * ex + ey * ey >= 1.0) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
-                                                     getClass().getName());
-        }
-        this.a       =  a;
-        this.aDot    =  aDot;
-        this.ex      = ex;
-        this.exDot   = exDot;
-        this.ey      = ey;
-        this.eyDot   = eyDot;
-        this.i       = i;
-        this.iDot    = iDot;
-        this.raan    = raan;
-        this.raanDot = raanDot;
-
-        if (hasDerivatives()) {
-            final UnivariateDerivative1 exUD    = new UnivariateDerivative1(ex,    exDot);
-            final UnivariateDerivative1 eyUD    = new UnivariateDerivative1(ey,    eyDot);
-            final UnivariateDerivative1 alphaUD = new UnivariateDerivative1(alpha, alphaDot);
-            final UnivariateDerivative1 alphavUD;
-            switch (type) {
-                case MEAN :
-                    alphavUD = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaUD, exUD, eyUD), exUD, eyUD);
-                    break;
-                case ECCENTRIC :
-                    alphavUD = FieldCircularOrbit.eccentricToTrue(alphaUD, exUD, eyUD);
-                    break;
-                case TRUE :
-                    alphavUD = alphaUD;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
-            this.alphaV    = alphavUD.getValue();
-            this.alphaVDot = alphavUD.getDerivative(1);
-        } else {
-            switch (type) {
-                case MEAN :
-                    this.alphaV = eccentricToTrue(meanToEccentric(alpha, ex, ey), ex, ey);
-                    break;
-                case ECCENTRIC :
-                    this.alphaV = eccentricToTrue(alpha, ex, ey);
-                    break;
-                case TRUE :
-                    this.alphaV = alpha;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
-            this.alphaVDot = Double.NaN;
-        }
-
-        serializePV = false;
-        partialPV   = null;
-
+            throws IllegalArgumentException {
+        this(a, ex, ey, i, raan, alpha, aDot, exDot, eyDot, iDot, raanDot, alphaDot, type, type,
+                frame, date, mu);
     }
 
     /** Creates a new instance.
@@ -236,14 +271,15 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @param i inclination (rad)
      * @param raan right ascension of ascending node (Ω, rad)
-     * @param alphaV  v + ω, true latitude argument (rad)
+     * @param alpha  input latitude argument (rad)
      * @param aDot  semi-major axis derivative (m/s)
      * @param exDot d(e cos(ω))/dt, first component of circular eccentricity vector derivative
      * @param eyDot d(e sin(ω))/dt, second component of circular eccentricity vector derivative
      * @param iDot inclination  derivative(rad/s)
      * @param raanDot right ascension of ascending node derivative (rad/s)
-     * @param alphaVDot  d(v + ω), true latitude argument derivative (rad/s)
+     * @param alphaDot  input latitude argument derivative (rad/s)
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
+     * @param positionAngleType type of position angle
      * @param frame the frame in which are defined the parameters
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m³/s²)
@@ -251,11 +287,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     private CircularOrbit(final double a, final double ex, final double ey,
-                          final double i, final double raan, final double alphaV,
+                          final double i, final double raan, final double alpha,
                           final double aDot, final double exDot, final double eyDot,
-                          final double iDot, final double raanDot, final double alphaVDot,
-                          final TimeStampedPVCoordinates pvCoordinates, final Frame frame,
-                          final double mu)
+                          final double iDot, final double raanDot, final double alphaDot,
+                          final TimeStampedPVCoordinates pvCoordinates,
+                          final PositionAngleType positionAngleType, final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
         this.a           =  a;
@@ -268,8 +304,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         this.iDot        = iDot;
         this.raan        = raan;
         this.raanDot     = raanDot;
-        this.alphaV      = alphaV;
-        this.alphaVDot   = alphaVDot;
+        this.cachedAlpha = alpha;
+        this.cachedAlphaDot = alphaDot;
+        this.cachedPositionAngleType = positionAngleType;
         this.serializePV = true;
         this.partialPV   = null;
     }
@@ -291,6 +328,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     public CircularOrbit(final TimeStampedPVCoordinates pvCoordinates, final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
+        this.cachedPositionAngleType = PositionAngleType.TRUE;
 
         // compute semi-major axis
         final Vector3D pvP = pvCoordinates.getPosition();
@@ -337,7 +375,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
 
         // compute latitude argument
         final double beta = 1 / (1 + FastMath.sqrt(1 - ex * ex - ey * ey));
-        alphaV = eccentricToTrue(FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey), ex, ey);
+        cachedAlpha = CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
 
         partialPV   = pvCoordinates;
 
@@ -358,15 +396,15 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
             iDot    = jacobian[3][3] * aX + jacobian[3][4] * aY + jacobian[3][5] * aZ;
             raanDot = jacobian[4][3] * aX + jacobian[4][4] * aY + jacobian[4][5] * aZ;
 
-            // in order to compute true anomaly derivative, we must compute
-            // mean anomaly derivative including Keplerian motion and convert to true anomaly
+            // in order to compute latitude argument derivative, we must compute
+            // mean latitude argument derivative including Keplerian motion and convert to true latitude argument
             final double alphaMDot = getKeplerianMeanMotion() +
                                      jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
             final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex, exDot);
             final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey, eyDot);
             final UnivariateDerivative1 alphaMUD = new UnivariateDerivative1(getAlphaM(), alphaMDot);
-            final UnivariateDerivative1 alphavUD = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaMUD, exUD, eyUD), exUD, eyUD);
-            alphaVDot = alphavUD.getDerivative(1);
+            final UnivariateDerivative1 alphavUD = FieldCircularLatitudeArgumentUtility.meanToTrue(exUD, eyUD, alphaMUD);
+            cachedAlphaDot = alphavUD.getFirstDerivative();
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -377,7 +415,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
             eyDot     = Double.NaN;
             iDot      = Double.NaN;
             raanDot   = Double.NaN;
-            alphaVDot = Double.NaN;
+            cachedAlphaDot = Double.NaN;
         }
 
         serializePV = true;
@@ -426,7 +464,8 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         final double equiEy = op.getEquinoctialEy();
         ex     = equiEx * cosRaan + equiEy * sinRaan;
         ey     = equiEy * cosRaan - equiEx * sinRaan;
-        alphaV = op.getLv() - raan;
+        cachedPositionAngleType = PositionAngleType.TRUE;
+        cachedAlpha = op.getLv() - raan;
 
         if (op.hasDerivatives()) {
             aDot    = op.getADot();
@@ -440,14 +479,14 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                       (equiEyDot - equiEx * raanDot) * sinRaan;
             eyDot   = (equiEyDot - equiEx * raanDot) * cosRaan -
                       (equiExDot + equiEy * raanDot) * sinRaan;
-            alphaVDot = op.getLvDot() - raanDot;
+            cachedAlphaDot = op.getLvDot() - raanDot;
         } else {
             aDot      = Double.NaN;
             exDot     = Double.NaN;
             eyDot     = Double.NaN;
             iDot      = Double.NaN;
             raanDot   = Double.NaN;
-            alphaVDot = Double.NaN;
+            cachedAlphaDot = Double.NaN;
         }
 
         serializePV = false;
@@ -456,39 +495,46 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OrbitType getType() {
         return OrbitType.CIRCULAR;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getA() {
         return a;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getADot() {
         return aDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEx() {
         final SinCos sc = FastMath.sinCos(raan);
         return ex * sc.cos() - ey * sc.sin();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialExDot() {
         final SinCos sc = FastMath.sinCos(raan);
         return (exDot - ey * raanDot) * sc.cos() - (eyDot + ex * raanDot) * sc.sin();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEy() {
         final SinCos sc = FastMath.sinCos(raan);
         return ey * sc.cos() + ex * sc.sin();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEyDot() {
         final SinCos sc = FastMath.sinCos(raan);
         return (eyDot + ex * raanDot) * sc.cos() + (exDot - ey * raanDot) * sc.sin();
@@ -524,6 +570,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHx() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -533,6 +580,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHxDot() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -544,6 +592,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHy() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -553,6 +602,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHyDot() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -567,7 +617,19 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @return v + ω true latitude argument (rad)
      */
     public double getAlphaV() {
-        return alphaV;
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                return cachedAlpha;
+
+            case ECCENTRIC:
+                return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
+
+            case MEAN:
+                return CircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** Get the true latitude argument derivative.
@@ -578,14 +640,48 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @since 9.0
      */
     public double getAlphaVDot() {
-        return alphaVDot;
+        switch (cachedPositionAngleType) {
+            case ECCENTRIC:
+                final UnivariateDerivative1 alphaEUD = new UnivariateDerivative1(cachedAlpha, cachedAlphaDot);
+                final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 alphaVUD = FieldCircularLatitudeArgumentUtility.eccentricToTrue(exUD, eyUD,
+                        alphaEUD);
+                return alphaVUD.getFirstDerivative();
+
+            case TRUE:
+                return cachedAlphaDot;
+
+            case MEAN:
+                final UnivariateDerivative1 alphaMUD = new UnivariateDerivative1(cachedAlpha, cachedAlphaDot);
+                final UnivariateDerivative1 exUD2    = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD2    = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 alphaVUD2 = FieldCircularLatitudeArgumentUtility.meanToTrue(exUD2,
+                        eyUD2, alphaMUD);
+                return alphaVUD2.getFirstDerivative();
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** Get the eccentric latitude argument.
      * @return E + ω eccentric latitude argument (rad)
      */
     public double getAlphaE() {
-        return trueToEccentric(alphaV, ex, ey);
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
+
+            case ECCENTRIC:
+                return cachedAlpha;
+
+            case MEAN:
+                return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** Get the eccentric latitude argument derivative.
@@ -596,18 +692,48 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @since 9.0
      */
     public double getAlphaEDot() {
-        final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(alphaV, alphaVDot);
-        final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
-        final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
-        final UnivariateDerivative1 alphaEUD = FieldCircularOrbit.trueToEccentric(alphaVUD, exUD, eyUD);
-        return alphaEUD.getDerivative(1);
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(cachedAlpha, cachedAlphaDot);
+                final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 alphaEUD = FieldCircularLatitudeArgumentUtility.trueToEccentric(exUD, eyUD,
+                        alphaVUD);
+                return alphaEUD.getFirstDerivative();
+
+            case ECCENTRIC:
+                return cachedAlphaDot;
+
+            case MEAN:
+                final UnivariateDerivative1 alphaMUD = new UnivariateDerivative1(cachedAlpha, cachedAlphaDot);
+                final UnivariateDerivative1 exUD2    = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD2    = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 alphaVUD2 = FieldCircularLatitudeArgumentUtility.meanToEccentric(exUD2,
+                        eyUD2, alphaMUD);
+                return alphaVUD2.getFirstDerivative();
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** Get the mean latitude argument.
      * @return M + ω mean latitude argument (rad)
      */
     public double getAlphaM() {
-        return eccentricToMean(trueToEccentric(alphaV, ex, ey), ex, ey);
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                return CircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
+
+            case MEAN:
+                return cachedAlpha;
+
+            case ECCENTRIC:
+                return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** Get the mean latitude argument derivative.
@@ -618,11 +744,29 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @since 9.0
      */
     public double getAlphaMDot() {
-        final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(alphaV, alphaVDot);
-        final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
-        final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
-        final UnivariateDerivative1 alphaMUD = FieldCircularOrbit.eccentricToMean(FieldCircularOrbit.trueToEccentric(alphaVUD, exUD, eyUD), exUD, eyUD);
-        return alphaMUD.getDerivative(1);
+        switch (cachedPositionAngleType) {
+            case TRUE:
+                final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(cachedAlpha, cachedAlphaDot);
+                final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 alphaMUD = FieldCircularLatitudeArgumentUtility.trueToMean(exUD, eyUD,
+                        alphaVUD);
+                return alphaMUD.getFirstDerivative();
+
+            case MEAN:
+                return cachedAlphaDot;
+
+            case ECCENTRIC:
+                final UnivariateDerivative1 alphaEUD = new UnivariateDerivative1(cachedAlpha, cachedAlphaDot);
+                final UnivariateDerivative1 exUD2    = new UnivariateDerivative1(ex,     exDot);
+                final UnivariateDerivative1 eyUD2    = new UnivariateDerivative1(ey,     eyDot);
+                final UnivariateDerivative1 alphaMUD2 = FieldCircularLatitudeArgumentUtility.eccentricToMean(exUD2,
+                        eyUD2, alphaEUD);
+                return alphaMUD2.getFirstDerivative();
+
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** Get the latitude argument.
@@ -655,11 +799,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @return the true latitude argument.
      */
+    @Deprecated
     public static double eccentricToTrue(final double alphaE, final double ex, final double ey) {
-        final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final SinCos scAlphaE  = FastMath.sinCos(alphaE);
-        return alphaE + 2 * FastMath.atan((ex * scAlphaE.sin() - ey * scAlphaE.cos()) /
-                                      (epsilon + 1 - ex * scAlphaE.cos() - ey * scAlphaE.sin()));
+        return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alphaE);
     }
 
     /** Computes the eccentric latitude argument from the true latitude argument.
@@ -668,11 +810,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @return the eccentric latitude argument.
      */
+    @Deprecated
     public static double trueToEccentric(final double alphaV, final double ex, final double ey) {
-        final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final SinCos scAlphaV  = FastMath.sinCos(alphaV);
-        return alphaV + 2 * FastMath.atan((ey * scAlphaV.cos() - ex * scAlphaV.sin()) /
-                                      (epsilon + 1 + ex * scAlphaV.cos() + ey * scAlphaV.sin()));
+        return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alphaV);
     }
 
     /** Computes the eccentric latitude argument from the mean latitude argument.
@@ -681,31 +821,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @return the eccentric latitude argument.
      */
+    @Deprecated
     public static double meanToEccentric(final double alphaM, final double ex, final double ey) {
-        // Generalization of Kepler equation to circular parameters
-        // with alphaE = PA + E and
-        //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        double alphaE         = alphaM;
-        double shift          = 0.0;
-        double alphaEMalphaM  = 0.0;
-        SinCos scAlphaE       = FastMath.sinCos(alphaE);
-        int    iter           = 0;
-        do {
-            final double f2 = ex * scAlphaE.sin() - ey * scAlphaE.cos();
-            final double f1 = 1.0 - ex * scAlphaE.cos() - ey * scAlphaE.sin();
-            final double f0 = alphaEMalphaM - f2;
-
-            final double f12 = 2.0 * f1;
-            shift = f0 * f12 / (f1 * f12 - f0 * f2);
-
-            alphaEMalphaM -= shift;
-            alphaE         = alphaM + alphaEMalphaM;
-            scAlphaE       = FastMath.sinCos(alphaE);
-
-        } while (++iter < 50 && FastMath.abs(shift) > 1.0e-12);
-
-        return alphaE;
-
+        return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alphaM);
     }
 
     /** Computes the mean latitude argument from the eccentric latitude argument.
@@ -714,27 +832,31 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @return the mean latitude argument.
      */
+    @Deprecated
     public static double eccentricToMean(final double alphaE, final double ex, final double ey) {
-        final SinCos scAlphaE = FastMath.sinCos(alphaE);
-        return alphaE + (ey * scAlphaE.cos() - ex * scAlphaE.sin());
+        return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alphaE);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getE() {
         return FastMath.sqrt(ex * ex + ey * ey);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEDot() {
         return (ex * exDot + ey * eyDot) / getE();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getI() {
         return i;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getIDot() {
         return iDot;
     }
@@ -758,31 +880,37 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLv() {
-        return alphaV + raan;
+        return getAlphaV() + raan;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLvDot() {
-        return alphaVDot + raanDot;
+        return getAlphaVDot() + raanDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLE() {
         return getAlphaE() + raan;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLEDot() {
         return getAlphaEDot() + raanDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLM() {
         return getAlphaM() + raan;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLMDot() {
         return getAlphaMDot() + raanDot;
     }
@@ -848,6 +976,95 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     }
 
+    /** Initialize cached alpha with rate.
+     * @param alpha input alpha
+     * @param alphaDot rate of input alpha
+     * @param inputType position angle type passed as input
+     * @return alpha to cache with rate
+     * @since 12.1
+     */
+    private UnivariateDerivative1 initializeCachedAlpha(final double alpha, final double alphaDot,
+                                                        final PositionAngleType inputType) {
+        if (cachedPositionAngleType == inputType) {
+            return new UnivariateDerivative1(alpha, alphaDot);
+
+        } else {
+            final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
+            final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
+            final UnivariateDerivative1 alphaUD = new UnivariateDerivative1(alpha, alphaDot);
+
+            switch (cachedPositionAngleType) {
+
+                case ECCENTRIC:
+                    if (inputType == PositionAngleType.MEAN) {
+                        return FieldCircularLatitudeArgumentUtility.meanToEccentric(exUD, eyUD, alphaUD);
+                    } else {
+                        return FieldCircularLatitudeArgumentUtility.trueToEccentric(exUD, eyUD, alphaUD);
+                    }
+
+                case TRUE:
+                    if (inputType == PositionAngleType.MEAN) {
+                        return FieldCircularLatitudeArgumentUtility.meanToTrue(exUD, eyUD, alphaUD);
+                    } else {
+                        return FieldCircularLatitudeArgumentUtility.eccentricToTrue(exUD, eyUD, alphaUD);
+                    }
+
+                case MEAN:
+                    if (inputType == PositionAngleType.TRUE) {
+                        return FieldCircularLatitudeArgumentUtility.trueToMean(exUD, eyUD, alphaUD);
+                    } else {
+                        return FieldCircularLatitudeArgumentUtility.eccentricToMean(exUD, eyUD, alphaUD);
+                    }
+
+                default:
+                    throw new OrekitInternalError(null);
+
+            }
+
+        }
+
+    }
+
+    /** Initialize cached alpha.
+     * @param alpha input alpha
+     * @param positionAngleType position angle type passed as input
+     * @return alpha to cache
+     * @since 12.1
+     */
+    private double initializeCachedAlpha(final double alpha, final PositionAngleType positionAngleType) {
+        if (positionAngleType == cachedPositionAngleType) {
+            return alpha;
+
+        } else {
+            switch (cachedPositionAngleType) {
+
+                case ECCENTRIC:
+                    if (positionAngleType == PositionAngleType.MEAN) {
+                        return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alpha);
+                    } else {
+                        return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alpha);
+                    }
+
+                case MEAN:
+                    if (positionAngleType == PositionAngleType.TRUE) {
+                        return CircularLatitudeArgumentUtility.trueToMean(ex, ey, alpha);
+                    } else {
+                        return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alpha);
+                    }
+
+                case TRUE:
+                    if (positionAngleType == PositionAngleType.MEAN) {
+                        return CircularLatitudeArgumentUtility.meanToTrue(ex, ey, alpha);
+                    } else {
+                        return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alpha);
+                    }
+
+                default:
+                    throw new OrekitInternalError(null);
+            }
+        }
+    }
+
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
      * <p>
      * This method should be called only when {@link #hasDerivatives()} returns true.
@@ -872,6 +1089,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Vector3D initPosition() {
 
         // get equinoctial parameters
@@ -917,6 +1135,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // position and velocity
@@ -934,13 +1153,14 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public CircularOrbit shiftedBy(final double dt) {
 
         // use Keplerian-only motion
         final CircularOrbit keplerianShifted = new CircularOrbit(a, ex, ey, i, raan,
                                                                  getAlphaM() + getKeplerianMeanMotion() * dt,
-                                                                 PositionAngleType.MEAN, getFrame(),
-                                                                 getDate().shiftedBy(dt), getMu());
+                                                                 PositionAngleType.MEAN, cachedPositionAngleType,
+                                                                 getFrame(), getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
 
@@ -971,6 +1191,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
 
 
@@ -1100,6 +1321,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
 
         // start by computing the Jacobian with mean angle
@@ -1128,6 +1350,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
 
         // start by computing the Jacobian with eccentric angle
@@ -1176,22 +1399,24 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
         final double oMe2;
         final double ksi;
         final double n  = FastMath.sqrt(gm / a) / a;
-        final SinCos sc = FastMath.sinCos(alphaV);
+        final SinCos sc;
         switch (type) {
             case MEAN :
                 pDot[5] += n;
                 break;
             case ECCENTRIC :
-                oMe2  = 1 - ex * ex - ey * ey;
-                ksi   = 1 + ex * sc.cos() + ey * sc.sin();
-                pDot[5] += n * ksi / oMe2;
+                sc = FastMath.sinCos(getAlphaE());
+                ksi   = 1. / (1 - ex * sc.cos() - ey * sc.sin());
+                pDot[5] += n * ksi;
                 break;
             case TRUE :
+                sc = FastMath.sinCos(getAlphaV());
                 oMe2  = 1 - ex * ex - ey * ey;
                 ksi   = 1 + ex * sc.cos() + ey * sc.sin();
                 pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
@@ -1210,14 +1435,14 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                                   append(", ex: ").append(ex).append(", ey: ").append(ey).
                                   append(", i: ").append(FastMath.toDegrees(i)).
                                   append(", raan: ").append(FastMath.toDegrees(raan)).
-                                  append(", alphaV: ").append(FastMath.toDegrees(alphaV)).
+                                  append(", alphaV: ").append(FastMath.toDegrees(getAlphaV())).
                                   append(";}").toString();
     }
 
     /** {@inheritDoc} */
     @Override
     public PositionAngleType getCachedPositionAngleType() {
-        return PositionAngleType.TRUE;
+        return cachedPositionAngleType;
     }
 
     /** {@inheritDoc} */
@@ -1230,8 +1455,8 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     @Override
     public CircularOrbit removeRates() {
         final PositionAngleType positionAngleType = getCachedPositionAngleType();
-        return new CircularOrbit(getA(), getCircularEx(), getCircularEy(), getI(), getRightAscensionOfAscendingNode(),
-                getAlpha(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
+        return new CircularOrbit(a, ex, ey, i, raan, cachedAlpha, positionAngleType, positionAngleType,
+                getFrame(), getDate(), getMu());
     }
 
     /** Replace the instance with a data transfer object for serialization.
@@ -1247,13 +1472,16 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20170414L;
+        private static final long serialVersionUID = 20231217L;
 
         /** Double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Frame in which are defined the orbital parameters. */
         private final Frame frame;
+
+        /** Type of cached position angle. */
+        private final PositionAngleType positionAngleType;
 
         /** Simple constructor.
          * @param orbit instance to serialize
@@ -1261,6 +1489,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         private DTO(final CircularOrbit orbit) {
 
             final AbsoluteDate date = orbit.getDate();
+            positionAngleType = orbit.getCachedPositionAngleType();
 
             // decompose date
             final AbsoluteDate j2000Epoch =
@@ -1275,9 +1504,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                         // date + mu + orbit + derivatives + Cartesian : 24 parameters
                         epoch, offset, orbit.getMu(),
                         orbit.a, orbit.ex, orbit.ey,
-                        orbit.i, orbit.raan, orbit.alphaV,
+                        orbit.i, orbit.raan, orbit.cachedAlpha,
                         orbit.aDot, orbit.exDot, orbit.eyDot,
-                        orbit.iDot, orbit.raanDot, orbit.alphaVDot,
+                        orbit.iDot, orbit.raanDot, orbit.cachedAlphaDot,
                         pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
                         pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
                         pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
@@ -1287,7 +1516,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                         // date + mu + orbit + Cartesian : 18 parameters
                         epoch, offset, orbit.getMu(),
                         orbit.a, orbit.ex, orbit.ey,
-                        orbit.i, orbit.raan, orbit.alphaV,
+                        orbit.i, orbit.raan, orbit.cachedAlpha,
                         pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
                         pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
                         pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
@@ -1299,16 +1528,16 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                     this.d = new double[] {
                         epoch, offset, orbit.getMu(),
                         orbit.a, orbit.ex, orbit.ey,
-                        orbit.i, orbit.raan, orbit.alphaV,
+                        orbit.i, orbit.raan, orbit.cachedAlpha,
                         orbit.aDot, orbit.exDot, orbit.eyDot,
-                        orbit.iDot, orbit.raanDot, orbit.alphaVDot
+                        orbit.iDot, orbit.raanDot, orbit.cachedAlphaDot
                     };
                 } else {
                     // date + mu + orbit: 9 parameters
                     this.d = new double[] {
                         epoch, offset, orbit.getMu(),
                         orbit.a, orbit.ex, orbit.ey,
-                        orbit.i, orbit.raan, orbit.alphaV
+                        orbit.i, orbit.raan, orbit.cachedAlpha
                     };
                 }
             }
@@ -1331,7 +1560,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                                                                           new Vector3D(d[15], d[16], d[17]),
                                                                           new Vector3D(d[18], d[19], d[20]),
                                                                           new Vector3D(d[21], d[22], d[23])),
-                                             frame,
+                                             positionAngleType, frame,
                                              d[2]);
                 case 18 : // date + mu + orbit + Cartesian
                     return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8],
@@ -1340,16 +1569,16 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                                                                           new Vector3D(d[ 9], d[10], d[11]),
                                                                           new Vector3D(d[12], d[13], d[14]),
                                                                           new Vector3D(d[15], d[16], d[17])),
-                                             frame,
+                                             positionAngleType, frame,
                                              d[2]);
                 case 15 : // date + mu + orbit + derivatives
                     return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                              d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             PositionAngleType.TRUE,
+                                             positionAngleType, positionAngleType,
                                              frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
                 default : // date + mu + orbit
-                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngleType.TRUE,
+                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], positionAngleType, positionAngleType,
                                              frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
 

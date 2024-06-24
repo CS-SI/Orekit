@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Romain Serra
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,26 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 class OrbitTest {
+
+    @Test
+    void testGetPosition() {
+        // GIVEN
+        final double aIn = 1.;
+        final TestOrbit testOrbit = new TestOrbit(aIn);
+        final AbsoluteDate date = testOrbit.getDate().shiftedBy(0.);
+        // WHEN
+        final Vector3D actualPosition = testOrbit.getPosition(date, testOrbit.getFrame());
+        // THEN
+        final Vector3D expectedPosition = testOrbit.getPVCoordinates(date, testOrbit.getFrame()).getPosition();
+        Assertions.assertEquals(expectedPosition, actualPosition);
+    }
 
     @Test
     void testKeplerianMeanMotionAndPeriod() {
@@ -62,19 +75,13 @@ class OrbitTest {
         Assertions.assertEquals(expectedValue, actualValue);
     }
 
-    private static Frame mockInertialFrame() {
-        final Frame frame = Mockito.mock(Frame.class);
-        Mockito.when(frame.isPseudoInertial()).thenReturn(true);
-        return frame;
-    }
-
     private static class TestOrbit extends Orbit {
 
         private static final long serialVersionUID = 5921352039485286603L;
         final double a;
 
         protected TestOrbit(final double aIn) throws IllegalArgumentException {
-            super(mockInertialFrame(), Mockito.mock(AbsoluteDate.class), 1.);
+            super(FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, 1.);
             this.a = aIn;
         }
 
@@ -185,17 +192,17 @@ class OrbitTest {
 
         @Override
         protected Vector3D initPosition() {
-            return null;
+            return new Vector3D(a, 0., 0.);
         }
 
         @Override
         protected TimeStampedPVCoordinates initPVCoordinates() {
-            return null;
+            return new TimeStampedPVCoordinates(getDate(), new PVCoordinates(initPosition(), Vector3D.ZERO));
         }
 
         @Override
         public Orbit shiftedBy(double dt) {
-            return null;
+            return new TestOrbit(a);
         }
 
         @Override

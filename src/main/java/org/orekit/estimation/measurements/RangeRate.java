@@ -96,7 +96,8 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedPVCoordinates(approxUplinkDate,
                                                                                                              Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
-            final double tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate());
+            final double tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(),
+                                                   transitPV.getDate(), common.getState().getFrame());
 
             final TimeStampedPVCoordinates stationUplink =
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDate) - tauU);
@@ -162,7 +163,8 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxUplinkDateDS,
                                                                                                                     zero, zero, zero));
 
-            final Gradient tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate());
+            final Gradient tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate(),
+                                                     state.getFrame());
 
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));
@@ -222,7 +224,6 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
      * @param transitPV spacecraft coordinates at onboard signal transit
      * @param transitState orbital state at onboard signal transit
      * @return theoretical value
-     * @see #evaluate(SpacecraftStatet)
      * @since 12.0
      */
     private EstimatedMeasurementBase<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
@@ -283,7 +284,6 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
      * @param indices indices of the estimated parameters in derivatives computations
      * @param nbParams the number of estimated parameters in derivative computations
      * @return theoretical value
-     * @see #evaluate(SpacecraftStatet)
      */
     private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
                                                                         final TimeStampedFieldPVCoordinates<Gradient> stationPV,
@@ -294,13 +294,13 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
 
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =
-                        new EstimatedMeasurement<RangeRate>(this, iteration, evaluation,
-                                                            new SpacecraftState[] {
-                                                                transitState
-                                                            }, new TimeStampedPVCoordinates[] {
-                                                                (downlink ? transitPV : stationPV).toTimeStampedPVCoordinates(),
-                                                                (downlink ? stationPV : transitPV).toTimeStampedPVCoordinates()
-                                                            });
+                        new EstimatedMeasurement<>(this, iteration, evaluation,
+                                                   new SpacecraftState[] {
+                                                       transitState
+                                                   }, new TimeStampedPVCoordinates[] {
+                                                       (downlink ? transitPV : stationPV).toTimeStampedPVCoordinates(),
+                                                       (downlink ? stationPV : transitPV).toTimeStampedPVCoordinates()
+                                                   });
 
         // range rate value
         final FieldVector3D<Gradient> stationPosition  = stationPV.getPosition();
@@ -331,12 +331,11 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
 
         estimated.setEstimatedValue(rangeRate.getValue());
 
-        // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates
+        // compute first order derivatives of (rr) with respect to spacecraft state Cartesian coordinates
         final double[] derivatives = rangeRate.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());

@@ -30,7 +30,7 @@ public class PolynomialFunctionMatrix {
     /** The order of the matrix. */
     private int order;
     /** The elements of the matrix. */
-    private PolynomialFunction elements[][];
+    private PolynomialFunction[][] elements;
 
     /**
      * Create a matrix.

@@ -18,10 +18,12 @@ package org.orekit.estimation.measurements.generation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -69,4 +71,62 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      */
     T build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
+    /** Generate a single measurement.<p>
+     *
+     * Warning: This method uses "shiftedBy" so it is not as accurate as the method above that uses interpolators.
+     *
+     * @param date measurement date
+     * @param states all spacecraft states (i.e. including ones that may not be relevant for the current builder)
+     * @return generated measurement
+     * @since 12.1
+     */
+    default T build(AbsoluteDate date, SpacecraftState[] states) {
+        final Map<ObservableSatellite, OrekitStepInterpolator> interpolators = new ConcurrentHashMap<>();
+
+        for (int i = 0; i < states.length; i++) {
+            final ObservableSatellite sat = getSatellites()[i];
+            final SpacecraftState state = states[i];
+
+            final OrekitStepInterpolator interpolator = new OrekitStepInterpolator() {
+                /** {@inheritDoc} */
+                @Override
+                public OrekitStepInterpolator restrictStep(final SpacecraftState newPreviousState, final SpacecraftState newCurrentState) {
+                    return null;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isPreviousStateInterpolated() {
+                    return false;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isForward() {
+                    return true;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isCurrentStateInterpolated() {
+                    return false;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getPreviousState() {
+                    return state;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getInterpolatedState(final AbsoluteDate date) {
+                    return state.shiftedBy(date.durationFrom(state));
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getCurrentState() {
+                    return state;
+                }
+            };
+            interpolators.put(sat, interpolator);
+        }
+
+        return build( date, interpolators);
+    }
 }

@@ -28,13 +28,15 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.gnss.Phase;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TrackingCoordinates;
 
 /**
  * Class modifying theoretical phase measurement with tropospheric delay.
@@ -47,13 +49,24 @@ import org.orekit.utils.TimeSpanMap.Span;
 public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase> {
 
     /** Tropospheric delay model. */
-    private final DiscreteTroposphericModel tropoModel;
+    private final TroposphericModel tropoModel;
 
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @deprecated as of 12.1, replaced by {@link #PhaseTroposphericDelayModifier(TroposphericModel)}
      */
-    public PhaseTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    public PhaseTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @since 12.1
+     */
+    public PhaseTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
     }
 
@@ -65,15 +78,18 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
      */
     private double phaseErrorTroposphericModel(final GroundStation station, final SpacecraftState state, final double wavelength) {
 
-        // elevation
-        final double elevation =
-                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
-                        getElevation();
+        // tracking
+        final TrackingCoordinates trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate());
 
         // only consider measures above the horizon
-        if (elevation > 0) {
+        if (trackingCoordinates.getElevation() > 0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
+            final double delay = tropoModel.pathDelay(trackingCoordinates,
+                                                      station.getOffsetGeodeticPoint(state.getDate()),
+                                                      station.getPressureTemperatureHumidity(state.getDate()),
+                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
+                                 getDelay();
 
             return delay / wavelength;
         }
@@ -97,16 +113,19 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final Field<T> field = state.getDate().getField();
         final T zero         = field.getZero();
 
-        // satellite elevation
-        final T elevation =
-                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
-                        getElevation();
+        // tracking
+        final FieldTrackingCoordinates<T> trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate());
 
 
         // only consider measures above the horizon
-        if (elevation.getReal() > 0) {
+        if (trackingCoordinates.getElevation().getReal() > 0) {
             // delay in meters
-            final T delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(field), parameters, state.getDate());
+            final T delay = tropoModel.pathDelay(trackingCoordinates,
+                                                 station.getOffsetGeodeticPoint(state.getDate()),
+                                                 station.getPressureTemperatureHumidity(state.getDate()),
+                                                 parameters, state.getDate()).
+                            getDelay();
 
             return delay.divide(wavelength);
         }
@@ -156,14 +175,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
     private double[] phaseErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
         // 0 ... freeStateParameters - 1   -> derivatives of the delay wrt state
         // freeStateParameters ... n       -> derivatives of the delay wrt tropospheric parameters
-        final int dim = derivatives.length - freeStateParameters;
-        final double[] rangeError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[freeStateParameters + i];
-        }
-
-        return rangeError;
+        return Arrays.copyOfRange(derivatives, freeStateParameters, derivatives.length);
     }
 
     /** {@inheritDoc} */
@@ -185,7 +197,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final double[] newValue = estimated.getEstimatedValue();
         final double delay = phaseErrorTroposphericModel(station, state, measurement.getWavelength());
         newValue[0] = newValue[0] + delay;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
 
     }
 

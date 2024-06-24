@@ -25,9 +25,9 @@ import org.orekit.orbits.PositionAngleType;
 /** Interface for extracting State Transition Matrices and Jacobians matrices from {@link SpacecraftState spacecraft state}.
  * <p>
  * The State Transition Matrix and Jacobians matrices with respect to propagation parameters are stored in the state
- * as {@link SpacecraftState#getAdditionalState(String) additional states}. Each propagator and support classes has
- * its own way to handle it. The interface leverages these differences which are implementation details and provides
- * a higher level access to these matrices, regardless of haw they were computed and stored.
+ * as {@link SpacecraftState#getAdditionalState(String) additional states}. Each propagator and support classes have
+ * their own way to handle them. The interface leverages these differences which are implementation details and provides
+ * a higher level access to these matrices, regardless of how they were computed and stored.
  * </p>
  * @author Luc Maisonobe
  * @since 11.1

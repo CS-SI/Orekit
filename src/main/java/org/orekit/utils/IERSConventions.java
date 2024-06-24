@@ -258,7 +258,7 @@ public enum IERSConventions {
                     final T f         = elements.getF();
                     final T d         = elements.getD();
                     final T t         = elements.getTC();
-                    final T t2        = t.multiply(t);
+                    final T t2        = t.square();
 
                     final FieldSinCos<T> scOmega  = FastMath.sinCos(omega);
                     final FieldSinCos<T> sc2omega = FieldSinCos.sum(scOmega, scOmega);
@@ -1387,8 +1387,8 @@ public enum IERSConventions {
                                                                                                        // for example removing derivatives
                                                                                                        // if T was DerivativeStructure
                             annualCache.getNeighbors(aDate).forEach(neighbor -> {
-                                y[0] = zero.add(neighbor.getX());
-                                y[1] = zero.add(neighbor.getY());
+                                y[0] = zero.newInstance(neighbor.getX());
+                                y[1] = zero.newInstance(neighbor.getY());
                                 interpolator.addSamplePoint(central.durationFrom(neighbor.getDate()).negate(), y);
                             });
                             final T[] interpolated = interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)

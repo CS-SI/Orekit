@@ -61,7 +61,7 @@ class EcksteinHechlerGradientConverter extends AbstractAnalyticalGradientConvert
         final AttitudeProvider provider = propagator.getAttitudeProvider();
 
         // Central attraction coefficient
-        final Gradient mu = zero.add(propagator.getMu());
+        final Gradient mu = zero.newInstance(propagator.getMu());
 
         // Return the "Field" propagator
         return new FieldEcksteinHechlerPropagator<>(state.getOrbit(), provider, radius, mu,

@@ -19,12 +19,12 @@ package org.orekit.estimation.measurements.modifiers;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.propagation.SpacecraftState;
 
-/** Functional interface for parameteric models.
+/** Functional interface for parametric models.
  * @author Luc Maisonobe
  * @since 11.2
  */
 @FunctionalInterface
-interface ParametricModelEffect {
+public interface ParametricModelEffect {
 
     /** Evaluate the parametric model effect.
      * @param station station

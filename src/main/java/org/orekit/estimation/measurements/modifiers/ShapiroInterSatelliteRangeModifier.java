@@ -50,7 +50,7 @@ public class ShapiroInterSatelliteRangeModifier extends AbstractShapiroBaseModif
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesRange> estimated) {
-        doModify(estimated);
+        doModify(this, estimated);
     }
 
 }

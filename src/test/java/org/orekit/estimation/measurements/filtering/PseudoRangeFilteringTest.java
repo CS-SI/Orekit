@@ -1,3 +1,20 @@
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.orekit.estimation.measurements.filtering;
 
 import java.io.BufferedReader;
@@ -59,19 +76,19 @@ public class PseudoRangeFilteringTest {
         // Test reset and null condition on doppler
         ObservationData obsDataRange = new ObservationData(rangeType, 10, 0, 7);
         ObservationData obsDataDopplerNull = new ObservationData(dopplerType, Double.NaN, 0, 7);
-        List<ObservationData> listObsData = new ArrayList<ObservationData>();
+        List<ObservationData> listObsData = new ArrayList<>();
         listObsData.add(obsDataDopplerNull);
         listObsData.add(obsDataRange);
         ObservationDataSet obsDataSetNullDoppler = new ObservationDataSet(new SatInSystem(system, prnNumber),
-                                                                          lastObsDataSet.getDate(), 0, prnNumber, listObsData);
+                                                                          lastObsDataSet.getDate(), 0, 0.0, listObsData);
 
         ObservationData obsDataRangeNull = new ObservationData(rangeType, 10, 0, 0);
         ObservationData obsDataDoppler = new ObservationData(dopplerType, Double.NaN, 0, 0);
-        List<ObservationData> listObsData2 = new ArrayList<ObservationData>();
+        List<ObservationData> listObsData2 = new ArrayList<>();
         listObsData2.add(obsDataDoppler);
         listObsData2.add(obsDataRangeNull);
         ObservationDataSet obsDataSetNullRange= new ObservationDataSet(new SatInSystem(system, prnNumber),
-                                                                       lastObsDataSet.getDate(), 0, prnNumber, listObsData2);
+                                                                       lastObsDataSet.getDate(), 0, 0.0, listObsData2);
 
         List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
         copiedListObsDataSet.add(obsDataSetNullRange);
@@ -133,19 +150,19 @@ public class PseudoRangeFilteringTest {
         ObservationData obsDataF1 = new ObservationData(phaseTypeF1, 0, 0, 0);
         ObservationData obsDataF2 = new ObservationData(phaseTypeF2, 0, 0, 0);
 
-        List<ObservationData> listObsDataSatSystem = new ArrayList<ObservationData>();
+        List<ObservationData> listObsDataSatSystem = new ArrayList<>();
         listObsDataSatSystem.add(obsDataF1);
         listObsDataSatSystem.add(obsDataF2);
         listObsDataSatSystem.add(obsDataRange);
-        List<ObservationData> listObsDataSNR = new ArrayList<ObservationData>();
+        List<ObservationData> listObsDataSNR = new ArrayList<>();
         listObsDataSNR.add(obsDataF1);
         listObsDataSNR.add(obsDataF2);
         listObsDataSNR.add(obsDataRangeSNR);
         ObservationDataSet obsDataSetRangeGLONASS = new ObservationDataSet(new SatInSystem(SatelliteSystem.GLONASS, prnNumber),
-                                                                           lastObsDataSet.getDate(), 0, prnNumber, listObsDataSatSystem);
+                                                                           lastObsDataSet.getDate(), 0, 0.0, listObsDataSatSystem);
 
         ObservationDataSet obsDataSetRangeSNR = new ObservationDataSet(new SatInSystem(system, prnNumber),
-                                                                       lastObsDataSet.getDate(), 0, prnNumber, listObsDataSNR);
+                                                                       lastObsDataSet.getDate(), 0, 0.0, listObsDataSNR);
         //
         List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
         copiedListObsDataSet.add(obsDataSetRangeGLONASS);
@@ -168,15 +185,11 @@ public class PseudoRangeFilteringTest {
         ArrayList<Double> phaseArrayF1 = filter.getFirstFrequencyPhaseHistory();
         ArrayList<Double> phaseArrayF2 = filter.getSecondFrequencyPhaseHistory();
 
-        ArrayList<Double> differencesSF = new ArrayList<Double>();
-        ArrayList<Double> differencesDF = new ArrayList<Double>();
         DescriptiveStatistics dSF = new DescriptiveStatistics();
         DescriptiveStatistics dDF = new DescriptiveStatistics();
         for (int i = 0; i < 5000; i++) {
             double diffSF = gLAB_SF.get(i)-(filteredSF.get(i)-2.4931100000e7 - phaseArrayF1.get(i) - 3.09*(phaseArrayF1.get(i)-phaseArrayF2.get(i)));
             double diffDF = gLAB_DF.get(i)-(filteredDF.get(i)-2.4931100000e7 - phaseArrayF1.get(i) - 3.09*(phaseArrayF1.get(i)-phaseArrayF2.get(i)));
-            differencesSF.add(diffSF);
-            differencesDF.add(diffDF);
             dSF.addValue(diffSF);
             dDF.addValue(diffDF);
         }
@@ -192,7 +205,7 @@ public class PseudoRangeFilteringTest {
     }
 
     @Test
-    public void testHatchCarrierPhase2() throws IOException {
+    public void testHatchCarrierPhase2() {
         ObservationType rangeType = ObservationType.C1;
         ObservationType phaseTypeF1 = ObservationType.L1;
         ObservationType phaseTypeF2 = ObservationType.L2;
@@ -255,8 +268,7 @@ public class PseudoRangeFilteringTest {
 
     public ArrayList<Double> readFile(final String fileName) throws IOException {
 
-        final ArrayList<Double> valueArray = new ArrayList<Double>();
-        final ArrayList<Double> timeArray = new ArrayList<Double>();
+        final ArrayList<Double> valueArray = new ArrayList<>();
         int cpt = 0;
         Path pathToFile = Paths.get(fileName);
 
@@ -264,7 +276,6 @@ public class PseudoRangeFilteringTest {
             String line = br.readLine();
             while (line != null) {
                 String[] splitLine = line.split("\\s+");
-                timeArray.add(Double.parseDouble(splitLine[0]));
                 valueArray.add(Double.parseDouble(splitLine[1]));
                 cpt = cpt+1;
                 line = br.readLine();

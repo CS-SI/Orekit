@@ -242,6 +242,40 @@ public class GTODProviderTest {
 
     }
 
+    @Test
+    void testGetKinematicTransform() {
+        // GIVEN
+        final GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
+                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                DataContext.getDefault().getTimeScales());
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final KinematicTransform kinematicTransform = provider.getKinematicTransform(date);
+        // THEN
+        final Transform transform = provider.getTransform(date);
+        Assertions.assertEquals(date, kinematicTransform.getDate());
+        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+    }
+
+    @Test
+    void testGetStaticTransform() {
+        // GIVEN
+        final GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
+                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                DataContext.getDefault().getTimeScales());
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final StaticTransform staticTransform = provider.getStaticTransform(date);
+        // THEN
+        final Transform transform = provider.getTransform(date);
+        Assertions.assertEquals(date, staticTransform.getDate());
+        Assertions.assertEquals(transform.getCartesian().getPosition(), staticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()));
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");

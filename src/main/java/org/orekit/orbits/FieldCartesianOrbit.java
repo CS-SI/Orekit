@@ -22,12 +22,8 @@ import java.util.Arrays;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -147,7 +143,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     public FieldCartesianOrbit(final Field<T> field, final CartesianOrbit op) {
         super(new TimeStampedFieldPVCoordinates<>(field, op.getPVCoordinates()), op.getFrame(),
-                field.getZero().add(op.getMu()));
+                field.getZero().newInstance(op.getMu()));
         hasNonKeplerianAcceleration = op.hasDerivatives();
         if (op.isElliptical()) {
             equinoctial = new FieldEquinoctialOrbit<>(field, new EquinoctialOrbit(op));
@@ -240,7 +236,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final T rV2OnMu = pvP.getNorm().multiply(pvV.getNormSq()).divide(getMu());
             final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
             final T eCE     = rV2OnMu.subtract(1);
-            return (eCE.multiply(eCE).add(eSE.multiply(eSE))).sqrt();
+            return (eCE.square().add(eSE.square())).sqrt();
         } else {
             // hyperbolic orbit
             final FieldVector3D<T> pvM = getPVCoordinates().getMomentum();
@@ -258,7 +254,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final FieldUnivariateDerivative2<T> a       = r.divide(rV2OnMu.negate().add(2));
             final FieldUnivariateDerivative2<T> eSE     = FieldVector3D.dotProduct(pv.getPosition(), pv.getVelocity()).divide(a.multiply(getMu()).sqrt());
             final FieldUnivariateDerivative2<T> eCE     = rV2OnMu.subtract(1);
-            final FieldUnivariateDerivative2<T> e       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
+            final FieldUnivariateDerivative2<T> e       = eCE.square().add(eSE.square()).sqrt();
             return e.getDerivative(1);
         } else {
             return null;
@@ -428,74 +424,38 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getZero().add(dt));
+        return shiftedBy(getZero().newInstance(dt));
     }
 
     /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final T dt) {
-        final FieldPVCoordinates<T> shiftedPV = isElliptical() ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
+        final FieldPVCoordinates<T> shiftedPV = shiftPV(dt);
         return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
-    /** Compute shifted position and velocity in elliptic case.
+    /** Compute shifted position and velocity.
      * @param dt time shift
      * @return shifted position and velocity
      */
-    private FieldPVCoordinates<T> shiftPVElliptic(final T dt) {
+    private FieldPVCoordinates<T> shiftPV(final T dt) {
+        final FieldPVCoordinates<T> pvCoordinates = getPVCoordinates();
+        final FieldPVCoordinates<T> shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt,
+                pvCoordinates.getPosition(), pvCoordinates.getVelocity(), getMu());
 
-        // preliminary computation0
-        final FieldPVCoordinates<T> pva = getPVCoordinates();
-        final FieldVector3D<T>      pvP = pva.getPosition();
-        final FieldVector3D<T>      pvV = pva.getVelocity();
-        final FieldVector3D<T>      pvM = pva.getMomentum();
-        final T r2                      = pvP.getNormSq();
-        final T r                       = r2.sqrt();
-        final T rV2OnMu                 = r.multiply(pvV.getNormSq()).divide(getMu());
-        final T a                       = r.divide(rV2OnMu.negate().add(2));
-        final T muA                     = getMu().multiply(a);
-
-        // compute mean anomaly
-        final T eSE              = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
-        final T eCE              = rV2OnMu.subtract(1);
-        final T E0               = FastMath.atan2(eSE, eCE);
-        final T M0               = E0.subtract(eSE);
-
-        final T e                       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
-        final T sqrt                    = e.add(1).divide(e.negate().add(1)).sqrt();
-
-        // find canonical 2D frame with p pointing to perigee
-        final T v0               = sqrt.multiply(FastMath.tan(E0.divide(2))).atan().multiply(2);
-        final FieldVector3D<T> p = new FieldRotation<>(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
-        final FieldVector3D<T> q = FieldVector3D.crossProduct(pvM, p).normalize();
-
-        // compute shifted eccentric anomaly
-        final T M1               = M0.add(getKeplerianMeanMotion().multiply(dt));
-        final T E1               = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, M1);
-
-        // compute shifted in-plane Cartesian coordinates
-        final FieldSinCos<T> scE = FastMath.sinCos(E1);
-        final T               cE = scE.cos();
-        final T               sE = scE.sin();
-        final T            sE2m1 = e.negate().add(1).multiply(e.add(1)).sqrt();
-
-        // coordinates of position and velocity in the orbital plane
-        final T x        = a.multiply(cE.subtract(e));
-        final T y        = a.multiply(sE2m1).multiply(sE);
-        final T factor   = a.reciprocal().multiply(getMu()).sqrt().divide(e.multiply(cE).negate().add(1));
-        final T xDot     = factor.multiply(sE).negate();
-        final T yDot     = factor.multiply(sE2m1).multiply(cE);
-
-        final FieldVector3D<T> shiftedP = new FieldVector3D<>(x, p, y, q);
-        final FieldVector3D<T> shiftedV = new FieldVector3D<>(xDot, p, yDot, q);
         if (hasNonKeplerianAcceleration) {
 
+            final FieldVector3D<T> pvP = getPosition();
+            final T r2 = pvP.getNormSq();
+            final T r = r2.sqrt();
             // extract non-Keplerian part of the initial acceleration
             final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(getOne(), getPVCoordinates().getAcceleration(),
                                                                                   r.multiply(r2).reciprocal().multiply(getMu()), pvP);
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
+            final FieldVector3D<T> shiftedP = shiftedPV.getPosition();
+            final FieldVector3D<T> shiftedV = shiftedPV.getVelocity();
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
             final T                fixedR2 = fixedP.getNormSq();
             final T                fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,
@@ -508,82 +468,8 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         } else {
             // don't include acceleration,
             // so the shifted orbit is not considered to have derivatives
-            return new FieldPVCoordinates<>(shiftedP, shiftedV);
+            return shiftedPV;
         }
-
-    }
-
-    /** Compute shifted position and velocity in hyperbolic case.
-     * @param dt time shift
-     * @return shifted position and velocity
-     */
-    private FieldPVCoordinates<T> shiftPVHyperbolic(final T dt) {
-
-        final FieldPVCoordinates<T> pv = getPVCoordinates();
-        final FieldVector3D<T> pvP   = pv.getPosition();
-        final FieldVector3D<T> pvV   = pv.getVelocity();
-        final FieldVector3D<T> pvM   = pv.getMomentum();
-        final T r2      = pvP.getNormSq();
-        final T r       = r2.sqrt();
-        final T rV2OnMu = r.multiply(pvV.getNormSq()).divide(getMu());
-        final T a       = getA();
-        final T muA     = a.multiply(getMu());
-        final T e       = getOne().subtract(FieldVector3D.dotProduct(pvM, pvM).divide(muA)).sqrt();
-        final T sqrt    = e.add(1).divide(e.subtract(1)).sqrt();
-
-        // compute mean anomaly
-        final T eSH     = FieldVector3D.dotProduct(pvP, pvV).divide(muA.negate().sqrt());
-        final T eCH     = rV2OnMu.subtract(1);
-        final T H0      = eCH.add(eSH).divide(eCH.subtract(eSH)).log().divide(2);
-        final T M0      = e.multiply(H0.sinh()).subtract(H0);
-
-        // find canonical 2D frame with p pointing to perigee
-        final T v0      = sqrt.multiply(H0.divide(2).tanh()).atan().multiply(2);
-        final FieldVector3D<T> p     = new FieldRotation<>(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
-        final FieldVector3D<T> q     = FieldVector3D.crossProduct(pvM, p).normalize();
-
-        // compute shifted eccentric anomaly
-        final T M1      = M0.add(getKeplerianMeanMotion().multiply(dt));
-        final T H1      = FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, M1);
-
-        // compute shifted in-plane Cartesian coordinates
-        final T cH     = H1.cosh();
-        final T sH     = H1.sinh();
-        final T sE2m1  = e.subtract(1).multiply(e.add(1)).sqrt();
-
-        // coordinates of position and velocity in the orbital plane
-        final T x      = a.multiply(cH.subtract(e));
-        final T y      = a.negate().multiply(sE2m1).multiply(sH);
-        final T factor = getMu().divide(a.negate()).sqrt().divide(e.multiply(cH).subtract(1));
-        final T xDot   = factor.negate().multiply(sH);
-        final T yDot   =  factor.multiply(sE2m1).multiply(cH);
-
-        final FieldVector3D<T> shiftedP = new FieldVector3D<>(x, p, y, q);
-        final FieldVector3D<T> shiftedV = new FieldVector3D<>(xDot, p, yDot, q);
-        if (hasNonKeplerianAcceleration) {
-
-            // extract non-Keplerian part of the initial acceleration
-            final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(getOne(), getPVCoordinates().getAcceleration(),
-                                                                                  r.multiply(r2).reciprocal().multiply(getMu()), pvP);
-
-            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
-            final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
-            final T                fixedR2 = fixedP.getNormSq();
-            final T                fixedR  = fixedR2.sqrt();
-            final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,
-                                                                 dt, nonKeplerianAcceleration);
-            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR.multiply(fixedR2).reciprocal().multiply(getMu().negate()), shiftedP,
-                                                                 getOne(), nonKeplerianAcceleration);
-
-            return new FieldPVCoordinates<>(fixedP, fixedV, fixedA);
-
-        } else {
-            // don't include acceleration,
-            // so the shifted orbit is not considered to have derivatives
-            return new FieldPVCoordinates<>(shiftedP, shiftedV);
-        }
-
     }
 
     /** Create a 6x6 identity matrix.

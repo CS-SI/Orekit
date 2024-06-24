@@ -405,7 +405,7 @@ public class EOPHistory implements Serializable {
                 dut = neighbor.getUT1MinusUTC();
             }
             final T[] array = MathArrays.buildArray(date.getField(), 1);
-            array[0] = date.getField().getZero().add(dut);
+            array[0] = date.getField().getZero().newInstance(dut);
             interpolator.addSamplePoint(date.durationFrom(neighbor.getDate()).negate(),
                                         array);
         }
@@ -745,7 +745,7 @@ public class EOPHistory implements Serializable {
                                                                                        // if T was DerivativeStructure
             getNeighbors(aDate, interpolationDegree + 1).
                 forEach(entry -> {
-                    y[0] = zero.add(selector.apply(entry));
+                    y[0] = zero.newInstance(selector.apply(entry));
                     interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
                 });
             return interpolator.value(date.durationFrom(central))[0]; // here, we introduce derivatives again (in DerivativeStructure case)
@@ -842,8 +842,8 @@ public class EOPHistory implements Serializable {
                                                                                        // if T was DerivativeStructure
             getNeighbors(aDate, interpolationDegree + 1).
                 forEach(entry -> {
-                    y[0] = zero.add(selector1.apply(entry));
-                    y[1] = zero.add(selector2.apply(entry));
+                    y[0] = zero.newInstance(selector1.apply(entry));
+                    y[1] = zero.newInstance(selector2.apply(entry));
                     interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
                 });
             return interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)
@@ -1052,7 +1052,7 @@ public class EOPHistory implements Serializable {
                                                                                            // if T was DerivativeStructure
                 cache.getNeighbors(aDate).forEach(entry -> {
                     for (int i = 0; i < y.length; ++i) {
-                        y[i] = zero.add(entry.correction[i]);
+                        y[i] = zero.newInstance(entry.correction[i]);
                     }
                     interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
                 });

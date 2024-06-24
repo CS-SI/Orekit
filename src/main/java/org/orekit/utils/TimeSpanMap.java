@@ -18,6 +18,8 @@ package org.orekit.utils;
 
 import java.util.function.Consumer;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -37,9 +39,7 @@ import org.orekit.time.TimeStamped;
  * example an orbit count that changes at ascending nodes (in which case the
  * entry would be an {@link Integer}), or a visibility status between several
  * objects (in which case the entry would be a {@link Boolean}) or a drag
- * coefficient that is expected to be estimated daily or three-hourly (this is
- * how {@link org.orekit.forces.drag.TimeSpanDragForce TimeSpanDragForce} is
- * implemented).
+ * coefficient that is expected to be estimated daily or three-hourly.
  * </p>
  * <p>
  * Time span maps are built progressively. At first, they contain one
@@ -413,6 +413,21 @@ public class TimeSpanMap<T> {
         return span;
     }
 
+    /** Get the first (earliest) span with non-null data.
+     * @return first (earliest) span with non-null data
+     * @since 12.1
+     */
+    public synchronized Span<T> getFirstNonNullSpan() {
+        Span<T> span = getFirstSpan();
+        while (span.getData() == null) {
+            if (span.getEndTransition() == null) {
+                throw new OrekitException(OrekitMessages.NO_CACHED_ENTRIES);
+            }
+            span = span.next();
+        }
+        return span;
+    }
+
     /** Get the last (latest) span.
      * @return last (latest) span
      * @since 11.1
@@ -421,6 +436,21 @@ public class TimeSpanMap<T> {
         Span<T> span = current;
         while (span.getEndTransition() != null) {
             span = span.next();
+        }
+        return span;
+    }
+
+    /** Get the last (latest) span with non-null data.
+     * @return last (latest) span with non-null data
+     * @since 12.1
+     */
+    public synchronized Span<T> getLastNonNullSpan() {
+        Span<T> span = getLastSpan();
+        while (span.getData() == null) {
+            if (span.getStartTransition() == null) {
+                throw new OrekitException(OrekitMessages.NO_CACHED_ENTRIES);
+            }
+            span = span.previous();
         }
         return span;
     }

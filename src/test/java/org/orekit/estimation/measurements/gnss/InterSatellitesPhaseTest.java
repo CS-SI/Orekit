@@ -50,7 +50,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -177,8 +176,8 @@ public class InterSatellitesPhaseTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> absoluteErrors = new ArrayList<Double>();
-        final List<Double> relativeErrors = new ArrayList<Double>();
+        final List<Double> absoluteErrors = new ArrayList<>();
+        final List<Double> relativeErrors = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -200,8 +199,7 @@ public class InterSatellitesPhaseTest {
 
                     // Values of the phase & errors
                     final double phaseObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                         new SpacecraftState[] {
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
                                                                                                              state,
                                                                                                              ephemeris.propagate(state.getDate())
                                                                                                          });
@@ -210,7 +208,7 @@ public class InterSatellitesPhaseTest {
                     Assertions.assertEquals(2, participants.length);
                     Assertions.assertEquals(FREQUENCY.getWavelength(), ((InterSatellitesPhase) measurement).getWavelength(), 1.0e-15);
                     final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                    Assertions.assertEquals(1.0e6 * FREQUENCY.getMHzFrequency() * (dt + localClockOffset - remoteClockOffset) + ambiguity,
+                    Assertions.assertEquals(FREQUENCY.getFrequency() * (dt + localClockOffset - remoteClockOffset) + ambiguity,
                                         estimated.getEstimatedValue()[0],
                                         1.0e-7);
 
@@ -317,8 +315,8 @@ public class InterSatellitesPhaseTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> errorsP = new ArrayList<Double>();
-        final List<Double> errorsV = new ArrayList<Double>();
+        final List<Double> errorsP = new ArrayList<>();
+        final List<Double> errorsV = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -326,9 +324,8 @@ public class InterSatellitesPhaseTest {
             for (final ObservedMeasurement<?> measurement : measurements) {
 
                 //  Play test if the measurement date is between interpolator previous and current date
-                if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                if (measurement.getDate().isAfter(interpolator.getPreviousState()) &&
+                    measurement.getDate().isBeforeOrEqualTo(interpolator.getCurrentState())) {
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -347,14 +344,12 @@ public class InterSatellitesPhaseTest {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            final SpacecraftState[] s = states.clone();
-                            s[index] = state;
-                            return measurement.estimateWithoutDerivatives(0, 0, s).getEstimatedValue();
-                        }
+                    jacobianRef = Differentiation.differentiate(state -> {
+                        final SpacecraftState[] s = states.clone();
+                        s[index] = state;
+                        return measurement.estimateWithoutDerivatives(s).getEstimatedValue();
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
+                    OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -367,8 +362,11 @@ public class InterSatellitesPhaseTest {
                             dJacobian[i][j] = jacobian[i][j] - jacobianRef[i][j];
                             dJacobianRelative[i][j] = FastMath.abs(dJacobian[i][j]/jacobianRef[i][j]);
 
-                            if (j < 3) { errorsP.add(dJacobianRelative[i][j]);
-                            } else { errorsV.add(dJacobianRelative[i][j]); }
+                            if (j < 3) {
+                                errorsP.add(dJacobianRelative[i][j]);
+                            } else {
+                                errorsV.add(dJacobianRelative[i][j]);
+                            }
                         }
                     }
                     // Print values in console ?
@@ -411,8 +409,8 @@ public class InterSatellitesPhaseTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
-        final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsV = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
@@ -474,7 +472,7 @@ public class InterSatellitesPhaseTest {
                         EstimationTestUtils.createMeasurements(propagator, creator, 1.0, 3.0, 300.0);
 
         // List to store the results
-        final List<Double> relErrorList = new ArrayList<Double>();
+        final List<Double> relErrorList = new ArrayList<>();
 
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
@@ -503,12 +501,12 @@ public class InterSatellitesPhaseTest {
                         measurement.getSatellites().get(1).getClockOffsetDriver()
                     };
 
-                    for (int i = 0; i < drivers.length; ++i) {
-                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
+                    for (final ParameterDriver driver : drivers) {
+                        for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(driver, span.getStart());
                             Assertions.assertEquals(1, measurement.getDimension());
                             Assertions.assertEquals(1, gradient.length);
-                            
+
                             // Compute a reference value using finite differences
                             final ParameterFunction dMkdP =
                                             Differentiation.differentiate(new ParameterFunction() {
@@ -516,16 +514,16 @@ public class InterSatellitesPhaseTest {
                                                 @Override
                                                 public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                     return measurement.
-                                                           estimateWithoutDerivatives(0, 0, states).
+                                                           estimateWithoutDerivatives(states).
                                                            getEstimatedValue()[0];
                                                 }
-                                            }, 3, 20.0 * drivers[i].getScale());
-                            final double ref = dMkdP.value(drivers[i], span.getStart());
-                            
+                                            }, 3, 20.0 * driver.getScale());
+                            final double ref = dMkdP.value(driver, span.getStart());
+
                             if (printResults) {
                                 System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
                             }
-                            
+
                             final double relError = FastMath.abs((ref-gradient[0])/ref);
                             relErrorList.add(relError);
 //                            Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
@@ -561,7 +559,7 @@ public class InterSatellitesPhaseTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert error list to double[]
-        final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);
@@ -589,7 +587,8 @@ public class InterSatellitesPhaseTest {
         // Create a phase measurement. Remote is set to null since it not used by the test
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     AbsoluteDate.J2000_EPOCH, 467614.701, Frequency.G01.getWavelength(),
-                                                                    0.02, 1.0);
+                                                                    0.02, 1.0,
+                                                                    new AmbiguityCache());
 
         // First check
         Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
@@ -604,7 +603,7 @@ public class InterSatellitesPhaseTest {
         Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
-            if (driver.getName() == Phase.AMBIGUITY_NAME) {
+            if (driver instanceof AmbiguityDriver) {
                 Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
                 Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
             }

@@ -24,25 +24,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class GroundReceiverCommonParametersWithoutDerivatives {
-
-    /** Spacecraft state. */
-    private final SpacecraftState state;
+public class GroundReceiverCommonParametersWithoutDerivatives extends CommonParametersWithoutDerivatives {
 
     /** Transform between station and inertial frame. */
     private final Transform offsetToInertialDownlink;
 
     /** Station position in inertial frame at end of the downlink leg. */
     private final TimeStampedPVCoordinates stationDownlink;
-
-    /** Downlink delay. */
-    private final double tauD;
-
-    /** Transit state. */
-    private final SpacecraftState transitState;
-
-    /** Transit position/velocity. */
-    private final TimeStampedPVCoordinates transitPV;
 
     /** Simple constructor.
     * @param state spacecraft state
@@ -58,19 +46,9 @@ public class GroundReceiverCommonParametersWithoutDerivatives {
                                                             final double tauD,
                                                             final SpacecraftState transitState,
                                                             final TimeStampedPVCoordinates transitPV) {
-        this.state                    = state;
+        super(state, tauD, transitState, transitPV);
         this.offsetToInertialDownlink = offsetToInertialDownlink;
         this.stationDownlink          = stationDownlink;
-        this.tauD                     = tauD;
-        this.transitState             = transitState;
-        this.transitPV                = transitPV;
-    }
-
-    /** Get spacecraft state.
-     * @return spacecraft state
-     */
-    public SpacecraftState getState() {
-        return state;
     }
 
     /** Get transform between station and inertial frame.
@@ -85,27 +63,6 @@ public class GroundReceiverCommonParametersWithoutDerivatives {
      */
     public TimeStampedPVCoordinates getStationDownlink() {
         return stationDownlink;
-    }
-
-    /** Get downlink delay.
-     * @return ownlink delay
-     */
-    public double getTauD() {
-        return tauD;
-    }
-
-    /** Get transit state.
-     * @return transit state
-     */
-    public SpacecraftState getTransitState() {
-        return transitState;
-    }
-
-    /** Get transit position/velocity.
-     * @return transit position/velocity
-     */
-    public TimeStampedPVCoordinates getTransitPV() {
-        return transitPV;
     }
 
 }

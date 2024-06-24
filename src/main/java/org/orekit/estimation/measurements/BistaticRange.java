@@ -126,7 +126,8 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                                                       Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Uplink time of flight from emitter station to transit state
-        final double tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitDate);
+        final double tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitDate,
+                                               common.getState().getFrame());
 
         // Secondary station PV in inertial frame at rebound date on secondary station
         final TimeStampedPVCoordinates emitterPV = emitterApprox.shiftedBy(-tauU);
@@ -184,7 +185,8 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                                                              zero, zero, zero));
 
         // Uplink time of flight from emiiter to transit state
-        final Gradient tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitPV.getDate());
+        final Gradient tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(),
+                                                 transitPV.getDate(), state.getFrame());
 
         // Emitter coordinates at transmit time
         final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitterApprox.shiftedBy(tauU.negate());
@@ -207,12 +209,11 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
 
         estimated.setEstimatedValue(range.getValue());
 
-        // Range partial derivatives with respect to state
+        // Range first order derivatives with respect to state
         final double[] derivatives = range.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = common.getIndices().get(span.getData());

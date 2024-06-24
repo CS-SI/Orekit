@@ -22,15 +22,18 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical bistatic range measurement with tropospheric delay.
+ * <p>
  * The effect of tropospheric correction on the range is directly computed
  * through the computation of the tropospheric delay.
- *
+ * </p>
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Maxime Journot
  * @author Joris Olympio
@@ -42,8 +45,19 @@ public class BistaticRangeTroposphericDelayModifier extends BaseRangeTropospheri
     /** Constructor.
      *
      * @param model Tropospheric delay model appropriate for the current range measurement method.
+     * @deprecated as of 12.1 replaced by {@link #BistaticRangeTroposphericDelayModifier(TroposphericModel)}
      */
-    public BistaticRangeTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    public BistaticRangeTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model Tropospheric delay model appropriate for the current range measurement method.
+     * @since 12.1
+     */
+    public BistaticRangeTroposphericDelayModifier(final TroposphericModel model) {
         super(model);
     }
 
@@ -54,7 +68,8 @@ public class BistaticRangeTroposphericDelayModifier extends BaseRangeTropospheri
         final GroundStation emitter     = measurement.getEmitterStation();
         final GroundStation receiver    = measurement.getReceiverStation();
 
-        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeErrorTroposphericModel);
+        BistaticModifierUtil.modify(estimated, emitter, receiver,
+                                    this::rangeErrorTroposphericModel, this);
 
     }
 
@@ -70,7 +85,8 @@ public class BistaticRangeTroposphericDelayModifier extends BaseRangeTropospheri
                                     new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                     emitter, receiver,
                                     this::rangeErrorTroposphericModel,
-                                    this::rangeErrorTroposphericModel);
+                                    this::rangeErrorTroposphericModel,
+                                    this);
 
     }
 

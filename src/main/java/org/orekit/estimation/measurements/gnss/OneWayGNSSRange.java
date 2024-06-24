@@ -17,24 +17,19 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One-way GNSS range measurement.
@@ -56,16 +51,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
+public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRange> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "OneWayGNSSRange";
-
-    /** Emitting satellite. */
-    private final PVCoordinatesProvider remote;
-
-    /** Clock offset of the emitting satellite. */
-    private final double dtRemote;
 
     /** Simple constructor.
      * @param remote provider for GNSS satellite which simply emits the signal
@@ -81,13 +70,26 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
                            final AbsoluteDate date,
                            final double range, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
+        this(remote, new QuadraticClockModel(date, dtRemote, 0.0, 0.0), date, range, sigma, baseWeight, local);
+    }
+
+    /** Simple constructor.
+     * @param remote provider for GNSS satellite which simply emits the signal
+     * @param remoteClock clock offset of the GNSS satellite
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param local satellite which receives the signal and perform the measurement
+     * @since 12.1
+     */
+    public OneWayGNSSRange(final PVCoordinatesProvider remote,
+                           final QuadraticClockModel remoteClock,
+                           final AbsoluteDate date,
+                           final double range, final double sigma,
+                           final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(date, range, sigma, baseWeight, Collections.singletonList(local));
-        // The local satellite clock offset affects the measurement
-        addParameterDriver(local.getClockOffsetDriver());
-        // Initialise fields
-        this.dtRemote = dtRemote;
-        this.remote   = remote;
+        super(remote, remoteClock, date, range, sigma, baseWeight, local);
     }
 
     /** {@inheritDoc} */
@@ -96,34 +98,22 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
                                                                                                 final int evaluation,
                                                                                                 final SpacecraftState[] states) {
 
-        // Coordinates of both satellites in local satellite frame
-        final SpacecraftState          localState = states[0];
-        final TimeStampedPVCoordinates pvaLocal   = localState.getPVCoordinates();
-        final TimeStampedPVCoordinates pvaRemote  = remote.getPVCoordinates(getDate(), localState.getFrame());
 
-        // Downlink delay
-        final double dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(localState.getDate());
-        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtLocal);
-
-        final TimeStampedPVCoordinates s1Downlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
-        final double tauD = signalTimeOfFlight(pvaRemote, s1Downlink.getPosition(), arrivalDate);
-
-        // Transit state
-        final double delta      = getDate().durationFrom(pvaRemote.getDate());
-        final double deltaMTauD = delta - tauD;
+        final OnBoardCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
 
         // Estimated measurement
         final EstimatedMeasurementBase<OneWayGNSSRange> estimatedRange =
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
-                                                           localState.shiftedBy(deltaMTauD)
+                                                           common.getState()
                                                        }, new TimeStampedPVCoordinates[] {
-                                                           pvaRemote.shiftedBy(delta - tauD),
-                                                           localState.shiftedBy(delta).getPVCoordinates()
+                                                           common.getRemotePV(),
+                                                           common.getTransitPV()
                                                        });
 
         // Range value
-        final double range = (tauD + dtLocal - dtRemote) * Constants.SPEED_OF_LIGHT;
+        final double range = (common.getTauD() + common.getLocalOffset() - common.getRemoteOffset()) *
+                             Constants.SPEED_OF_LIGHT;
 
         // Set value of the estimated measurement
         estimatedRange.setEstimatedValue(range);
@@ -139,61 +129,32 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        // Range derivatives are computed with respect to spacecraft state in inertial frame
-        // Parameters:
-        //  - 0..2 - Position of the spacecraft in inertial frame
-        //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - measurements parameters (clock offset, etc)
-        int nbEstimatedParams = 6;
-        final Map<String, Integer> parameterIndices = new HashMap<>();
-        for (ParameterDriver measurementDriver : getParametersDrivers()) {
-            if (measurementDriver.isSelected()) {
-                for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    parameterIndices.put(span.getData(), nbEstimatedParams++);
-                }
-            }
-        }
-
-        // Coordinates of both satellites in local satellite frame
-        final SpacecraftState localState  = states[0];
-        final TimeStampedFieldPVCoordinates<Gradient> pvaLocal  = getCoordinates(localState, 0, nbEstimatedParams);
-        final TimeStampedPVCoordinates                pvaRemote = remote.getPVCoordinates(getDate(), localState.getFrame());
-
-        // Downlink delay
-        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParams, parameterIndices, localState.getDate());
-        final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
-
-        final TimeStampedFieldPVCoordinates<Gradient> s1Downlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
-        final Gradient tauD = signalTimeOfFlight(new TimeStampedFieldPVCoordinates<>(pvaRemote.getDate(), dtLocal.getField().getOne(), pvaRemote),
-                                                 s1Downlink.getPosition(), arrivalDate);
-
-        // Transit state
-        final double   delta      = getDate().durationFrom(pvaRemote.getDate());
-        final Gradient deltaMTauD = tauD.negate().add(delta);
+        final OnBoardCommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
 
         // Estimated measurement
         final EstimatedMeasurement<OneWayGNSSRange> estimatedRange =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       localState.shiftedBy(deltaMTauD.getValue())
+                                                       common.getState()
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       pvaRemote.shiftedBy(delta - tauD.getValue()),
-                                                       localState.shiftedBy(delta).getPVCoordinates()
+                                                       common.getRemotePV().toTimeStampedPVCoordinates(),
+                                                       common.getTransitPV().toTimeStampedPVCoordinates()
                                                    });
 
         // Range value
-        final Gradient range            = tauD.add(dtLocal).subtract(dtRemote).multiply(Constants.SPEED_OF_LIGHT);
+        final Gradient range            = common.getTauD().add(common.getLocalOffset()).subtract(common.getRemoteOffset()).
+                                          multiply(Constants.SPEED_OF_LIGHT);
         final double[] rangeDerivatives = range.getGradient();
 
-        // Set value and state derivatives of the estimated measurement
+        // Set value and state first order derivatives of the estimated measurement
         estimatedRange.setEstimatedValue(range.getValue());
         estimatedRange.setStateDerivatives(0, Arrays.copyOfRange(rangeDerivatives, 0,  6));
 
-        // Set partial derivatives with respect to parameters
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver measurementDriver : getParametersDrivers()) {
             for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                final Integer index = parameterIndices.get(span.getData());
+                final Integer index = common.getIndices().get(span.getData());
                 if (index != null) {
                     estimatedRange.setParameterDerivatives(measurementDriver, span.getStart(), rangeDerivatives[index]);
                 }

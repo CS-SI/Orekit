@@ -97,7 +97,7 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
 
         // modify the value
         value[0] += turnAroundRangeUsingAntennaPhaseCenter - turnAroundRangeUsingSpacecraftCenter;
-        estimated.setEstimatedValue(value);
+        estimated.modifyEstimatedValue(this, value);
 
     }
 

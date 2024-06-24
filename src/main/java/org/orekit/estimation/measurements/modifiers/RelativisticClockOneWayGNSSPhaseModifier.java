@@ -62,7 +62,7 @@ public class RelativisticClockOneWayGNSSPhaseModifier extends AbstractRelativist
         // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] - dtRel * cOverLambda;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 
 }

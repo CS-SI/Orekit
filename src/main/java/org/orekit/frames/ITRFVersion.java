@@ -115,7 +115,7 @@ public enum ITRFVersion {
      */
     public static ITRFVersion getITRFVersion(final int year) {
 
-        final int fixedYear = (year > 87 && year < 100) ? (year + 1900) : year;
+        final int fixedYear = (year < 100) ? (year + (year > 87 ? 1900 : 2000)) : year;
 
         // loop over all predefined frames versions
         for (final ITRFVersion version : values()) {
@@ -287,6 +287,13 @@ public enum ITRFVersion {
             return provider.getTransform(date);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+            return provider.getKinematicTransform(date);
+        }
+
+        /** {@inheritDoc} */
         @Override
         public StaticTransform getStaticTransform(final AbsoluteDate date) {
             return provider.getStaticTransform(date);
@@ -296,6 +303,12 @@ public enum ITRFVersion {
         @Override
         public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return provider.getTransform(date);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+            return provider.getKinematicTransform(date);
         }
 
         /** {@inheritDoc} */

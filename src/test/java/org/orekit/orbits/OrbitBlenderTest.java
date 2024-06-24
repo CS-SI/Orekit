@@ -226,6 +226,31 @@ class OrbitBlenderTest {
         final OrbitBlender                         orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
+                new SpacecraftStateInterpolator(2, 1.0e-3, sergeiFrame, orbitBlender, null, null, null, null);
+
+        // When & Then
+        doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
+                            0.05185755740700528,
+                            0.08169252246167892,
+                            0.05262772652596856,
+                            0.08349987869494085,
+                            0.10151652739088853,
+                            0.14827634525717634,
+                            1e-12, false);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    @DisplayName("non regression test on Keplerian quadratic orbit blending on full force model test case from : "
+            + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
+            + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
+    void testKeplerianQuadraticBlendingOnSergeiCaseDeprecated() {
+        // Given
+        final SmoothStepFactory.SmoothStepFunction quadratic    = SmoothStepFactory.getQuadratic();
+        final AbstractAnalyticalPropagator         propagator   = new KeplerianPropagator(sergeiOrbit);
+        final OrbitBlender                         orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
+
+        final TimeInterpolator<SpacecraftState> stateInterpolator =
                 new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
@@ -236,7 +261,7 @@ class OrbitBlenderTest {
                             0.08349987869494085,
                             0.10151652739088853,
                             0.14827634525717634,
-                            1e-17, false);
+                            1e-12, false);
     }
 
     @Test
@@ -244,6 +269,39 @@ class OrbitBlenderTest {
             + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
             + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
     void testBrouwerLyddaneQuadraticBlendingOnSergeiCase() {
+        // Given
+        final SpacecraftState sergeiState = StateCovarianceKeplerianHermiteInterpolatorTest.generateSergeiReferenceState();
+        final Frame           sergeiFrame = sergeiState.getFrame();
+
+        final SmoothStepFactory.SmoothStepFunction quadratic = SmoothStepFactory.getQuadratic();
+        final AbstractAnalyticalPropagator propagator =
+                new BrouwerLyddanePropagator(sergeiState.getOrbit(), sergeiState.getMass(),
+                                             Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                             Constants.EIGEN5C_EARTH_MU, Constants.EIGEN5C_EARTH_C20,
+                                             Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
+                                             Constants.EIGEN5C_EARTH_C50, 0);
+        final OrbitBlender orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
+
+        final TimeInterpolator<SpacecraftState> stateInterpolator =
+                new SpacecraftStateInterpolator(2, 1.0e-3, sergeiFrame, orbitBlender, null, null, null, null);
+
+        // When & Then
+        doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
+                            0.05106377388516059,
+                            0.03671310671380644,
+                            0.05451875412478483,
+                            0.03654640625064279,
+                            0.09412869297314610,
+                            0.06642996306635666,
+                            1e-13, false);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    @DisplayName("non regression test on Brouwer-Lyddane quadratic orbit blending on full force model test case from : "
+            + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
+            + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
+    void testBrouwerLyddaneQuadraticBlendingOnSergeiCaseDeprecated() {
         // Given
         final SpacecraftState sergeiState = StateCovarianceKeplerianHermiteInterpolatorTest.generateSergeiReferenceState();
         final Frame           sergeiFrame = sergeiState.getFrame();
@@ -268,7 +326,7 @@ class OrbitBlenderTest {
                             0.03654640625064279,
                             0.09412869297314610,
                             0.06642996306635666,
-                            1e-17, false);
+                            1e-13, false);
     }
 
     @Test
@@ -276,6 +334,37 @@ class OrbitBlenderTest {
             + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
             + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
     void testEcksteinHechlerQuadraticBlendingOnSergeiCase() {
+        // Given
+        final SmoothStepFactory.SmoothStepFunction quadratic = SmoothStepFactory.getQuadratic();
+        final AbstractAnalyticalPropagator propagator =
+                new EcksteinHechlerPropagator(sergeiState.getOrbit(), sergeiState.getMass(),
+                                              Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                              Constants.EIGEN5C_EARTH_MU, Constants.EIGEN5C_EARTH_C20,
+                                              Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
+                                              Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
+        final OrbitBlender orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
+
+        final TimeInterpolator<SpacecraftState> stateInterpolator =
+                new SpacecraftStateInterpolator(2, 1.0e-3, sergeiFrame, orbitBlender, null, null, null, null);
+
+        // When & Then
+        doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
+                            0.00854503692536256,
+                            0.01192593187393609,
+                            0.00895077301610845,
+                            0.01299681289409554,
+                            0.01600030634518512,
+                            0.01743228687362160,
+                            1e-17, false);
+                            
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    @DisplayName("non regression test on Eckstein-Hechler quadratic orbit blending on full force model test case from : "
+            + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
+            + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
+    void testEcksteinHechlerQuadraticBlendingOnSergeiCaseDeprecated() {
         // Given
         final SmoothStepFactory.SmoothStepFunction quadratic = SmoothStepFactory.getQuadratic();
         final AbstractAnalyticalPropagator propagator =

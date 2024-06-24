@@ -53,8 +53,8 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public FieldAltitudeDetector(final T altitude, final BodyShape bodyShape) {
-        this(altitude.getField().getZero().add(DEFAULT_MAXCHECK),
-             altitude.getField().getZero().add(DEFAULT_THRESHOLD),
+        this(altitude.getField().getZero().newInstance(DEFAULT_MAXCHECK),
+             altitude.getField().getZero().newInstance(DEFAULT_THRESHOLD),
              altitude, bodyShape);
     }
 
@@ -71,7 +71,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
     public FieldAltitudeDetector(final T maxCheck,
                                  final T altitude,
                                  final BodyShape bodyShape) {
-        this(maxCheck, altitude.getField().getZero().add(DEFAULT_THRESHOLD), altitude, bodyShape);
+        this(maxCheck, altitude.getField().getZero().newInstance(DEFAULT_THRESHOLD), altitude, bodyShape);
     }
 
     /** Build a new altitude detector.
@@ -90,7 +90,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
                                  final T threshold,
                                  final T altitude,
                                  final BodyShape bodyShape) {
-        this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<T>(),
+        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<T>(),
              altitude, bodyShape);
     }
 

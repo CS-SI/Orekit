@@ -211,7 +211,7 @@ public class FrameAlignedProviderTest {
                 new FieldPVCoordinates<>(one, this.orbit0.getPVCoordinates()),
                 eci,
                 date,
-                one.multiply(orbit0.getMu()));
+                one.newInstance(orbit0.getMu()));
 
         // action + verify
         FieldAttitude<Binary64> actual = law.getAttitude(orbit, date, eci);

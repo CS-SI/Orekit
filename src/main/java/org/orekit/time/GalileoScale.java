@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.CalculusFieldElement;
-
 /** Galileo system time scale.
  * <p>By convention, TGST = UTC + 13s at Galileo epoch (1999-08-22T00:00:00Z).</p>
  * <p>This is intended to be accessed thanks to {@link TimeScales},
@@ -32,45 +30,15 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public class GalileoScale implements TimeScale {
+public class GalileoScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
-
-    /** Offset from TAI. */
-    private static final double OFFSET = -19;
+    private static final long serialVersionUID = 20240321L;
 
     /** Package private constructor for the factory.
      */
     GalileoScale() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(OFFSET);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return -OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    public String getName() {
-        return "GST";
-    }
-
-    /** {@inheritDoc} */
-    public String toString() {
-        return getName();
+        super("GST", -19);
     }
 
 }

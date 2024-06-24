@@ -280,16 +280,16 @@ public class Laas2015 extends AbstractShortTermEncounter2DPOCMethod {
         final T        zero  = field.getZero();
         final T        one   = field.getOne();
 
-        final T xmSquared     = xm.multiply(xm);
-        final T ymSquared     = ym.multiply(ym);
-        final T sigmaXSquared = sigmaX.multiply(sigmaX);
-        final T sigmaYSquared = sigmaY.multiply(sigmaY);
+        final T xmSquared     = xm.square();
+        final T ymSquared     = ym.square();
+        final T sigmaXSquared = sigmaX.square();
+        final T sigmaYSquared = sigmaY.square();
         final T twoSigmaXY    = sigmaX.multiply(sigmaY).multiply(2);
-        final T radiusSquared = radius.multiply(radius);
-        final T radiusFourth  = radiusSquared.multiply(radiusSquared);
+        final T radiusSquared = radius.square();
+        final T radiusFourth  = radiusSquared.square();
         final T radiusSixth   = radiusFourth.multiply(radiusSquared);
 
-        final T p                   = sigmaX.multiply(sigmaX).reciprocal().multiply(0.5);
+        final T p                   = sigmaX.square().reciprocal().multiply(0.5);
         final T pTimesRadiusSquared = p.multiply(radiusSquared);
         final T phiY                = sigmaXSquared.divide(sigmaYSquared).negate().add(1.);
         final T omegaX              = xm.divide(sigmaXSquared.multiply(2.)).pow(2.);
@@ -298,10 +298,10 @@ public class Laas2015 extends AbstractShortTermEncounter2DPOCMethod {
         final T bigOmega            = phiY.multiply(0.5).add(omegaX.add(omegaY).divide(p));
 
         final T minusP                    = p.negate();
-        final T pSquared                  = p.multiply(p);
+        final T pSquared                  = p.square();
         final T pCubed                    = p.multiply(pSquared);
         final T pPhiY                     = p.multiply(phiY);
-        final T phiYSquared               = phiY.multiply(phiY);
+        final T phiYSquared               = phiY.square();
         final T pRadiusSquaredBigOmega    = p.multiply(radiusSquared).multiply(bigOmega);
         final T bigOmegaPlusOne           = bigOmega.add(1.);
         final T pSqTimesHalfPhiYSqPlusOne = pSquared.multiply(phiYSquared.multiply(0.5).add(1.));
@@ -349,11 +349,11 @@ public class Laas2015 extends AbstractShortTermEncounter2DPOCMethod {
             final T auxiliaryTerm4 = pPhiY.multiply(recurrentTerm0).multiply(2.);
             final T auxiliaryTerm5 = p.multiply(phiY.multiply(2.).add(1.));
 
-            T kPlus2 = one.multiply(2.);
-            T kPlus3 = one.multiply(3.);
-            T kPlus4 = one.multiply(4.);
-            T kPlus5 = one.multiply(5.);
-            T halfY  = one.multiply(2.5);
+            T kPlus2 = one.newInstance(2.);
+            T kPlus3 = one.newInstance(3.);
+            T kPlus4 = one.newInstance(4.);
+            T kPlus5 = one.newInstance(5.);
+            T halfY  = one.newInstance(2.5);
 
             // Initialize recurrence
             T c0 = alpha0.multiply(radiusSquared);

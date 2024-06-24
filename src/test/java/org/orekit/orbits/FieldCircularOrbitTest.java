@@ -29,6 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -55,7 +56,7 @@ import java.util.function.Function;
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 
-public class FieldCircularOrbitTest {
+class FieldCircularOrbitTest {
 
     // Body mu
     private double mu;
@@ -71,144 +72,144 @@ public class FieldCircularOrbitTest {
     }
 
     @Test
-    public void testCircularToEquinoc() {
+    void testCircularToEquinoc() {
         doTestCircularToEquinoctialEll(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCircToEquinoc() {
+    void testCircToEquinoc() {
         doTestCircularToEquinoctialCirc(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAnomalyCirc() {
+    void testAnomalyCirc() {
         doTestAnomalyCirc(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAnomalyEll() {
+    void testAnomalyEll() {
         doTestAnomalyEll(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCircToCart() {
+    void testCircToCart() {
         doTestCircularToCartesian(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCircToKepl() {
+    void testCircToKepl() {
         doTestCircularToKeplerian(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGeometryCirc() {
+    void testGeometryCirc() {
         doTestGeometryCirc(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGeometryEll() {
+    void testGeometryEll() {
         doTestGeometryEll(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJacobianFinited() {
+    void testJacobianFinited() {
         doTestJacobianFinitedifferences(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJacoabianReference() {
+    void testJacoabianReference() {
         doTestJacobianReference(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNumericalIssue25() {
+    void testNumericalIssue25() {
         doTestNumericalIssue25(Binary64Field.getInstance());
     }
 
     @Test
-    public void testPerfectlyEquatorial() {
+    void testPerfectlyEquatorial() {
         doTestPerfectlyEquatorial(Binary64Field.getInstance());
     }
 
     @Test
-    public void testPositionVelocityNormsCirc() {
+    void testPositionVelocityNormsCirc() {
         doTestPositionVelocityNormsCirc(Binary64Field.getInstance());
     }
 
     @Test
-    public void testPositionVelocity() {
+    void testPositionVelocity() {
         doTestPositionVelocityNormsEll(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSymmetryCir() {
+    void testSymmetryCir() {
         doTestSymmetryCir(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSymmetryEll() {
+    void testSymmetryEll() {
         doTestSymmetryEll(Binary64Field.getInstance());
     }
 
     @Test
-    public void testErrors()  {
+    void testErrors()  {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doTestNonInertialFrame(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testHyperbolic1() {
+    void testHyperbolic1() {
         doTestHyperbolic1(Binary64Field.getInstance());
     }
 
     @Test
-    public void testHyperbolic2() {
+    void testHyperbolic2() {
         doTestHyperbolic2(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToOrbitWithoutDerivatives() {
+    void testToOrbitWithoutDerivatives() {
         doTestToOrbitWithoutDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToOrbitWithDerivatives() {
+    void testToOrbitWithDerivatives() {
         doTestToOrbitWithDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() {
+    void testDerivativesConversionSymmetry() {
         doTestDerivativesConversionSymmetry(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         doTestToString(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNonKeplerianDerivatives() {
+    void testNonKeplerianDerivatives() {
         doTestNonKeplerianDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testPositionAngleDerivatives() {
+    void testPositionAngleDerivatives() {
         doTestPositionAngleDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEquatorialRetrograde() {
+    void testEquatorialRetrograde() {
         doTestEquatorialRetrograde(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() {
+    void testCopyNonKeplerianAcceleration() {
         doTestCopyNonKeplerianAcceleration(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNormalize() {
+    void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
     }
 
@@ -301,6 +302,124 @@ public class FieldCircularOrbitTest {
         }
     }
 
+    @Test
+    void testCoverageCachedPositionAngleTypeWithRates() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double eccentricity = 0.;
+        final double expectedAlpha = 0.;
+        final double expectedAlphaDot = 0.;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64 zero = field.getZero();
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final FieldCircularOrbit<Binary64> fieldOrbit = new FieldCircularOrbit<>(
+                        zero.newInstance(semiMajorAxis), zero.newInstance(eccentricity), zero, zero, zero,
+                        zero.newInstance(expectedAlpha), zero, zero, zero, zero, zero,
+                        zero.newInstance(expectedAlphaDot), inputPositionAngleType, cachedPositionAngleType,
+                        FramesFactory.getGCRF(), new FieldAbsoluteDate<>(field, date), zero.newInstance(mu));
+                Assertions.assertEquals(cachedPositionAngleType, fieldOrbit.getCachedPositionAngleType());
+                Assertions.assertEquals(expectedAlpha, fieldOrbit.getAlphaV().getReal());
+                Assertions.assertEquals(expectedAlpha, fieldOrbit.getAlphaM().getReal());
+                Assertions.assertEquals(expectedAlpha, fieldOrbit.getAlphaE().getReal());
+                Assertions.assertEquals(expectedAlphaDot, fieldOrbit.getAlphaVDot().getReal());
+                Assertions.assertEquals(expectedAlphaDot, fieldOrbit.getAlphaMDot().getReal());
+                Assertions.assertEquals(expectedAlphaDot, fieldOrbit.getAlphaEDot().getReal());
+            }
+        }
+    }
+
+    @Test
+    void testGetAlphaVersusDouble() {
+        // GIVEN
+        final double semiMajorAxis = 1e7;
+        final double eccentricity = 1e-2;
+        final double expectedAlpha = 4.;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64 zero = field.getZero();
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final FieldCircularOrbit<Binary64> fieldOrbit = new FieldCircularOrbit<>(
+                        zero.newInstance(semiMajorAxis), zero.newInstance(eccentricity), zero, zero, zero,
+                        zero.newInstance(expectedAlpha), inputPositionAngleType, cachedPositionAngleType,
+                        FramesFactory.getGCRF(), new FieldAbsoluteDate<>(field, date), zero.newInstance(mu));
+                final CircularOrbit circularOrbit = fieldOrbit.toOrbit();
+                Assertions.assertEquals(circularOrbit.getAlphaV(), fieldOrbit.getAlphaV().getReal());
+                Assertions.assertEquals(circularOrbit.getAlphaM(), fieldOrbit.getAlphaM().getReal());
+                Assertions.assertEquals(circularOrbit.getAlphaE(), fieldOrbit.getAlphaE().getReal());
+            }
+        }
+    }
+
+
+    @Test
+    @Deprecated
+    void testTrueToEccentric() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final Complex zero = field.getZero();
+        final Complex ex = zero.newInstance(1e-2);
+        final Complex ey = zero.newInstance(1.e-3);
+        final Complex inputAnomaly = zero.newInstance(1.);
+        // WHEN
+        final Complex actualL = FieldCircularOrbit.trueToEccentric(inputAnomaly, ex, ey);
+        // THEN
+        final Complex expectedL = FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, inputAnomaly);
+        Assertions.assertEquals(expectedL.getReal(), actualL.getReal());
+    }
+
+    @Test
+    @Deprecated
+    void testEccentricToTrue() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final Complex zero = field.getZero();
+        final Complex ex = zero.newInstance(1e-2);
+        final Complex ey = zero.newInstance(1.e-3);
+        final Complex inputAnomaly = zero.newInstance(1.);
+        // WHEN
+        final Complex actualL = FieldCircularOrbit.eccentricToTrue(inputAnomaly, ex, ey);
+        // THEN
+        final Complex expectedL = FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, inputAnomaly);
+        Assertions.assertEquals(expectedL.getReal(), actualL.getReal());
+    }
+
+    @Test
+    @Deprecated
+    void testMeanToEccentric() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final Complex zero = field.getZero();
+        final Complex ex = zero.newInstance(1e-2);
+        final Complex ey = zero.newInstance(1.e-3);
+        final Complex inputAnomaly = zero.newInstance(1.);
+        // WHEN
+        final Complex actualL = FieldCircularOrbit.meanToEccentric(inputAnomaly, ex, ey);
+        // THEN
+        final Complex expectedL = FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, inputAnomaly);
+        Assertions.assertEquals(expectedL.getReal(), actualL.getReal());
+    }
+
+    @Test
+    @Deprecated
+    void testEccentricToMean() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final Complex zero = field.getZero();
+        final Complex ex = zero.newInstance(1e-2);
+        final Complex ey = zero.newInstance(1.e-3);
+        final Complex inputAnomaly = zero.newInstance(1.);
+        // WHEN
+        final Complex actualL = FieldCircularOrbit.eccentricToMean(inputAnomaly, ex, ey);
+        // THEN
+        final Complex expectedL = FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, inputAnomaly);
+        Assertions.assertEquals(expectedL.getReal(), actualL.getReal());
+    }
+
     private <T extends CalculusFieldElement<T>> void doTestCircularToEquinoctialEll(Field<T> field) {
 
         T zero =  field.getZero();
@@ -334,7 +453,9 @@ public class FieldCircularOrbitTest {
         Assertions.assertEquals(param.getHy().getReal(), circ.getHy().getReal(), Utils.epsilonAngle * FastMath.abs(circ.getI().getReal()));
 
 
-        Assertions.assertEquals(MathUtils.normalizeAngle(param.getLv().getReal(), circ.getLv().getReal()), circ.getLv().getReal(), Utils.epsilonAngle * FastMath.abs(circ.getLv().getReal()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(param.getLv().getReal(), circ.getLv().getReal()),
+                                circ.getLv().getReal(),
+                                Utils.epsilonAngle * FastMath.abs(circ.getLv().getReal()));
 
         Assertions.assertFalse(circ.hasDerivatives());
         Assertions.assertNull(circ.getADot());
@@ -404,9 +525,10 @@ public class FieldCircularOrbitTest {
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
         T r2 = position.getNormSq();
         T r = r2.sqrt();
-        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,
-                                                                       new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()),
-                                                                                           position));
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()),
+                position);
+        final FieldVector3D<T> nonKeplerianAcceleration = keplerianAcceleration.scalarMultiply(1.1);
+        final FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity, nonKeplerianAcceleration);
         FieldCircularOrbit<T>  fieldOrbit = new FieldCircularOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
         CircularOrbit orbit = fieldOrbit.toOrbit();
         Assertions.assertTrue(orbit.hasDerivatives());
@@ -546,8 +668,9 @@ public class FieldCircularOrbitTest {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         try {
-            new FieldCircularOrbit<>(zero.add(42166712.0), zero.add(0.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
+            new FieldCircularOrbit<>(zero.add(-42166712.0), zero.add(1.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
                                      PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
         }
@@ -556,10 +679,11 @@ public class FieldCircularOrbitTest {
     private <T extends CalculusFieldElement<T>>  void doTestHyperbolic2(Field<T> field) {
         T zero =  field.getZero();
        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(42166712.0), zero.add(0.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-42166712.0), zero.add(1.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add( 5.300),
                                                         PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
         try {
             new FieldCircularOrbit<>(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
         }

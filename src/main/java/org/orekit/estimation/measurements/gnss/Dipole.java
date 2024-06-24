@@ -44,7 +44,7 @@ public class Dipole {
      * @param primary primary dipole vector
      * @param secondary secondary dipole vector
      */
-    Dipole(final Vector3D primary, final Vector3D secondary) {
+    public Dipole(final Vector3D primary, final Vector3D secondary) {
         this.primary   = primary;
         this.secondary = secondary;
     }

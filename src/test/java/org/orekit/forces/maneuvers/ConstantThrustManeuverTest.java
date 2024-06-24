@@ -69,7 +69,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
+class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
     // Body mu
     private double mu;
@@ -126,7 +126,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -168,7 +168,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -210,7 +210,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testPositiveDuration() {
+    void testPositiveDuration() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                              new TimeComponents(23, 30, 00.000),
                                              TimeScalesFactory.getUTC());
@@ -240,7 +240,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testNegativeDuration() {
+    void testNegativeDuration() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                              new TimeComponents(23, 30, 00.000),
                                              TimeScalesFactory.getUTC());
@@ -264,7 +264,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testRoughBehaviour() {
+    void testRoughBehaviour() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -327,7 +327,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void testRealField() {
+    void testRealField() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -389,7 +389,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void testRealFieldGradient() {
+    void testRealFieldGradient() {
         int freeParameters = 6;
         Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
         Gradient e_0 = Gradient.variable(freeParameters, 1, 0.4);
@@ -511,7 +511,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testForwardAndBackward() {
+    void testForwardAndBackward() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -552,6 +552,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         integrator1.setInitialStepSize(60);
         final NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
         propagator1.setOrbitType(orbitType);
+        propagator1.setPositionAngleType(PositionAngleType.TRUE);
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(law);
         propagator1.addForceModel(maneuver);
@@ -567,6 +568,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         integrator2.setInitialStepSize(60);
         final NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
         propagator2.setOrbitType(orbitType);
+        propagator2.setPositionAngleType(propagator1.getPositionAngleType());
         propagator2.setInitialState(finalState);
         propagator2.setAttitudeProvider(law);
         propagator2.addForceModel(maneuver);
@@ -584,7 +586,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -606,7 +608,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -628,7 +630,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testInertialManeuver() {
+    void testInertialManeuver() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -722,7 +724,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStopInMiddle() {
+    void testStopInMiddle() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -795,7 +797,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testNullDuration() {
+    void testNullDuration() {
 
         // Defining initial state
         final Frame                    eme2000      = FramesFactory.getEME2000();

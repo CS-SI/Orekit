@@ -1,3 +1,20 @@
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.orekit.estimation.sequential;
 
 import java.util.List;
@@ -25,7 +42,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
@@ -131,8 +147,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -173,7 +188,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assertions.assertEquals(0.0, observer.getMeanResidual(), 4.99e-8);
+        Assertions.assertEquals(0.0, observer.getMeanResidual(), 5.08e-8);
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
         Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
@@ -216,8 +231,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         propagatorBuilder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -309,8 +323,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                 gravityField.getMaxDegree(), gravityField.getMaxOrder(), FastMath.min(4, gravityField.getMaxDegree() - 2)));
 
         // Reference propagator for estimation performances
-        final DSSTPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
@@ -344,9 +357,9 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4.2e-9;
+        final double   posEps            = 4.2e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.7e-12;
+        final double   velEps            = 3.8e-11;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,

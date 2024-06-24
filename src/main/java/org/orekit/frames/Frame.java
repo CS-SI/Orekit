@@ -268,6 +268,30 @@ public class Frame implements Serializable {
     }
 
     /**
+     * Get the kinematic portion of the transform from the instance to another
+     * frame. The returned transform is kinematic in the sense that it includes
+     * translations and rotations, with rates, but cannot transform an acceleration vector.
+     *
+     * <p>This method is often more performant than {@link
+     * #getTransformTo(Frame, AbsoluteDate)} when accelerations are not needed.
+     *
+     * @param destination destination frame to which we want to transform
+     *                    vectors
+     * @param date        the date (can be null if it is sure than no date
+     *                    dependent frame is used)
+     * @return kinematic transform from the instance to the destination frame
+     * @since 12.1
+     */
+    public KinematicTransform getKinematicTransformTo(final Frame destination, final AbsoluteDate date) {
+        return getTransformTo(
+            destination,
+            KinematicTransform.getIdentity(),
+            frame -> frame.getTransformProvider().getKinematicTransform(date),
+            (t1, t2) -> KinematicTransform.compose(date, t1, t2),
+            KinematicTransform::getInverse);
+    }
+
+    /**
      * Get the static portion of the transform from the instance to another
      * frame. The returned transform is static in the sense that it includes
      * translations and rotations, but not rates.
@@ -325,6 +349,38 @@ public class Frame implements Serializable {
                                   frame -> frame.getTransformProvider().getStaticTransform(date),
                                   (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
                                   FieldStaticTransform::getInverse);
+        }
+    }
+
+    /**
+     * Get the kinematic portion of the transform from the instance to another
+     * frame. The returned transform is kinematic in the sense that it includes
+     * translations and rotations, with rates, but cannot transform an acceleration vector.
+     *
+     * <p>This method is often more performant than {@link
+     * #getTransformTo(Frame, AbsoluteDate)} when accelerations are not needed.
+     * @param <T>          Type of transform returned.
+     * @param destination destination frame to which we want to transform
+     *                    vectors
+     * @param date        the date (<em>must</em> be non-null, which is a more stringent condition
+     *      *                    than in {@link #getKinematicTransformTo(Frame, AbsoluteDate)})
+     * @return kinematic transform from the instance to the destination frame
+     * @since 12.1
+     */
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransformTo(final Frame destination,
+                                                                                                  final FieldAbsoluteDate<T> date) {
+        if (date.hasZeroField()) {
+            // If date field is Zero, then use the un-fielded version for performances
+            final KinematicTransform kinematicTransform = getKinematicTransformTo(destination, date.toAbsoluteDate());
+            return FieldKinematicTransform.of(date.getField(), kinematicTransform);
+
+        } else {
+            // Use classic fielded function
+            return getTransformTo(destination,
+                    FieldKinematicTransform.getIdentity(date.getField()),
+                    frame -> frame.getTransformProvider().getKinematicTransform(date),
+                    (t1, t2) -> FieldKinematicTransform.compose(date, t1, t2),
+                    FieldKinematicTransform::getInverse);
         }
     }
 

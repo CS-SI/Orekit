@@ -74,11 +74,13 @@ public class SpinStabilized implements AttitudeProviderModifier {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AttitudeProvider getUnderlyingAttitudeProvider() {
         return nonRotatingLaw;
     }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame) {
 
@@ -104,6 +106,20 @@ public class SpinStabilized implements AttitudeProviderModifier {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        // get rotation from underlying non-rotating law
+        final Rotation baseRotation = nonRotatingLaw.getAttitudeRotation(pvProv, date, frame);
+
+        // compute spin rotation due to spin from reference to current date
+        final Rotation spinInfluence = new Rotation(axis, rate * date.durationFrom(start), RotationConvention.FRAME_TRANSFORM);
+
+        // combine the two rotations
+        return baseRotation.compose(spinInfluence, RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame) {
@@ -129,4 +145,22 @@ public class SpinStabilized implements AttitudeProviderModifier {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+
+        // get attitude from underlying non-rotating law
+        final FieldRotation<T> baseRotation = nonRotatingLaw.getAttitudeRotation(pvProv, date, frame);
+
+        // compute spin rotation due to spin from reference to current date
+        final FieldRotation<T> spinInfluence =
+                new FieldRotation<>(new FieldVector3D<>(date.getField(), axis),
+                                date.durationFrom(start).multiply(rate),
+                                RotationConvention.FRAME_TRANSFORM);
+
+        // combine the two rotations
+        return baseRotation.compose(spinInfluence, RotationConvention.FRAME_TRANSFORM);
+    }
 }

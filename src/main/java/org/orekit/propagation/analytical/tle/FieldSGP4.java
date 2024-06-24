@@ -104,7 +104,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
         lessThan220 = perige.getReal() < 220;
         if (!lessThan220) {
             final FieldSinCos<T> scM0 = FastMath.sinCos(tle.getMeanAnomaly());
-            final T c1sq = c1.multiply(c1);
+            final T c1sq = c1.square();
             delM0 = eta.multiply(scM0.cos()).add(1.0);
             delM0 = delM0.multiply(delM0).multiply(delM0);
             d2 = a0dp.multiply(tsi).multiply(c1sq).multiply(4.0);
@@ -143,7 +143,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
         final T xn0ddf = tle.getRaan().add(xnodot.multiply(tSince));
         omega = omgadf;
         T xmp = xmdf;
-        final T tsq = tSince.multiply(tSince);
+        final T tsq = tSince.square();
         xnode = xn0ddf.add(xnodcf.multiply(tsq));
         T tempa = c1.multiply(tSince).negate().add(1.0);
         T tempe = bStar.multiply(c4).multiply(tSince);
@@ -152,7 +152,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
         if (!lessThan220) {
             final T delomg = omgcof.multiply(tSince);
             T delm = eta.multiply(FastMath.cos(xmdf)).add(1.0);
-            delm = xmcof.multiply(delm.multiply(delm).multiply(delm).subtract(delM0));
+            delm = xmcof.multiply(delm.square().multiply(delm).subtract(delM0));
             final T temp = delomg.add(delm);
             xmp = xmdf.add(temp);
             omega = omgadf.subtract(temp);
@@ -168,7 +168,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
 
         // A highly arbitrary lower limit on e,  of 1e-6:
         if (e.getReal() < 1e-6) {
-            e = e.getField().getZero().add(1e-6);
+            e = e.getField().getZero().newInstance(1e-6);
         }
 
         xl = xmp.add(omega).add(xnode).add(xn0dp.multiply(templ));

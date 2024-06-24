@@ -18,6 +18,8 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -65,7 +67,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class BodyCenterPointingTest {
+class BodyCenterPointingTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -82,10 +84,31 @@ public class BodyCenterPointingTest {
     // Earth center pointing attitude provider
     private BodyCenterPointing earthCenterAttitudeLaw;
 
+    @Test
+    void testGetPosition() {
+        // GIVEN (done in setup)
+        // WHEN
+        final Vector3D actualPosition = earthCenterAttitudeLaw.getTargetPosition(circ, date, circ.getFrame());
+        // Check that target is on Earth surface
+        final Vector3D expectedPosition = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame()).getPosition();
+        Assertions.assertEquals(expectedPosition, actualPosition);
+    }
+
+    @Test
+    void testGetPositionField() {
+        // GIVEN
+        final FieldCircularOrbit<Complex> fieldCircularOrbit = new FieldCircularOrbit<>(ComplexField.getInstance(), circ);
+        // WHEN
+        final FieldVector3D<Complex> actualPosition = earthCenterAttitudeLaw.getTargetPosition(fieldCircularOrbit, fieldCircularOrbit.getDate(), circ.getFrame());
+        // Check that target is on Earth surface
+        final FieldVector3D<Complex> expectedPosition = earthCenterAttitudeLaw.getTargetPV(fieldCircularOrbit, fieldCircularOrbit.getDate(), circ.getFrame()).getPosition();
+        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-10);
+    }
+
     /** Test if target is on Earth surface
      */
     @Test
-    public void testTarget() {
+    void testTarget() {
 
         // Call get target method
         TimeStampedPVCoordinates target = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame());
@@ -100,7 +123,7 @@ public class BodyCenterPointingTest {
     /** Test if body center belongs to the direction pointed by the satellite
      */
     @Test
-    public void testBodyCenterInPointingDirection() {
+    void testBodyCenterInPointingDirection() {
 
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
@@ -131,7 +154,7 @@ public class BodyCenterPointingTest {
     }
 
     @Test
-    public void testQDot() {
+    void testQDot() {
 
         Utils.setDataRoot("regular-data");
         final double ehMu  = 3.9860047e14;
@@ -191,7 +214,7 @@ public class BodyCenterPointingTest {
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
 
         Utils.setDataRoot("regular-data");
         final double ehMu  = 3.9860047e14;
@@ -238,7 +261,7 @@ public class BodyCenterPointingTest {
     }
 
     @Test
-    public void testTargetField() {
+    void testTargetField() {
         doTestTarget(Binary64Field.getInstance());
     }
     @Test
@@ -247,12 +270,12 @@ public class BodyCenterPointingTest {
     }
 
     @Test
-    public void testQDotField() {
+    void testQDotField() {
         doTestQDot(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSpinField() {
+    void testSpinField() {
         doTestSpin(Binary64Field.getInstance());
     }
 

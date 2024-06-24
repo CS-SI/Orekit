@@ -157,6 +157,9 @@ TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = Order zu groß (m = {0}, maximale Order des 
 # no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
 WRONG_DEGREE_OR_ORDER = <MISSING TRANSLATION>
 
+# wrong orbital elements for averaging theory
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY = <MISSING TRANSLATION>
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION>
 
@@ -406,6 +409,9 @@ SP3_INCOMPATIBLE_FILE_METADATA = <MISSING TRANSLATION>
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = <MISSING TRANSLATION>
 
+# frame {0} not allowed here
+FRAME_NOT_ALLOWED = <MISSING TRANSLATION>
+
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
 
@@ -453,6 +459,12 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = die hyperbolisch-exzentrische Anomalie kann nicht aus der mittleren Anomalie berechnet werden nach {0} Iterationen
+
+# unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT = <MISSING TRANSLATION>
+
+# unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT = <MISSING TRANSLATION>
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = die Durschnittsumlaufbahn kann auch nach {0} Iterationen nicht von der oskulierenden Umlaufbahn berechnet werden
@@ -861,8 +873,17 @@ HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>
 # Cannot start the propagation from an infinitely far date
 CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
 
+# Too long time gap between data points: {0} s
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = <MISSING TRANSLATION>
+
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = <MISSING TRANSLATION>
 
 # EOP interpolation degree must be of the form 4k-1, got {0}
 WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>
+
+# number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
+WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
+
+# Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>

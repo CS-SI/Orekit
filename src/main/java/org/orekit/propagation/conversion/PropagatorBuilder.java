@@ -46,6 +46,13 @@ public interface PropagatorBuilder {
      */
     Propagator buildPropagator(double[] normalizedParameters);
 
+    /** Build a propagator from current value of selected normalized parameters.
+     * @return an initialized propagator
+     */
+    default Propagator buildPropagator() {
+        return buildPropagator(getSelectedNormalizedParameters());
+    }
+
     /** Build a new batch least squares model.
      * @param builders builders to use for propagation
      * @param measurements measurements

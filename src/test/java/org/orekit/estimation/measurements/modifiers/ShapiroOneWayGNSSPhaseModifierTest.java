@@ -82,6 +82,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
+                                                                                          "remote",
                                                                                           FREQUENCY,
                                                                                           ambiguity,
                                                                                           localClockOffset,
@@ -94,13 +95,14 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
         DescriptiveStatistics stat = new DescriptiveStatistics();
-        for (int i = 0; i < measurements.size(); ++i) {
-            OneWayGNSSPhase sr = (OneWayGNSSPhase) measurements.get(i);
+        for (ObservedMeasurement<?> measurement : measurements) {
+            OneWayGNSSPhase sr = (OneWayGNSSPhase) measurement;
             SpacecraftState[] states = new SpacecraftState[] {
-                p3.propagate(sr.getDate()),
-                ephemeris.propagate(sr.getDate())
+                p3.propagate(sr.getDate()), ephemeris.propagate(sr.getDate())
             };
-            EstimatedMeasurementBase<OneWayGNSSPhase> evalNoMod = sr.estimateWithoutDerivatives(0, 0, states);
+            EstimatedMeasurementBase<OneWayGNSSPhase>
+                evalNoMod =
+                sr.estimateWithoutDerivatives(states);
 
             // add modifier
             sr.addModifier(modifier);
@@ -109,9 +111,12 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
                 found = found || existing == modifier;
             }
             Assertions.assertTrue(found);
-            EstimatedMeasurementBase<OneWayGNSSPhase> eval = sr.estimateWithoutDerivatives(0, 0, states);
+            EstimatedMeasurementBase<OneWayGNSSPhase>
+                eval =
+                sr.estimateWithoutDerivatives(states);
 
-            stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
+            stat.addValue(
+                eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 
         }
         final double wavelength = ((OneWayGNSSPhase) measurements.get(0)).getWavelength();

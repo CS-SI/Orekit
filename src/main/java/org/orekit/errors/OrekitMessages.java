@@ -17,16 +17,10 @@
 package org.orekit.errors;
 
 import org.hipparchus.exception.Localizable;
+import org.hipparchus.exception.UTF8Control;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 /**
@@ -489,6 +483,11 @@ public enum OrekitMessages implements Localizable {
     /** SP3_INCOMPATIBLE_SATELLITE_MEDATADA. */
     SP3_INCOMPATIBLE_SATELLITE_MEDATADA("cannot splice sp3 files with incompatible satellite metadata for satellite {0}"),
 
+    /** FRAME_NOT_ALLOWED.
+     * @since 12.1
+     */
+    FRAME_NOT_ALLOWED("frame {0} not allowed here"),
+
     /** STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM. */
     STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM("STK coordinate system \"{0}\" is invalid or not yet supported"),
 
@@ -536,6 +535,12 @@ public enum OrekitMessages implements Localizable {
 
     /** UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY. */
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
+
+    /** UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT. */
+    UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT("unable to compute eccentric longitude argument from the mean one after {0} iterations"),
+
+    /** UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT. */
+    UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT("unable to compute eccentric latitude argument from the mean one after {0} iterations"),
 
     /** UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS. */
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
@@ -879,6 +884,9 @@ public enum OrekitMessages implements Localizable {
     /** DATES_MISMATCH. */
     DATES_MISMATCH("first date {0} does not match second date {1}"),
 
+    /** WRONG ELEMENTS FOR AVERAGING THEORY. */
+    WRONG_ELEMENTS_FOR_AVERAGING_THEORY("unexpected type of orbital elements for required averaging theory"),
+
     /** ORBITS_MUS_MISMATCH. */
     ORBITS_MUS_MISMATCH("first orbit mu {0} does not match second orbit mu {1}"),
 
@@ -906,11 +914,20 @@ public enum OrekitMessages implements Localizable {
     /** CANNOT_START_PROPAGATION_FROM_INFINITY. */
     CANNOT_START_PROPAGATION_FROM_INFINITY("Cannot start the propagation from an infinitely far date"),
 
+    /** TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS. */
+    TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS("Too long time gap between data points: {0} s"),
+
     /** INVALID_SATELLITE_ID. */
     INVALID_SATELLITE_ID("invalid satellite id {0}"),
 
     /** WRONG_EOP_INTERPOLATION_DEGREE. */
-    WRONG_EOP_INTERPOLATION_DEGREE("EOP interpolation degree must be of the form 4k-1, got {0}");
+    WRONG_EOP_INTERPOLATION_DEGREE("EOP interpolation degree must be of the form 4k-1, got {0}"),
+
+    /** WALKER_INCONSISTENT_PLANES. */
+    WALKER_INCONSISTENT_PLANES("number of planes {0} is inconsistent with number of satellites {1} in Walker constellation"),
+
+    /** INFINITE_NRMSISE00_DENSITY. */
+    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
@@ -938,8 +955,7 @@ public enum OrekitMessages implements Localizable {
             final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale, new UTF8Control());
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
                 final String translated = bundle.getString(name());
-                if (translated != null && translated.length() > 0 &&
-                        !translated.toLowerCase().contains("missing translation")) {
+                if (!(translated.isEmpty() || translated.toLowerCase().contains("missing translation"))) {
                     // the value of the resource is the translated format
                     return translated;
                 }
@@ -953,60 +969,5 @@ public enum OrekitMessages implements Localizable {
         // it is unknown: don't translate and fall back to using the source format
         return sourceFormat;
 
-    }
-
-    /**
-     * Control class loading properties in UTF-8 encoding.
-     * <p>
-     * This class has been very slightly adapted from BalusC answer to question:
-     * <a href=
-     * "http://stackoverflow.com/questions/4659929/how-to-use-utf-8-in-resource-properties-with-resourcebundle">
-     * How to use UTF-8 in resource properties with ResourceBundle</a>.
-     * </p>
-     * @since 6.0
-     */
-    public static class UTF8Control extends ResourceBundle.Control {
-
-        /** Empty constructor.
-         * <p>
-         * This constructor is not strictly necessary, but it prevents spurious
-         * javadoc warnings with JDK 18 and later.
-         * </p>
-         * @since 12.0
-         */
-        public UTF8Control() {
-            // nothing to do
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public ResourceBundle newBundle(final String baseName, final Locale locale, final String format,
-                final ClassLoader loader, final boolean reload)
-                throws IllegalAccessException, InstantiationException, IOException {
-            // The below is a copy of the default implementation.
-            final String bundleName = toBundleName(baseName, locale);
-            final String resourceName = toResourceName(bundleName, "utf8");
-            ResourceBundle bundle = null;
-            InputStream stream = null;
-            if (reload) {
-                final URL url = loader.getResource(resourceName);
-                if (url != null) {
-                    final URLConnection connection = url.openConnection();
-                    if (connection != null) {
-                        connection.setUseCaches(false);
-                        stream = connection.getInputStream();
-                    }
-                }
-            } else {
-                stream = loader.getResourceAsStream(resourceName);
-            }
-            if (stream != null) {
-                try (InputStreamReader inputStreamReader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-                    // Only this line is changed to make it to read properties files as UTF-8.
-                    bundle = new PropertyResourceBundle(inputStreamReader);
-                }
-            }
-            return bundle;
-        }
     }
 }

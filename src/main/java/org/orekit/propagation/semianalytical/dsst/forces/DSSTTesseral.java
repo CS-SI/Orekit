@@ -16,17 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
@@ -68,6 +57,17 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /** Tesseral contribution to the central body gravitational perturbation.
  *  <p>
@@ -302,8 +302,8 @@ public class DSSTTesseral implements DSSTForceModel {
         this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
 
         // Initialize default values
-        this.resOrders    = new ArrayList<Integer>();
-        this.nonResOrders = new TreeMap<Integer, List <Integer>>();
+        this.resOrders    = new ArrayList<>();
+        this.nonResOrders = new TreeMap<>();
 
         // Initialize default values
         this.fieldShortPeriodTerms = new HashMap<>();
@@ -355,10 +355,9 @@ public class DSSTTesseral implements DSSTForceModel {
         shortPeriodTerms = new TesseralShortPeriodicCoefficients(bodyFrame, maxOrderMdailyTesseralSP,
                                                                  maxDegreeTesseralSP < 0, nonResOrders,
                                                                  mMax, maxFrequencyShortPeriodics, INTERPOLATION_POINTS,
-                                                                 new TimeSpanMap<Slot>(new Slot(mMax, maxFrequencyShortPeriodics,
-                                                                                                INTERPOLATION_POINTS)));
+                                                                 new TimeSpanMap<>(new Slot(mMax, maxFrequencyShortPeriodics, INTERPOLATION_POINTS)));
 
-        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
+        final List<ShortPeriodTerms> list = new ArrayList<>();
         list.add(shortPeriodTerms);
         return list;
 
@@ -790,7 +789,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
             if (type == PropagationType.OSCULATING && maxDegreeTesseralSP >= 0 && m <= maxOrderTesseralSP) {
                 //compute non resonant orders in the tesseral harmonic field
-                final List<Integer> listJofM = new ArrayList<Integer>();
+                final List<Integer> listJofM = new ArrayList<>();
                 //for the moment we take only the pairs (j,m) with |j| <= maxDegree + maxEccPow (from |s-j| <= maxEccPow and |s| <= maxDegree)
                 for (int j = -maxFrequencyShortPeriodics; j <= maxFrequencyShortPeriodics; j++) {
                     if (j != 0 && j != jRes) {
@@ -1017,7 +1016,7 @@ public class DSSTTesseral implements DSSTForceModel {
             if ((n - s) % 2 == 0) {
 
                 // Vmns coefficient
-                final T vMNS   = zero.add(CoefficientsFactory.getVmns(m, n, s));
+                final T vMNS   = zero.newInstance(CoefficientsFactory.getVmns(m, n, s));
 
                 // Inclination function Gamma and derivative
                 final T gaMNS  = gammaMNS.getValue(m, n, s);
@@ -1046,8 +1045,8 @@ public class DSSTTesseral implements DSSTForceModel {
                         JacobiPolynomials.getValue(l, v, w, FieldGradient.variable(1, 0, auxiliaryElements.getGamma()));
 
                 // Geopotential coefficients
-                final T cnm = zero.add(harmonics.getUnnormalizedCnm(n, m));
-                final T snm = zero.add(harmonics.getUnnormalizedSnm(n, m));
+                final T cnm = zero.newInstance(harmonics.getUnnormalizedCnm(n, m));
+                final T snm = zero.newInstance(harmonics.getUnnormalizedSnm(n, m));
 
                 // Common factors from expansion of equations 3.3-4
                 final T cf_0      = roaPow[n].multiply(Im).multiply(vMNS);
@@ -1439,7 +1438,7 @@ public class DSSTTesseral implements DSSTForceModel {
             this.cCoef        = MathArrays.buildArray(field, rows, columns, 6);
             this.sCoef        = MathArrays.buildArray(field, rows, columns, 6);
             this.roaPow       = MathArrays.buildArray(field, maxDegree + 1);
-            roaPow[0] = zero.add(1.);
+            roaPow[0] = zero.newInstance(1.);
         }
 
         /**
@@ -1831,9 +1830,7 @@ public class DSSTTesseral implements DSSTForceModel {
             final Slot slot = slots.get(date);
 
             if (!nonResOrders.isEmpty() || mDailiesOnly) {
-                final Map<String, double[]> coefficients =
-                                new HashMap<String, double[]>(12 * maxOrderMdailyTesseralSP +
-                                                              12 * nonResOrders.size());
+                final Map<String, double[]> coefficients = new HashMap<>(12 * maxOrderMdailyTesseralSP + 12 * nonResOrders.size());
 
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
                     storeIfSelected(coefficients, selected, slot.getCijm(0, m, date), DSSTTesseral.CM_COEFFICIENTS, m);
@@ -2066,9 +2063,7 @@ public class DSSTTesseral implements DSSTForceModel {
             final FieldSlot<T> slot = slots.get(date);
 
             if (!nonResOrders.isEmpty() || mDailiesOnly) {
-                final Map<String, T[]> coefficients =
-                                new HashMap<String, T[]>(12 * maxOrderMdailyTesseralSP +
-                                                         12 * nonResOrders.size());
+                final Map<String, T[]> coefficients = new HashMap<>(12 * maxOrderMdailyTesseralSP + 12 * nonResOrders.size());
 
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
                     storeIfSelected(coefficients, selected, slot.getCijm(0, m, date), DSSTTesseral.CM_COEFFICIENTS, m);
@@ -2562,7 +2557,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
                 // R / a up to power degree
                 final T[] roaPow = MathArrays.buildArray(field, maxDegree + 1);
-                roaPow[0] = zero.add(1.);
+                roaPow[0] = zero.newInstance(1.);
                 for (int i = 1; i <= maxDegree; i++) {
                     roaPow[i] = roaPow[i - 1].multiply(context.getRoa());
                 }

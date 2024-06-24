@@ -17,11 +17,14 @@
 package org.orekit.estimation.measurements.generation;
 
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -35,6 +38,11 @@ import org.orekit.utils.ParameterDriver;
  */
 public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNSSPhase> {
 
+    /** Cache for ambiguities.
+     * @since 12.1
+     */
+    private final AmbiguityCache cache;
+
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
@@ -45,7 +53,13 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
     private final ObservableSatellite remote;
 
     /** Clock model of the remote satellite that provides clock offset. */
-    private ToDoubleFunction<AbsoluteDate> remoteClockModel;
+    private final QuadraticClockModel remoteClockModel;
+
+    /** Temporary builder for clock models.
+     * @deprecated this is a temporary field, it will be removed in Orekit 13.0
+     */
+    @Deprecated
+    private Function<AbsoluteDate, QuadraticClockModel> clockBuilder;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -55,21 +69,53 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 12.1, replaced by {@link #OneWayGNSSPhaseBuilder(CorrelatedRandomVectorGenerator,
+     * ObservableSatellite, ObservableSatellite, QuadraticClockModel,
+     * double, double, double, AmbiguityCache)}
      */
+    @Deprecated
     public OneWayGNSSPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                   final ObservableSatellite local, final ObservableSatellite remote,
                                   final ToDoubleFunction<AbsoluteDate> remoteClockModel,
                                   final double wavelength, final double sigma, final double baseWeight) {
+        this(noiseSource, local, remote, null, wavelength, sigma, baseWeight,
+             AmbiguityCache.DEFAULT_CACHE);
+        this.clockBuilder = date -> {
+            final double cM = remoteClockModel.applyAsDouble(date.shiftedBy(-1));
+            final double c0 = remoteClockModel.applyAsDouble(date);
+            final double cP = remoteClockModel.applyAsDouble(date.shiftedBy(1));
+            return new QuadraticClockModel(date, c0, 0.5 * (cP - cM), 0.5 * (cP + cM) - c0);
+        };
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote satellite which simply emits the signal
+     * @param remoteClockModel clock model of the remote satellite that provides clock offset
+     * @param wavelength phase observed value wavelength (m)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param cache from which ambiguity drive should come
+     * @since 12.1
+     */
+    public OneWayGNSSPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                  final ObservableSatellite local, final ObservableSatellite remote,
+                                  final QuadraticClockModel remoteClockModel,
+                                  final double wavelength, final double sigma, final double baseWeight,
+                                  final AmbiguityCache cache) {
         super(noiseSource, sigma, baseWeight, local, remote);
         this.wavelength       = wavelength;
         this.local            = local;
         this.remote           = remote;
         this.remoteClockModel = remoteClockModel;
+        this.cache            = cache;
     }
 
     /** {@inheritDoc} */
     @Override
-    public OneWayGNSSPhase build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+    public OneWayGNSSPhase build(final AbsoluteDate date,
+                                 final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         final double sigma               = getTheoreticalStandardDeviation()[0];
         final double baseWeight          = getBaseWeight()[0];
@@ -77,11 +123,20 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
             interpolators.get(local).getInterpolatedState(date),
             interpolators.get(remote).getInterpolatedState(date)
         };
-        final double offset              = remoteClockModel.applyAsDouble(date);
+
+        // temporary hack to build QuadraticClockModel from ToDoubleFunction<AbsoluteDate>
+        // for compatibility purposes
+        final QuadraticClockModel clockModel = remoteClockModel != null ?
+                                               remoteClockModel :
+                                               clockBuilder.apply(date);
 
         // create a dummy measurement
-        final OneWayGNSSPhase dummy = new OneWayGNSSPhase(interpolators.get(remote), offset, date,
-                                                          Double.NaN, wavelength, sigma, baseWeight, local);
+        final OneWayGNSSPhase dummy = new OneWayGNSSPhase(interpolators.get(remote),
+                                                          remote.getName(),
+                                                          clockModel, date,
+                                                          Double.NaN, wavelength,
+                                                          sigma, baseWeight, local,
+                                                          cache);
         for (final EstimationModifier<OneWayGNSSPhase> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -96,7 +151,7 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
         }
 
         // estimate the perfect value of the measurement
-        double phase = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
+        double phase = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();
@@ -105,8 +160,11 @@ public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNS
         }
 
         // generate measurement
-        final OneWayGNSSPhase measurement = new OneWayGNSSPhase(interpolators.get(remote), offset, date,
-                                                                phase, wavelength, sigma, baseWeight, local);
+        final OneWayGNSSPhase measurement = new OneWayGNSSPhase(interpolators.get(remote),
+                                                                remote.getName(),
+                                                                clockModel, date,
+                                                                phase, wavelength, sigma, baseWeight, local,
+                                                                cache);
         for (final EstimationModifier<OneWayGNSSPhase> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

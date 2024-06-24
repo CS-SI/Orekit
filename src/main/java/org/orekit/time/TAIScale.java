@@ -16,50 +16,21 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.CalculusFieldElement;
-
 /** International Atomic Time.
  * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public class TAIScale implements TimeScale {
+public class TAIScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+    private static final long serialVersionUID = 20240321L;
 
     /** Package private constructor for the factory.
      */
     TAIScale() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetFromTAI(final AbsoluteDate taiTime) {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    public String getName() {
-        return "TAI";
-    }
-
-    /** {@inheritDoc} */
-    public String toString() {
-        return getName();
+        super("TAI", 0);
     }
 
 }

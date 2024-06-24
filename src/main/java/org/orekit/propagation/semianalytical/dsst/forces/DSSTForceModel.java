@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
@@ -37,6 +34,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
  *  org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -150,8 +150,7 @@ public interface DSSTForceModel extends ParameterDriversProvider, EventDetectors
         final double[] outParameters = new double[allParameters.size()];
         int index = 0;
         int paramIndex = 0;
-        for (int i = 0; i < allParameters.size(); i++) {
-            final ParameterDriver driver = allParameters.get(i);
+        for (final ParameterDriver driver : allParameters) {
             final String driverNameforDate = driver.getNameSpan(date);
             // Loop on the spans
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
@@ -182,8 +181,7 @@ public interface DSSTForceModel extends ParameterDriversProvider, EventDetectors
         final T[] outParameters = MathArrays.buildArray(date.getField(), allParameters.size());
         int index = 0;
         int paramIndex = 0;
-        for (int i = 0; i < allParameters.size(); i++) {
-            final ParameterDriver driver = allParameters.get(i);
+        for (final ParameterDriver driver : allParameters) {
             final String driverNameforDate = driver.getNameSpan(date.toAbsoluteDate());
             // Loop on the spans
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {

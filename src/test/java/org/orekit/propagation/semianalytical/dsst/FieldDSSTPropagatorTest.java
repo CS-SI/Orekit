@@ -671,7 +671,6 @@ public class FieldDSSTPropagatorTest {
 
         final FieldAbsoluteDate<T> stopDate = state.getDate().shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.STOP);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, stopDate).withHandler(checking);
         dsstPropagator.addEventDetector(detector);
         checking.assertEvent(false);
@@ -691,7 +690,6 @@ public class FieldDSSTPropagatorTest {
 
         final FieldAbsoluteDate<T> resetDate = state.getDate().shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.CONTINUE);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
         dsstPropagator.addEventDetector(detector);
         final double dt = 3200;

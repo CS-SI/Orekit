@@ -34,9 +34,9 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.forces.ForceModel;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -67,7 +67,7 @@ import org.orekit.utils.ParameterDriver;
  */
 public class KnockeRediffusedForceModel implements ForceModel {
 
-    /** Earth rotation around Sun pulsation in rad/sec. */
+    /** 7Earth rotation around Sun pulsation in rad/sec. */
     private static final double EARTH_AROUND_SUN_PULSATION = MathUtils.TWO_PI / Constants.JULIAN_YEAR;
 
     /** Coefficient for solar irradiance computation. */
@@ -113,7 +113,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
     private final double angularResolution;
 
     /** Earth equatorial radius in m. */
-    private double equatorialRadius;
+    private final double equatorialRadius;
 
     /** Reference date for periodic terms: December 22nd 1981.
      * Without more precision, the choice is to set it at midnight, UTC. */
@@ -198,7 +198,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
              eastAxisOffset = eastAxisOffset + angularResolution) {
 
             // Build rotation transformations to get first crown elementary sector center
-            final Transform eastRotation = new Transform(date,
+            final StaticTransform eastRotation = StaticTransform.of(date,
                                                           new Rotation(east, eastAxisOffset, RotationConvention.VECTOR_OPERATOR));
 
             // Get first elementary crown sector center
@@ -210,7 +210,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
                  radialAxisOffset = radialAxisOffset + angularResolution) {
 
                 // Build rotation transformations to get elementary area center
-                final Transform radialRotation  = new Transform(date,
+                final StaticTransform radialRotation  = StaticTransform.of(date,
                                                                 new Rotation(projectedToGround, radialAxisOffset, RotationConvention.VECTOR_OPERATOR));
 
                 // Get current elementary crown sector center
@@ -269,7 +269,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
              eastAxisOffset = eastAxisOffset + angularResolution) {
 
             // Build rotation transformations to get first crown elementary sector center
-            final FieldTransform<T> eastRotation = new FieldTransform<>(date,
+            final FieldStaticTransform<T> eastRotation = FieldStaticTransform.of(date,
                                                                         new FieldRotation<>(east,
                                                                                             zero.add(eastAxisOffset),
                                                                                             RotationConvention.VECTOR_OPERATOR));
@@ -283,7 +283,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
                  radialAxisOffset = radialAxisOffset + angularResolution) {
 
                 // Build rotation transformations to get elementary area center
-                final FieldTransform<T> radialRotation  = new FieldTransform<>(date,
+                final FieldStaticTransform<T> radialRotation  = FieldStaticTransform.of(date,
                                                                                new FieldRotation<>(projectedToGround,
                                                                                                    zero.add(radialAxisOffset),
                                                                                                    RotationConvention.VECTOR_OPERATOR));
@@ -293,8 +293,8 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
                 // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
                 // over the angular resolution
-                final T sectorArea = zero.add(equatorialRadius * equatorialRadius *
-                                              2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
+                final T sectorArea = zero.newInstance(equatorialRadius * equatorialRadius *
+                        2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
 
                 // Add current sector contribution to total rediffused flux
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
@@ -318,7 +318,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param phi the equatorial latitude in rad
      * @return the albedo in [0;1]
      */
-    private double computeAlbedo(final AbsoluteDate date, final double phi) {
+    public double computeAlbedo(final AbsoluteDate date, final double phi) {
 
         // Get duration since coefficient reference epoch
         final double deltaT = date.durationFrom(referenceEpoch);
@@ -352,7 +352,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param <T> extends CalculusFieldElement
      * @return the albedo in [0;1]
      */
-    private <T extends CalculusFieldElement<T>> T computeAlbedo(final FieldAbsoluteDate<T> date, final T phi) {
+    public <T extends CalculusFieldElement<T>> T computeAlbedo(final FieldAbsoluteDate<T> date, final T phi) {
 
         // Get duration since coefficient reference epoch
         final T deltaT = date.durationFrom(referenceEpoch);
@@ -382,7 +382,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param phi the equatorial latitude in rad
      * @return the emissivity in [0;1]
      */
-    private double computeEmissivity(final AbsoluteDate date, final double phi) {
+    public double computeEmissivity(final AbsoluteDate date, final double phi) {
 
         // Get duration since coefficient reference epoch
         final double deltaT = date.durationFrom(referenceEpoch);
@@ -416,7 +416,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param <T> extends CalculusFieldElement
      * @return the emissivity in [0;1]
      */
-    private <T extends CalculusFieldElement<T>> T computeEmissivity(final FieldAbsoluteDate<T> date, final T phi) {
+    public <T extends CalculusFieldElement<T>> T computeEmissivity(final FieldAbsoluteDate<T> date, final T phi) {
 
         // Get duration since coefficient reference epoch
         final T deltaT = date.durationFrom(referenceEpoch);
@@ -443,7 +443,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param sunPosition the Sun position in an Earth centered frame
      * @return the total solar flux impacting Earth in J/m^3
      */
-    private double computeSolarFlux(final Vector3D sunPosition) {
+    public double computeSolarFlux(final Vector3D sunPosition) {
 
         // Compute Earth - Sun distance in UA
         final double earthSunDistance = sunPosition.getNorm() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
@@ -458,7 +458,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param <T> extends CalculusFieldElement
      * @return the total solar flux impacting Earth in J/m^3
      */
-    private <T extends CalculusFieldElement<T>> T computeSolarFlux(final FieldVector3D<T> sunPosition) {
+    public <T extends CalculusFieldElement<T>> T computeSolarFlux(final FieldVector3D<T> sunPosition) {
 
         // Compute Earth - Sun distance in UA
         final T earthSunDistance = sunPosition.getNorm().divide(Constants.JPL_SSD_ASTRONOMICAL_UNIT);
@@ -476,11 +476,11 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param elementArea the area of the current element
      * @return the rediffused flux from considered element on the spacecraft
      */
-    private Vector3D computeElementaryFlux(final SpacecraftState state,
-                                           final Vector3D elementCenter,
-                                           final Vector3D sunPosition,
-                                           final OneAxisEllipsoid earth,
-                                           final double elementArea) {
+    public Vector3D computeElementaryFlux(final SpacecraftState state,
+                                          final Vector3D elementCenter,
+                                          final Vector3D sunPosition,
+                                          final OneAxisEllipsoid earth,
+                                          final double elementArea) {
 
         // Get satellite position
         final Vector3D satellitePosition = state.getPosition();
@@ -550,11 +550,11 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param <T> extends CalculusFieldElement
      * @return the rediffused flux from considered element on the spacecraft
      */
-    private <T extends CalculusFieldElement<T>> FieldVector3D<T> computeElementaryFlux(final FieldSpacecraftState<T> state,
-                                                                                   final FieldVector3D<T> elementCenter,
-                                                                                   final FieldVector3D<T> sunPosition,
-                                                                                   final OneAxisEllipsoid earth,
-                                                                                   final T elementArea) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> computeElementaryFlux(final FieldSpacecraftState<T> state,
+                                                                                      final FieldVector3D<T> elementCenter,
+                                                                                      final FieldVector3D<T> sunPosition,
+                                                                                      final OneAxisEllipsoid earth,
+                                                                                      final T elementArea) {
 
         // Get satellite position
         final FieldVector3D<T> satellitePosition = state.getPosition();
@@ -604,7 +604,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
             // Compute attenuated projected elemetary area vector
             final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(FastMath.cos(alpha)).divide(
-                                                                          rNorm.multiply(rNorm).multiply(rNorm).multiply(zero.getPi())));
+                                                                          rNorm.square().multiply(rNorm).multiply(zero.getPi())));
 
             // Compute elementary radiation flux from current elementary area
             return projectedAreaVector.scalarMultiply(albedoAndIR.divide(Constants.SPEED_OF_LIGHT));
@@ -612,7 +612,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
         } else {
 
             // Spacecraft does not see the elementary area
-            return new FieldVector3D<T>(zero, zero, zero);
+            return new FieldVector3D<>(zero, zero, zero);
         }
 
     }

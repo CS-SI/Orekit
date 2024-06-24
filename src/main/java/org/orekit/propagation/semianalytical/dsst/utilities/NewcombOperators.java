@@ -16,14 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.util.FastMath;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.hipparchus.analysis.polynomials.PolynomialFunction;
-import org.hipparchus.util.FastMath;
 
 /**
  * Implementation of the Modified Newcomb Operators.
@@ -59,13 +59,7 @@ public class NewcombOperators {
         if (k1.n == k2.n) {
             if (k1.s == k2.s) {
                 if (k1.rho == k2.rho) {
-                    if (k1.sigma < k2.sigma) {
-                        return  -1;
-                    } else if (k1.sigma == k2.sigma) {
-                        return 0;
-                    } else {
-                        return 1;
-                    }
+                    return Integer.compare(k1.sigma, k2.sigma);
                 } else if (k1.rho < k2.rho) {
                     return -1;
                 } else {
@@ -163,10 +157,10 @@ public class NewcombOperators {
 
                 if (POLYNOMIALS.isEmpty()) {
                     // Initialize lists
-                    final List<PolynomialFunction> l00 = new ArrayList<PolynomialFunction>();
-                    final List<PolynomialFunction> l01 = new ArrayList<PolynomialFunction>();
-                    final List<PolynomialFunction> l10 = new ArrayList<PolynomialFunction>();
-                    final List<PolynomialFunction> l11 = new ArrayList<PolynomialFunction>();
+                    final List<PolynomialFunction> l00 = new ArrayList<>();
+                    final List<PolynomialFunction> l01 = new ArrayList<>();
+                    final List<PolynomialFunction> l10 = new ArrayList<>();
+                    final List<PolynomialFunction> l11 = new ArrayList<>();
 
                     // Y(rho = 0, sigma = 0) = 1
                     l00.add(new PolynomialFunction(new double[] {
@@ -225,7 +219,7 @@ public class NewcombOperators {
         private static void computeFor(final int rho, final int sigma) {
 
             // Initialize result :
-            List<PolynomialFunction> result = new ArrayList<PolynomialFunction>();
+            List<PolynomialFunction> result = new ArrayList<>();
 
             // Get the coefficient from the recurrence relation
             final Map<Integer, List<PolynomialFunction>> map = generateRecurrenceCoefficients(rho, sigma);
@@ -287,7 +281,7 @@ public class NewcombOperators {
         private static List<PolynomialFunction> multiplyPolynomialList(final List<PolynomialFunction> poly1,
                                                                        final List<PolynomialFunction> poly2) {
             // Initialize the result list of polynomial function
-            final List<PolynomialFunction> result = new ArrayList<PolynomialFunction>();
+            final List<PolynomialFunction> result = new ArrayList<>();
             initializeListOfPolynomials(poly1.size() + poly2.size() - 1, result);
 
             int i = 0;
@@ -318,7 +312,7 @@ public class NewcombOperators {
             final int lowLength  = FastMath.min(poly1.size(), poly2.size());
             final int highLength = FastMath.max(poly1.size(), poly2.size());
             // Initialize the result list of polynomial function
-            final List<PolynomialFunction> result = new ArrayList<PolynomialFunction>();
+            final List<PolynomialFunction> result = new ArrayList<>();
             initializeListOfPolynomials(highLength, result);
 
             for (int i = 0; i < lowLength; i++) {
@@ -355,7 +349,7 @@ public class NewcombOperators {
          */
         private static List<PolynomialFunction> shiftList(final List<PolynomialFunction> polynomialList,
                                                           final int shift) {
-            final List<PolynomialFunction> shiftedList = new ArrayList<PolynomialFunction>();
+            final List<PolynomialFunction> shiftedList = new ArrayList<>();
             for (PolynomialFunction function : polynomialList) {
                 shiftedList.add(new PolynomialFunction(shift(function.getCoefficients(), shift)));
             }
@@ -403,8 +397,8 @@ public class NewcombOperators {
 
             // First polynomial coefficient.
             double shiftI = 1;
-            for (int i = 0; i < dp1; i++) {
-                newCoefficients[0] += coefficients[i] * shiftI;
+            for (double coefficient : coefficients) {
+                newCoefficients[0] += coefficient * shiftI;
                 shiftI *= shift;
             }
 
@@ -432,12 +426,12 @@ public class NewcombOperators {
             final double denx2 = 2. * den;
             final double denx4 = 4. * den;
             // Initialization :
-            final Map<Integer, List<PolynomialFunction>> list = new TreeMap<Integer, List<PolynomialFunction>>();
-            final List<PolynomialFunction> poly0 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> poly1 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> poly2 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> poly3 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> poly4 = new ArrayList<PolynomialFunction>();
+            final Map<Integer, List<PolynomialFunction>> list = new TreeMap<>();
+            final List<PolynomialFunction> poly0 = new ArrayList<>();
+            final List<PolynomialFunction> poly1 = new ArrayList<>();
+            final List<PolynomialFunction> poly2 = new ArrayList<>();
+            final List<PolynomialFunction> poly3 = new ArrayList<>();
+            final List<PolynomialFunction> poly4 = new ArrayList<>();
             // (s - n)
             poly0.add(new PolynomialFunction(new double[] {0., den}));
             poly0.add(new PolynomialFunction(new double[] {-den}));

@@ -45,10 +45,15 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.*;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -60,102 +65,135 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 
-public class FieldSpacecraftStateTest {
+class FieldSpacecraftStateTest {
 
     @Test
-    public void testFieldVSReal() {
+    void testFieldVSReal() {
         doTestFieldVsReal(Binary64Field.getInstance());
     }
 
     @Test
-    public void testShiftVsEcksteinHechlerError() {
+    void testShiftVsEcksteinHechlerError() {
         doTestShiftVsEcksteinHechlerError(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDatesConsistency() {
+    void testDatesConsistency() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doTestDatesConsistency(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testDateConsistencyClose() {
+    void testDateConsistencyClose() {
         doTestDateConsistencyClose(Binary64Field.getInstance());
     }
 
     @Test
-    public void testFramesConsistency() {
+    void testFramesConsistency() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doTestFramesConsistency(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testTransform() {
+    void testTransform() {
         doTestTransform(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAdditionalStates() {
+    void testAdditionalStates() {
         doTestAdditionalStates(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAdditionalStatesDerivatives() {
+    void testAdditionalStatesDerivatives() {
         doTestAdditionalStatesDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testFieldVSRealAbsPV() {
+    void testFieldVSRealAbsPV() {
         doTestFieldVsRealAbsPV(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDateConsistencyCloseAbsPV() {
+    void testDateConsistencyCloseAbsPV() {
         doTestDateConsistencyCloseAbsPV(Binary64Field.getInstance());
     }
 
     @Test
-    public void testFramesConsistencyAbsPV() {
+    void testFramesConsistencyAbsPV() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doTestFramesConsistencyAbsPV(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testAdditionalStatesAbsPV() {
+    void testAdditionalStatesAbsPV() {
         doTestAdditionalStatesAbsPV(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAdditionalStatesDerivativesAbsPV() {
+    void testAdditionalStatesDerivativesAbsPV() {
         doTestAdditionalStatesDerivativesAbsPV(Binary64Field.getInstance());
     }
 
     @Test
-    public void testResetOnEventAnalytical() {
+    void testResetOnEventAnalytical() {
         doTestAdditionalTestResetOnEventAnalytical(Binary64Field.getInstance());
     }
 
     @Test
-    public void testResetOnEventNumerical() {
+    void testResetOnEventNumerical() {
         doTestAdditionalTestResetOnEventNumerical(Binary64Field.getInstance());
     }
 
     @Test
-    public void testShiftAdditionalDerivativesDouble() {
+    void testShiftAdditionalDerivativesDouble() {
         doTestShiftAdditionalDerivativesDouble(Binary64Field.getInstance());
     }
 
     @Test
-    public void testShiftAdditionalDerivativesField() {
+    void testShiftAdditionalDerivativesField() {
         doTestShiftAdditionalDerivativesField(Binary64Field.getInstance());
     }
 
+    @Test
+    void testToTransform() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final FieldOrbit<Complex> orbit = new FieldCartesianOrbit<>(field, rOrbit);
+        final TimeStampedAngularCoordinates angularCoordinates = new TimeStampedAngularCoordinates(
+                orbit.getDate().toAbsoluteDate(), Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        final FieldAttitude<Complex> attitude = new FieldAttitude<>(orbit.getFrame(),
+                new TimeStampedFieldAngularCoordinates<>(field, angularCoordinates));
+        final FieldSpacecraftState<Complex> state = new FieldSpacecraftState<>(orbit, attitude);
+        // WHEN
+        final FieldTransform<Complex> fieldTransform = state.toTransform();
+        // THEN
+        final Transform expectedTransform = state.toSpacecraftState().toTransform();
+        Assertions.assertEquals(expectedTransform.getDate(), fieldTransform.getDate());
+        final double tolerance = 1e-10;
+        Assertions.assertEquals(expectedTransform.getTranslation().getX(),
+                fieldTransform.getTranslation().getX().getReal(), tolerance);
+        Assertions.assertEquals(expectedTransform.getTranslation().getY(),
+                fieldTransform.getTranslation().getY().getReal(), tolerance);
+        Assertions.assertEquals(expectedTransform.getTranslation().getZ(),
+                fieldTransform.getTranslation().getZ().getReal(), tolerance);
+        Assertions.assertEquals(0., Rotation.distance(expectedTransform.getRotation(),
+                fieldTransform.getRotation().toRotation()));
+    }
+    
     @Test
     void testToStaticTransform() {
         // GIVEN
@@ -169,7 +207,7 @@ public class FieldSpacecraftStateTest {
         // WHEN
         final FieldStaticTransform<Complex> actualStaticTransform = state.toStaticTransform();
         // THEN
-        final FieldStaticTransform<Complex> expectedStaticTransform = state.toTransform().toStaticTransform();
+        final FieldStaticTransform<Complex> expectedStaticTransform = state.toTransform();
         Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
         final double tolerance = 1e-10;
         Assertions.assertEquals(expectedStaticTransform.getTranslation().getX().getReal(),
@@ -993,7 +1031,6 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
                                     withHandler(new FieldEventHandler<T>() {
 
@@ -1045,7 +1082,6 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
                                     withHandler(new FieldEventHandler<T>() {
 

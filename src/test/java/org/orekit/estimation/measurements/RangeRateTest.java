@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
-import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -76,7 +76,7 @@ public class RangeRateTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -124,7 +124,7 @@ public class RangeRateTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -176,7 +176,7 @@ public class RangeRateTest {
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
                     return measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
                            getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -242,7 +242,7 @@ public class RangeRateTest {
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
                     return measurement.
-                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
                            getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -338,7 +338,7 @@ public class RangeRateTest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
@@ -420,7 +420,7 @@ public class RangeRateTest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
@@ -495,7 +495,7 @@ public class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 1.4e-7);
+        Assertions.assertEquals(0, maxRelativeError, 1.5e-7);
 
     }
 
@@ -532,7 +532,7 @@ public class RangeRateTest {
 
             // Add modifiers if test implies it
             final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
+            final EstimatedModel             tropoModel      = new EstimatedModel(mappingFunction, 5.0);
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(tropoModel, true);
             ((RangeRate) measurement).addModifier(modifier);
@@ -566,7 +566,7 @@ public class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 3.1e-7);
+        Assertions.assertEquals(0, maxRelativeError, 3.4e-7);
 
     }
 
@@ -644,7 +644,7 @@ public class RangeRateTest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
@@ -689,7 +689,7 @@ public class RangeRateTest {
 
             // Add modifiers if test implies it
             final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 10.0);
+            final EstimatedModel             tropoModel     = new EstimatedModel(mappingFunction, 10.0);
 
             final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
             for (ParameterDriver driver : parameters) {
@@ -724,7 +724,7 @@ public class RangeRateTest {
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.
-                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                getEstimatedValue()[0];
                                     }
                                 }, 3, 0.1 * drivers[i].getScale());

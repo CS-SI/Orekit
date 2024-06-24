@@ -59,8 +59,8 @@ public class UTCScaleTest {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(1999, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        AbsoluteDate d2 = new AbsoluteDate(new DateComponents(2000, 01, 01),
-                                           new TimeComponents(00, 00, 01),
+        AbsoluteDate d2 = new AbsoluteDate(new DateComponents(2000, 1, 1),
+                                           new TimeComponents(0, 0, 1),
                                            utc);
         Assertions.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
     }
@@ -68,7 +68,7 @@ public class UTCScaleTest {
     @Test
     public void testLeap2006() {
         AbsoluteDate leapDate =
-            new AbsoluteDate(new DateComponents(2006, 01, 01), TimeComponents.H00, utc);
+            new AbsoluteDate(new DateComponents(2006, 1, 1), TimeComponents.H00, utc);
         AbsoluteDate d1 = leapDate.shiftedBy(-1);
         AbsoluteDate d2 = leapDate.shiftedBy(+1);
         Assertions.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
@@ -76,15 +76,15 @@ public class UTCScaleTest {
         AbsoluteDate d3 = new AbsoluteDate(new DateComponents(2005, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        AbsoluteDate d4 = new AbsoluteDate(new DateComponents(2006, 01, 01),
-                                           new TimeComponents(00, 00, 01),
+        AbsoluteDate d4 = new AbsoluteDate(new DateComponents(2006, 1, 1),
+                                           new TimeComponents(0, 0, 1),
                                            utc);
         Assertions.assertEquals(3.0, d4.durationFrom(d3), 1.0e-10);
     }
 
     @Test
     public void testDuringLeap() {
-        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                           new TimeComponents(23, 59, 59),
                                           utc);
         Assertions.assertEquals("1983-06-30T23:58:59.000", d.shiftedBy(-60).toString(utc));
@@ -330,9 +330,9 @@ public class UTCScaleTest {
     public void testMultithreading() {
 
         // generate reference offsets using a single thread
-        RandomGenerator random = new Well1024a(6392073424l);
-        List<AbsoluteDate> datesList = new ArrayList<AbsoluteDate>();
-        List<Double> offsetsList = new ArrayList<Double>();
+        RandomGenerator random = new Well1024a(6392073424L);
+        List<AbsoluteDate> datesList = new ArrayList<>();
+        List<Double> offsetsList = new ArrayList<>();
         AbsoluteDate reference = utc.getFirstKnownLeapSecond().shiftedBy(-Constants.JULIAN_YEAR);
         double testRange = utc.getLastKnownLeapSecond().durationFrom(reference) + Constants.JULIAN_YEAR;
         for (int i = 0; i < 10000; ++i) {
@@ -347,16 +347,12 @@ public class UTCScaleTest {
         for (int i = 0; i < datesList.size(); ++i) {
             final AbsoluteDate date = datesList.get(i);
             final double offset = offsetsList.get(i);
-            executorService.execute(new Runnable() {
-                public void run() {
-                    Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-12);
-                }
-            });
+            executorService.execute(() -> Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-12));
         }
 
         try {
             executorService.shutdown();
-            executorService.awaitTermination(3, TimeUnit.SECONDS);
+            Assertions.assertTrue(executorService.awaitTermination(3, TimeUnit.SECONDS));
         } catch (InterruptedException ie) {
             Assertions.fail(ie.getLocalizedMessage());
         }
@@ -383,11 +379,7 @@ public class UTCScaleTest {
     public void testEmptyOffsets() {
         Utils.setDataRoot("no-data");
 
-        TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIOffsetsLoader() {
-            public List<OffsetModel> loadOffsets() {
-                return Collections.emptyList();
-            }
-        });
+        TimeScalesFactory.addUTCTAIOffsetsLoader(Collections::emptyList);
 
         try {
             TimeScalesFactory.getUTC();
@@ -428,8 +420,8 @@ public class UTCScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(utc);
 
-        Assertions.assertTrue(bos.size() > 1550);
-        Assertions.assertTrue(bos.size() < 1650);
+        Assertions.assertTrue(bos.size() > 1700);
+        Assertions.assertTrue(bos.size() < 1800);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

@@ -18,45 +18,45 @@ package org.orekit.gnss.attitude;
 
 import org.junit.jupiter.api.Test;
 
-public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
+class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2M.txt", 9.2e-15, 1.1e-15, false);
+    void testPatchedLargeNegativeBeta() {
+        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2M.txt", 9.2e-15, 1.2e-15, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
+    void testPatchedSmallNegativeBeta() {
         doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2M.txt", 7.7e-15, 9.4e-16, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
+    void testPatchedSmallPositiveBeta() {
         doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2M.txt", 9.5e-15, 9.6e-16, false);
     }
 
     @Test
-    public void testPatchedLargePositiveBeta() {
+    void testPatchedLargePositiveBeta() {
         doTestAxes("patched-eclips/beta-large-positive-BEIDOU-2M.txt", 8.4e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2M.txt", 9.2e-15, 1.1e-15, false);
+    void testOriginalLargeNegativeBeta() {
+        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2M.txt", 9.2e-15, 1.2e-15, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
+    void testOriginalSmallNegativeBeta() {
         doTestAxes("original-eclips/beta-small-negative-BEIDOU-2M.txt", 2.2e-3, 9.4e-16, false);
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
+    void testOriginalSmallPositiveBeta() {
         doTestAxes("original-eclips/beta-small-positive-BEIDOU-2M.txt", 2.7e-3, 9.6e-16, false);
     }
 
     @Test
-    public void testOriginalLargePositiveBeta() {
+    void testOriginalLargePositiveBeta() {
         doTestAxes("original-eclips/beta-large-positive-BEIDOU-2M.txt", 8.4e-15, 1.1e-15, false);
     }
 

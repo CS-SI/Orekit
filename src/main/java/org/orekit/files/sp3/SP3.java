@@ -26,14 +26,18 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
+import org.orekit.gnss.IGSUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.utils.PVCoordinates;
 
 /**
  * Represents a parsed SP3 orbit file.
@@ -57,7 +61,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
     private final Frame frame;
 
     /** A map containing satellite information. */
-    private Map<String, SP3Ephemeris> satellites;
+    private final Map<String, SP3Ephemeris> satellites;
 
     /**
      * Create a new SP3 file object.
@@ -67,7 +71,21 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
      * @param frame                reference frame
      */
     public SP3(final double mu, final int interpolationSamples, final Frame frame) {
-        this.header               = new SP3Header();
+        this(new SP3Header(), mu, interpolationSamples, frame);
+    }
+
+    /**
+     * Create a new SP3 file object.
+     *
+     * @param header header
+     * @param mu                   is the standard gravitational parameter in m³ / s².
+     * @param interpolationSamples number of samples to use in interpolation.
+     * @param frame                reference frame
+     * @since 12.1
+     */
+    public SP3(final SP3Header header,
+               final double mu, final int interpolationSamples, final Frame frame) {
+        this.header               = header;
         this.mu                   = mu;
         this.interpolationSamples = interpolationSamples;
         this.frame                = frame;
@@ -184,6 +202,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
         // prepare spliced file
         final SP3 first   = sorted.first();
         final SP3 spliced = new SP3(first.mu, first.interpolationSamples, first.frame);
+        spliced.header.setVersion(first.header.getVersion());
         spliced.header.setFilter(first.header.getFilter());
         spliced.header.setType(first.header.getType());
         spliced.header.setTimeSystem(first.header.getTimeSystem());
@@ -199,6 +218,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
         spliced.header.setAgency(first.header.getAgency());
         spliced.header.setPosVelBase(first.header.getPosVelBase());
         spliced.header.setClockBase(first.header.getClockBase());
+        first.header.getComments().forEach(spliced.header::addComment);
 
         // identify the satellites that are present in all files
         final List<String> commonSats = new ArrayList<>(first.header.getSatIds());
@@ -274,6 +294,91 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
         }
 
         return spliced;
+
+    }
+
+    /** Change the frame of an SP3 file.
+     * @param original original SP3 file
+     * @param newFrame frame to use for the changed SP3 file
+     * @return changed SP3 file
+     * @since 12.1
+     */
+    public static SP3 changeFrame(final SP3 original, final Frame newFrame) {
+
+        // copy header
+        final SP3Header header         = new SP3Header();
+        final SP3Header originalHeader = original.header;
+        header.setVersion(originalHeader.getVersion());
+        header.setFilter(originalHeader.getFilter());
+        header.setType(originalHeader.getType());
+        header.setTimeSystem(originalHeader.getTimeSystem());
+        header.setDataUsed(originalHeader.getDataUsed());
+        header.setEpoch(originalHeader.getEpoch());
+        header.setGpsWeek(originalHeader.getGpsWeek());
+        header.setSecondsOfWeek(originalHeader.getSecondsOfWeek());
+        header.setModifiedJulianDay(originalHeader.getModifiedJulianDay());
+        header.setDayFraction(originalHeader.getDayFraction());
+        header.setEpochInterval(originalHeader.getEpochInterval());
+        header.setOrbitTypeKey(originalHeader.getOrbitTypeKey());
+        header.setAgency(originalHeader.getAgency());
+        header.setPosVelBase(originalHeader.getPosVelBase());
+        header.setClockBase(originalHeader.getClockBase());
+        header.setNumberOfEpochs(originalHeader.getNumberOfEpochs());
+
+        originalHeader.getComments().forEach(header::addComment);
+
+        // change the frame in the header
+        header.setCoordinateSystem(IGSUtils.frameName(newFrame));
+
+        // prepare file
+        final SP3 changed = new SP3(header,
+                                    original.mu,
+                                    original.interpolationSamples,
+                                    newFrame);
+
+        // first loop to add satellite ids only
+        final List<String> ids = originalHeader.getSatIds();
+        ids.forEach(changed::addSatellite);
+
+        // now that the header knows the number of satellites,
+        // it can lazily allocate the accuracies array,
+        // so we can perform a second loop to set individual accuracies
+        for (int i = 0; i < ids.size(); ++i) {
+            header.setAccuracy(i, originalHeader.getAccuracy(ids.get(i)));
+        }
+
+        // convert data to new frame
+        for (final Map.Entry<String, SP3Ephemeris> entry : original.satellites.entrySet()) {
+            final SP3Ephemeris originalEphemeris = original.getEphemeris(entry.getKey());
+            final SP3Ephemeris changedEphemeris  = changed.getEphemeris(entry.getKey());
+            for (final SP3Segment segment : originalEphemeris.getSegments()) {
+                for (SP3Coordinate c : segment.getCoordinates()) {
+                    final Transform t = originalEphemeris.getFrame().getTransformTo(newFrame, c.getDate());
+                    final PVCoordinates newPV = t.transformPVCoordinates(c);
+                    final Vector3D      newP  = newPV.getPosition();
+                    final Vector3D      newPA = c.getPositionAccuracy() == null ?
+                                                null :
+                                                t.transformVector(c.getPositionAccuracy());
+                    final Vector3D      newV  = c.getVelocity() == null ? Vector3D.ZERO : newPV.getVelocity();
+                    final Vector3D      newVA = c.getVelocityAccuracy() == null ?
+                                                null :
+                                                t.transformVector(c.getVelocityAccuracy());
+                    final SP3Coordinate newC  = new SP3Coordinate(c.getDate(),
+                                                                  newP, newPA, newV, newVA,
+                                                                  c.getClockCorrection(),
+                                                                  c.getClockAccuracy(),
+                                                                  c.getClockRateChange(),
+                                                                  c.getClockRateAccuracy(),
+                                                                  c.hasClockEvent(),
+                                                                  c.hasClockPrediction(),
+                                                                  c.hasOrbitManeuverEvent(),
+                                                                  c.hasOrbitPrediction());
+                    changedEphemeris.addCoordinate(newC, originalHeader.getEpochInterval());
+                }
+            }
+        }
+
+        return changed;
 
     }
 

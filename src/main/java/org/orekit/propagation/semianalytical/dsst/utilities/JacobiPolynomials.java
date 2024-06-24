@@ -24,6 +24,7 @@ import java.util.Map;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.polynomials.JacobiKey;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
@@ -41,8 +42,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 public class JacobiPolynomials {
 
     /** Storage map. */
-    private static final Map<JacobiKey, List<PolynomialFunction>> MAP =
-                    new HashMap<JacobiKey, List<PolynomialFunction>>();
+    private static final Map<JacobiKey, List<PolynomialFunction>> MAP = new HashMap<>();
 
     /** Private constructor as class is a utility. */
     private JacobiPolynomials() {
@@ -150,7 +150,7 @@ public class JacobiPolynomials {
 
             // Check the existence of the corresponding key in the map.
             if (!MAP.containsKey(key)) {
-                MAP.put(key, new ArrayList<PolynomialFunction>());
+                MAP.put(key, new ArrayList<>());
             }
 
             polyList = MAP.get(key);
@@ -168,56 +168,5 @@ public class JacobiPolynomials {
         }
 
         return polynomial;
-    }
-
-    /** Inner class for Jacobi polynomials keys.
-     * <p>
-     * Please note that this class is not original content but is a copy from the
-     * Hipparchus library. This library is published under the
-     * Apache License, version 2.0.
-     * </p>
-     *
-     * @see org.hipparchus.analysis.polynomials.PolynomialsUtils
-     */
-    private static class JacobiKey {
-
-        /** First exponent. */
-        private final int v;
-
-        /** Second exponent. */
-        private final int w;
-
-        /** Simple constructor.
-         * @param v first exponent
-         * @param w second exponent
-         */
-        JacobiKey(final int v, final int w) {
-            this.v = v;
-            this.w = w;
-        }
-
-        /** Get hash code.
-         * @return hash code
-         */
-        @Override
-        public int hashCode() {
-            return (v << 16) ^ w;
-        }
-
-        /** Check if the instance represent the same key as another instance.
-         * @param key other key
-         * @return true if the instance and the other key refer to the same polynomial
-         */
-        @Override
-        public boolean equals(final Object key) {
-
-            if (!(key instanceof JacobiKey)) {
-                return false;
-            }
-
-            final JacobiKey otherK = (JacobiKey) key;
-            return v == otherK.v && w == otherK.w;
-
-        }
     }
 }

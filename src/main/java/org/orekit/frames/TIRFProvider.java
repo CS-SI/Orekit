@@ -85,65 +85,91 @@ class TIRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public Transform getTransform(final AbsoluteDate date) {
+        return new Transform(date, getRotation(date), getRotationRate(date));
+    }
 
-        // compute proper rotation
-        final double correctedERA = era.value(date);
-
-        // compute true angular rotation of Earth, in rad/s
-        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
-        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
-        final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
-
-        // set up the transform from parent CIRF
-        final Rotation rotation     = new Rotation(Vector3D.PLUS_K, correctedERA, RotationConvention.FRAME_TRANSFORM);
-        return new Transform(date, rotation, rotationRate);
-
+    /** {@inheritDoc} */
+    @Override
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+        return KinematicTransform.of(date, getRotation(date), getRotationRate(date));
     }
 
     /** {@inheritDoc} */
     @Override
     public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        return StaticTransform.of(date, getRotation(date));
+    }
+
+    /** Form rotation to parent CIRF.
+     * @param date transform date
+     * @return rotation to parent at date
+     * @since 12.1
+     */
+    private Rotation getRotation(final AbsoluteDate date) {
         // compute proper rotation
         final double correctedERA = era.value(date);
         // set up the transform from parent CIRF
-        final Rotation rotation = new Rotation(
-                Vector3D.PLUS_K,
-                correctedERA,
-                RotationConvention.FRAME_TRANSFORM);
-        return StaticTransform.of(date, rotation);
+        return new Rotation(Vector3D.PLUS_K, correctedERA, RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /** Form rotation rate w.r.t. parent CIRF.
+     * @param date transform date
+     * @return rotation rate at date
+     * @since 12.1
+     */
+    private Vector3D getRotationRate(final AbsoluteDate date) {
+        // compute true angular rotation of Earth, in rad/s
+        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
+        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
+        return new Vector3D(omp, Vector3D.PLUS_K);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        return new FieldTransform<>(date, getRotation(date), getRotationRate(date));
+    }
 
-        // compute proper rotation
-        final T correctedERA = era.value(date);
-
-        // compute true angular rotation of Earth, in rad/s
-        final T lod = (eopHistory == null) ? date.getField().getZero() : eopHistory.getLOD(date);
-        final T omp = lod.divide(Constants.JULIAN_DAY).subtract(1).multiply(-AVE);
-        final FieldVector3D<T> rotationRate = new FieldVector3D<>(omp, Vector3D.PLUS_K);
-
-        // set up the transform from parent CIRF
-        final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
-                                                              correctedERA,
-                                                              RotationConvention.FRAME_TRANSFORM);
-        return new FieldTransform<>(date, rotation, rotationRate);
-
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+        return FieldKinematicTransform.of(date, getRotation(date), getRotationRate(date));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        return FieldStaticTransform.of(date, getRotation(date));
+    }
+
+    /** Form rotation to parent CIRF.
+     * @param <T> type of the elements
+     * @param date transform date
+     * @return rotation to parent at date
+     * @since 12.1
+     */
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
         // compute proper rotation
         final T correctedERA = era.value(date);
+
         // set up the transform from parent CIRF
-        final FieldRotation<T> rotation = new FieldRotation<>(
+        return new FieldRotation<>(
                 FieldVector3D.getPlusK(date.getField()),
                 correctedERA,
                 RotationConvention.FRAME_TRANSFORM);
-        return FieldStaticTransform.of(date, rotation);
+    }
+
+    /** Form rotation rate w.r.t. parent CIRF.
+     * @param <T> type of the elements
+     * @param date transform date
+     * @return rotation rate at date
+     * @since 12.1
+     */
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> getRotationRate(final FieldAbsoluteDate<T> date) {
+        // compute true angular rotation of Earth, in rad/s
+        final T lod = (eopHistory == null) ? date.getField().getZero() : eopHistory.getLOD(date);
+        final T omp = lod.divide(Constants.JULIAN_DAY).subtract(1).multiply(-AVE);
+        return new FieldVector3D<>(omp, Vector3D.PLUS_K);
     }
 
     /** Get the Earth Rotation Angle at the current date.

@@ -22,6 +22,8 @@ import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -30,7 +32,12 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 10.3
+ * @deprecated as of 12.1 ambiguity is managed directly by raw measurements
+ * {@link org.orekit.estimation.measurements.gnss.Phase},
+ * {@link org.orekit.estimation.measurements.gnss.OneWayGNSSPhase}
+ * and {@link org.orekit.estimation.measurements.gnss.InterSatellitesPhase}
  */
+@Deprecated
 public class AbstractAmbiguityModifier {
 
     /** Ambiguity scale factor.
@@ -61,21 +68,29 @@ public class AbstractAmbiguityModifier {
     }
 
     /** Modify measurement.
+     * @param <T> type of the measurements
+     * @param modifier applied modifier
      * @param estimated measurement to modify
+     * @since 12.1
      */
-    protected void doModifyWithoutDerivatives(final EstimatedMeasurementBase<?> estimated) {
+    protected <T extends ObservedMeasurement<T>> void doModifyWithoutDerivatives(final EstimationModifier<T> modifier,
+                                                                                 final EstimatedMeasurementBase<T> estimated) {
         // Apply the ambiguity to the measurement value
         for (Span<String> span = ambiguity.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
             final double[] value = estimated.getEstimatedValue();
             value[0] += ambiguity.getValue(span.getStart());
-            estimated.setEstimatedValue(value);
+            estimated.modifyEstimatedValue(modifier, value);
         }
     }
 
     /** Modify measurement.
+     * @param <T> type of the measurements
+     * @param modifier applied modifier
      * @param estimated measurement to modify
+     * @since 12.1
      */
-    protected void doModify(final EstimatedMeasurement<?> estimated) {
+    protected <T extends ObservedMeasurement<T>> void doModify(final EstimationModifier<T> modifier,
+                                                               final EstimatedMeasurement<T> estimated) {
 
         // apply the ambiguity to the measurement derivatives
         for (Span<String> span = ambiguity.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
@@ -86,7 +101,7 @@ public class AbstractAmbiguityModifier {
         }
 
         // apply the ambiguity to the measurement value
-        doModifyWithoutDerivatives(estimated);
+        doModifyWithoutDerivatives(modifier, estimated);
 
     }
 

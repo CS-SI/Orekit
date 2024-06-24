@@ -817,7 +817,6 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         final FieldAbsoluteDate<T> stopDate = date.shiftedBy(500.0);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, stopDate);
         propagator.addEventDetector(detector);
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
@@ -1002,6 +1001,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
         num.setInitialState(new FieldSpacecraftState<>(initialOsculating));
         num.setOrbitType(OrbitType.CIRCULAR);
+        num.setPositionAngleType(initialOsculating.getCachedPositionAngleType());
         final StorelessUnivariateStatistic oscMin  = new Min();
         final StorelessUnivariateStatistic oscMax  = new Max();
         final StorelessUnivariateStatistic meanMin = new Min();

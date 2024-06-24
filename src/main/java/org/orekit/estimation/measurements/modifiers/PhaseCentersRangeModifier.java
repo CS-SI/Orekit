@@ -29,10 +29,9 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class PhaseCentersRangeModifier implements EstimationModifier<Range> {
-
-    /** Raw modifier. */
-    private final PhaseCentersGroundReceiverBaseModifier<Range> modifier;
+public class PhaseCentersRangeModifier
+    extends PhaseCentersGroundReceiverBaseModifier<Range>
+    implements EstimationModifier<Range> {
 
     /** Simple constructor.
      * @param stationPattern station pattern
@@ -40,7 +39,7 @@ public class PhaseCentersRangeModifier implements EstimationModifier<Range> {
      */
     public PhaseCentersRangeModifier(final FrequencyPattern stationPattern,
                                      final FrequencyPattern satellitePattern) {
-        this.modifier = new PhaseCentersGroundReceiverBaseModifier<>(stationPattern, satellitePattern);
+        super(stationPattern, satellitePattern);
     }
 
     /** {@inheritDoc} */
@@ -52,27 +51,11 @@ public class PhaseCentersRangeModifier implements EstimationModifier<Range> {
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
-        if (estimated.getObservedMeasurement().isTwoWay()) {
-            modifyTwoWay(estimated);
-        } else {
-            modifyOneWay(estimated);
-        }
-    }
-
-    /** Apply a modifier to a one-way range measurement.
-     * @param estimated estimated measurement to modify
-     */
-    private void modifyOneWay(final EstimatedMeasurementBase<Range> estimated) {
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
-                                    modifier.oneWayDistanceModification(estimated));
-    }
-
-    /** Apply a modifier to a two-way range measurement.
-     * @param estimated estimated measurement to modify
-     */
-    private void modifyTwoWay(final EstimatedMeasurementBase<Range> estimated) {
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
-                                    modifier.twoWayDistanceModification(estimated));
+        final double delta = estimated.getObservedMeasurement().isTwoWay() ?
+                             twoWayDistanceModification(estimated) :
+                             oneWayDistanceModification(estimated);
+        estimated.modifyEstimatedValue(this,
+                                       estimated.getEstimatedValue()[0] + delta);
     }
 
 }

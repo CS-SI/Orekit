@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.SortedMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -26,6 +23,9 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * This class is designed to provide coefficient from the DSST theory.
@@ -35,7 +35,7 @@ import org.orekit.errors.OrekitMessages;
 public class CoefficientsFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation. */
-    private static SortedMap<NSKey, Double> VNS = new ConcurrentSkipListMap<NSKey, Double>();
+    private static SortedMap<NSKey, Double> VNS = new ConcurrentSkipListMap<>();
 
     /** Last computed order for V<sub>ns</sub> coefficients. */
     private static int         LAST_VNS_ORDER = 2;
@@ -190,7 +190,7 @@ public class CoefficientsFactory {
         final T kaphb = k.multiply(alpha).add(h.multiply(beta));
         // Initialization
         final T[][] GsHs = MathArrays.buildArray(field, 2, order + 1);
-        GsHs[0][0] = zero.add(1.);
+        GsHs[0][0] = zero.newInstance(1.);
         GsHs[1][0] = zero;
 
         for (int s = 1; s <= order; s++) {
@@ -213,7 +213,7 @@ public class CoefficientsFactory {
         if (order > LAST_VNS_ORDER) {
             // Compute coefficient
             // Need previous computation as recurrence relation is done at s + 1 and n + 2
-            final int min = (LAST_VNS_ORDER - 2 < 0) ? 0 : (LAST_VNS_ORDER - 2);
+            final int min = FastMath.max(LAST_VNS_ORDER - 2, 0);
             for (int n = min; n < order; n++) {
                 for (int s = 0; s < n + 1; s++) {
                     if ((n - s) % 2 != 0) {

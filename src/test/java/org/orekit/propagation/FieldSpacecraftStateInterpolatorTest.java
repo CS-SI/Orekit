@@ -153,10 +153,10 @@ class FieldSpacecraftStateInterpolatorTest {
                 new FieldSpacecraftStateInterpolator<>(2, inertialFrame);
 
         final FieldSpacecraftStateInterpolator<Binary64> interpolator2 =
-                new FieldSpacecraftStateInterpolator<>(3, inertialFrame);
+                new FieldSpacecraftStateInterpolator<>(3, SpacecraftStateInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, inertialFrame);
 
         final FieldSpacecraftStateInterpolator<Binary64> interpolator3 =
-                new FieldSpacecraftStateInterpolator<>(4, inertialFrame);
+                new FieldSpacecraftStateInterpolator<>(4, SpacecraftStateInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, inertialFrame, inertialFrame);
 
         // When & Then
         checkStandardInterpolationError(2, 106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, 450 * 450, interpolator1);
@@ -167,6 +167,43 @@ class FieldSpacecraftStateInterpolatorTest {
 
     @Test
     public void testErrorThrownWhenOneInterpolatorIsNotConsistentWithSampleSize() {
+        // GIVEN
+        final Frame outputFrame = Mockito.mock(Frame.class);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldOrbit<Binary64>, Binary64> orbitInterpolator =
+                Mockito.mock(FieldTimeInterpolator.class);
+        Mockito.when(orbitInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(orbitInterpolator));
+        Mockito.when(orbitInterpolator.getNbInterpolationPoints()).thenReturn(2);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldAbsolutePVCoordinates<Binary64>, Binary64> absPVInterpolator =
+                Mockito.mock(FieldTimeInterpolator.class);
+        Mockito.when(absPVInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(absPVInterpolator));
+        Mockito.when(absPVInterpolator.getNbInterpolationPoints()).thenReturn(4);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<TimeStampedField<Binary64>, Binary64> massInterpolator =
+                Mockito.mock(FieldTimeInterpolator.class);
+        Mockito.when(massInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(massInterpolator));
+        Mockito.when(massInterpolator.getNbInterpolationPoints()).thenReturn(2);
+
+        final FieldSpacecraftStateInterpolator<Binary64> stateInterpolator =
+                new FieldSpacecraftStateInterpolator<>(2, 1.0e-3, outputFrame, orbitInterpolator, absPVInterpolator, massInterpolator,
+                                                       null, null);
+
+        // WHEN & THEN
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+                AbstractFieldTimeInterpolator.checkInterpolatorCompatibilityWithSampleSize(stateInterpolator, 2));
+
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(2, ((Integer) thrown.getParts()[0]).intValue());
+
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testErrorThrownWhenOneInterpolatorIsNotConsistentWithSampleSizeDeprecated() {
         // GIVEN
         final Frame outputFrame = Mockito.mock(Frame.class);
 
@@ -541,6 +578,59 @@ class FieldSpacecraftStateInterpolatorTest {
         Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
 
         final FieldSpacecraftStateInterpolator<Binary64> stateInterpolator =
+                new FieldSpacecraftStateInterpolator<>(2, 1.0e-3, frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
+                                                       attitudeInterpolator, additionalStateInterpolator);
+
+        // WHEN
+        final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
+
+        // THEN
+        Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void testGetNbInterpolationsWithMultipleSubInterpolatorsDeprecated() {
+        // GIVEN
+        // Create mock interpolators
+        final Frame frame = Mockito.mock(Frame.class);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldOrbit<Binary64>, Binary64> orbitInterpolator =
+                Mockito.mock(FieldOrbitHermiteInterpolator.class);
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldAbsolutePVCoordinates<Binary64>, Binary64> absPVAInterpolator =
+                Mockito.mock(FieldAbsolutePVCoordinatesHermiteInterpolator.class);
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<TimeStampedField<Binary64>, Binary64> massInterpolator =
+                Mockito.mock(TimeStampedFieldHermiteInterpolator.class);
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldAttitude<Binary64>, Binary64> attitudeInterpolator =
+                Mockito.mock(FieldAttitudeInterpolator.class);
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<TimeStampedField<Binary64>, Binary64> additionalStateInterpolator =
+                Mockito.mock(TimeStampedFieldHermiteInterpolator.class);
+
+        // Implement mocks behaviours
+        final int orbitNbInterpolationPoints           = 2;
+        final int absPVANbInterpolationPoints          = 3;
+        final int massNbInterpolationPoints            = 4;
+        final int AttitudeNbInterpolationPoints        = 5;
+        final int AdditionalStateNbInterpolationPoints = 6;
+
+        Mockito.when(orbitInterpolator.getNbInterpolationPoints()).thenReturn(orbitNbInterpolationPoints);
+        Mockito.when(absPVAInterpolator.getNbInterpolationPoints()).thenReturn(absPVANbInterpolationPoints);
+        Mockito.when(massInterpolator.getNbInterpolationPoints()).thenReturn(massNbInterpolationPoints);
+        Mockito.when(attitudeInterpolator.getNbInterpolationPoints()).thenReturn(AttitudeNbInterpolationPoints);
+        Mockito.when(additionalStateInterpolator.getNbInterpolationPoints()).thenReturn(AdditionalStateNbInterpolationPoints);
+
+        Mockito.when(orbitInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(orbitInterpolator));
+        Mockito.when(absPVAInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(absPVAInterpolator));
+        Mockito.when(massInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(massInterpolator));
+        Mockito.when(attitudeInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(attitudeInterpolator));
+        Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
+
+        final FieldSpacecraftStateInterpolator<Binary64> stateInterpolator =
                 new FieldSpacecraftStateInterpolator<>(frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
                                                        attitudeInterpolator, additionalStateInterpolator);
 
@@ -601,6 +691,24 @@ class FieldSpacecraftStateInterpolatorTest {
 
         // When & Then
         Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+                                                   () -> new FieldSpacecraftStateInterpolator<>(2, 1.0e-3, inertialFrameMock,
+                                                                                                null, null, null, null,
+                                                                                                null));
+
+        Assertions.assertEquals("creating a spacecraft state interpolator requires at least one orbit interpolator or an "
+                                        + "absolute position-velocity-acceleration interpolator", thrown.getMessage());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    @DisplayName("test error thrown when using no interpolator for state")
+    void testErrorThrownWhenGivingNoInterpolatorForStateDeprecated() {
+        // Given
+        final Frame inertialFrameMock = Mockito.mock(Frame.class);
+        Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
+
+        // When & Then
+        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> new FieldSpacecraftStateInterpolator<>(inertialFrameMock,
                                                                                                 null, null, null, null,
                                                                                                 null));
@@ -612,6 +720,36 @@ class FieldSpacecraftStateInterpolatorTest {
     @Test
     @DisplayName("test error thrown when giving empty sample")
     void testErrorThrownWhenGivingEmptySample() {
+        // Given
+
+        @SuppressWarnings("unchecked")
+        final FieldAbsoluteDate<Binary64> interpolationDate = Mockito.mock(FieldAbsoluteDate.class);
+
+        final Frame inertialFrame = FramesFactory.getEME2000();
+
+        final List<FieldSpacecraftState<Binary64>> states = new ArrayList<>();
+
+        // Create interpolator
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldOrbit<Binary64>, Binary64> orbitInterpolatorMock =
+                Mockito.mock(FieldTimeInterpolator.class);
+
+        final FieldTimeInterpolator<FieldSpacecraftState<Binary64>, Binary64> interpolator =
+                new FieldSpacecraftStateInterpolator<>(2, 1.0e-3, inertialFrame, orbitInterpolatorMock, null, null, null, null);
+
+        // When & Then
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+                                                                        interpolator.interpolate(interpolationDate, states));
+
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    @DisplayName("test error thrown when giving empty sample")
+    void testErrorThrownWhenGivingEmptySampleDeprecated() {
         // Given
 
         @SuppressWarnings("unchecked")
@@ -640,6 +778,49 @@ class FieldSpacecraftStateInterpolatorTest {
 
     @Test
     void testFieldSpacecraftStateInterpolatorCreation() {
+        // Given
+        final Frame inertialFrameMock = Mockito.mock(Frame.class);
+        Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldOrbit<Binary64>, Binary64> orbitInterpolatorMock =
+                Mockito.mock(FieldTimeInterpolator.class);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldAbsolutePVCoordinates<Binary64>, Binary64> absPVInterpolatorMock =
+                Mockito.mock(FieldTimeInterpolator.class);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<TimeStampedField<Binary64>, Binary64> massInterpolatorMock =
+                Mockito.mock(FieldTimeInterpolator.class);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldAttitude<Binary64>, Binary64> attitudeInterpolatorMock =
+                Mockito.mock(FieldTimeInterpolator.class);
+
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<TimeStampedField<Binary64>, Binary64> additionalInterpolatorMock =
+                Mockito.mock(FieldTimeInterpolator.class);
+
+        // When
+        final FieldSpacecraftStateInterpolator<Binary64> interpolator =
+                new FieldSpacecraftStateInterpolator<>(2, 1.0e-3, inertialFrameMock, orbitInterpolatorMock, absPVInterpolatorMock,
+                                                       massInterpolatorMock, attitudeInterpolatorMock,
+                                                       additionalInterpolatorMock);
+
+        // Then
+        Assertions.assertEquals(inertialFrameMock, interpolator.getOutputFrame());
+        Assertions.assertEquals(orbitInterpolatorMock, interpolator.getOrbitInterpolator().get());
+        Assertions.assertEquals(absPVInterpolatorMock, interpolator.getAbsPVAInterpolator().get());
+        Assertions.assertEquals(massInterpolatorMock, interpolator.getMassInterpolator().get());
+        Assertions.assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
+        Assertions.assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
+
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void testFieldSpacecraftStateInterpolatorCreationDeprecated() {
         // Given
         final Frame inertialFrameMock = Mockito.mock(Frame.class);
         Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);

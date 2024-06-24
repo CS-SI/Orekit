@@ -1,3 +1,20 @@
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.orekit.frames;
 
 import org.hamcrest.CoreMatchers;
@@ -7,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.time.AbsoluteDate;
@@ -72,6 +90,24 @@ public class StaticTransformTest {
         MatcherAssert.assertThat(
                 actualLine.getTolerance(),
                 CoreMatchers.is(line.getTolerance()));
+    }
+
+    @Test
+    void testGetStaticInverse() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Vector3D translation = new Vector3D(1., 2., 3.);
+        final Rotation rotation = new Rotation(Vector3D.MINUS_J, Vector3D.PLUS_I);
+        final StaticTransform staticTransform = StaticTransform.of(date, translation, rotation);
+        // WHEN
+        final StaticTransform actualInverseStaticTransform = staticTransform.getStaticInverse();
+        // THEN
+        final StaticTransform expectedInverseStaticTransform = staticTransform.getInverse();
+        Assertions.assertEquals(expectedInverseStaticTransform.getDate(), actualInverseStaticTransform.getDate());
+        Assertions.assertEquals(expectedInverseStaticTransform.getTranslation(),
+                actualInverseStaticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(expectedInverseStaticTransform.getRotation(),
+                actualInverseStaticTransform.getRotation()));
     }
 
 }

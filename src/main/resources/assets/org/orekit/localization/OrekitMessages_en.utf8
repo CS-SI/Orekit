@@ -157,6 +157,9 @@ TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = too large order (m = {0}, potential maximal 
 # no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
 WRONG_DEGREE_OR_ORDER = no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
 
+# wrong orbital elements for averaging theory
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY = unexpected type of orbital elements for required averaging theory
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 
@@ -406,6 +409,9 @@ SP3_INCOMPATIBLE_FILE_METADATA = cannot splice sp3 files with incompatible metad
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 
+# frame {0} not allowed here
+FRAME_NOT_ALLOWED = frame {0} not allowed here
+
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = STK coordinate system "{0}" is invalid or not yet supported
 
@@ -453,6 +459,12 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = unable to generate new data after {0}, but d
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
+
+# unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT = unable to compute eccentric longitude argument from the mean one after {0} iterations
+
+# unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT = unable to compute eccentric latitude argument from the mean one after {0} iterations
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = unable to compute mean orbit from osculating orbit after {0} iterations
@@ -861,8 +873,17 @@ HEADER_ALREADY_WRITTEN = header for file {0} has already been written
 # Cannot start the propagation from an infinitely far date
 CANNOT_START_PROPAGATION_FROM_INFINITY = Cannot start the propagation from an infinitely far date
 
+# Too long time gap between data points: {0} s
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = Too long time gap between data points: {0} s
+
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = invalid satellite id {0}
 
 # EOP interpolation degree must be of the form 4k-1, got {0}
 WRONG_EOP_INTERPOLATION_DEGREE = EOP interpolation degree must be of the form 4k-1, got {0}
+
+# number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
+WALKER_INCONSISTENT_PLANES = number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
+
+# Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+INFINITE_NRLMSISE00_DENSITY = Infinite value appears during computation of atmospheric density in NRLMSISE00 model

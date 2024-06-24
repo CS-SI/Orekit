@@ -157,6 +157,9 @@ TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordre trop important (n = {0}, l''ordre de p
 # no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
 WRONG_DEGREE_OR_ORDER = pas de terme ({0}, {1}) dans une décomposition en harmoniques sphériques {2}x{3}
 
+# wrong orbital elements for averaging theory
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY = type d'éléments orbitaux inattendus pour cette théorie de moyennisation
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = plusieurs dates de références ({0} et {1} diffèrent de {3,number,0.0##############E0} s) trouvées dans le fichier de champ de gravité {2}
 
@@ -406,11 +409,14 @@ SP3_INCOMPATIBLE_FILE_METADATA = impossible de joindre des fichiers sp3 ayant de
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = impossible de joindre des fichiers sp3 ayant des métadonnées différentes pour le satellite {0}
 
+# frame {0} not allowed here
+FRAME_NOT_ALLOWED = repère {0} non autorisé ici
+
 # STK coordinate system "{0}" is invalid or not yet supported
-STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = système de coordonnées STK "{0}" invalide ou non pris en compte
 
 # STK coordinate system "{0}" has not been mapped to an Orekit frame
-STK_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+STK_UNMAPPED_COORDINATE_SYSTEM = le système de coordonnées STK "{0}" n''est pas associé à un repère Orekit
 
 # unexpected end of STK file (after line {0})
 STK_UNEXPECTED_END_OF_FILE = fin inattendue d''un fichier STK (après la ligne {0})
@@ -453,6 +459,12 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des données après 
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
+
+# unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT = impossible de calculer l''argument de longitude excentrique à partir de celle moyenne {0} itérations
+
+# unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT = impossible de calculer l''argument de latitude excentrique à partir de celle moyenne {0} itérations
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = impossible de calculer l''orbite moyenne à partir de l''orbite osculatrice après {0} itérations
@@ -861,8 +873,18 @@ HEADER_ALREADY_WRITTEN = l''en-tête du fichier {0} a déjà été écrit
 # Cannot start the propagation from an infinitely far date
 CANNOT_START_PROPAGATION_FROM_INFINITY = Impossible de lancer une propagation à partir d'une date infiniment lointaine
 
+# Too long time gap between data points: {0} s
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = Intervalle temporel trop long entre les points : {0} s
+
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = identifiant satellite {0} invalide
 
 # EOP interpolation degree must be of the form 4k-1, got {0}
 WRONG_EOP_INTERPOLATION_DEGREE = le degré d''interpolation pour les EOP devrait être de la forme 4k-1, mais {0} a été fourni
+
+# number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
+WALKER_INCONSISTENT_PLANES = le nombre {0} de plans est incohérent avec le nombre {1} total de satellites pour une constellation de Walker
+
+# Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+INFINITE_NRLMSISE00_DENSITY = Valeur infinie lors du calcul de la densité atmosphérique dans le modèle NRLMSISE00
+

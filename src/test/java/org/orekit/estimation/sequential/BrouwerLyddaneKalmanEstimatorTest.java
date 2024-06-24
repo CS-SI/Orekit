@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.List;
+
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.junit.jupiter.api.Test;
@@ -26,10 +28,7 @@ import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
-
-import java.util.List;
 
 public class BrouwerLyddaneKalmanEstimatorTest {
 
@@ -58,8 +57,7 @@ public class BrouwerLyddaneKalmanEstimatorTest {
                                                                new PVMeasurementCreator(),
                                                                0.0, 3.0, 300.0);
         // Reference propagator for estimation performances
-        final BrouwerLyddanePropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.

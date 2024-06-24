@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.CalculusFieldElement;
-
 /** Terrestrial Time as defined by IAU(1991) recommendation IV.
  * <p>Coordinate time at the surface of the Earth. IT is the
  * successor of Ephemeris Time TE.</p>
@@ -27,45 +25,15 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public class TTScale implements TimeScale {
+public class TTScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
-
-    /** Offset from TAI. */
-    private static final double OFFSET = 32.184;
+    private static final long serialVersionUID = 20240321L;
 
     /** Package private constructor for the factory.
      */
     TTScale() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(OFFSET);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return -OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    public String getName() {
-        return "TT";
-    }
-
-    /** {@inheritDoc} */
-    public String toString() {
-        return getName();
+        super("TT", 32.184);
     }
 
 }

@@ -23,8 +23,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
@@ -126,17 +124,17 @@ import org.orekit.utils.TimeSpanMap.Transition;
  *  </p>
  * @author Maxime Journot
  * @since 10.2
+ * @deprecated as of 12.1
  */
+@Deprecated
 public class TimeSpanDragForce extends AbstractDragForceModel {
+    // TODO: move to tests
 
     /** Prefix for dates before in the parameter drivers' name. */
     public static final String DATE_BEFORE = " - Before ";
 
     /** Prefix for dates after in the parameter drivers' name. */
     public static final String DATE_AFTER = " - After ";
-
-    /** Atmospheric model. */
-    private final Atmosphere atmosphere;
 
     /** TimeSpanMap of DragSensitive objects. */
     private final TimeSpanMap<DragSensitive> dragSensitiveTimeSpanMap;
@@ -152,7 +150,6 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     public TimeSpanDragForce(final Atmosphere atmosphere,
                              final DragSensitive spacecraft) {
         super(atmosphere);
-        this.atmosphere = atmosphere;
         this.dragSensitiveTimeSpanMap = new TimeSpanMap<>(spacecraft);
         this.timeScale = TimeScalesFactory.getUTC();
     }
@@ -166,7 +163,6 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
                              final DragSensitive spacecraft,
                              final TimeScale timeScale) {
         super(atmosphere);
-        this.atmosphere = atmosphere;
         this.dragSensitiveTimeSpanMap = new TimeSpanMap<>(spacecraft);
         this.timeScale = timeScale;
     }
@@ -247,10 +243,10 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final AbsoluteDate date     = s.getDate();
         final Frame        frame    = s.getFrame();
         final Vector3D     position = s.getPosition();
-        final double rho    = atmosphere.getDensity(date, position, frame);
+        final double rho    = getAtmosphere().getDensity(date, position, frame);
 
         // Spacecraft relative velocity with respect to the atmosphere
-        final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
+        final Vector3D vAtm = getAtmosphere().getVelocity(date, position, frame);
         final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         // Extract the proper parameters valid at date from the input array
@@ -262,31 +258,17 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters) {
-        // Local atmospheric density
+                                                                             final T[] parameters) {
+        // Density and its derivatives
+        final T rho = getFieldDensity(s);
+
+        // Spacecraft relative velocity with respect to the atmosphere
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
         final FieldVector3D<T>     position = s.getPosition();
-
-        // Density and its derivatives
-        final T rho;
-
-        // Check for faster computation dedicated to derivatives with respect to state
-        // Using finite differences instead of automatic differentiation as it seems to be much
-        // faster for the drag's derivatives' computation
-        if (isGradientStateDerivative(s)) {
-            rho = (T) this.getGradientDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<Gradient>) position);
-        } else if (isDSStateDerivative(s)) {
-            rho = (T) this.getDSDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<DerivativeStructure>) position);
-        } else {
-            rho = atmosphere.getDensity(date, position, frame);
-        }
-
-        // Spacecraft relative velocity with respect to the atmosphere
-        final FieldVector3D<T> vAtm = atmosphere.getVelocity(date, position, frame);
+        final FieldVector3D<T> vAtm = getAtmosphere().getVelocity(date, position, frame);
         final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         // Extract the proper parameters valid at date from the input array

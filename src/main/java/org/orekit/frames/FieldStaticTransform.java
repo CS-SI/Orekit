@@ -114,6 +114,16 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
         return new FieldLine<>(transformedP0, transformedP1, line.getTolerance());
     }
 
+    /** Get the Field date.
+     * This default implementation is there so that no API is broken by a minor release.
+     * It is overloaded by native inheritors and shall be removed in the next major release.
+     * @return Field date attached to the object
+     * @since 12.1
+     */
+    default FieldAbsoluteDate<T> getFieldDate() {
+        return new FieldAbsoluteDate<>(getTranslation().getX().getField(), getDate());
+    }
+
     /**
      * Get the underlying elementary translation.
      * <p>A transform can be uniquely represented as an elementary
@@ -140,6 +150,20 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
      * @return inverse transform of the instance
      */
     FieldStaticTransform<T> getInverse();
+
+    /**
+     * Get the inverse transform of the instance in static form (without rates).
+     * This enables to create a purely static inverse, as inheritors such as {@link FieldTransform} may
+     * have a relatively computationally-heavy #getInverse() method.
+     *
+     * @return inverse static transform of the instance
+     * @since 12.1
+     */
+    default FieldStaticTransform<T> getStaticInverse() {
+        final FieldVector3D<T> negatedTranslation = getTranslation().negate();
+        final FieldRotation<T> rotation = getRotation();
+        return FieldStaticTransform.of(getFieldDate(), rotation.applyTo(negatedTranslation), rotation.revert());
+    }
 
     /**
      * Build a transform by combining two existing ones.
@@ -280,6 +304,11 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
             @Override
             public AbsoluteDate getDate() {
                 return date.toAbsoluteDate();
+            }
+
+            @Override
+            public FieldAbsoluteDate<T> getFieldDate() {
+                return date;
             }
 
             @Override

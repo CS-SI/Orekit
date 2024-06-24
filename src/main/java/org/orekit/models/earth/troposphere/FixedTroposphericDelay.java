@@ -23,6 +23,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -30,17 +31,22 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.InterpolationTableLoader;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** A static tropospheric model that interpolates the actual tropospheric delay
  * based on values read from a configuration file (tropospheric-delay.txt) via
  * the {@link DataProvidersManager}.
  * @author Thomas Neidhart
  */
-public class FixedTroposphericDelay implements DiscreteTroposphericModel {
+@SuppressWarnings("deprecation")
+public class FixedTroposphericDelay implements DiscreteTroposphericModel, TroposphericModel {
 
     /** Singleton object for the default model. */
     private static FixedTroposphericDelay defaultModel;
@@ -128,32 +134,72 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
+        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
+                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date).getDelay();
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * All delays are affected to {@link TroposphericDelay#getZh() hydrostatic zenith}
+     * and {@link TroposphericDelay#getSh() hydrostatic slanted} delays, the wet delays
+     * are arbitrarily set to 0.
+     * </p>
+     */
+    @Override
+    public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
+                                       final PressureTemperatureHumidity weather,
+                                       final double[] parameters, final AbsoluteDate date) {
         // limit the height to 5000 m
         final double h = FastMath.min(FastMath.max(0, point.getAltitude()), 5000);
         // limit the elevation to 0 - π
-        final double ele = FastMath.min(FastMath.PI, FastMath.max(0d, elevation));
+        final double ele = FastMath.min(FastMath.PI, FastMath.max(0d, trackingCoordinates.getElevation()));
         // mirror elevation at the right angle of π/2
         final double e = ele > 0.5 * FastMath.PI ? FastMath.PI - ele : ele;
 
-        return delayFunction.value(h, e);
+        return new TroposphericDelay(delayFunction.value(h, MathUtils.SEMI_PI), 0.0,
+                                     delayFunction.value(h, e), 0.0);
     }
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
+        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                         point,
+                         new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                         parameters, date).getDelay();
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * All delays are affected to {@link FieldTroposphericDelay#getZh() hydrostatic zenith}
+     * and {@link FieldTroposphericDelay#getSh() hydrostatic slanted} delays, the wet delays
+     * are arbitrarily set to 0.
+     * </p>
+     */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                                   final FieldGeodeticPoint<T> point,
+                                                                                   final FieldPressureTemperatureHumidity<T> weather,
+                                                                                   final T[] parameters, final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();
         final T pi   = zero.getPi();
         // limit the height to 5000 m
-        final T h = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.add(5000));
+        final T h = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.newInstance(5000));
         // limit the elevation to 0 - π
-        final T ele = FastMath.min(pi, FastMath.max(zero, elevation));
+        final T ele = FastMath.min(pi, FastMath.max(zero, trackingCoordinates.getElevation()));
         // mirror elevation at the right angle of π/2
         final T e = ele.getReal() > pi.multiply(0.5).getReal() ? ele.negate().add(pi) : ele;
 
-        return delayFunction.value(h, e);
+        return new FieldTroposphericDelay<>(delayFunction.value(h, date.getField().getZero().newInstance(MathUtils.SEMI_PI)),
+                                            date.getField().getZero(),
+                                            delayFunction.value(h, e),
+                                            date.getField().getZero());
+
     }
 
     /** {@inheritDoc} */

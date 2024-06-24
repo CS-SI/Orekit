@@ -143,7 +143,7 @@ public class CR3BPForceModel implements ForceModel {
         // Get CR3BP System mass ratio
         // By construction, mudriver has 1 value for the all time period that is why
         // the getValue can be called with any date argument or null argument
-        final DerivativeStructure mu = zero.add(muParameterDriver.getValue(s.getDate()));
+        final DerivativeStructure mu = zero.newInstance(muParameterDriver.getValue(s.getDate()));
 
         // Normalized distances between primaries and barycenter in CR3BP
         final DerivativeStructure d1 = mu;
@@ -151,17 +151,17 @@ public class CR3BPForceModel implements ForceModel {
 
         // Norm of the Spacecraft position relative to the primary body
         final DerivativeStructure r1 =
-            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.multiply(fpy))
-                .add(fpz.multiply(fpz)));
+            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.square())
+                .add(fpz.square()));
 
         // Norm of the Spacecraft position relative to the secondary body
         final DerivativeStructure r2 =
             FastMath.sqrt((fpx.subtract(d2)).multiply(fpx.subtract(d2))
-                .add(fpy.multiply(fpy)).add(fpz.multiply(fpz)));
+                .add(fpy.square()).add(fpz.square()));
 
         // Potential of the Spacecraft
         return (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
-                .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
+                .add(fpx.square().add(fpy.square()).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
     }
 
     /**
@@ -186,7 +186,7 @@ public class CR3BPForceModel implements ForceModel {
         // Get CR3BP System mass ratio
         // By construction, mudriver has 1 value for the all time period that is why
         // the getValue can be called with any date argument or null argument
-        final FieldDerivativeStructure<T> mu = zero.add(muParameterDriver.getValue(s.getDate().toAbsoluteDate()));
+        final FieldDerivativeStructure<T> mu = zero.newInstance(muParameterDriver.getValue(s.getDate().toAbsoluteDate()));
 
         // Normalized distances between primaries and barycenter in CR3BP
         final FieldDerivativeStructure<T> d1 = mu;
@@ -194,17 +194,17 @@ public class CR3BPForceModel implements ForceModel {
 
         // Norm of the Spacecraft position relative to the primary body
         final FieldDerivativeStructure<T> r1 =
-            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.multiply(fpy))
-                .add(fpz.multiply(fpz)));
+            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.square())
+                .add(fpz.square()));
 
         // Norm of the Spacecraft position relative to the secondary body
         final FieldDerivativeStructure<T> r2 =
             FastMath.sqrt((fpx.subtract(d2)).multiply(fpx.subtract(d2))
-                .add(fpy.multiply(fpy)).add(fpz.multiply(fpz)));
+                .add(fpy.square()).add(fpz.square()));
 
         // Potential of the Spacecraft
         return (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
-                .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
+                .add(fpx.square().add(fpy.square()).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
     }
 
     /** {@inheritDoc} */

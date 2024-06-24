@@ -81,7 +81,7 @@ public class IonoModifierTest {
         model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
         // GPS L1 in HZ
-        frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        frequency = Frequency.G01.getFrequency();
     }
 
     @Test
@@ -109,7 +109,8 @@ public class IonoModifierTest {
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01, 0,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
@@ -180,7 +181,8 @@ public class IonoModifierTest {
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01, 0,
+                                                               new PhaseMeasurementCreator(context,
+                                                                                           Frequency.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
@@ -325,13 +327,13 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             RangeRate rangeRate = (RangeRate) measurement;
-            EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refstate });
 
             // add modifier
             rangeRate.addModifier(modifier);
 
             //
-            EstimatedMeasurementBase<RangeRate> eval = rangeRate.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<RangeRate> eval = rangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refstate });
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
@@ -446,14 +448,13 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(biRange.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurementBase<BistaticRange> evalNoMod = biRange.estimateWithoutDerivatives(0, 0,
-                                                                                                   new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<BistaticRange> evalNoMod = biRange.estimateWithoutDerivatives(new SpacecraftState[] { refstate });
 
             // add modifier
             biRange.addModifier(modifier);
 
             // Estimate with modifier
-            EstimatedMeasurementBase<BistaticRange> eval = biRange.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<BistaticRange> eval = biRange.estimateWithoutDerivatives(new SpacecraftState[] { refstate });
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
@@ -496,15 +497,13 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(biRangeRate.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurementBase<BistaticRangeRate> evalNoMod = biRangeRate.estimateWithoutDerivatives(0, 0,
-                                                                                                           new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<BistaticRangeRate> evalNoMod = biRangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refstate });
 
             // add modifier
             biRangeRate.addModifier(modifier);
 
             // Estimate with modifier
-            EstimatedMeasurementBase<BistaticRangeRate> eval = biRangeRate.estimateWithoutDerivatives(0, 0,
-                                                                                                      new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<BistaticRangeRate> eval = biRangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refstate });
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
@@ -550,7 +549,7 @@ public class IonoModifierTest {
             final SpacecraftState refState = propagator.propagate(tdoa.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurementBase<TDOA> evalNoMod = tdoa.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<TDOA> evalNoMod = tdoa.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
             tdoa.addModifier(modifier);
@@ -600,13 +599,12 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             AngularAzEl angular = (AngularAzEl) measurement;
-            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(0, 0,
-                                                                                                 new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(new SpacecraftState[] { refstate });
 
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(new SpacecraftState[] { refstate });
 
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
@@ -654,7 +652,7 @@ public class IonoModifierTest {
 
     }
 
-    private class MockIonosphericModel implements IonosphericModel {
+    private static class MockIonosphericModel implements IonosphericModel {
 
         /** Driver for the ionospheric delay.*/
         private final ParameterDriver ionoDelay;

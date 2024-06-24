@@ -63,7 +63,8 @@ public class BistaticRangeIonosphericDelayModifier extends BaseRangeIonosphericD
         final GroundStation emitter     = measurement.getEmitterStation();
         final GroundStation receiver    = measurement.getReceiverStation();
 
-        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeErrorIonosphericModel);
+        BistaticModifierUtil.modify(estimated, emitter, receiver,
+                                    this::rangeErrorIonosphericModel, this);
 
     }
 
@@ -80,7 +81,8 @@ public class BistaticRangeIonosphericDelayModifier extends BaseRangeIonosphericD
                                     new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                     emitter, receiver,
                                     this::rangeErrorIonosphericModel,
-                                    this::rangeErrorIonosphericModel);
+                                    this::rangeErrorIonosphericModel,
+                                    this);
 
     }
 

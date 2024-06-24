@@ -41,13 +41,23 @@ import org.orekit.utils.PVCoordinates;
 public class ApsideDetector extends AbstractDetector<ApsideDetector> {
 
     /** Build a new instance.
+     * <p>The Keplerian period is used only to set an upper bound for the
+     * max check interval to period/3 and to set the convergence threshold.</p>
+     * @param keplerianPeriod estimate of the Keplerian period
+     * @since 12.1
+     */
+    public ApsideDetector(final double keplerianPeriod) {
+        super(keplerianPeriod / 3, 1e-13 * keplerianPeriod, DEFAULT_MAX_ITER, new StopOnIncreasing());
+    }
+
+    /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the
      * max check interval to period/3 and to set the convergence
      * threshold according to orbit size</p>
      * @param orbit initial orbit
      */
     public ApsideDetector(final Orbit orbit) {
-        this(1.0e-13 * orbit.getKeplerianPeriod(), orbit);
+        this(orbit.getKeplerianPeriod());
     }
 
     /** Build a new instance.
@@ -57,15 +67,12 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @param orbit initial orbit
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
-        super(orbit.getKeplerianPeriod() / 3, threshold,
-              DEFAULT_MAX_ITER, new StopOnIncreasing());
+        super(orbit.getKeplerianPeriod() / 3, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing());
     }
 
-    /** Protected constructor with full parameters.
+    /** Public constructor with full parameters.
      * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
+     * This constructor is public because otherwise all accessible ones would require an orbit.
      * </p>
      * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
@@ -73,8 +80,8 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @param handler event handler to call at event occurrences
      * @since 6.1
      */
-    protected ApsideDetector(final AdaptableInterval maxCheck, final double threshold,
-                             final int maxIter, final EventHandler handler) {
+    public ApsideDetector(final AdaptableInterval maxCheck, final double threshold,
+                          final int maxIter, final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 

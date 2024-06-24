@@ -29,6 +29,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
+@Deprecated
 public class GlobalPressureTemperatureModelTest {
 
     @BeforeEach

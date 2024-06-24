@@ -1114,8 +1114,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
         final UnivariateDerivative2 cosAE    = alphaE.cos();
         final UnivariateDerivative2 sinAE    = alphaE.sin();
-        final UnivariateDerivative2 ex2      = parameters[1].multiply(parameters[1]);
-        final UnivariateDerivative2 ey2      = parameters[2].multiply(parameters[2]);
+        final UnivariateDerivative2 ex2      = parameters[1].square();
+        final UnivariateDerivative2 ey2      = parameters[2].square();
         final UnivariateDerivative2 exy      = parameters[1].multiply(parameters[2]);
         final UnivariateDerivative2 q        = ex2.add(ey2).subtract(1).negate().sqrt();
         final UnivariateDerivative2 beta     = q.add(1).reciprocal();

@@ -85,7 +85,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Integrator selected by the user for the orbital extrapolation process. */
     private final ODEIntegrator integrator;
 
-    /** Offsets of secondary states managed by {@link AdditionalEquations}.
+    /** Offsets of secondary states managed by {@link AdditionalDerivativesProvider}.
      * @since 11.1
      */
     private final Map<String, Integer> secondaryOffsets;
@@ -93,7 +93,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Additional derivatives providers.
      * @since 11.1
      */
-    private List<AdditionalDerivativesProvider> additionalDerivativesProviders;
+    private final List<AdditionalDerivativesProvider> additionalDerivativesProviders;
 
     /** Map of secondary equation offset in main
     /** Counter for differential equations calls. */
@@ -101,6 +101,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Mapper between raw double components and space flight dynamics objects. */
     private StateMapper stateMapper;
+
+    /**
+     * Attitude provider when evaluating derivatives. Can be a frozen one for performance.
+     * @since 12.1
+     */
+    private AttitudeProvider attitudeProviderForDerivatives;
 
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
@@ -111,7 +117,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
-    private PropagationType propagationType;
+    private final PropagationType propagationType;
 
     /** Build a new instance.
      * @param integrator numerical integrator to use for propagation.
@@ -151,6 +157,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return this.resetAtEnd;
     }
 
+    /**
+     * Method called when initializing the attitude provider used when evaluating derivatives.
+     * @return attitude provider for derivatives
+     */
+    protected AttitudeProvider initializeAttitudeProviderForDerivatives() {
+        return getAttitudeProvider();
+    }
+
     /** Initialize the mapper. */
     protected void initMapper() {
         stateMapper = createMapper(null, Double.NaN, null, null, null, null);
@@ -165,6 +179,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /**  {@inheritDoc} */
+    @Override
     public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
         super.setAttitudeProvider(attitudeProvider);
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
@@ -374,6 +389,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     protected abstract MainStateEquations getMainStateEquations(ODEIntegrator integ);
 
     /** {@inheritDoc} */
+    @Override
     public SpacecraftState propagate(final AbsoluteDate target) {
         if (getStartDate() == null) {
             if (getInitialState() == null) {
@@ -455,7 +471,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             stateMapper = createMapper(getInitialState().getDate(), stateMapper.getMu(),
                                        stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
-
+            attitudeProviderForDerivatives = initializeAttitudeProviderForDerivatives();
 
             if (Double.isNaN(getMu())) {
                 setMu(getInitialState().getMu());
@@ -486,19 +502,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         mathFinalState.getPrimaryDerivative(),
                                                         propagationType);
 
-            if (!additionalDerivativesProviders.isEmpty()) {
-                final double[] secondary            = mathFinalState.getSecondaryState(1);
-                final double[] secondaryDerivatives = mathFinalState.getSecondaryDerivative(1);
-                for (AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
-                    final String   name        = provider.getName();
-                    final int      offset      = secondaryOffsets.get(name);
-                    final int      dimension   = provider.getDimension();
-                    finalState = finalState.
-                                 addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension)).
-                                 addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivatives, offset, offset + dimension));
-                }
-            }
-            finalState = updateAdditionalStates(finalState);
+            finalState = updateAdditionalStatesAndDerivatives(finalState, mathFinalState);
 
             if (resetAtEnd || forceResetAtEnd) {
                 resetInitialState(finalState);
@@ -510,6 +514,31 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         } catch (MathRuntimeException mre) {
             throw OrekitException.unwrap(mre);
         }
+    }
+
+    /**
+     * Returns an updated version of the inputted state with additional states, including
+     * from derivatives providers.
+     * @param originalState input state
+     * @param os ODE state and derivative
+     * @return new state
+     * @since 12.1
+     */
+    private SpacecraftState updateAdditionalStatesAndDerivatives(final SpacecraftState originalState,
+                                                                 final ODEStateAndDerivative os) {
+        SpacecraftState updatedState = originalState;
+        if (os.getNumberOfSecondaryStates() > 0) {
+            final double[] secondary           = os.getSecondaryState(1);
+            final double[] secondaryDerivative = os.getSecondaryDerivative(1);
+            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                final String name      = provider.getName();
+                final int    offset    = secondaryOffsets.get(name);
+                final int    dimension = provider.getDimension();
+                updatedState = updatedState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                updatedState = updatedState.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
+            }
+        }
+        return updateAdditionalStates(updatedState);
     }
 
     /** Get the initial state for integration.
@@ -648,25 +677,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     private SpacecraftState convert(final ODEStateAndDerivative os) {
 
-        SpacecraftState s = stateMapper.mapArrayToState(os.getTime(),
-                                                        os.getPrimaryState(),
-                                                        os.getPrimaryDerivative(),
-                                                        propagationType);
-        if (os.getNumberOfSecondaryStates() > 0) {
-            final double[] secondary           = os.getSecondaryState(1);
-            final double[] secondaryDerivative = os.getSecondaryDerivative(1);
-            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
-                final String name      = provider.getName();
-                final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = provider.getDimension();
-                s = s.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
-                s = s.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
-            }
-        }
-        s = updateAdditionalStates(s);
-
-        return s;
-
+        final SpacecraftState s = stateMapper.mapArrayToState(os.getTime(), os.getPrimaryState(),
+            os.getPrimaryDerivative(), propagationType);
+        return updateAdditionalStatesAndDerivatives(s, os);
     }
 
     /** Convert a state from space flight dynamics world to mathematical world.
@@ -738,8 +751,31 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // update space dynamics view
             SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, PropagationType.MEAN);
             initialState = updateAdditionalStates(initialState);
+            initialState = updateStatesFromAdditionalDerivativesIfKnown(initialState);
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
             main.init(initialState, target);
+            attitudeProviderForDerivatives = initializeAttitudeProviderForDerivatives();
+        }
+
+        /**
+         * Returns an updated version of the inputted state, with additional states from
+         * derivatives providers as given in the stored initial state.
+         * @param originalState input state
+         * @return new state
+         * @since 12.1
+         */
+        private SpacecraftState updateStatesFromAdditionalDerivativesIfKnown(final SpacecraftState originalState) {
+            SpacecraftState updatedState = originalState;
+            final SpacecraftState storedInitialState = getInitialState();
+            final double originalTime = stateMapper.mapDateToDouble(originalState.getDate());
+            if (storedInitialState != null && stateMapper.mapDateToDouble(storedInitialState.getDate()) == originalTime) {
+                for (final AdditionalDerivativesProvider provider: additionalDerivativesProviders) {
+                    final String name = provider.getName();
+                    final double[] value = storedInitialState.getAdditionalState(name);
+                    updatedState = updatedState.addAdditionalState(name, value);
+                }
+            }
+            return updatedState;
         }
 
         /** {@inheritDoc} */
@@ -749,7 +785,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             ++calls;
 
             // update space dynamics view
+            stateMapper.setAttitudeProvider(attitudeProviderForDerivatives);
             SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
+            stateMapper.setAttitudeProvider(getAttitudeProvider());
 
             currentState = updateAdditionalStates(currentState);
             // compute main state differentials
@@ -917,6 +955,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public void init(final ODEStateAndDerivative s0, final double t) {
             detector.init(convert(s0), stateMapper.mapDoubleToDate(t));
             this.lastT = Double.NaN;
@@ -943,6 +982,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 }
 
                 /** {@inheritDoc} */
+                @Override
                 public ODEState resetState(final ODEEventDetector d, final ODEStateAndDerivative s) {
 
                     final SpacecraftState oldState = convert(s);
@@ -989,6 +1029,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public void init(final ODEStateAndDerivative s0, final double t) {
             handler.init(convert(s0), stateMapper.mapDoubleToDate(t));
         }

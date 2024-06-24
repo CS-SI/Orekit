@@ -21,12 +21,11 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
@@ -35,6 +34,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -676,7 +676,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         this.initialModel = (stateType == PropagationType.MEAN) ?
                              new FieldBLModel<>(keplerian, state.getMass(), referenceRadius, mu, ck0) :
                              computeMeanParameters(keplerian, state.getMass(), epsilon, maxIterations);
-        this.models = new FieldTimeSpanMap<FieldBLModel<T>, T>(initialModel, state.getA().getField());
+        this.models = new FieldTimeSpanMap<>(initialModel, state.getA().getField());
     }
 
     /** {@inheritDoc} */
@@ -726,7 +726,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         final T one = field.getOne();
         final T zero = field.getZero();
         // rough initialization of the mean parameters
-        FieldBLModel<T> current = new FieldBLModel<T>(osculating, mass, referenceRadius, mu, ck0);
+        FieldBLModel<T> current = new FieldBLModel<>(osculating, mass, referenceRadius, mu, ck0);
 
         // threshold for each parameter
         final T thresholdA      = current.mean.getA().abs().add(1.0).multiply(epsilon);
@@ -749,13 +749,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
 
             // update mean parameters
-            current = new FieldBLModel<T>(new FieldKeplerianOrbit<T>(current.mean.getA()            .add(deltaA),
+            current = new FieldBLModel<>(new FieldKeplerianOrbit<>(current.mean.getA()            .add(deltaA),
                                                      FastMath.max(current.mean.getE().add(deltaE), zero),
                                                      current.mean.getI()                            .add(deltaI),
                                                      current.mean.getPerigeeArgument()              .add(deltaOmega),
                                                      current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
                                                      current.mean.getMeanAnomaly()                  .add(deltaAnom),
-                                                     PositionAngleType.MEAN,
+                                                     PositionAngleType.MEAN, PositionAngleType.MEAN,
                                                      current.mean.getFrame(),
                                                      current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
@@ -814,7 +814,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         // preprocessed values
 
         // Constant for secular terms l'', g'', h''
-        // l standing for true anomaly, g for perigee argument and h for raan
+        // l standing for mean anomaly, g for perigee argument and h for raan
         private final T xnotDot;
         private final T n;
         private final T lt;
@@ -915,15 +915,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
             // preliminary processing
             final T q = app.divide(referenceRadius).reciprocal();
-            T ql = q.multiply(q);
+            T ql = q.square();
             final T y2 = ql.multiply(-0.5 * ck0[2]);
 
-            n = ((mean.getE().multiply(mean.getE()).negate()).add(1.0)).sqrt();
-            final T n2 = n.multiply(n);
+            n = ((mean.getE().square().negate()).add(1.0)).sqrt();
+            final T n2 = n.square();
             final T n3 = n2.multiply(n);
-            final T n4 = n2.multiply(n2);
+            final T n4 = n2.square();
             final T n6 = n4.multiply(n2);
-            final T n8 = n4.multiply(n4);
+            final T n8 = n4.square();
             final T n10 = n8.multiply(n2);
 
             final T yp2 = y2.divide(n4);
@@ -937,19 +937,19 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
             final FieldSinCos<T> sc = FastMath.sinCos(mean.getI());
             final T sinI1 = sc.sin();
-            final T sinI2 = sinI1.multiply(sinI1);
+            final T sinI2 = sinI1.square();
             final T cosI1 = sc.cos();
-            final T cosI2 = cosI1.multiply(cosI1);
+            final T cosI2 = cosI1.square();
             final T cosI3 = cosI2.multiply(cosI1);
-            final T cosI4 = cosI2.multiply(cosI2);
+            final T cosI4 = cosI2.square();
             final T cosI6 = cosI4.multiply(cosI2);
             final T C5c2 = T2(cosI1).reciprocal();
             final T C3c2 = cosI2.multiply(3.0).subtract(1.0);
 
             final T epp = mean.getE();
-            final T epp2 = epp.multiply(epp);
+            final T epp2 = epp.square();
             final T epp3 = epp2.multiply(epp);
-            final T epp4 = epp2.multiply(epp2);
+            final T epp4 = epp2.square();
 
             if (epp.getReal() >= 1) {
                 // Only for elliptical (e < 1) orbits
@@ -992,7 +992,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                             subtract(epp2.multiply(5.0).add(2.0).multiply(40.0).multiply(cosI4.divide(C5c2))).
                             subtract(epp2.multiply(400.0).multiply(cosI6).divide(C5c2).divide(C5c2));
             final T qyp42 = one.divide(5.0).multiply(qyp22.
-                                                     add(one.multiply(4.0).multiply(epp2.
+                                                     add(one.newInstance(4.0).multiply(epp2.
                                                                                     add(2.0).
                                                                                     subtract(cosI2.multiply(epp2.multiply(3.0).add(2.0))))));
             final T qyp52bis = cosI1.multiply(sinI1).multiply(epp).multiply(epp2.multiply(3.0).add(4.0)).
@@ -1094,96 +1094,20 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         }
 
         /**
-         * Accurate computation of E - e sin(E).
-         *
-         * @param E eccentric anomaly
-         * @return E - e sin(E)
-         */
-        private FieldUnivariateDerivative2<T> eMeSinE(final FieldUnivariateDerivative2<T> E) {
-            FieldUnivariateDerivative2<T> x = E.sin().multiply(mean.getE().negate().add(1.0));
-            final FieldUnivariateDerivative2<T> mE2 = E.negate().multiply(E);
-            FieldUnivariateDerivative2<T> term = E;
-            FieldUnivariateDerivative2<T> d    = E.getField().getZero();
-            // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-            for (FieldUnivariateDerivative2<T> x0 = d.add(Double.NaN); !Double.valueOf(x.getValue().getReal()).equals(Double.valueOf(x0.getValue().getReal()));) {
-                d = d.add(2);
-                term = term.multiply(mE2.divide(d.multiply(d.add(1))));
-                x0 = x;
-                x = x.subtract(term);
-            }
-            return x;
-        }
-
-        /**
          * Gets eccentric anomaly from mean anomaly.
-         * <p>The algorithm used to solve the Kepler equation has been published in:
-         * "Procedures for  solving Kepler's Equation", A. W. Odell and R. H. Gooding,
-         * Celestial Mechanics 38 (1986) 307-334</p>
-         * <p>It has been copied from the OREKIT library (KeplerianOrbit class).</p>
-         *
          * @param mk the mean anomaly (rad)
          * @return the eccentric anomaly (rad)
          */
-        private FieldUnivariateDerivative2<T> getEccentricAnomaly(final FieldUnivariateDerivative2<T> mk) {
-            final double k1 = 3 * FastMath.PI + 2;
-            final double k2 = FastMath.PI - 1;
-            final double k3 = 6 * FastMath.PI - 1;
-            final double A  = 3.0 * k2 * k2 / k1;
-            final double B  = k3 * k3 / (6.0 * k1);
+        private FieldUnivariateDerivative1<T> getEccentricAnomaly(final FieldUnivariateDerivative1<T> mk) {
 
             final T zero = mean.getE().getField().getZero();
 
             // reduce M to [-PI PI] interval
-            final FieldUnivariateDerivative2<T> reducedM = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mk.getValue(), zero ),
-                                                                             mk.getFirstDerivative(),
-                                                                             mk.getSecondDerivative());
+            final FieldUnivariateDerivative1<T> reducedM = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mk.getValue(), zero ),
+                                                                             mk.getFirstDerivative());
 
-            // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-            FieldUnivariateDerivative2<T> ek;
-            if (reducedM.getValue().abs().getReal() < 1.0 / 6.0) {
-                if (reducedM.getValue().abs().getReal() < Precision.SAFE_MIN) {
-                    // this is an Orekit change to the S12 starter.
-                    // If reducedM is 0.0, the derivative of cbrt is infinite which induces NaN appearing later in
-                    // the computation. As in this case E and M are almost equal, we initialize ek with reducedM
-                    ek = reducedM;
-                } else {
-                    // this is the standard S12 starter
-                    ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(mean.getE()));
-                }
-            } else {
-                if (reducedM.getValue().getReal() < 0) {
-                    final FieldUnivariateDerivative2<T> w = reducedM.add(FastMath.PI);
-                    ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(mean.getE()));
-                } else {
-                    final FieldUnivariateDerivative2<T> minusW = reducedM.subtract(FastMath.PI);
-                    ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(mean.getE()));
-                }
-            }
-
-            final T e1 = mean.getE().negate().add(1.0);
-            final boolean noCancellationRisk = (e1.add(ek.getValue().multiply(ek.getValue())).getReal() / 6) >= 0.1;
-
-            // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
-            for (int j = 0; j < 2; ++j) {
-                final FieldUnivariateDerivative2<T> f;
-                FieldUnivariateDerivative2<T> fd;
-                final FieldUnivariateDerivative2<T> fdd  = ek.sin().multiply(mean.getE());
-                final FieldUnivariateDerivative2<T> fddd = ek.cos().multiply(mean.getE());
-                if (noCancellationRisk) {
-                    f  = ek.subtract(fdd).subtract(reducedM);
-                    fd = fddd.subtract(1).negate();
-                } else {
-                    f  = eMeSinE(ek).subtract(reducedM);
-                    final FieldUnivariateDerivative2<T> s = ek.multiply(0.5).sin();
-                    fd = s.multiply(s).multiply(mean.getE().multiply(2.0)).add(e1);
-                }
-                final FieldUnivariateDerivative2<T> dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
-
-                // update eccentric anomaly, using expressions that limit underflow problems
-                final FieldUnivariateDerivative2<T> w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
-                fd = fd.add(dee.multiply(fdd.add(dee.multiply(0.5).multiply(fdd))));
-                ek = ek.subtract(f.subtract(dee.multiply(fd.subtract(w))).divide(fd));
-            }
+            final FieldUnivariateDerivative1<T> meanE = new FieldUnivariateDerivative1<>(mean.getE(), zero);
+            FieldUnivariateDerivative1<T> ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(meanE, mk);
 
             // expand the result back to original range
             ek = ek.add(mk.getValue().subtract(reducedM.getValue()));
@@ -1206,8 +1130,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         private T T2(final T cosInc) {
 
             // X = (1.0 - 5.0 * cos²(inc))
-            final T x  = cosInc.multiply(cosInc).multiply(-5.0).add(1.0);
-            final T x2 = x.multiply(x);
+            final T x  = cosInc.square().multiply(-5.0).add(1.0);
+            final T x2 = x.square();
 
             // Eq. 2.48
             T sum = x.getField().getZero();
@@ -1243,98 +1167,97 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final T m2 = parameters[0];
 
             // Keplerian evolution
-            final FieldUnivariateDerivative2<T> dt = new FieldUnivariateDerivative2<>(date.durationFrom(mean.getDate()), one, zero);
-            final FieldUnivariateDerivative2<T> xnot = dt.multiply(xnotDot);
+            final FieldUnivariateDerivative1<T> dt = new FieldUnivariateDerivative1<>(date.durationFrom(mean.getDate()), one);
+            final FieldUnivariateDerivative1<T> xnot = dt.multiply(xnotDot);
 
             //____________________________________
             // secular effects
 
             // mean mean anomaly
-            final FieldUnivariateDerivative2<T> dtM2  = dt.multiply(m2);
-            final FieldUnivariateDerivative2<T> dt2M2 = dt.multiply(dtM2);
-            final FieldUnivariateDerivative2<T> lpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())).add(dt2M2.getValue()), zero),
-                                                                                        lt.multiply(xnotDot).add(dtM2.multiply(2.0).getValue()),
-                                                                                        m2.multiply(2.0));
+            final FieldUnivariateDerivative1<T> dtM2  = dt.multiply(m2);
+            final FieldUnivariateDerivative1<T> dt2M2 = dt.multiply(dtM2);
+            final FieldUnivariateDerivative1<T> lpp = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())).add(dt2M2.getValue()), zero),
+                                                                                        lt.multiply(xnotDot).add(dtM2.multiply(2.0).getValue()));
             // mean argument of perigee
-            final FieldUnivariateDerivative2<T> gpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getPerigeeArgument().add(gt.multiply(xnot.getValue())), zero),
-                                                                                        gt.multiply(xnotDot),
-                                                                                        zero);
+            final FieldUnivariateDerivative1<T> gpp = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mean.getPerigeeArgument().add(gt.multiply(xnot.getValue())), zero),
+                                                                                        gt.multiply(xnotDot));
             // mean longitude of ascending node
-            final FieldUnivariateDerivative2<T> hpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ht.multiply(xnot.getValue())), zero),
-                                                                                        ht.multiply(xnotDot),
-                                                                                        zero);
+            final FieldUnivariateDerivative1<T> hpp = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ht.multiply(xnot.getValue())), zero),
+                                                                                        ht.multiply(xnotDot));
 
             // ________________________________________________
             // secular rates of the mean semi-major axis and eccentricity
 
             // semi-major axis
-            final FieldUnivariateDerivative2<T> appDrag = dt.multiply(aRate.multiply(m2));
+            final FieldUnivariateDerivative1<T> appDrag = dt.multiply(aRate.multiply(m2));
 
             // eccentricity
-            final FieldUnivariateDerivative2<T> eppDrag = dt.multiply(eRate.multiply(m2));
+            final FieldUnivariateDerivative1<T> eppDrag = dt.multiply(eRate.multiply(m2));
 
             //____________________________________
             // Long periodical terms
-            final FieldUnivariateDerivative2<T> cg1 = gpp.cos();
-            final FieldUnivariateDerivative2<T> sg1 = gpp.sin();
-            final FieldUnivariateDerivative2<T> c2g = cg1.multiply(cg1).subtract(sg1.multiply(sg1));
-            final FieldUnivariateDerivative2<T> s2g = cg1.multiply(sg1).add(sg1.multiply(cg1));
-            final FieldUnivariateDerivative2<T> c3g = c2g.multiply(cg1).subtract(s2g.multiply(sg1));
-            final FieldUnivariateDerivative2<T> sg2 = sg1.multiply(sg1);
-            final FieldUnivariateDerivative2<T> sg3 = sg1.multiply(sg2);
+            final FieldSinCos<FieldUnivariateDerivative1<T>> sinCosGpp = gpp.sinCos();
+            final FieldUnivariateDerivative1<T> cg1 = sinCosGpp.cos();
+            final FieldUnivariateDerivative1<T> sg1 = sinCosGpp.sin();
+            final FieldUnivariateDerivative1<T> c2g = cg1.multiply(cg1).subtract(sg1.multiply(sg1));
+            final FieldUnivariateDerivative1<T> s2g = cg1.multiply(sg1).add(sg1.multiply(cg1));
+            final FieldUnivariateDerivative1<T> c3g = c2g.multiply(cg1).subtract(s2g.multiply(sg1));
+            final FieldUnivariateDerivative1<T> sg2 = sg1.square();
+            final FieldUnivariateDerivative1<T> sg3 = sg1.multiply(sg2);
 
 
             // de eccentricity
-            final FieldUnivariateDerivative2<T> d1e = sg3.multiply(dei3sg).
+            final FieldUnivariateDerivative1<T> d1e = sg3.multiply(dei3sg).
                                                add(sg1.multiply(deisg)).
                                                add(sg2.multiply(de2sg)).
                                                add(de);
 
             // l' + g'
-            final FieldUnivariateDerivative2<T> lp_p_gp = s2g.multiply(dlgs2g).
+            final FieldUnivariateDerivative1<T> lpPGp = s2g.multiply(dlgs2g).
                                                add(c3g.multiply(dlgc3g)).
                                                add(cg1.multiply(dlgcg)).
                                                add(lpp).
                                                add(gpp);
 
             // h'
-            final FieldUnivariateDerivative2<T> hp = sg2.multiply(cg1).multiply(dh2sgcg).
+            final FieldUnivariateDerivative1<T> hp = sg2.multiply(cg1).multiply(dh2sgcg).
                                                add(sg1.multiply(cg1).multiply(dhsgcg)).
                                                add(cg1.multiply(dhcg)).
                                                add(hpp);
 
             // Short periodical terms
             // eccentric anomaly
-            final FieldUnivariateDerivative2<T> Ep = getEccentricAnomaly(lpp);
-            final FieldUnivariateDerivative2<T> cf1 = (Ep.cos().subtract(mean.getE())).divide(Ep.cos().multiply(mean.getE().negate()).add(1.0));
-            final FieldUnivariateDerivative2<T> sf1 = (Ep.sin().multiply(n)).divide(Ep.cos().multiply(mean.getE().negate()).add(1.0));
-            final FieldUnivariateDerivative2<T> f = FastMath.atan2(sf1, cf1);
+            final FieldUnivariateDerivative1<T> Ep = getEccentricAnomaly(lpp);
+            final FieldSinCos<FieldUnivariateDerivative1<T>> sinCosEp = Ep.sinCos();
+            final FieldUnivariateDerivative1<T> cf1 = (sinCosEp.cos().subtract(mean.getE())).divide(sinCosEp.cos().multiply(mean.getE().negate()).add(1.0));
+            final FieldUnivariateDerivative1<T> sf1 = (sinCosEp.sin().multiply(n)).divide(sinCosEp.cos().multiply(mean.getE().negate()).add(1.0));
+            final FieldUnivariateDerivative1<T> f = FastMath.atan2(sf1, cf1);
 
-            final FieldUnivariateDerivative2<T> c2f = cf1.multiply(cf1).subtract(sf1.multiply(sf1));
-            final FieldUnivariateDerivative2<T> s2f = cf1.multiply(sf1).add(sf1.multiply(cf1));
-            final FieldUnivariateDerivative2<T> c3f = c2f.multiply(cf1).subtract(s2f.multiply(sf1));
-            final FieldUnivariateDerivative2<T> s3f = c2f.multiply(sf1).add(s2f.multiply(cf1));
-            final FieldUnivariateDerivative2<T> cf2 = cf1.multiply(cf1);
-            final FieldUnivariateDerivative2<T> cf3 = cf1.multiply(cf2);
+            final FieldUnivariateDerivative1<T> cf2 = cf1.square();
+            final FieldUnivariateDerivative1<T> c2f = cf2.subtract(sf1.multiply(sf1));
+            final FieldUnivariateDerivative1<T> s2f = cf1.multiply(sf1).add(sf1.multiply(cf1));
+            final FieldUnivariateDerivative1<T> c3f = c2f.multiply(cf1).subtract(s2f.multiply(sf1));
+            final FieldUnivariateDerivative1<T> s3f = c2f.multiply(sf1).add(s2f.multiply(cf1));
+            final FieldUnivariateDerivative1<T> cf3 = cf1.multiply(cf2);
 
-            final FieldUnivariateDerivative2<T> c2g1f = cf1.multiply(c2g).subtract(sf1.multiply(s2g));
-            final FieldUnivariateDerivative2<T> c2g2f = c2f.multiply(c2g).subtract(s2f.multiply(s2g));
-            final FieldUnivariateDerivative2<T> c2g3f = c3f.multiply(c2g).subtract(s3f.multiply(s2g));
-            final FieldUnivariateDerivative2<T> s2g1f = cf1.multiply(s2g).add(c2g.multiply(sf1));
-            final FieldUnivariateDerivative2<T> s2g2f = c2f.multiply(s2g).add(c2g.multiply(s2f));
-            final FieldUnivariateDerivative2<T> s2g3f = c3f.multiply(s2g).add(c2g.multiply(s3f));
+            final FieldUnivariateDerivative1<T> c2g1f = cf1.multiply(c2g).subtract(sf1.multiply(s2g));
+            final FieldUnivariateDerivative1<T> c2g2f = c2f.multiply(c2g).subtract(s2f.multiply(s2g));
+            final FieldUnivariateDerivative1<T> c2g3f = c3f.multiply(c2g).subtract(s3f.multiply(s2g));
+            final FieldUnivariateDerivative1<T> s2g1f = cf1.multiply(s2g).add(c2g.multiply(sf1));
+            final FieldUnivariateDerivative1<T> s2g2f = c2f.multiply(s2g).add(c2g.multiply(s2f));
+            final FieldUnivariateDerivative1<T> s2g3f = c3f.multiply(s2g).add(c2g.multiply(s3f));
 
-            final FieldUnivariateDerivative2<T> eE = (Ep.cos().multiply(mean.getE().negate()).add(1.0)).reciprocal();
-            final FieldUnivariateDerivative2<T> eE3 = eE.multiply(eE).multiply(eE);
-            final FieldUnivariateDerivative2<T> sigma = eE.multiply(n.multiply(n)).multiply(eE).add(eE);
+            final FieldUnivariateDerivative1<T> eE = (sinCosEp.cos().multiply(mean.getE().negate()).add(1.0)).reciprocal();
+            final FieldUnivariateDerivative1<T> eE3 = eE.square().multiply(eE);
+            final FieldUnivariateDerivative1<T> sigma = eE.multiply(n.square()).multiply(eE).add(eE);
 
             // Semi-major axis
-            final FieldUnivariateDerivative2<T> a = eE3.multiply(aCbis).add(appDrag.add(mean.getA())).
+            final FieldUnivariateDerivative1<T> a = eE3.multiply(aCbis).add(appDrag.add(mean.getA())).
                                             add(aC).
                                             add(eE3.multiply(c2g2f).multiply(ac2g2f));
 
             // Eccentricity
-            final FieldUnivariateDerivative2<T> e = d1e.add(eppDrag.add(mean.getE())).
+            final FieldUnivariateDerivative1<T> e = d1e.add(eppDrag.add(mean.getE())).
                                             add(eC).
                                             add(cf1.multiply(ecf)).
                                             add(cf2.multiply(e2cf)).
@@ -1347,14 +1270,14 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                             add(c2g3f.multiply(ec2g3f));
 
             // Inclination
-            final FieldUnivariateDerivative2<T> i = d1e.multiply(ide).
+            final FieldUnivariateDerivative1<T> i = d1e.multiply(ide).
                                             add(mean.getI()).
                                             add(sf1.multiply(s2g2f.multiply(isfs2f2g))).
                                             add(cf1.multiply(c2g2f.multiply(icfc2f2g))).
                                             add(c2g2f.multiply(ic2f2g));
 
-            // Argument of perigee + True anomaly
-            final FieldUnivariateDerivative2<T> g_p_l = lp_p_gp.add(f.multiply(glf)).
+            // Argument of perigee + mean anomaly
+            final FieldUnivariateDerivative1<T> gPL = lpPGp.add(f.multiply(glf)).
                                              add(lpp.multiply(gll)).
                                              add(sf1.multiply(glsf)).
                                              add(sigma.multiply(sf1).multiply(glosf)).
@@ -1364,16 +1287,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                              add(s2g3f.multiply(gls2g3f)).
                                              add(sigma.multiply(s2g3f).multiply(glos2g3f));
 
-
             // Longitude of ascending node
-            final FieldUnivariateDerivative2<T> h = hp.add(f.multiply(hf)).
+            final FieldUnivariateDerivative1<T> h = hp.add(f.multiply(hf)).
                                             add(lpp.multiply(hl)).
                                             add(sf1.multiply(hsf)).
                                             add(cf1.multiply(s2g2f).multiply(hcfs2g2f)).
                                             add(s2g2f.multiply(hs2g2f)).
                                             add(c2g2f.multiply(sf1).multiply(hsfc2g2f));
 
-            final FieldUnivariateDerivative2<T> edl = s2g.multiply(edls2g).
+            final FieldUnivariateDerivative1<T> edl = s2g.multiply(edls2g).
                                             add(cg1.multiply(edlcg)).
                                             add(c3g.multiply(edlc3g)).
                                             add(sf1.multiply(edlsf)).
@@ -1383,16 +1305,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                             add(s2g1f.multiply(sigma).multiply(edls2gf.negate())).
                                             add(s2g3f.multiply(sigma).multiply(edls2g3f.multiply(3.0)));
 
-            final FieldUnivariateDerivative2<T> A = e.multiply(lpp.cos()).subtract(edl.multiply(lpp.sin()));
-            final FieldUnivariateDerivative2<T> B = e.multiply(lpp.sin()).add(edl.multiply(lpp.cos()));
+            final FieldUnivariateDerivative1<T> A = e.multiply(lpp.cos()).subtract(edl.multiply(lpp.sin()));
+            final FieldUnivariateDerivative1<T> B = e.multiply(lpp.sin()).add(edl.multiply(lpp.cos()));
 
-            // True anomaly
-            final FieldUnivariateDerivative2<T> l = FastMath.atan2(B, A);
+            // Mean anomaly
+            final FieldUnivariateDerivative1<T> l = FastMath.atan2(B, A);
 
             // Argument of perigee
-            final FieldUnivariateDerivative2<T> g = g_p_l.subtract(l);
+            final FieldUnivariateDerivative1<T> g = gPL.subtract(l);
 
-            // Return a keplerian orbit
+            // Return a Keplerian orbit
             return new FieldKeplerianOrbit<>(a.getValue(), e.getValue(), i.getValue(),
                                              g.getValue(), h.getValue(), l.getValue(),
                                              a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),

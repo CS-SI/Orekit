@@ -16,10 +16,8 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-import java.util.Arrays;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -42,6 +40,8 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.util.Arrays;
 
 
 /** This class implements the mathematical representation of the 2001
@@ -997,6 +997,9 @@ public class NRLMSISE00 implements Atmosphere {
         2.61000e+02, 2.64000e+02, 2.29000e+02, 2.17000e+02, 2.17000e+02,
         2.23000e+02, 2.86760e+02, -2.93940e+00, 2.50000e+00, 0.00000e+00
     };
+
+    /** NRLMSISE-00 minimum temperature, used in many cases in density computation. */
+    private static final double MIN_TEMP = 50.;
 
     // Fields
 
@@ -2484,7 +2487,7 @@ public class NRLMSISE00 implements Atmosphere {
 
                 /* Integrate temperature profile */
                 final double yi = splini(xs, ys, y2out, x);
-                final double expl = FastMath.min(50., gamm * yi);
+                final double expl = FastMath.min(MIN_TEMP, gamm * yi);
 
                 /* Density at altitude */
                 densm *= (t1 / tz) * FastMath.exp(-expl);
@@ -2530,7 +2533,7 @@ public class NRLMSISE00 implements Atmosphere {
 
                 /* Integrate temperature profile */
                 final double yi = splini(xs, ys, y2out, x);
-                final double expl = FastMath.min(50., gamm * yi);
+                final double expl = FastMath.min(MIN_TEMP, gamm * yi);
 
                 /* Density at altitude */
                 densm *= (t1 / tz) * FastMath.exp(-expl);
@@ -2608,15 +2611,24 @@ public class NRLMSISE00 implements Atmosphere {
             /* calculate density above za */
             double glb   = galt(zlb);
             double gamma = xm * glb / (R_GAS * s2 * tinf);
-            double expl  = (tt <= 0) ? 50. : FastMath.min(50., FastMath.exp(-s2 * gamma * zg2));
-            double densu = dlb * FastMath.pow(tlb / tt, 1.0 + alpha + gamma) * expl;
+            double expl  = (tt <= 0) ? MIN_TEMP : FastMath.min(MIN_TEMP, FastMath.exp(-s2 * gamma * zg2));
+            double densu = dlb * expl * FastMath.pow(tlb / tt, 1.0 + alpha + gamma);
+
+            // Correction for issue 1365 - protection against "densu" being infinite
+            if (!Double.isFinite(densu)) {
+                if (expl < MIN_TEMP) {
+                    densu = dlb * FastMath.exp(FastMath.log(tlb / tt) * (1.0 + alpha + gamma) - s2 * gamma * zg2);
+                } else {
+                    throw new OrekitException( OrekitMessages.INFINITE_NRLMSISE00_DENSITY);
+                }
+            }
 
             /* calculate density below za */
             if (alt < ZN1[0]) {
                 glb   = galt(ZN1[0]);
                 gamma = xm * glb * zgdif / R_GAS;
                 /* integrate spline temperatures */
-                expl  = (tz <= 0) ? 50.0 : FastMath.min(50., gamma * splini(xs, ys, y2out, x));
+                expl  = (tz <= 0) ? MIN_TEMP : FastMath.min(MIN_TEMP, gamma * splini(xs, ys, y2out, x));
                 /* correct density at altitude */
                 densu *= FastMath.pow(meso_tn1[0] / tz, 1.0 + alpha) * FastMath.exp(-expl);
             }
@@ -2825,7 +2837,7 @@ public class NRLMSISE00 implements Atmosphere {
             temperatures    = MathArrays.buildArray(field, 2);
 
             // Calculates latitude variable gravity and effective radius
-            final T xlat = (sw[2] == 0) ? zero.add(LAT_REF) : lat;
+            final T xlat = (sw[2] == 0) ? zero.newInstance(LAT_REF) : lat;
             final T c2   = xlat.multiply(2 * DEG_TO_RAD).cos();
             glat = c2.multiply(-0.0026373).add(1).multiply(G_REF);
             rlat = glat.multiply(2).divide(c2.multiply(2.27e-9).add(3.085462e-6)).multiply(1.e-5);
@@ -2921,7 +2933,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double xmm = PDM[2][4];
 
             /**** Exospheric temperature ****/
-            T tinf = zero.add(PTM[0] * PT[0]);
+            T tinf = zero.newInstance(PTM[0] * PT[0]);
             // Tinf variations not important below ZA or ZN[0]
             if (alt.getReal() > ZN1[0]) {
                 tinf = tinf.multiply(globe7(PT).multiply(sw[16]).add(1));
@@ -2929,24 +2941,24 @@ public class NRLMSISE00 implements Atmosphere {
             setTemperature(EXOSPHERIC, tinf);
 
             // Gradient variations not important below ZN[4]
-            T g0 = zero.add(PTM[3] * PS[0]);
+            T g0 = zero.newInstance(PTM[3] * PS[0]);
             if (alt.getReal() > ZN1[4]) {
                 g0 = g0.multiply(globe7(PS).multiply(sw[19]).add(1));
             }
 
             // Temperature at lower boundary
-            T tlb = zero.add(PTM[1] * PD[3][0]);
+            T tlb = zero.newInstance(PTM[1] * PD[3][0]);
             tlb = tlb.multiply(globe7(PD[3]).multiply(sw[17]).add(1));
 
             // Slope
             final T s = g0.divide(tinf.subtract(tlb));
 
             // Lower thermosphere temp variations not significant for density above 300 km
-            meso_tn1[1]  = zero.add(PTM[6] * PTL[0][0]);
-            meso_tn1[2]  = zero.add(PTM[2] * PTL[1][0]);
-            meso_tn1[3]  = zero.add(PTM[7] * PTL[2][0]);
-            meso_tn1[4]  = zero.add(PTM[4] * PTL[3][0]);
-            meso_tgn1[1] = zero.add(PTM[8] * PMA[8][0]);
+            meso_tn1[1]  = zero.newInstance(PTM[6] * PTL[0][0]);
+            meso_tn1[2]  = zero.newInstance(PTM[2] * PTL[1][0]);
+            meso_tn1[3]  = zero.newInstance(PTM[7] * PTL[2][0]);
+            meso_tn1[4]  = zero.newInstance(PTM[4] * PTL[3][0]);
+            meso_tgn1[1] = zero.newInstance(PTM[8] * PMA[8][0]);
             if (alt.getReal() < 300.0) {
                 final double r = PTM[4] * PTL[3][0];
                 meso_tn1[1]  =  meso_tn1[1].divide(glob7s(PTL[0]).multiply(sw[18]         ).negate().add(1));
@@ -2958,7 +2970,7 @@ public class NRLMSISE00 implements Atmosphere {
             }
 
             /**** Temperature at altitude ****/
-            setTemperature(ALTITUDE, densu(alt, zero.add(1.0), tinf, tlb, 0, 0, PTM[5], s));
+            setTemperature(ALTITUDE, densu(alt, zero.newInstance(1.0), tinf, tlb, 0, 0, PTM[5], s));
 
             /**** N2 density ****/
             /*   Density variation factor at Zlb */
@@ -2999,7 +3011,7 @@ public class NRLMSISE00 implements Atmosphere {
                 /*  Turbopause */
                 final double zh04 = PDM[0][2];
                 /*  Mixed density at Zlb */
-                final T b04 = densu(zero.add(zh04), db04, tinf, tlb, HE_MASS - xmm, alpha[0] - 1., PTM[5], s);
+                final T b04 = densu(zero.newInstance(zh04), db04, tinf, tlb, HE_MASS - xmm, alpha[0] - 1., PTM[5], s);
                 /*  Mixed density at Alt */
                 final T dm04 = densu(alt, b04, tinf, tlb, xmm, 0., PTM[5], s);
                 final double zhm04 = zhm28;
@@ -3025,7 +3037,7 @@ public class NRLMSISE00 implements Atmosphere {
                 /* Turbopause */
                 final double zh16 = PDM[1][2];
                 /* Mixed density at Zlb */
-                final T b16 = densu(zero.add(zh16), db16, tinf, tlb, O_MASS - xmm, alpha[1] - 1.0, PTM[5], s);
+                final T b16 = densu(zero.newInstance(zh16), db16, tinf, tlb, O_MASS - xmm, alpha[1] - 1.0, PTM[5], s);
                 /* Mixed density at Alt */
                 final T dm16 = densu(alt, b16, tinf, tlb, xmm, 0., PTM[5], s);
                 final double zhm16 = zhm28;
@@ -3041,7 +3053,7 @@ public class NRLMSISE00 implements Atmosphere {
                 final double zcc16 = PDM[1][6] * PDL[1][12];
                 final double rc16  = PDM[1][3] * PDL[1][14];
                 /* Net density corrected at Alt */
-                setDensity(ATOMIC_OXYGEN, diffusiveDensity.multiply(ccor(alt, zero.add(rc16), hcc16, zcc16)));
+                setDensity(ATOMIC_OXYGEN, diffusiveDensity.multiply(ccor(alt, zero.newInstance(rc16), hcc16, zcc16)));
             }
 
             /**** O2 density ****/
@@ -3057,7 +3069,7 @@ public class NRLMSISE00 implements Atmosphere {
                     /* Turbopause */
                     final double zh32 = PDM[3][2];
                     /* Mixed density at Zlb */
-                    final T b32 = densu(zero.add(zh32), db32, tinf, tlb, O2_MASS - xmm, alpha[3] - 1., PTM[5], s);
+                    final T b32 = densu(zero.newInstance(zh32), db32, tinf, tlb, O2_MASS - xmm, alpha[3] - 1., PTM[5], s);
                     /* Mixed density at Alt */
                     final T dm32 = densu(alt, b32, tinf, tlb, xmm, 0., PTM[5], s);
                     final double zhm32 = zhm28;
@@ -3090,7 +3102,7 @@ public class NRLMSISE00 implements Atmosphere {
                 /* Turbopause */
                 final double zh40 = PDM[4][2];
                 /* Mixed density at Zlb */
-                final T b40 = densu(zero.add(zh40), db40, tinf, tlb, AR_MASS - xmm, alpha[4] - 1., PTM[5], s);
+                final T b40 = densu(zero.newInstance(zh40), db40, tinf, tlb, AR_MASS - xmm, alpha[4] - 1., PTM[5], s);
                 /* Mixed density at Alt */
                 final T dm40 = densu(alt, b40, tinf, tlb, xmm, 0., PTM[5], s);
                 final double zhm40 = zhm28;
@@ -3116,7 +3128,7 @@ public class NRLMSISE00 implements Atmosphere {
                 /* Turbopause */
                 final double zh01 = PDM[5][2];
                 /* Mixed density at Zlb */
-                final T b01 = densu(zero.add(zh01), db01, tinf, tlb, H_MASS - xmm, alpha[6] - 1., PTM[5], s);
+                final T b01 = densu(zero.newInstance(zh01), db01, tinf, tlb, H_MASS - xmm, alpha[6] - 1., PTM[5], s);
                 /* Mixed density at Alt */
                 final T dm01 = densu(alt, b01, tinf, tlb, xmm, 0., PTM[5], s);
                 final double zhm01 = zhm28;
@@ -3132,7 +3144,7 @@ public class NRLMSISE00 implements Atmosphere {
                 final double zcc01 = PDM[5][6] * PDL[1][18];
                 final double rc01 = PDM[5][3] * PDL[1][20];
                 /* Net density corrected at Alt */
-                setDensity(HYDROGEN, diffusiveDensity.multiply(ccor(alt, zero.add(rc01), hcc01, zcc01)));
+                setDensity(HYDROGEN, diffusiveDensity.multiply(ccor(alt, zero.newInstance(rc01), hcc01, zcc01)));
             }
 
             /**** N density ****/
@@ -3147,7 +3159,7 @@ public class NRLMSISE00 implements Atmosphere {
                 /* Turbopause */
                 final double zh14 = PDM[6][2];
                 /* Mixed density at Zlb */
-                final T b14 = densu(zero.add(zh14), db14, tinf, tlb, N_MASS - xmm, alpha[7] - 1., PTM[5], s);
+                final T b14 = densu(zero.newInstance(zh14), db14, tinf, tlb, N_MASS - xmm, alpha[7] - 1., PTM[5], s);
                 /* Mixed density at Alt */
                 final T dm14 = densu(alt, b14, tinf, tlb, xmm, 0., PTM[5], s);
                 final double zhm14 = zhm28;
@@ -3163,14 +3175,14 @@ public class NRLMSISE00 implements Atmosphere {
                 final double zcc14 = PDM[6][6] * PDL[0][3];
                 final double rc14 = PDM[6][3] * PDL[0][5];
                 /* Net density corrected at Alt */
-                setDensity(ATOMIC_NITROGEN, diffusiveDensity.multiply(ccor(alt, zero.add(rc14), hcc14, zcc14)));
+                setDensity(ATOMIC_NITROGEN, diffusiveDensity.multiply(ccor(alt, zero.newInstance(rc14), hcc14, zcc14)));
             }
 
             /**** Anomalous O density ****/
             final T g16h = globe7(PD[8]).multiply(sw[21]);
             final T db16h = g16h.exp().multiply(PDM[7][0] * PD[8][0]);
             final double tho   = PDM[7][9] * PDL[0][6];
-            diffusiveDensity = densu(alt, db16h, zero.add(tho), zero.add(tho), O_MASS, alpha[8], PTM[5], s);
+            diffusiveDensity = densu(alt, db16h, zero.newInstance(tho), zero.newInstance(tho), O_MASS, alpha[8], PTM[5], s);
             final double zsht = PDM[7][5];
             final double zmho = PDM[7][4];
             final T zsho = scalh(zmho, O_MASS, tho);
@@ -3219,7 +3231,7 @@ public class NRLMSISE00 implements Atmosphere {
         void gtd7(final T alt) {
 
             // Calculates for thermosphere/mesosphere (above ZN2[0])
-            final T altt = (alt.getReal() > ZN2[0]) ? alt : zero.add(ZN2[0]);
+            final T altt = (alt.getReal() > ZN2[0]) ? alt : zero.newInstance(ZN2[0]);
             gts7(altt);
             if (alt.getReal() >= ZN2[0]) {
                 return;
@@ -3404,10 +3416,10 @@ public class NRLMSISE00 implements Atmosphere {
             // F10.7 effect
             final double df  = f107  - f107a;
             final double dfa = f107a - FLUX_REF;
-            t[0] = zero.add(p[19] * df * (1.0 + p[59] * dfa) +
-                            p[20] * df * df +
-                            p[21] * dfa +
-                            p[29] * dfa * dfa);
+            t[0] = zero.newInstance(p[19] * df * (1.0 + p[59] * dfa) +
+                                    p[20] * df * df +
+                                    p[21] * dfa +
+                                    p[29] * dfa * dfa);
 
             final double f1 = 1.0 + (p[47] * dfa + p[19] * df + p[20] * df * df) * swc[1];
             final double f2 = 1.0 + (p[49] * dfa + p[19] * df + p[20] * df * df) * swc[1];
@@ -3420,7 +3432,7 @@ public class NRLMSISE00 implements Atmosphere {
                    add(plg[0][1].multiply(p[26]));
 
             // Symmetrical annual
-            t[2] = zero.add(p[18] * cd32);
+            t[2] = zero.newInstance(p[18] * cd32);
 
             // Symmetrical semiannual
             t[3] = plg[0][2].multiply(p[16]).add(p[15]).multiply(cd18);
@@ -3539,7 +3551,7 @@ public class NRLMSISE00 implements Atmosphere {
             }
 
             // Sum all effects (params not used: 82, 89, 99, 139-149)
-            T tinf = zero.add(p[30]);
+            T tinf = zero.newInstance(p[30]);
             for (int i = 0; i < 14; i++) {
                 tinf = tinf.add(t[i].multiply(FastMath.abs(sw[i + 1])));
             }
@@ -3562,7 +3574,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double cd39 = FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[38]));
 
             // F10.7 effect
-            t[0] = zero.add(p[21] * (f107a - FLUX_REF));
+            t[0] = zero.newInstance(p[21] * (f107a - FLUX_REF));
 
             // Time independent
             t[1] =     plg[0][2].multiply(p[1]).
@@ -3658,10 +3670,10 @@ public class NRLMSISE00 implements Atmosphere {
             final double g04 = g0(ap[4], p24, p25);
             final double g05 = g0(ap[5], p24, p25);
             final double g06 = g0(ap[6], p24, p25);
-            final T ex2      = ex.multiply(ex);
+            final T ex2      = ex.square();
             final T ex3      = ex.multiply(ex2);
-            final T ex4      = ex2.multiply(ex2);
-            final T ex8      = ex4.multiply(ex4);
+            final T ex4      = ex2.square();
+            final T ex8      = ex4.square();
             final T ex12     = ex4.multiply(ex8);
             final T g234     = ex.multiply(g02).add(ex2.multiply(g03)).add(ex3.multiply(g04));
             final T g56      = ex4.multiply(g05).add(ex12.multiply(g06));
@@ -3715,7 +3727,7 @@ public class NRLMSISE00 implements Atmosphere {
             if (e1.getReal() > 70. || e2.getReal() > 70.) {
                 return field.getOne();
             } else if (e1.getReal() < -70. && e2.getReal() < -70.) {
-                return zero.add(FastMath.exp(r));
+                return zero.newInstance(FastMath.exp(r));
             } else {
                 final T ex1 = e1.exp();
                 final T ex2 = e2.exp();
@@ -3732,7 +3744,7 @@ public class NRLMSISE00 implements Atmosphere {
         private T scalh(final double alt, final double xm, final double temp) {
             // Gravity at altitude
             final T denom = rlat.reciprocal().multiply(alt).add(1);
-            final T galt = glat.divide(denom.multiply(denom));
+            final T galt = glat.divide(denom.square());
             return galt.reciprocal().multiply(R_GAS * temp / xm);
         }
 
@@ -3790,11 +3802,11 @@ public class NRLMSISE00 implements Atmosphere {
                 final T h = xa[khi].subtract(xa[klo]);
                 final T a = xa[khi].subtract(xx).divide(h);
                 final T b = xx.subtract(xa[klo]).divide(h);
-                final T a2 = a.multiply(a);
-                final T b2 = b.multiply(b);
+                final T a2 = a.square();
+                final T b2 = b.square();
 
                 final T z =
-                           a2.divide(2).subtract(a2.multiply(a2).add(1).divide(4)).multiply(y2a[klo]).
+                           a2.divide(2).subtract(a2.square().add(1).divide(4)).multiply(y2a[klo]).
                            add(b2.multiply(b2).divide(4).subtract(b2.divide(2)).multiply(y2a[khi]));
                 yi = yi.add(    a2.negate().add(1).multiply(ya[klo]).divide(2).
                             add(b2.multiply(ya[khi]).divide(2)).
@@ -3830,7 +3842,7 @@ public class NRLMSISE00 implements Atmosphere {
             final T a = xa[khi].subtract(x).divide(h);
             final T b = x.subtract(xa[klo]).divide(h);
             return a.multiply(ya[klo]).add(b.multiply(ya[khi])).
-                   add((    a.multiply(a).multiply(a).subtract(a).multiply(y2a[klo]).
+                   add((    a.square().multiply(a).subtract(a).multiply(y2a[klo]).
                         add(b.multiply(b).multiply(b).subtract(b).multiply(y2a[khi]))
                        ).multiply(h).multiply(h).divide(6));
         }
@@ -3849,7 +3861,7 @@ public class NRLMSISE00 implements Atmosphere {
             final T[] u  = MathArrays.buildArray(field, n);
 
             if (yp1.getReal() < 1e+30) {
-                y2[0] = zero.add(-0.5);
+                y2[0] = zero.newInstance(-0.5);
                 final T dx = x[1].subtract(x[0]);
                 final T dy = y[1].subtract(y[0]);
                 u[0]  = dx.reciprocal().multiply(3.0).multiply(dy.divide(dx).subtract(yp1));
@@ -3896,25 +3908,25 @@ public class NRLMSISE00 implements Atmosphere {
 
             // stratosphere/mesosphere temperature
             int mn = ZN2.length;
-            T z = (alt.getReal() > ZN2[mn - 1]) ? alt : zero.add(ZN2[mn - 1]);
+            T z = (alt.getReal() > ZN2[mn - 1]) ? alt : zero.newInstance(ZN2[mn - 1]);
 
             double z1 = ZN2[0];
             double z2 = ZN2[mn - 1];
             T t1 = meso_tn2[0];
             T t2 = meso_tn2[mn - 1];
             T zg  = zeta(z, z1);
-            T zgdif = zeta(zero.add(z2), z1);
+            T zgdif = zeta(zero.newInstance(z2), z1);
 
             /* set up spline nodes */
             T[] xs = MathArrays.buildArray(field, mn);
             T[] ys = MathArrays.buildArray(field, mn);
             for (int k = 0; k < mn; k++) {
-                xs[k] = zeta(zero.add(ZN2[k]), z1).divide(zgdif);
+                xs[k] = zeta(zero.newInstance(ZN2[k]), z1).divide(zgdif);
                 ys[k] = meso_tn2[k].reciprocal();
             }
             final T qSM = rlat.add(z2).divide(rlat.add(z1));
-            T yd1 = meso_tgn2[0].negate().divide(t1.multiply(t1)).multiply(zgdif);
-            T yd2 = meso_tgn2[1].negate().divide(t2.multiply(t2)).multiply(zgdif).multiply(qSM).multiply(qSM);
+            T yd1 = meso_tgn2[0].negate().divide(t1.square()).multiply(zgdif);
+            T yd2 = meso_tgn2[1].negate().divide(t2.square()).multiply(zgdif).multiply(qSM.square());
 
             /* calculate spline coefficients */
             T[] y2out = spline(xs, ys, yd1, yd2);
@@ -3926,12 +3938,12 @@ public class NRLMSISE00 implements Atmosphere {
 
             if (xm != 0.0) {
                 /* calculate stratosphere / mesospehere density */
-                final T glb  = galt(zero.add(z1));
+                final T glb  = galt(zero.newInstance(z1));
                 final T gamm = glb.multiply(zgdif).multiply(xm / R_GAS);
 
                 /* Integrate temperature profile */
                 final T yi = splini(xs, ys, y2out, x);
-                final T expl = min(50., gamm.multiply(yi));
+                final T expl = min(MIN_TEMP, gamm.multiply(yi));
 
                 /* Density at altitude */
                 densm = densm.multiply(t1.divide(tz).multiply(expl.negate().exp()));
@@ -3949,13 +3961,13 @@ public class NRLMSISE00 implements Atmosphere {
             t1 = meso_tn3[0];
             t2 = meso_tn3[mn - 1];
             zg = zeta(z, z1);
-            zgdif = zeta(zero.add(z2), z1);
+            zgdif = zeta(zero.newInstance(z2), z1);
 
             /* set up spline nodes */
             xs = MathArrays.buildArray(field, mn);
             ys = MathArrays.buildArray(field, mn);
             for (int k = 0; k < mn; k++) {
-                xs[k] = zeta(zero.add(ZN3[k]), z1).divide(zgdif);
+                xs[k] = zeta(zero.newInstance(ZN3[k]), z1).divide(zgdif);
                 ys[k] = meso_tn3[k].reciprocal();
             }
             final T qTS = rlat.add(z2) .divide(rlat.add(z1));
@@ -3972,12 +3984,12 @@ public class NRLMSISE00 implements Atmosphere {
 
             if (xm != 0.0) {
                 /* calculate tropospheric / stratosphere density */
-                final T glb = galt(zero.add(z1));
+                final T glb = galt(zero.newInstance(z1));
                 final T gamm = glb.multiply(zgdif).multiply(xm / R_GAS);
 
                 /* Integrate temperature profile */
                 final T yi = splini(xs, ys, y2out, x);
-                final T expl = min(50., gamm.multiply(yi));
+                final T expl = min(MIN_TEMP, gamm.multiply(yi));
 
                 /* Density at altitude */
                 densm = densm.multiply(t1.divide(tz).multiply(expl.negate().exp()));
@@ -4001,7 +4013,7 @@ public class NRLMSISE00 implements Atmosphere {
                         final T tlb, final double xm,  final double alpha,
                         final double zlb, final T s2) {
             /* joining altitudes of Bates and spline */
-            T z = (alt.getReal() > ZN1[0]) ? alt : zero.add(ZN1[0]);
+            T z = (alt.getReal() > ZN1[0]) ? alt : zero.newInstance(ZN1[0]);
 
             /* geopotential altitude difference from ZLB */
             final T zg2 = zeta(z, zlb);
@@ -4021,10 +4033,10 @@ public class NRLMSISE00 implements Atmosphere {
                 /* calculate temperature below ZA
                  * temperature gradient at ZA from Bates profile */
                 final T p = rlat.add(zlb).divide(rlat.add(ZN1[0]));
-                final T dta = tinf.subtract(ta).multiply(s2).multiply(p.multiply(p));
+                final T dta = tinf.subtract(ta).multiply(s2).multiply(p.square());
                 meso_tgn1[0] = dta;
                 meso_tn1[0] = ta;
-                final T tzn1mn1 = zero.add(ZN1[mn - 1]);
+                final T tzn1mn1 = zero.newInstance(ZN1[mn - 1]);
                 z = (alt.getReal() > ZN1[mn - 1]) ? alt : tzn1mn1;
 
                 final T t1 = meso_tn1[0];
@@ -4034,13 +4046,13 @@ public class NRLMSISE00 implements Atmosphere {
                 zgdif = zeta(tzn1mn1, ZN1[0]);
                 /* set up spline nodes */
                 for (int k = 0; k < mn; k++) {
-                    xs[k] = zeta(zero.add(ZN1[k]), ZN1[0]).divide(zgdif);
+                    xs[k] = zeta(zero.newInstance(ZN1[k]), ZN1[0]).divide(zgdif);
                     ys[k] =  meso_tn1[k].reciprocal();
                 }
                 /* end node derivatives */
                 final T q   = rlat.add(ZN1[mn - 1]).divide(rlat.add(ZN1[0]));
-                final T yd1 = meso_tgn1[0].negate().divide(t1.multiply(t1)).multiply(zgdif);
-                final T yd2 = meso_tgn1[1].negate().divide(t2.multiply(t2)).multiply(zgdif).multiply(q.multiply(q));
+                final T yd1 = meso_tgn1[0].negate().divide(t1.square()).multiply(zgdif);
+                final T yd2 = meso_tgn1[1].negate().divide(t2.square()).multiply(zgdif).multiply(q.square());
                 /* calculate spline coefficients */
                 y2out = spline(xs, ys, yd1, yd2);
                 x = zg.divide(zgdif);
@@ -4054,21 +4066,31 @@ public class NRLMSISE00 implements Atmosphere {
             }
 
             /* calculate density above za */
-            T glb   = galt(zero.add(zlb));
+            T glb   = galt(zero.newInstance(zlb));
             T gamma = glb.divide(s2.multiply(tinf)).multiply(xm / R_GAS);
             T expl = tt.getReal() <= 0 ?
-                     zero.add(50) :
-                     min(50.0, s2.negate().multiply(gamma).multiply(zg2).exp());
-            T densu = dlb.multiply(tlb.divide(tt).pow(gamma.add(alpha + 1))).multiply(expl);
+                     zero.newInstance(MIN_TEMP) :
+                     min(MIN_TEMP, s2.negate().multiply(gamma).multiply(zg2).exp());
+            T densu = dlb.multiply(expl).multiply(tlb.divide(tt).pow(gamma.add(alpha + 1)));
+
+            // Correction for issue 1365 - protection against "densu" being infinite
+            if (!Double.isFinite(densu.getReal())) {
+                if (expl.getReal() < MIN_TEMP) {
+                    densu = dlb.multiply(FastMath.exp((FastMath.log(tlb.divide(tt)).multiply(gamma.add(alpha + 1))).
+                                                      subtract(s2.multiply(gamma).multiply(zg2))));
+                } else {
+                    throw new OrekitException(OrekitMessages.INFINITE_NRLMSISE00_DENSITY);
+                }
+            }
 
             /* calculate density below za */
             if (alt.getReal() < ZN1[0]) {
-                glb   = galt(zero.add(ZN1[0]));
+                glb   = galt(zero.newInstance(ZN1[0]));
                 gamma = glb.multiply(zgdif).multiply(xm / R_GAS);
                 /* integrate spline temperatures */
                 expl = tz.getReal() <= 0 ?
-                       zero.add(50.0) :
-                       min(50.0, gamma.multiply(splini(xs, ys, y2out, x)));
+                       zero.newInstance(MIN_TEMP) :
+                       min(MIN_TEMP, gamma.multiply(splini(xs, ys, y2out, x)));
                 /* correct density at altitude */
                 densu = densu.multiply(meso_tn1[0].divide(tz).pow(alpha + 1).multiply(expl.negate().exp()));
             }
@@ -4083,7 +4105,7 @@ public class NRLMSISE00 implements Atmosphere {
          * @return min value
          */
         private T min(final double d, final T f) {
-            return (f.getReal() > d) ? zero.add(d) : f;
+            return (f.getReal() > d) ? zero.newInstance(d) : f;
         }
 
         /** Calculate gravity at altitude.
@@ -4092,7 +4114,7 @@ public class NRLMSISE00 implements Atmosphere {
          */
         private T galt(final T alt) {
             final T r = alt.divide(rlat).add(1);
-            return glat.divide(r.multiply(r));
+            return glat.divide(r.square());
         }
 
         /** Calculate zeta function.

@@ -29,10 +29,9 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class PhaseCentersPhaseModifier implements EstimationModifier<Phase> {
-
-    /** Raw modifier. */
-    private final PhaseCentersGroundReceiverBaseModifier<Phase> modifier;
+public class PhaseCentersPhaseModifier
+    extends PhaseCentersGroundReceiverBaseModifier<Phase>
+    implements EstimationModifier<Phase> {
 
     /** Simple constructor.
      * @param stationPattern station pattern
@@ -40,7 +39,7 @@ public class PhaseCentersPhaseModifier implements EstimationModifier<Phase> {
      */
     public PhaseCentersPhaseModifier(final FrequencyPattern stationPattern,
                                      final FrequencyPattern satellitePattern) {
-        this.modifier = new PhaseCentersGroundReceiverBaseModifier<>(stationPattern, satellitePattern);
+        super(stationPattern, satellitePattern);
     }
 
     /** {@inheritDoc} */
@@ -52,9 +51,10 @@ public class PhaseCentersPhaseModifier implements EstimationModifier<Phase> {
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
-                                    modifier.oneWayDistanceModification(estimated) /
-                                    estimated.getObservedMeasurement().getWavelength());
+        estimated.modifyEstimatedValue(this,
+                                       estimated.getEstimatedValue()[0] +
+                                       oneWayDistanceModification(estimated) /
+                                       estimated.getObservedMeasurement().getWavelength());
     }
 
 }

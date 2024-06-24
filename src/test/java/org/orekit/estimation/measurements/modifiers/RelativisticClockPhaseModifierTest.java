@@ -27,10 +27,12 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -44,8 +46,9 @@ import java.util.Arrays;
 
 public class RelativisticClockPhaseModifierTest {
 
+    @Deprecated
     @Test
-    public void testRelativisticClockCorrection() {
+    public void testRelativisticClockCorrectionDeprecated() {
 
         // Station
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -53,7 +56,8 @@ public class RelativisticClockPhaseModifierTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GeodeticPoint point    = new GeodeticPoint(FastMath.toRadians(42.0), FastMath.toRadians(1.0), 100.0);
         final TopocentricFrame topo  = new TopocentricFrame(earth, point, "");
-        final GroundStation station  = new GroundStation(topo);
+        final GroundStation station  = new GroundStation(topo,
+                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Satellite (GPS orbit from TLE)
         final TLE tle = new TLE("1 28474U 04045A   20252.59334296 -.00000043  00000-0  00000-0 0  9998",
@@ -83,9 +87,67 @@ public class RelativisticClockPhaseModifierTest {
 
         // Range measurement
         final Phase phase = new Phase(station, state.getDate(), 26584264.45, Frequency.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));
-        final EstimatedMeasurement<Phase> estimated = new EstimatedMeasurement<Phase>(phase, 0, 0,
-                        new SpacecraftState[] {state},
-                        new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
+        final EstimatedMeasurement<Phase> estimated = new EstimatedMeasurement<>(phase, 0, 0,
+                                                                                 new SpacecraftState[] {state},
+                                                                                 new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
+        estimated.setEstimatedValue(phase.getObservedValue()[0]);
+        Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+
+        // Measurement modifier
+        final RelativisticClockPhaseModifier modifier = new RelativisticClockPhaseModifier();
+        modifier.modify(estimated);
+        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+
+        // Verify
+        Assertions.assertEquals(-6.87 / Frequency.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+
+    }
+
+    @Test
+    public void testRelativisticClockCorrection() {
+
+        // Station
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final GeodeticPoint point    = new GeodeticPoint(FastMath.toRadians(42.0), FastMath.toRadians(1.0), 100.0);
+        final TopocentricFrame topo  = new TopocentricFrame(earth, point, "");
+        final GroundStation station  = new GroundStation(topo,
+                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+
+        // Satellite (GPS orbit from TLE)
+        final TLE tle = new TLE("1 28474U 04045A   20252.59334296 -.00000043  00000-0  00000-0 0  9998",
+                                "2 28474  55.0265  49.5108 0200271 267.9106 149.0797  2.00552216116165");
+        final TimeStampedPVCoordinates satPV = TLEPropagator.selectExtrapolator(tle).getPVCoordinates(tle.getDate(), FramesFactory.getEME2000());
+        final SpacecraftState state = new SpacecraftState(new CartesianOrbit(satPV, FramesFactory.getEME2000(), Constants.WGS84_EARTH_MU));
+
+        // Set reference date to station drivers
+        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                    station.getEastOffsetDriver(),
+                                                    station.getNorthOffsetDriver(),
+                                                    station.getZenithOffsetDriver(),
+                                                    station.getPrimeMeridianOffsetDriver(),
+                                                    station.getPrimeMeridianDriftDriver(),
+                                                    station.getPolarOffsetXDriver(),
+                                                    station.getPolarDriftXDriver(),
+                                                    station.getPolarOffsetYDriver(),
+                                                    station.getPolarDriftYDriver())) {
+            if (driver.getReferenceDate() == null) {
+                driver.setReferenceDate(state.getDate());
+            }
+        }
+
+        // Station PV
+        final Vector3D zero = Vector3D.ZERO;
+        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
+
+        // Range measurement
+        final Phase phase = new Phase(station, state.getDate(), 26584264.45, Frequency.G01.getWavelength(),
+                                      1.0, 1.0, new ObservableSatellite(0),
+                                      new AmbiguityCache());
+        final EstimatedMeasurement<Phase> estimated = new EstimatedMeasurement<>(phase, 0, 0,
+                                                                                 new SpacecraftState[] {state},
+                                                                                 new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(phase.getObservedValue()[0]);
         Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 

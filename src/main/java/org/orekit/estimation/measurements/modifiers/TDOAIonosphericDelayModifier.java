@@ -107,7 +107,9 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         final GroundStation   primeStation  = measurement.getPrimeStation();
         final GroundStation   secondStation = measurement.getSecondStation();
 
-        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation, this::timeErrorIonosphericModel);
+        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation,
+                                                  this::timeErrorIonosphericModel,
+                                                  this);
 
     }
 
@@ -123,7 +125,8 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
                                 new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                 primeStation, secondStation,
                                 this::timeErrorIonosphericModel,
-                                this::timeErrorIonosphericModel);
+                                this::timeErrorIonosphericModel,
+                                this);
 
     }
 

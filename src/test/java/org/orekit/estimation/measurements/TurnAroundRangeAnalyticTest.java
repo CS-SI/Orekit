@@ -213,7 +213,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
-                                        3.0e-06, 5.9e-06, 1.3e-04, 2.9e-6, 5.0e-6, 3.9e-5);
+                                        2.8e-06, 5.9e-06, 1.2e-04, 4.3e-6, 2.3e-5, 2.2e-4);
 
     }
 
@@ -221,8 +221,7 @@ public class TurnAroundRangeAnalyticTest {
      * Generic test function for values of the TAR
      * @param printResults Print the results ?
      */
-    void genericTestValues(final boolean printResults)
-                    {
+    void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -396,7 +395,7 @@ public class TurnAroundRangeAnalyticTest {
                 jacobianRef = Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
                         return measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -599,7 +598,7 @@ public class TurnAroundRangeAnalyticTest {
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                             return measurement.
-                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                    getEstimatedValue()[0];
                                         }
                                     }, 3, 20.0 * drivers[i].getScale());

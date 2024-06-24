@@ -154,8 +154,7 @@ public class OnBoardAntennaOneWayGNSSRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             OneWayGNSSRange sr = (OneWayGNSSRange) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurementBase<OneWayGNSSRange> estimated = sr.estimateWithoutDerivatives(0, 0,
-                                                                                                new SpacecraftState[] { p3.propagate(sr.getDate()) });
+            EstimatedMeasurementBase<OneWayGNSSRange> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             OneWayGNSSRange ar = (OneWayGNSSRange) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-5);

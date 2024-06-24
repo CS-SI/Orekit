@@ -75,6 +75,6 @@ public class RelativisticJ2ClockPhaseModifier extends AbstractRelativisticJ2Cloc
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] - dtJ2 * cOverLambda;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 }

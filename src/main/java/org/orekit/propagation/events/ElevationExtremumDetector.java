@@ -18,8 +18,8 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -63,7 +63,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
                                      final TopocentricFrame topo) {
-        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              topo);
     }
 
@@ -119,9 +119,9 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public double g(final SpacecraftState s) {
 
-        // get position, velocity acceleration of spacecraft in topocentric frame
-        final Transform inertToTopo = s.getFrame().getTransformTo(topo, s.getDate());
-        final TimeStampedPVCoordinates pvTopo = inertToTopo.transformPVCoordinates(s.getPVCoordinates());
+        // get position, velocity of spacecraft in topocentric frame
+        final KinematicTransform inertToTopo = s.getFrame().getKinematicTransformTo(topo, s.getDate());
+        final TimeStampedPVCoordinates pvTopo = inertToTopo.transformOnlyPV(s.getPVCoordinates());
 
         // convert the coordinates to UnivariateDerivative1 based vector
         // instead of having vector position, then vector velocity then vector acceleration

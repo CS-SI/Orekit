@@ -416,11 +416,11 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final T x    = position.getX();
         final T y    = position.getY();
         final T z    = position.getZ();
-        final T x2   = x.multiply(x);
-        final T y2   = y.multiply(y);
+        final T x2   = x.square();
+        final T y2   = y.square();
         final T rho2 = x2.add(y2);
         final T rho  = rho2.sqrt();
-        final T z2   = z.multiply(z);
+        final T z2   = z.square();
         final T r2   = rho2.add(z2);
         final T r    = r2.sqrt();
         final T t    = z.divide(r);   // cos(theta), where theta is the polar angle
@@ -506,9 +506,9 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final T xPos    = position.getX();
         final T yPos    = position.getY();
         final T zPos    = position.getZ();
-        final T rho2Pos = x.multiply(x).add(y.multiply(y));
+        final T rho2Pos = x.square().add(y.square());
         final T rhoPos  = rho2.sqrt();
-        final T r2Pos   = rho2.add(z.multiply(z));
+        final T r2Pos   = rho2.add(z.square());
         final T rPos    = r2Pos.sqrt();
 
         final T[][] jacobianPos = MathArrays.buildArray(zero.getField(), 3, 3);
@@ -972,12 +972,12 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
                                                                 final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
                                                                 final T[] pnm0, final T[] pnm1, final T[] pnm2) {
 
-        final T u2 = u.multiply(u);
+        final T u2 = u.square();
         final T zero = u.getField().getZero();
         // initialize recursion from sectorial terms
         int n = FastMath.max(2, m);
         if (n == m) {
-            pnm0[n] = zero.add(sectorial[n]);
+            pnm0[n] = zero.newInstance(sectorial[n]);
             ++n;
         }
 

@@ -33,18 +33,19 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.intervals.ApsideDetectionAdaptableIntervalFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class ApsideDetectorTest {
+class ApsideDetectorTest {
 
     private Propagator propagator;
 
     @Test
-    public void testSimple() {
+    void testSimple() {
         EventDetector detector = new ApsideDetector(propagator.getInitialState().getOrbit()).
                                  withMaxCheck(600.0).
                                  withThreshold(1.0e-12).
@@ -70,24 +71,13 @@ public class ApsideDetectorTest {
     }
 
     @Test
-    public void testFixedMaxCheck() {
-        doTestMaxcheck(s -> 20.0, 4738);
+    void testFixedMaxCheck() {
+        doTestMaxcheck(AdaptableInterval.of(20.0), 4738);
     }
 
     @Test
-    public void testAnomalyAwareMaxCheck() {
-        doTestMaxcheck(s -> {
-            final double         baseMaxCheck             = 20.0;
-            final KeplerianOrbit orbit                    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s.getOrbit());
-            final double         period                   = orbit.getKeplerianPeriod();
-            final double         timeSincePreviousPerigee = MathUtils.normalizeAngle(orbit.getMeanAnomaly(), FastMath.PI) /
-                                                            orbit.getKeplerianMeanMotion();
-            final double         timeToNextPerigee        = period - timeSincePreviousPerigee;
-            final double         timeToApogee             = FastMath.abs(0.5 * period - timeSincePreviousPerigee);
-            final double         timeToClosestApside      = FastMath.min(timeSincePreviousPerigee,
-                                                                         FastMath.min(timeToApogee, timeToNextPerigee));
-            return (timeToClosestApside < 2 * baseMaxCheck) ? baseMaxCheck : timeToClosestApside - 0.5 * baseMaxCheck;
-        }, 730);
+    void testAnomalyAwareMaxCheck() {
+        doTestMaxcheck(ApsideDetectionAdaptableIntervalFactory.getForwardApsideDetectionAdaptableInterval(), 726);
     }
 
     private void doTestMaxcheck(final AdaptableInterval maxCheck, int expectedCalls) {

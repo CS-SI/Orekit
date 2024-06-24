@@ -37,13 +37,13 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 
-public class AngularAzElTest {
+class AngularAzElTest {
 
     /** Compare observed values and estimated values.
      *  Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -72,7 +72,7 @@ public class AngularAzElTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             azDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -93,7 +93,7 @@ public class AngularAzElTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
@@ -136,7 +136,8 @@ public class AngularAzElTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP, datemeas);
+            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP,
+                                                                                  datemeas, state.getFrame());
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -149,7 +150,7 @@ public class AngularAzElTest {
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
                         return measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
@@ -191,7 +192,7 @@ public class AngularAzElTest {
         Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.1e-5);
 
         // median errors on Elevation
-        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsP), 7.4e-11);
+        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsP), 7.5e-11);
         Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.3e-5);
     }
 
@@ -199,7 +200,7 @@ public class AngularAzElTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
@@ -237,7 +238,8 @@ public class AngularAzElTest {
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
+            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP,
+                                                                                     datemeas, stateini.getFrame());
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
@@ -258,7 +260,7 @@ public class AngularAzElTest {
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                             return measurement.
-                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                    getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());

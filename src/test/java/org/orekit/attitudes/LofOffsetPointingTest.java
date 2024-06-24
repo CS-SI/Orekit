@@ -18,6 +18,8 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
@@ -32,11 +34,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -52,7 +50,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-public class LofOffsetPointingTest {
+class LofOffsetPointingTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -69,7 +67,7 @@ public class LofOffsetPointingTest {
     /** Test if both constructors are equivalent
      */
     @Test
-    public void testLof() {
+    void testLof() {
 
         //  Satellite position
         final CircularOrbit circ =
@@ -81,7 +79,8 @@ public class LofOffsetPointingTest {
         //************************
         final LofOffset lofLaw = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS);
         final LofOffsetPointing lofPointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, lofLaw, Vector3D.PLUS_K);
-        final Rotation lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
+        final Rotation
+            lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Compare to body center pointing law
         //*************************************
@@ -100,7 +99,7 @@ public class LofOffsetPointingTest {
     }
 
     @Test
-    public void testMiss() {
+    void testMiss() {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
                                    FastMath.toRadians(5.300), PositionAngleType.MEAN,
@@ -116,9 +115,9 @@ public class LofOffsetPointingTest {
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
@@ -161,8 +160,8 @@ public class LofOffsetPointingTest {
     }
 
     @Test
-    public void testTypesField() {
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+    void testTypesField() {
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
@@ -233,7 +232,7 @@ public class LofOffsetPointingTest {
     }
 
     @Test
-    public void testGetAttitudeRotation() {
+    void testGetAttitudeRotation() {
         // GIVEN
         final CircularOrbit circ =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
@@ -248,6 +247,39 @@ public class LofOffsetPointingTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
 
+    @Test
+    void testGetTargetPosition() {
+        // GIVEN
+        final CircularOrbit circ =
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
+                        FastMath.toRadians(5.300), PositionAngleType.MEAN,
+                        FramesFactory.getEME2000(), date, mu);
+        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.QSW, RotationOrder.XYX, -1., 2., 3.);
+        final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
+        // WHEN
+        final Vector3D targetPosition = pointing.getTargetPosition(circ, circ.getDate(), circ.getFrame());
+        // THEN
+        final Vector3D expectedPosition = pointing.getTargetPV(circ, circ.getDate(), circ.getFrame()).getPosition();
+        Assertions.assertEquals(expectedPosition, targetPosition);
+    }
+
+    @Test
+    void testGetTargetPositionField() {
+        // GIVEN
+        final CircularOrbit circ =
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
+                        FastMath.toRadians(5.300), PositionAngleType.MEAN,
+                        FramesFactory.getEME2000(), date, mu);
+        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.QSW, RotationOrder.XYX, 0, 2,0.3);
+        final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
+        final FieldCircularOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(ComplexField.getInstance(), circ);
+        // WHEN
+        final FieldVector3D<Complex> targetPosition = pointing.getTargetPosition(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        // THEN
+        final FieldVector3D<Complex> expectedPosition = pointing.getTargetPV(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getPosition();
+        Assertions.assertEquals(0., expectedPosition.subtract(targetPosition).getNorm().getReal(), 1e-10);
+    }
+
     @BeforeEach
     public void setUp() {
         try {
@@ -255,7 +287,7 @@ public class LofOffsetPointingTest {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

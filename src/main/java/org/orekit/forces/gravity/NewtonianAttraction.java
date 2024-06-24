@@ -83,7 +83,7 @@ public class NewtonianAttraction implements ForceModel {
      */
     public <T extends CalculusFieldElement<T>> T getMu(final Field<T> field, final FieldAbsoluteDate<T> date) {
         final T zero = field.getZero();
-        return zero.add(gmParameterDriver.getValue(date.toAbsoluteDate()));
+        return zero.newInstance(gmParameterDriver.getValue(date.toAbsoluteDate()));
     }
 
     /** {@inheritDoc} */

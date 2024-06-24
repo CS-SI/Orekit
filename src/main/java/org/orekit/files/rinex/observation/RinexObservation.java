@@ -25,6 +25,8 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.RinexFile;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockOffset;
+import org.orekit.time.SampledClockModel;
 
 /** Container for Rinex observation file.
  * @author Luc Maisonobe
@@ -68,7 +70,7 @@ public class RinexObservation extends RinexFile<RinexObservationHeader> {
             final AbsoluteDate previous   = observations.get(observations.size() - 1).getDate();
             final double       factor     = current.durationFrom(previous) / header.getInterval();
             final double       acceptable = FastMath.max(0.0, FastMath.rint(factor));
-            if (FastMath.abs(factor - acceptable) > 0.001) {
+            if (FastMath.abs(factor - acceptable) > 0.01) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.INCONSISTENT_SAMPLING_DATE,
                                                          previous.shiftedBy(acceptable * header.getInterval()),
                                                          current);
@@ -84,6 +86,33 @@ public class RinexObservation extends RinexFile<RinexObservationHeader> {
         }
 
         observations.add(observationsDataSet);
+
+    }
+
+    /** Extract the receiver clock model.
+     * @param nbInterpolationPoints number of points to use in interpolation
+     * @return extracted clock model or null if all {@link
+     * ObservationDataSet#getRcvrClkOffset() clock offsets} are zero
+     * @since 12.1
+     */
+    public SampledClockModel extractClockModel(final int nbInterpolationPoints) {
+        final List<ClockOffset> sample = new ArrayList<>();
+        boolean someNonZero = false;
+        AbsoluteDate previous = null;
+        for (final ObservationDataSet ods : observations) {
+            if (previous == null || ods.getDate().durationFrom(previous) > 0.5 * getHeader().getInterval()) {
+                // this is a new date
+                sample.add(new ClockOffset(ods.getDate(), ods.getRcvrClkOffset(),
+                                           Double.NaN, Double.NaN));
+                someNonZero |= ods.getRcvrClkOffset() != 0;
+            }
+            previous = ods.getDate();
+        }
+
+        // build a clock model only if at least some non-zero offsets have been found
+        return someNonZero ?
+               new SampledClockModel(sample, nbInterpolationPoints) :
+               null;
 
     }
 

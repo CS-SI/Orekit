@@ -208,11 +208,11 @@ public class TDOA extends GroundReceiverMeasurement<TDOA> {
         // set TDOA value
         estimated.setEstimatedValue(tdoa);
 
-        // set partial derivatives with respect to state
+        // set first order derivatives with respect to state
         final double[] derivatives = tdoaG.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = common.getIndices().get(span.getData());

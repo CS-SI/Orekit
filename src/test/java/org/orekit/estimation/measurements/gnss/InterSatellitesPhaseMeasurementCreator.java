@@ -16,14 +16,12 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.modifiers.InterSatellitesPhaseAmbiguityModifier;
 import org.orekit.gnss.Frequency;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
@@ -34,11 +32,12 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
 
     private final BoundedPropagator                     ephemeris;
     private final double                                wavelength;
-    private final InterSatellitesPhaseAmbiguityModifier ambiguity;
+    private final int                                   ambiguity;
     private final Vector3D                              antennaPhaseCenter1;
     private final Vector3D                              antennaPhaseCenter2;
     private final ObservableSatellite                   local;
     private final ObservableSatellite                   remote;
+    private final AmbiguityCache                        cache;
 
     public InterSatellitesPhaseMeasurementCreator(final BoundedPropagator ephemeris,
                                                   final Frequency frequency,
@@ -57,13 +56,14 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
                                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
         this.wavelength          = frequency.getWavelength();
-        this.ambiguity           = new InterSatellitesPhaseAmbiguityModifier(0, ambiguity);
+        this.ambiguity           = ambiguity;
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
         this.local.getClockOffsetDriver().setValue(localClockOffset);
         this.remote              = new ObservableSatellite(1);
         this.remote.getClockOffsetDriver().setValue(remoteClockOffset);
+        this.cache               = new AmbiguityCache();
     }
 
     public ObservableSatellite getLocalSatellite() {
@@ -85,25 +85,22 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double           n         = ambiguity.getParametersDrivers().get(0).getValue();
             final AbsoluteDate     date      = currentState.getDate();
-            final Vector3D         position  = currentState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
+            final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
             final double           remoteClk = remote.getClockOffsetDriver().getValue(date);
             final double           localClk  = local.getClockOffsetDriver().getValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
-            final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) {
-                    final Vector3D other = ephemeris.
-                                    propagate(date.shiftedBy(-x)).
-                                    toTransform().
-                                    getInverse().
-                                    transformPosition(antennaPhaseCenter2);
-                    final double d = Vector3D.distance(position, other);
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }
+            final double downLinkDelay  = solver.solve(1000, x -> {
+                final Vector3D other = ephemeris.
+                                propagate(date.shiftedBy(-x)).
+                                toTransform().
+                                getInverse().
+                                transformPosition(antennaPhaseCenter2);
+                final double d = Vector3D.distance(position, other);
+                return d - x * Constants.SPEED_OF_LIGHT;
             }, -1.0, 1.0);
             final AbsoluteDate transitDate = currentState.getDate().shiftedBy(-downLinkDelay);
             final Vector3D otherAtTransit =
@@ -114,8 +111,11 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
             final double downLinkDistance = Vector3D.distance(position, otherAtTransit);
 
             // generate measurement
-            final InterSatellitesPhase phase = new InterSatellitesPhase(local, remote, date.shiftedBy(localClk), (downLinkDistance + deltaD) / wavelength + n, wavelength, 1.0, 10);
-            phase.addModifier(ambiguity);
+            final InterSatellitesPhase phase =
+                new InterSatellitesPhase(local, remote, date.shiftedBy(localClk),
+                                         (downLinkDistance + deltaD) / wavelength + ambiguity, wavelength,
+                                         1.0, 10, cache);
+            phase.getAmbiguityDriver().setValue(ambiguity);
             addMeasurement(phase);
 
         } catch (OrekitException oe) {

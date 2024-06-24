@@ -21,6 +21,7 @@ import java.util.Map;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -33,6 +34,11 @@ import org.orekit.utils.ParameterDriver;
  * @since 10.3
  */
 public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<InterSatellitesPhase> {
+
+    /** Cache for ambiguities.
+     * @since 12.1
+     */
+    private final AmbiguityCache cache;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
@@ -54,11 +60,33 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 12.1, replaced by {@link #InterSatellitesPhaseBuilder(CorrelatedRandomVectorGenerator,
+     * ObservableSatellite, ObservableSatellite, double, double, double, AmbiguityCache)}
      */
+    @Deprecated
     public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                        final ObservableSatellite local, final ObservableSatellite remote,
                                        final double wavelength, final double sigma, final double baseWeight) {
+        this(noiseSource, local, remote, wavelength, sigma, baseWeight,
+             AmbiguityCache.DEFAULT_CACHE);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote satellite which simply emits the signal
+     * @param wavelength phase observed value wavelength (m)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param cache from which ambiguity drive should come
+     * @since 12.1
+     */
+    public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                       final ObservableSatellite local, final ObservableSatellite remote,
+                                       final double wavelength, final double sigma, final double baseWeight,
+                                       final AmbiguityCache cache) {
         super(noiseSource, sigma, baseWeight, local, remote);
+        this.cache      = cache;
         this.wavelength = wavelength;
         this.local      = local;
         this.remote     = remote;
@@ -77,7 +105,8 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
 
         // create a dummy measurement
         final InterSatellitesPhase dummy = new InterSatellitesPhase(local, remote, relevant[0].getDate(),
-                                                                    Double.NaN, wavelength, sigma, baseWeight);
+                                                                    Double.NaN, wavelength, sigma, baseWeight,
+                                                                    cache);
         for (final EstimationModifier<InterSatellitesPhase> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -92,7 +121,7 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
         }
 
         // estimate the perfect value of the measurement
-        double phase = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
+        double phase = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();
@@ -102,7 +131,8 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
 
         // generate measurement
         final InterSatellitesPhase measurement = new InterSatellitesPhase(local, remote, relevant[0].getDate(),
-                                                                          phase, wavelength, sigma, baseWeight);
+                                                                          phase, wavelength, sigma, baseWeight,
+                                                                          cache);
         for (final EstimationModifier<InterSatellitesPhase> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

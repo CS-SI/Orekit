@@ -156,7 +156,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                            Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Compute propagation times
-        final double primaryTauD = signalTimeOfFlight(pva, primaryArrival.getPosition(), measurementDate);
+        final double primaryTauD = signalTimeOfFlight(pva, primaryArrival.getPosition(), measurementDate,
+                                                      state.getFrame());
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 2nd leg
         final double dtLeg2 = delta - primaryTauD;
@@ -180,8 +181,9 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
 
         // Uplink time of flight from secondary station to transit state of leg2
         final double secondaryTauU = signalTimeOfFlight(QSecondaryApprox,
-                                                          transitStateLeg2PV.getPosition(),
-                                                          transitStateLeg2PV.getDate());
+                                                        transitStateLeg2PV.getPosition(),
+                                                        transitStateLeg2PV.getDate(),
+                                                        state.getFrame());
 
         // Total time of flight for leg 2
         final double tauLeg2 = primaryTauD + secondaryTauU;
@@ -201,7 +203,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
         // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
         final double secondaryTauD = signalTimeOfFlight(transitStateLeg2PV,
                                                         secondaryRebound.getPosition(),
-                                                        reboundDate);
+                                                        reboundDate,
+                                                        state.getFrame());
 
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 1st leg
@@ -222,7 +225,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
         // Uplink time of flight from primary station to transit state of leg1
         final double primaryTauU = signalTimeOfFlight(QPrimaryApprox,
                                                       transitStateLeg1PV.getPosition(),
-                                                      transitStateLeg1PV.getDate());
+                                                      transitStateLeg1PV.getDate(),
+                                                      state.getFrame());
 
         // Primary station PV in inertial frame at exact emission date
         final AbsoluteDate emissionDate = transitStateLeg1PV.getDate().shiftedBy(-primaryTauU);
@@ -340,7 +344,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                                   zero, zero, zero));
 
         // Compute propagation times
-        final Gradient primaryTauD = signalTimeOfFlight(pvaDS, primaryArrival.getPosition(), measurementDateDS);
+        final Gradient primaryTauD = signalTimeOfFlight(pvaDS, primaryArrival.getPosition(),
+                                                        measurementDateDS, state.getFrame());
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 2nd leg
         final Gradient dtLeg2 = primaryTauD.negate().add(delta);
@@ -365,7 +370,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
         // Uplink time of flight from secondary station to transit state of leg2
         final Gradient secondaryTauU = signalTimeOfFlight(QSecondaryApprox,
                                                           transitStateLeg2PV.getPosition(),
-                                                          transitStateLeg2PV.getDate());
+                                                          transitStateLeg2PV.getDate(),
+                                                          state.getFrame());
 
         // Total time of flight for leg 2
         final Gradient tauLeg2 = primaryTauD.add(secondaryTauU);
@@ -386,7 +392,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
         // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
         final Gradient secondaryTauD = signalTimeOfFlight(transitStateLeg2PV,
                                                           secondaryRebound.getPosition(),
-                                                          reboundDateDS);
+                                                          reboundDateDS,
+                                                          state.getFrame());
 
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 1st leg
@@ -410,7 +417,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
         // Uplink time of flight from primary station to transit state of leg1
         final Gradient primaryTauU = signalTimeOfFlight(QPrimaryApprox,
                                                         transitStateLeg1PV.getPosition(),
-                                                        transitStateLeg1PV.getDate());
+                                                        transitStateLeg1PV.getDate(),
+                                                        state.getFrame());
 
         // Primary station PV in inertial frame at exact emission date
         final AbsoluteDate emissionDate = transitStateLeg1PV.getDate().toAbsoluteDate().shiftedBy(-primaryTauU.getValue());
@@ -454,12 +462,11 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
         final Gradient turnAroundRange = (tauLeg2.add(tauLeg1)).multiply(cOver2);
         estimated.setEstimatedValue(turnAroundRange.getValue());
 
-        // Turn-around range partial derivatives with respect to state
+        // Turn-around range first order derivatives with respect to state
         final double[] derivatives = turnAroundRange.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
-        // set partial derivatives with respect to parameters
-        // (beware element at index 0 is the value, not a derivative)
+        // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());

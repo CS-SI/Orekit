@@ -167,20 +167,22 @@ public abstract class Orbit
      */
     protected static boolean hasNonKeplerianAcceleration(final PVCoordinates pva, final double mu) {
 
-        final Vector3D p = pva.getPosition();
-        final double r2 = p.getNormSq();
-        final double r  = FastMath.sqrt(r2);
-        final Vector3D keplerianAcceleration = new Vector3D(-mu / (r * r2), p);
-
-        // Check if acceleration is null or relatively close to 0 compared to the keplerain acceleration
         final Vector3D a = pva.getAcceleration();
-        if (a == null || a.getNorm() < 1e-9 * keplerianAcceleration.getNorm()) {
+        if (a == null) {
             return false;
         }
 
-        final Vector3D nonKeplerianAcceleration = a.subtract(keplerianAcceleration);
+        final Vector3D p = pva.getPosition();
+        final double r2 = p.getNormSq();
 
-        if ( nonKeplerianAcceleration.getNorm() > 1e-9 * keplerianAcceleration.getNorm()) {
+        // Check if acceleration is relatively close to 0 compared to the Keplerian acceleration
+        final double tolerance = mu * 1e-9;
+        final Vector3D aTimesR2 = a.scalarMultiply(r2);
+        if (aTimesR2.getNorm() < tolerance) {
+            return false;
+        }
+
+        if ((aTimesR2.add(p.normalize().scalarMultiply(mu))).getNorm() > tolerance) {
             // we have a relevant acceleration, we can compute derivatives
             return true;
         } else {
@@ -459,6 +461,12 @@ public abstract class Orbit
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate otherDate, final Frame otherFrame) {
+        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
     }
 
     /** Get the position in a specified frame.

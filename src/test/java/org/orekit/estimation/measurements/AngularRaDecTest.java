@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -31,26 +30,35 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.generation.AngularRaDecBuilder;
-import org.orekit.frames.*;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.StaticTransform;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
 
-public class AngularRaDecTest {
+class AngularRaDecTest {
 
     /** Test the values of radec measurements.
      *  Added after bug 473 was reported by John Grimes.
      */
     @Test
-    public void testBug473OnValues() {
+    void testBug473OnValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -79,8 +87,7 @@ public class AngularRaDecTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the RADEC value
-            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
-                                                                                                 new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             raDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -99,7 +106,7 @@ public class AngularRaDecTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -142,7 +149,8 @@ public class AngularRaDecTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP, datemeas);
+            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP,
+                                                                                  datemeas, state.getFrame());
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -152,14 +160,12 @@ public class AngularRaDecTest {
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
-                Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) {
-                        return measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                               getEstimatedValue();
-                    }
-                }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                   PositionAngleType.TRUE, 250.0, 4).value(state);
+                Differentiation.differentiate(state1 -> measurement.
+                       estimateWithoutDerivatives(new SpacecraftState[] {
+                                                  state1
+                                              }).
+                       getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
+                                              PositionAngleType.TRUE, 250.0, 4).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -197,7 +203,7 @@ public class AngularRaDecTest {
         Assertions.assertEquals(0.0, new Median().evaluate(RaerrorsV), 2.2e-5);
 
         // median errors on declination
-        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsP), 1.9e-11);
+        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsP), 2.2e-11);
         Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsV), 9.0e-6);
 
         // Test measurement type
@@ -208,7 +214,7 @@ public class AngularRaDecTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
@@ -246,7 +252,8 @@ public class AngularRaDecTest {
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
+            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP,
+                                                                                     datemeas, stateini.getFrame());
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
@@ -267,7 +274,7 @@ public class AngularRaDecTest {
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                             return measurement.
-                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                    getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());
@@ -285,29 +292,18 @@ public class AngularRaDecTest {
      * values.
      */
     @Test
-    public void testIssue1026() {
+    void testIssue1026() {
 
-        //Context context = EstimationTestUtils.eccentricContext("regular-data/de431-ephemerides");
         Utils.setDataRoot("regular-data");
 
-        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] pos = { Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
         final double[] vel = {0., 10., 0.};
         final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
-                new Vector3D(vel[0], vel[1], vel[2]));
+                                                              new Vector3D(vel[0], vel[1], vel[2]));
         final AbsoluteDate epoch = new AbsoluteDate(new DateComponents(2000, 1, 1), TimeScalesFactory.getUTC());
         final Frame gcrf = FramesFactory.getGCRF();
-        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf,
-                epoch, Constants.EGM96_EARTH_MU);
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
         final SpacecraftState spacecraftState = new SpacecraftState(orbit);
-        final OrekitStepInterpolator fakeInterpolator = new OrekitStepInterpolator() {
-            public OrekitStepInterpolator restrictStep(SpacecraftState newPreviousState, SpacecraftState newCurrentState) { return null; }
-            public boolean isPreviousStateInterpolated() { return false; }
-            public boolean isForward() { return true; }
-            public boolean isCurrentStateInterpolated() { return false; }
-            public SpacecraftState getPreviousState() { return spacecraftState; }
-            public SpacecraftState getInterpolatedState(AbsoluteDate date) { return spacecraftState; }
-            public SpacecraftState getCurrentState() { return spacecraftState; }
-        };
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
                 Constants.IERS2010_EARTH_FLATTENING,
@@ -315,7 +311,8 @@ public class AngularRaDecTest {
 
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation station = new GroundStation(baseFrame);
+        final GroundStation station = new GroundStation(baseFrame,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         final Frame[] frames = {FramesFactory.getEME2000(), FramesFactory.getGCRF(), FramesFactory.getICRF(), FramesFactory.getTOD(false)};
         final double[][] raDec = new double[frames.length][];
@@ -325,8 +322,8 @@ public class AngularRaDecTest {
             final AngularRaDecBuilder builder = new AngularRaDecBuilder(null, station, frames[i],
                     new double[]{1., 1.}, new double[]{1., 1.}, os);
             builder.init(spacecraftState.getDate(), spacecraftState.getDate());
-            final double[] moreRaDec = builder.build(spacecraftState.getDate(),
-                                                     Collections.singletonMap(os, fakeInterpolator)).getObservedValue();
+            final double[] moreRaDec = builder.build(spacecraftState.getDate(), new SpacecraftState[] { spacecraftState })
+                    .getObservedValue();
             // convert in common frame
             final StaticTransform transform = frames[i].getStaticTransformTo(orbit.getFrame(), epoch);
             final Vector3D transformedLoS = transform.transformVector(new Vector3D(moreRaDec[0], moreRaDec[1]));

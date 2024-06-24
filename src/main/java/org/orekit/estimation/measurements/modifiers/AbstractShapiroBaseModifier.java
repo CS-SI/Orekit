@@ -19,6 +19,8 @@ package org.orekit.estimation.measurements.modifiers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -26,7 +28,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * Shapiro time delay is a relativistic effect due to gravity.
  * </p>
- *
  * @author Luc Maisonobe
  * @since 10.0
  */
@@ -43,9 +44,13 @@ public class AbstractShapiroBaseModifier {
     }
 
     /** Modify measurement.
+     * @param <T> type of the measurements
+     * @param modifier applied modifier
      * @param estimated measurement to modify
+     * @since 12.1
      */
-    protected void doModify(final EstimatedMeasurementBase<?> estimated) {
+    protected <T extends ObservedMeasurement<T>> void doModify(final EstimationModifier<T> modifier,
+                                                               final EstimatedMeasurementBase<T> estimated) {
 
         // compute correction, for one way or two way measurements
         final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
@@ -56,7 +61,7 @@ public class AbstractShapiroBaseModifier {
         // update estimated value taking into account the Shapiro time delay.
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] + correction;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(modifier, newValue);
 
     }
 
