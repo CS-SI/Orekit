@@ -27,6 +27,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.BistaticRangeTroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -169,7 +170,8 @@ public class BistaticRangeTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final BistaticRangeTroposphericDelayModifier modifier = new BistaticRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+        final BistaticRangeTroposphericDelayModifier modifier =
+            new BistaticRangeTroposphericDelayModifier((TroposphericModel) ModifiedSaastamoinenModel.getStandardModel());
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -325,7 +327,8 @@ public class BistaticRangeTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final BistaticRangeTroposphericDelayModifier modifier = new BistaticRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+        final BistaticRangeTroposphericDelayModifier modifier =
+            new BistaticRangeTroposphericDelayModifier((TroposphericModel) ModifiedSaastamoinenModel.getStandardModel());
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
