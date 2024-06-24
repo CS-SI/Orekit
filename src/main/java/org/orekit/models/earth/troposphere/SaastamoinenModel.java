@@ -22,21 +22,16 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
-import org.orekit.models.earth.weather.water.Wang1988;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldTrackingCoordinates;
-import org.orekit.utils.TrackingCoordinates;
 
 /** The modified Saastamoinen model.
  * @author Luc Maisonobe
  * @deprecated as of 12.1, replaced by {@link ModifiedSaastamoinenModel}
  */
 @Deprecated
-public class SaastamoinenModel extends ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
+public class SaastamoinenModel extends ModifiedSaastamoinenModel {
 
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = ModifiedSaastamoinenModel.DELTA_R_FILE_NAME;
@@ -56,7 +51,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
      */
     @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0) {
-        this(t0, p0, r0, DELTA_R_FILE_NAME);
+        super(t0, p0, r0);
     }
 
     /** Create a new Saastamoinen model for the troposphere using the given
@@ -75,7 +70,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
     @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0,
                              final String deltaRFileName) {
-        this(t0, p0, r0, deltaRFileName, DataContext.getDefault().getDataProvidersManager());
+        super(t0, p0, r0, deltaRFileName);
     }
 
     /** Create a new Saastamoinen model for the troposphere using the given
@@ -96,16 +91,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
                              final double r0,
                              final String deltaRFileName,
                              final DataProvidersManager dataProvidersManager) {
-        super(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(0.0,
-                                                                                              TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
-                                                                                              t0,
-                                                                                              new Wang1988().
-                                                                                              waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
-                                                                                                                 t0,
-                                                                                                                 r0),
-                                                                                              Double.NaN,
-                                                                                              Double.NaN)),
-              deltaRFileName, dataProvidersManager);
+        super(t0, p0, r0, deltaRFileName, dataProvidersManager);
     }
 
     /** Create a new Saastamoinen model using a standard atmosphere model.
@@ -129,8 +115,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
     @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                         getPth0Provider().getWeatherParamerers(point, date), parameters, date).getDelay();
+        return super.pathDelay(elevation, point, parameters, date);
     }
 
     /** {@inheritDoc} */
@@ -140,10 +125,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
                                                            final FieldGeodeticPoint<T> point,
                                                            final T[] parameters,
                                                            final FieldAbsoluteDate<T> date) {
-        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                         point,
-                         getPth0Provider().getWeatherParamerers(point, date),
-                         parameters, date).getDelay();
+        return super.pathDelay(elevation, point, parameters, date);
     }
 
 }
