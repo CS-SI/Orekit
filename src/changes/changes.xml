@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="12.2" date="TBD" description="TBD">
+    </release>
     <release version="12.1" date="24/06/2024"
              description="Version 12.1 is a minor release of Orekit.
              It includes both fixes and new features. Version 12.1 also includes major
