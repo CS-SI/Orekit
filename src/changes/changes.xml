@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="1442">
+        Updated release guide according to new sonatype token generation process.
+      </action>
     </release>
     <release version="12.1" date="24/06/2024"
              description="Version 12.1 is a minor release of Orekit.
