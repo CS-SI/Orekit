@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="12.1" date="24/06/2024"
+             description="Version 12.1.1 is a patch release of Orekit.
+             It fixes one incompatible change introduced in 12.1 on ModifiedSaastamoinenModel.">
+      <action dev="luc" type="fix" issue="1446">
+        Fixed API incompatible change introduced in 12.1.
+      </action>
+    </release>
+    <release version="12.1" date="24/06/2024"
              description="Version 12.1 is a minor release of Orekit.
              It includes both fixes and new features. Version 12.1 also includes major
              performance improvements in Orekit features related to orbit propagation,
