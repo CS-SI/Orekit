@@ -20,7 +20,20 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="12.1" date="TBD" description="TBD">
+    <release version="12.1" date="24/06/2024"
+             description="Version 12.1 is a minor release of Orekit.
+             It includes both fixes and new features. Version 12.1 also includes major
+             performance improvements in Orekit features related to orbit propagation,
+             orbit determination, frame transformations, etc. New features introduced
+             in 12.1 are new implementations of AdaptableInterval for elevation detector
+             and apside detector, support for post-seismic deformation available in
+             Sinex files, splicing of Rinex clock files, major improvements in GNSS clock
+             modelling, new detectors for the relative distance between two objects
+             and the beta angle, support for Walker constellations handling, a new
+             propagation model for Intelsat 11 elements, a new solar radiation pressure
+             model with cylindrical shadow model, a new architecture for tropospheric
+             models etc. Finally, since version 12.1 support for Ant has been removed.
+             See the list below for a full description of the changes.">
       <action dev="serrof" type="update" issue="1441">
         Use automatic differentiation when possible in nadir pointing.
       </action>
