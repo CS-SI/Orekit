@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="12.1" date="24/06/2024"
+    <release version="12.1.1" date="25/06/2024"
              description="Version 12.1.1 is a patch release of Orekit.
              It fixes one incompatible change introduced in 12.1 on ModifiedSaastamoinenModel.">
       <action dev="luc" type="fix" issue="1446">
