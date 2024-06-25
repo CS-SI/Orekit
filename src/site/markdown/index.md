@@ -176,6 +176,8 @@
         * impulse maneuvers occurrence
         * geomagnetic intensity
 		* extremum approach for TCA (Time of Closest Approach) computing
+        * beta angle
+        * relative distance with another object
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)

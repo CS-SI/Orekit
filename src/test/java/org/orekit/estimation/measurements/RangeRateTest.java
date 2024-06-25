@@ -28,6 +28,7 @@ import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayMo
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -458,7 +459,8 @@ public class RangeRateTest {
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), true);
+            final RangeRateTroposphericDelayModifier modifier =
+                new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), true);
             ((RangeRate) measurement).addModifier(modifier);
 
             //
@@ -601,7 +603,8 @@ public class RangeRateTest {
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), true);
+            final RangeRateTroposphericDelayModifier modifier =
+                new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), true);
             ((RangeRate) measurement).addModifier(modifier);
 
             // parameter corresponding to station position offset

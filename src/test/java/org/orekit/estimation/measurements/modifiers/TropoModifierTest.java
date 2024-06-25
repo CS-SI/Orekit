@@ -48,6 +48,7 @@ import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -85,7 +86,8 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+        final RangeTroposphericDelayModifier modifier =
+            new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -193,7 +195,8 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+        final PhaseTroposphericDelayModifier modifier =
+            new PhaseTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -302,7 +305,8 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+        final TurnAroundRangeTroposphericDelayModifier modifier =
+            new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -615,7 +619,8 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
-        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), false);
+        final RangeRateTroposphericDelayModifier modifier =
+            new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), false);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();

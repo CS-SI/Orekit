@@ -31,6 +31,7 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Interface for position providers (including for Field).
+ * Emulates position (and derivatives) vector as a function of time.
  * @author Romain Serra
  * @since 12.1
  */
@@ -90,6 +91,18 @@ public interface ExtendedPositionProvider extends PVCoordinatesProvider {
      * @return converted function
      */
     default <T extends CalculusFieldElement<T>> FieldPVCoordinatesProvider<T> toFieldPVCoordinatesProvider(Field<T> field) {
-        return this::getPVCoordinates;
+        return new FieldPVCoordinatesProvider<T>() {
+
+            @Override
+            public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+                return ExtendedPositionProvider.this.getPosition(date, frame);
+            }
+
+            @Override
+            public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
+                                                                     final Frame frame) {
+                return ExtendedPositionProvider.this.getPVCoordinates(date, frame);
+            }
+        };
     }
 }

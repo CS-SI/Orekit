@@ -29,6 +29,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -186,8 +187,8 @@ public class Range2Test {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> absoluteErrors = new ArrayList<Double>();
-        final List<Double> relativeErrors = new ArrayList<Double>();
+        final List<Double> absoluteErrors = new ArrayList<>();
+        final List<Double> relativeErrors = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -314,8 +315,8 @@ public class Range2Test {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> errorsP = new ArrayList<Double>();
-        final List<Double> errorsV = new ArrayList<Double>();
+        final List<Double> errorsP = new ArrayList<>();
+        final List<Double> errorsV = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -329,7 +330,8 @@ public class Range2Test {
                    ) {
 
                     // Add modifiers if test implies it
-                    final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+                    final RangeTroposphericDelayModifier modifier =
+                        new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
                     }
@@ -350,14 +352,10 @@ public class Range2Test {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            return measurement.
-                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
-                                   getEstimatedValue();
-                        }
-                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                    jacobianRef = Differentiation.differentiate(state1 -> measurement.
+                           estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                           getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
+                                                                OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -415,8 +413,8 @@ public class Range2Test {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
-        final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsV = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
@@ -466,7 +464,7 @@ public class Range2Test {
                                                                1.0, 3.0, 300.0);
 
         // List to store the results
-        final List<Double> relErrorList = new ArrayList<Double>();
+        final List<Double> relErrorList = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -480,7 +478,8 @@ public class Range2Test {
                    ) {
 
                     // Add modifiers if test implies it
-                    final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+                    final RangeTroposphericDelayModifier modifier =
+                        new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
                     }
@@ -566,7 +565,7 @@ public class Range2Test {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert error list to double[]
-        final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);

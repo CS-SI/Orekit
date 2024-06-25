@@ -66,7 +66,7 @@ import org.orekit.utils.TrackingCoordinates;
  * </p>
  * @author Thomas Neidhart
  * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
- * @since 12.1
+ * @since 12.0
  */
 public class ModifiedSaastamoinenModel implements TroposphericModel {
 

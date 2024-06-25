@@ -61,6 +61,26 @@ class ExtendedPositionProviderTest {
         Assertions.assertEquals(0., pvCoordinates.getAcceleration().getNorm().getReal());
     }
 
+    @Test
+    void testToFieldPVCoordinatesProvider() {
+        // GIVEN
+        final TestExtendedPositionProvider positionProvider = new TestExtendedPositionProvider();
+        final Frame frame = Mockito.mock(Frame.class);
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getJ2000Epoch(ComplexField.getInstance());
+        // WHEN
+        final FieldPVCoordinatesProvider<Complex> fieldPVCoordinatesProvider = positionProvider
+            .toFieldPVCoordinatesProvider(ComplexField.getInstance());
+        // THEN
+        final FieldVector3D<Complex> expectedPosition = positionProvider.getPosition(date, frame);
+        final FieldVector3D<Complex> actualPosition = fieldPVCoordinatesProvider.getPosition(date, frame);
+        Assertions.assertEquals(expectedPosition, actualPosition);
+        final FieldPVCoordinates<Complex> expectedPV = positionProvider.getPVCoordinates(date, frame);
+        final FieldPVCoordinates<Complex> actualPV = fieldPVCoordinatesProvider.getPVCoordinates(date, frame);
+        Assertions.assertEquals(expectedPV.getPosition(), actualPV.getPosition());
+        Assertions.assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
+        Assertions.assertEquals(expectedPV.getAcceleration(), actualPV.getAcceleration());
+    }
+
     private static class TestExtendedPositionProvider implements ExtendedPositionProvider {
 
         private final AbsoluteDate referenceDate = AbsoluteDate.ARBITRARY_EPOCH;

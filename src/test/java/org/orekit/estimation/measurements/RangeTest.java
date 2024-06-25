@@ -34,6 +34,7 @@ import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifi
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -349,7 +350,8 @@ class RangeTest {
                    ) {
 
                     // Add modifiers if test implies it
-                    final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+                    final RangeTroposphericDelayModifier modifier =
+                        new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
                     }
@@ -498,7 +500,8 @@ class RangeTest {
                    ) {
 
                     // Add modifiers if test implies it
-                    final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+                    final RangeTroposphericDelayModifier modifier =
+                        new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
                     }
