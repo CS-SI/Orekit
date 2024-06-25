@@ -27,7 +27,6 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TDOATroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
-import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;

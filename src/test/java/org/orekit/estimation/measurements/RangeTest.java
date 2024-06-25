@@ -34,7 +34,6 @@ import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifi
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
-import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -184,7 +183,6 @@ class RangeTest {
      * Generic test function for values of the range
      * @param printResults Print the results ?
      */
-    @SuppressWarnings("deprecation")
     void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
