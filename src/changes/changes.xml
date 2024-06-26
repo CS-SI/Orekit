@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1449">
+        Allow IER91 orIGb08 as valid ITRF names in SP3 files.
+      </action>
       <action dev="bryan" type="update" issue="1442">
         Updated release guide according to new sonatype token generation process.
       </action>
