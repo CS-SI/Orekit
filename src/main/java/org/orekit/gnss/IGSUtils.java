@@ -41,7 +41,7 @@ public class IGSUtils {
     /** Pattern for frame names with year.
      * @since 12.1
      */
-    private static final Pattern EARTH_FRAME_WITH_YEAR = Pattern.compile("(?:ITR|ITRF|IGS|SLR)([0-9]{2})");
+    private static final Pattern EARTH_FRAME_WITH_YEAR = Pattern.compile("(?:IER|ITR|ITRF|IGS|IGb|SLR)([0-9]{2})");
 
     /** Pattern for GCRF inertial frame.
      * @since 12.1
