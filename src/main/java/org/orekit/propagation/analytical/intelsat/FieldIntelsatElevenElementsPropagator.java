@@ -329,7 +329,7 @@ public class FieldIntelsatElevenElementsPropagator<T extends CalculusFieldElemen
      *
      * @return the Intelsat's 11 elements used by the propagator
      */
-    public getIntelsatElevenElements() {
+    public FieldIntelsatElevenElements<T> getIntelsatElevenElements() {
         return elements;
     }
 }
