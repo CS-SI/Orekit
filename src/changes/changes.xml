@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="12.1.2" date="TBD" description="TBD">
+    </release>
     <release version="12.1.1" date="25/06/2024"
              description="Version 12.1.1 is a patch release of Orekit.
              It fixes one incompatible change introduced in 12.1 on ModifiedSaastamoinenModel.">
