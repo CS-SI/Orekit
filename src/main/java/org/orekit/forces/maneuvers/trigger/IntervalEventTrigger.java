@@ -76,6 +76,21 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
         this.cached                 = new HashMap<>();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        this.firingIntervalDetector.init(initialState, target);
+        super.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <D extends CalculusFieldElement<D>> void init(final FieldSpacecraftState<D> initialState,
+                                                         final FieldAbsoluteDate<D> target) {
+        this.firingIntervalDetector.init(initialState.toSpacecraftState(), target.toAbsoluteDate());
+        super.init(initialState, target);
+    }
+
     /**
      * Getter for the firing interval detector.
      * @return firing interval detector
