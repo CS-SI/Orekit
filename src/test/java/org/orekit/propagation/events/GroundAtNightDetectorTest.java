@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,10 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.List;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -31,7 +29,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
@@ -40,6 +38,8 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.util.List;
 
 public class GroundAtNightDetectorTest {
 
@@ -101,7 +101,7 @@ public class GroundAtNightDetectorTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         CircularOrbit o = new CircularOrbit(7200000.0, 1.0e-3, 2.0e-4,
                                             FastMath.toRadians(50.0), FastMath.toRadians(134.0),
-                                            FastMath.toRadians(21.0), PositionAngle.MEAN, FramesFactory.getGCRF(),
+                                            FastMath.toRadians(21.0), PositionAngleType.MEAN, FramesFactory.getGCRF(),
                                             new AbsoluteDate("2003-02-14T14:02:03.000", utc),
                                             Constants.EIGEN5C_EARTH_MU);
 
@@ -115,17 +115,17 @@ public class GroundAtNightDetectorTest {
         p.propagate(o.getDate().shiftedBy(Constants.JULIAN_DAY));
         List<LoggedEvent> events = logger.getLoggedEvents();
         if (Double.isNaN(expectedDuration)) {
-            Assert.assertEquals(0, events.size());
+            Assertions.assertEquals(0, events.size());
         } else {
-            Assert.assertEquals(2, events.size());
-            Assert.assertEquals(expectedDuration,
+            Assertions.assertEquals(2, events.size());
+            Assertions.assertEquals(expectedDuration,
                                 events.get(1).getState().getDate().durationFrom(events.get(0).getState().getDate()),
                                 1.0e-3);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

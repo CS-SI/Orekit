@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -32,8 +32,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends OutlierFilter<T>
-{
+public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends OutlierFilter<T> {
     /** Current value of sigma. */
     private double[] sigma;
 
@@ -67,7 +66,7 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
 
         // Do not apply the filter if current iteration/measurement is lower than
         // warmup attribute or if the attribute sigma has not been initialized yet
-        if ((estimated.getIteration() > getWarmup()) && (sigma != null)) {
+        if (estimated.getIteration() > getWarmup() && sigma != null) {
 
             final double[] observed    = estimated.getObservedMeasurement().getObservedValue();
             final double[] theoretical = estimated.getEstimatedValue();

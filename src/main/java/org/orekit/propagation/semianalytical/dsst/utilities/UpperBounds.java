@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 
 
@@ -68,7 +68,7 @@ public class UpperBounds {
      * @param <T> the type of the field elements
      * @return the upper bound D<sub>n</sub><sup>l</sup>(&Chi;)
      */
-    public static <T extends RealFieldElement<T>> T getDnl(final T xx, final T xpl, final int n, final int l) {
+    public static <T extends CalculusFieldElement<T>> T getDnl(final T xx, final T xpl, final int n, final int l) {
         final int lp2 = l + 2;
         if (n > lp2) {
             final int ll = l * l;
@@ -166,15 +166,15 @@ public class UpperBounds {
     * @param <T> the type of the field elements
     * @return the upper bound R<sup>ε</sup><sub>n,m,l</sub>(γ)
     */
-    public static <T extends RealFieldElement<T>> T getRnml(final T gamma,
+    public static <T extends CalculusFieldElement<T>> T getRnml(final T gamma,
                                 final int n, final int l, final int m,
                                 final int eps, final int irf) {
         final T zero = gamma.getField().getZero();
         // Initialization
         final int mei = m * eps * irf;
-        final T sinisq = gamma.multiply(gamma).negate().add(1.);
+        final T sinisq = gamma.square().negate().add(1.);
         // Set a lower bound for inclination
-        final T sininc = FastMath.max(zero.add(0.03), FastMath.sqrt(sinisq));
+        final T sininc = FastMath.max(zero.newInstance(0.03), FastMath.sqrt(sinisq));
         final T onepig = gamma.multiply(irf).add(1.);
         final T sinincPowLmMEI = FastMath.pow(sininc, l - mei);
         final T onepigPowLmMEI = FastMath.pow(onepig, mei);
@@ -186,7 +186,7 @@ public class UpperBounds {
         if (n > l) {
             final int lp1 = l + 1;
 
-            T dpnml  = zero.add(lp1 * eps);
+            T dpnml  = zero.newInstance(lp1 * eps);
             T pnml   = gamma.multiply(dpnml).subtract(m);
 
             // If index > 1
@@ -195,9 +195,9 @@ public class UpperBounds {
                 final int ml  = m * l;
                 final int mm  = m * m;
 
-                T pn1ml  = zero.add(1.);
+                T pn1ml  = zero.newInstance(1.);
                 T dpn1ml = zero;
-                T pn2ml  = zero.add(1.);
+                T pn2ml  = zero.newInstance(1.);
                 T dpn2ml = zero;
                 for (int in = l + 2; in <= n; in++) {
                     final int nm1   = in - 1;

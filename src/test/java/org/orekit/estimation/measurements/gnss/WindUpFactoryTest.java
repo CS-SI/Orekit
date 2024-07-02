@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,29 +16,29 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.gnss.SatelliteSystem;
 
 public class WindUpFactoryTest {
 
     @Test
     public void testDifferentFactories() {
-        WindUp windUp1 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
-        Assert.assertEquals(0, windUp1.getParametersDrivers().size());
-        WindUp windUp2 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
-        Assert.assertEquals(0, windUp2.getParametersDrivers().size());
-        Assert.assertNotSame(windUp1, windUp2);
+        WindUp windUp1 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123");
+        Assertions.assertEquals(0, windUp1.getParametersDrivers().size());
+        WindUp windUp2 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123");
+        Assertions.assertEquals(0, windUp2.getParametersDrivers().size());
+        Assertions.assertNotSame(windUp1, windUp2);
     }
 
     @Test
     public void testSameFactory() {
         WindUpFactory factory = new WindUpFactory();
-        WindUp windUp1 = factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
-        Assert.assertEquals(0, windUp1.getParametersDrivers().size());
-        WindUp windUp2 = factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
-        Assert.assertEquals(0, windUp2.getParametersDrivers().size());
-        Assert.assertSame(windUp1, windUp2);
+        WindUp windUp1 = factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123");
+        Assertions.assertEquals(0, windUp1.getParametersDrivers().size());
+        WindUp windUp2 = factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123");
+        Assertions.assertEquals(0, windUp2.getParametersDrivers().size());
+        Assertions.assertSame(windUp1, windUp2);
     }
 
     @Test
@@ -46,34 +46,34 @@ public class WindUpFactoryTest {
 
         WindUpFactory factory = new WindUpFactory();
         WindUp[] windUp1 = {
-            factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 1, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 2, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 2, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 1, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 1, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 2, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 2, "XYZ789")
+            factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 1, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 2, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 2, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 1, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 2, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 2, Dipole.CANONICAL_I_J, "XYZ789")
         };
         WindUp[] windUp2 = {
-            factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 1, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 2, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 2, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 1, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 1, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 2, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 2, "XYZ789")
+            factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 1, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 2, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 2, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 1, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 2, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 2, Dipole.CANONICAL_I_J, "XYZ789")
         };
 
         for (int i = 0; i < windUp1.length; ++i) {
             for (int j = 0; j < windUp1.length; ++j) {
                 if (i != j) {
-                    Assert.assertNotSame(windUp1[i], windUp1[j]);
-                    Assert.assertNotSame(windUp2[i], windUp2[j]);
+                    Assertions.assertNotSame(windUp1[i], windUp1[j]);
+                    Assertions.assertNotSame(windUp2[i], windUp2[j]);
                 }
             }
-            Assert.assertSame(windUp1[i], windUp2[i]);
+            Assertions.assertSame(windUp1[i], windUp2[i]);
         }
 
     }

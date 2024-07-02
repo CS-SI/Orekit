@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,11 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -30,6 +32,12 @@ import org.orekit.time.AbsoluteDate;
  * @since 9.3
  */
 public interface Scheduler<T extends ObservedMeasurement<T>> {
+
+    /** Get the builder associated with this scheduler.
+     * @return builder associated with this scheduler
+     * @since 12.0
+     */
+    MeasurementBuilder<T> getBuilder();
 
     /** Initialize scheduler at the start of a measurements generation.
      * <p>
@@ -46,7 +54,8 @@ public interface Scheduler<T extends ObservedMeasurement<T>> {
     /** Generate a sequence of measurements.
      * @param interpolators interpolators for spacecraft states
      * @return generated measurements
+     * @since 12.0
      */
-    SortedSet<T> generate(List<OrekitStepInterpolator> interpolators);
+    SortedSet<EstimatedMeasurementBase<T>> generate(Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
 }

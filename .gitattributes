@@ -49,6 +49,8 @@ src/*/resources/*/unx*.405         -text
 src/*/resources/*/*/unx*.405       -text
 src/*/resources/*/unx*.406         -text
 src/*/resources/*/*/unx*.406       -text
+src/*/resources/*/lnx*.431         -text
+src/*/resources/*/*/lnx*.431       -text
 src/*/resources/inpop/*.dat        -text
-
+src/*/resources/gnss/ntrip/*.dat   -text
 

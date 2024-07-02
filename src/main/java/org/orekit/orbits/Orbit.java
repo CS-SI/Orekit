@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -29,9 +29,9 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
@@ -62,8 +62,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements TimeStamped, TimeShiftable<Orbit>, TimeInterpolable<Orbit>,
-               Serializable, PVCoordinatesProvider {
+    implements TimeStamped, TimeShiftable<Orbit>, Serializable, PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 438733454597999578L;
@@ -76,6 +75,11 @@ public abstract class Orbit
 
     /** Value of mu used to compute position and velocity (m³/s²). */
     private final double mu;
+
+    /** Computed position.
+     * @since 12.0
+     */
+    private transient Vector3D position;
 
     /** Computed PVCoordinates. */
     private transient TimeStampedPVCoordinates pvCoordinates;
@@ -170,16 +174,29 @@ public abstract class Orbit
 
         final Vector3D p = pva.getPosition();
         final double r2 = p.getNormSq();
-        final double r  = FastMath.sqrt(r2);
-        final Vector3D keplerianAcceleration = new Vector3D(-mu / (r * r2), p);
-        if (a.getNorm() > 1.0e-9 * keplerianAcceleration.getNorm()) {
+
+        // Check if acceleration is relatively close to 0 compared to the Keplerian acceleration
+        final double tolerance = mu * 1e-9;
+        final Vector3D aTimesR2 = a.scalarMultiply(r2);
+        if (aTimesR2.getNorm() < tolerance) {
+            return false;
+        }
+
+        if ((aTimesR2.add(p.normalize().scalarMultiply(mu))).getNorm() > tolerance) {
             // we have a relevant acceleration, we can compute derivatives
             return true;
         } else {
             // the provided acceleration is either too small to be reliable (probably even 0), or NaN
             return false;
         }
+    }
 
+    /** Returns true if and only if the orbit is elliptical i.e. has a non-negative semi-major axis.
+     * @return true if getA() is strictly greater than 0
+     * @since 12.0
+     */
+    public boolean isElliptical() {
+        return getA() > 0.;
     }
 
     /** Get the orbit type.
@@ -393,7 +410,7 @@ public abstract class Orbit
      */
     public double getKeplerianPeriod() {
         final double a = getA();
-        return (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
+        return isElliptical() ? 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu) : Double.POSITIVE_INFINITY;
     }
 
     /** Get the Keplerian mean motion.
@@ -404,6 +421,13 @@ public abstract class Orbit
     public double getKeplerianMeanMotion() {
         final double absA = FastMath.abs(getA());
         return FastMath.sqrt(mu / absA) / absA;
+    }
+
+    /** Get the derivative of the mean anomaly with respect to the semi major axis.
+     * @return derivative of the mean anomaly with respect to the semi major axis
+     */
+    public double getMeanAnomalyDotWrtA() {
+        return -1.5 * getKeplerianMeanMotion() / getA();
     }
 
     /** Get the date of orbital parameters.
@@ -439,6 +463,46 @@ public abstract class Orbit
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate otherDate, final Frame otherFrame) {
+        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
+    }
+
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position in the specified output frame
+     * @see #getPosition()
+     * @since 12.0
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        if (position == null) {
+            position = initPosition();
+        }
+
+        // If output frame requested is the same as definition frame,
+        // Position vector is returned directly
+        if (outputFrame == frame) {
+            return position;
+        }
+
+        // Else, position vector is transformed to output frame
+        final StaticTransform t = frame.getStaticTransformTo(outputFrame, date);
+        return t.transformPosition(position);
+
+    }
+
+    /** Get the position in definition frame.
+     * @return position in the definition frame
+     * @see #getPVCoordinates()
+     * @since 12.0
+     */
+    public Vector3D getPosition() {
+        if (position == null) {
+            position = initPosition();
+        }
+        return position;
+    }
 
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return pvCoordinates in the definition frame
@@ -447,9 +511,16 @@ public abstract class Orbit
     public TimeStampedPVCoordinates getPVCoordinates() {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
+            position      = pvCoordinates.getPosition();
         }
         return pvCoordinates;
     }
+
+    /** Compute the position coordinates from the canonical parameters.
+     * @return computed position coordinates
+     * @since 12.0
+     */
+    protected abstract Vector3D initPosition();
 
     /** Compute the position/velocity coordinates from the canonical parameters.
      * @return computed position/velocity coordinates
@@ -480,7 +551,7 @@ public abstract class Orbit
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtCartesian(final PositionAngle type, final double[][] jacobian) {
+    public void getJacobianWrtCartesian(final PositionAngleType type, final double[][] jacobian) {
 
         final double[][] cachedJacobian;
         synchronized (this) {
@@ -528,7 +599,7 @@ public abstract class Orbit
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtParameters(final PositionAngle type, final double[][] jacobian) {
+    public void getJacobianWrtParameters(final PositionAngleType type, final double[][] jacobian) {
 
         final double[][] cachedJacobian;
         synchronized (this) {
@@ -570,7 +641,7 @@ public abstract class Orbit
      * @param type type of the position angle to use
      * @return inverse Jacobian
      */
-    private double[][] createInverseJacobian(final PositionAngle type) {
+    private double[][] createInverseJacobian(final PositionAngleType type) {
 
         // get the direct Jacobian
         final double[][] directJacobian = new double[6][6];
@@ -589,6 +660,9 @@ public abstract class Orbit
      * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
      * </p>
+     * <p>
+     * The array returned by this method will not be modified.
+     * </p>
      * @return 6x6 Jacobian matrix
      * @see #computeJacobianEccentricWrtCartesian()
      * @see #computeJacobianTrueWrtCartesian()
@@ -601,6 +675,9 @@ public abstract class Orbit
      * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
      * </p>
+     * <p>
+     * The array returned by this method will not be modified.
+     * </p>
      * @return 6x6 Jacobian matrix
      * @see #computeJacobianMeanWrtCartesian()
      * @see #computeJacobianTrueWrtCartesian()
@@ -612,6 +689,9 @@ public abstract class Orbit
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
      * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * </p>
+     * <p>
+     * The array returned by this method will not be modified.
      * </p>
      * @return 6x6 Jacobian matrix
      * @see #computeJacobianMeanWrtCartesian()
@@ -630,7 +710,7 @@ public abstract class Orbit
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(PositionAngle type, double gm, double[] pDot);
+    public abstract void addKeplerContribution(PositionAngleType type, double gm, double[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,12 +21,12 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
@@ -35,8 +35,9 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -56,11 +57,11 @@ public class ShapiroInterSatelliteRangeModifierTest {
 
     private void doTestShapiro(final boolean twoWay,
                                final double expectedMin, final double expectedMean, final double expectedMax) {
- 
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
@@ -73,14 +74,18 @@ public class ShapiroInterSatelliteRangeModifierTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset,
                                                                                                           Vector3D.ZERO,
                                                                                                           Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);
@@ -108,7 +113,7 @@ public class ShapiroInterSatelliteRangeModifierTest {
                 p3.propagate(sr.getDate()),
                 ephemeris.propagate(sr.getDate())
             };
-            EstimatedMeasurement<InterSatellitesRange> evalNoMod = sr.estimate(0, 0, states);
+            EstimatedMeasurementBase<InterSatellitesRange> evalNoMod = sr.estimateWithoutDerivatives(states);
 
             // add modifier
             sr.addModifier(modifier);
@@ -116,16 +121,16 @@ public class ShapiroInterSatelliteRangeModifierTest {
             for (final EstimationModifier<InterSatellitesRange> existing : sr.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
-            EstimatedMeasurement<InterSatellitesRange> eval = sr.estimate(0, 0, states);
+            Assertions.assertTrue(found);
+            EstimatedMeasurementBase<InterSatellitesRange> eval = sr.estimateWithoutDerivatives(states);
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 
         }
 
-        Assert.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
-        Assert.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
-        Assert.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
+        Assertions.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
+        Assertions.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
+        Assertions.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
 
     }
 

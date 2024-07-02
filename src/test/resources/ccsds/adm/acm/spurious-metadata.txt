@@ -1,0 +1,15 @@
+CCSDS_ACM_VERS           = 2.0
+CREATION_DATE            = 2017-12-01T00:00:00
+ORIGINATOR               = NASA
+MESSAGE_ID               = A7015Z5
+
+META_START
+OBJECT_NAME              = SDO
+INTERNATIONAL_DESIGNATOR = 2010-005A
+TIME_SYSTEM              = UTC
+EPOCH_TZERO              = 2017-12-26T19:40:00.000
+META_STOP
+
+META_START
+COMMENT  second metadata section is an error
+META_STOP

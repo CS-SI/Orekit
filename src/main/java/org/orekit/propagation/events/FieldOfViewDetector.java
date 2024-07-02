@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -26,12 +27,17 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor
  * {@link FieldOfView Field Of View}.
+ * <p>Beware that this detector is unaware of any bodies occluding line-of-sight to
+ * the target. It can be therefore used for many contexts from Earth Observation to
+ * interplanetary mission design. For instance, in an Earth Observation context,
+ * it can be easily combined to an {@link ElevationDetector} using
+ * {@link BooleanDetector#andCombine(java.util.Collection)} to calculate station
+ * visibility opportunities within the satellite's field of view.
  * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
  * propagation at FOV entry and to {@link Action#STOP stop} propagation
  * at FOV exit. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
- * @see CircularFieldOfViewDetector
  * @see FootprintOverlapDetector
  * @see VisibilityTrigger
  * @author Luc Maisonobe
@@ -57,6 +63,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * otherwise some short passes could be missed.</p>
      * @param pvTarget Position/velocity provider of the considered target
      * @param fov Field Of View
+     * @since 10.1
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final FieldOfView fov) {
         this(pvTarget, 0.0, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV, fov);
@@ -68,36 +75,36 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * otherwise some short passes could be missed.</p>
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodie
+     * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
-     * @since 10.0
+     * @since 10.1
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                final VisibilityTrigger trigger, final FieldOfView fov) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<FieldOfViewDetector>(),
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing(),
              pvTarget, radiusTarget, trigger, fov);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodie
+     * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
      */
-    private FieldOfViewDetector(final double maxCheck, final double threshold, final int maxIter,
-                                final EventHandler<? super FieldOfViewDetector> handler,
-                                final PVCoordinatesProvider pvTarget, final double radiusTarget,
-                                final VisibilityTrigger trigger, final FieldOfView fov) {
+    protected FieldOfViewDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+                                  final EventHandler handler,
+                                  final PVCoordinatesProvider pvTarget, final double radiusTarget,
+                                  final VisibilityTrigger trigger, final FieldOfView fov) {
         super(maxCheck, threshold, maxIter, handler);
         this.targetPVProvider = pvTarget;
         this.radiusTarget     = radiusTarget;
@@ -107,9 +114,9 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOfViewDetector create(final double newMaxCheck, final double newThreshold,
+    protected FieldOfViewDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                          final int newMaxIter,
-                                         final EventHandler<? super FieldOfViewDetector> newHandler) {
+                                         final EventHandler newHandler) {
         return new FieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                        targetPVProvider, radiusTarget, trigger, fov);
     }
@@ -123,20 +130,21 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
     /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
     }
 
     /** {@inheritDoc}
      * <p>
      * The g function value is the angular offset between the
-     * target center and the {@link FieldOfView#offsetFromBoundary(Vector3D)
-     * Field Of View boundary}, plus or minus the target angular radius
-     * depending on the {@link VisibilityTrigger}, minus the {@link
-     * FieldOfView#getMargin() Field Of View margin}. It is therefore negative
-     * if the target is visible within the Field Of View and positive if it is
-     * outside of the Field Of View.
+     * target center and the {@link FieldOfView#offsetFromBoundary(Vector3D,
+     * double, VisibilityTrigger) Field Of View boundary}, plus or minus the
+     * target angular radius depending on the {@link VisibilityTrigger}, minus
+     * the {@link FieldOfView#getMargin() Field Of View margin}. It is therefore
+     * negative if the target is visible within the Field Of View and positive
+     * if it is outside of the Field Of View.
      * </p>
      * <p>
      * As per the previous definition, when the target enters the Field Of
@@ -148,11 +156,11 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
         // get line of sight in spacecraft frame
         final Vector3D targetPosInert =
-                targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final Vector3D lineOfSightSC = s.toTransform().transformPosition(targetPosInert);
+                targetPVProvider.getPosition(s.getDate(), s.getFrame());
+        final Vector3D lineOfSightSC = s.toStaticTransform().transformPosition(targetPosInert);
 
         final double angularRadius = FastMath.asin(radiusTarget / lineOfSightSC.getNorm());
-        return fov.offsetFromBoundary(lineOfSightSC) + FastMath.copySign(angularRadius, trigger.getSign());
+        return fov.offsetFromBoundary(lineOfSightSC, angularRadius, trigger);
 
     }
 

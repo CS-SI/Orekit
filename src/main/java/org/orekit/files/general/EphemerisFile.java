@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,13 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.AggregateBoundedPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -34,18 +35,21 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * An interface for accessing the data stored in an ephemeris file and using the data to
  * create a working {@link org.orekit.propagation.Propagator Propagator}.
  *
- * <p> An {@link EphemerisFile} consists of one or more satellites each an ID unique
+ * <p> An {@link EphemerisFile} consists of one or more satellites each with a unique ID
  * within the file. The ephemeris for each satellite consists of one or more segments.
  *
  * <p> Some ephemeris file formats may supply additional information that is not available
  * via this interface. In those cases it is recommended that the parser return a subclass
  * of this interface to provide access to the additional information.
  *
+ * @param <C> type of the Cartesian coordinates
+ * @param <S> type of the segment
  * @author Evan Ward
  * @see SatelliteEphemeris
  * @see EphemerisSegment
  */
-public interface EphemerisFile {
+public interface EphemerisFile<C extends TimeStampedPVCoordinates,
+                               S extends EphemerisFile.EphemerisSegment<C>> {
 
     /**
      * Get the loaded ephemeris for each satellite in the file.
@@ -53,7 +57,7 @@ public interface EphemerisFile {
      * @return a map from the satellite's ID to the information about that satellite
      * contained in the file.
      */
-    Map<String, ? extends SatelliteEphemeris> getSatellites();
+    Map<String, ? extends SatelliteEphemeris<C, S>> getSatellites();
 
     /**
      * Contains the information about a single satellite from an {@link EphemerisFile}.
@@ -61,12 +65,14 @@ public interface EphemerisFile {
      * <p> A satellite ephemeris consists of one or more {@link EphemerisSegment}s.
      * Segments are typically used to split up an ephemeris at discontinuous events, such
      * as a maneuver.
-     *
+     * @param <C> type of the Cartesian coordinates
+     * @param <S> type of the segment
      * @author Evan Ward
      * @see EphemerisFile
      * @see EphemerisSegment
      */
-    interface SatelliteEphemeris {
+    interface SatelliteEphemeris<C extends TimeStampedPVCoordinates,
+                                 S extends EphemerisSegment<C>> {
 
         /**
          * Get the satellite ID. The satellite ID is unique only within the same ephemeris
@@ -79,8 +85,7 @@ public interface EphemerisFile {
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m^3 /
-         * s^2.
+         * @return the gravitational parameter used in {@link #getPropagator(AttitudeProvider)}, in m³/s².
          */
         double getMu();
 
@@ -92,7 +97,7 @@ public interface EphemerisFile {
          *
          * @return the segments contained in the ephemeris file for this satellite.
          */
-        List<? extends EphemerisSegment> getSegments();
+        List<S> getSegments();
 
         /**
          * Get the start date of the ephemeris.
@@ -107,8 +112,7 @@ public interface EphemerisFile {
         /**
          * Get the end date of the ephemeris.
          *
-         * <p> The date returned by this method is equivalent to {@code
-         * getPropagator().getMaxDate()}.
+         * <p> The date returned by this method is equivalent to {@code getPropagator().getMaxDate()}.
          *
          * @return ephemeris end date.
          */
@@ -118,26 +122,58 @@ public interface EphemerisFile {
          * View this ephemeris as a propagator, combining data from all {@link
          * #getSegments() segments}.
          *
-         * <p>In order to view the ephemeris for this satellite as a {@link Propagator}
-         * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
-         * must be constructable from the frame and time scale specification in the
-         * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeScale()} return normally for all {@link
+         * <p>
+         * In order to view the ephemeris for this satellite as a {@link Propagator}
+         * several conditions must be met. An Orekit {@link Frame} must be constructable
+         * from the frame specification in the ephemeris file. This condition is met when
+         * {@link EphemerisSegment#getFrame()} return normally for all {@link
          * #getSegments() segments}. If there are multiple segments they must be adjacent
          * such that there are no duplicates or gaps in the ephemeris. The definition of
          * adjacent depends on the ephemeris format as some formats define usable start
          * and stop times that are different from the ephemeris data start and stop times.
          * If these conditions are not met an {@link OrekitException} may be thrown by
          * this method or by one of the methods of the returned {@link Propagator}.
+         * </p>
+         * <p>
+         * The {@link AttitudeProvider attitude provider} used is a {@link FrameAlignedProvider}
+         * aligned with the {@link EphemerisSegment#getInertialFrame() inertial frame} from the first segment.
+         * </p>
          *
-         * <p> Each call to this method creates a new propagator.
+         * <p>Each call to this method creates a new propagator.</p>
          *
          * @return a propagator for all the data in this ephemeris file.
          */
         default BoundedPropagator getPropagator() {
+            return getPropagator(new FrameAlignedProvider(getSegments().get(0).getInertialFrame()));
+        }
+
+        /**
+         * View this ephemeris as a propagator, combining data from all {@link
+         * #getSegments() segments}.
+         *
+         * <p>
+         * In order to view the ephemeris for this satellite as a {@link Propagator}
+         * several conditions must be met. An Orekit {@link Frame} must be constructable
+         * from the frame specification in the ephemeris file. This condition is met when
+         * {@link EphemerisSegment#getFrame()} return normally for all {@link
+         * #getSegments() segments}. If there are multiple segments they must be adjacent
+         * such that there are no duplicates or gaps in the ephemeris. The definition of
+         * adjacent depends on the ephemeris format as some formats define usable start
+         * and stop times that are different from the ephemeris data start and stop times.
+         * If these conditions are not met an {@link OrekitException} may be thrown by
+         * this method or by one of the methods of the returned {@link Propagator}.
+         * </p>
+         *
+         * <p>Each call to this method creates a new propagator.</p>
+         *
+         * @param attitudeProvider provider for attitude computation
+         * @return a propagator for all the data in this ephemeris file.
+         * @since 12.0
+         */
+        default BoundedPropagator getPropagator(final  AttitudeProvider attitudeProvider) {
             final List<BoundedPropagator> propagators = new ArrayList<>();
-            for (final EphemerisSegment segment : this.getSegments()) {
-                propagators.add(segment.getPropagator());
+            for (final EphemerisSegment<C> segment : this.getSegments()) {
+                propagators.add(segment.getPropagator(attitudeProvider));
             }
             return new AggregateBoundedPropagator(propagators);
         }
@@ -150,58 +186,48 @@ public interface EphemerisFile {
      * <p> Segments are typically used to split an ephemeris around discontinuous events
      * such as maneuvers.
      *
+     * @param <C> type of the Cartesian coordinates
      * @author Evan Ward
      * @see EphemerisFile
      * @see SatelliteEphemeris
      */
-    interface EphemerisSegment {
+    interface EphemerisSegment<C extends TimeStampedPVCoordinates> {
 
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m^3 /
-         * s^2.
+         * @return the gravitational parameter used in {@link #getPropagator(AttitudeProvider)}, in m³/s².
          */
         double getMu();
 
         /**
-         * Get the name of the center of the coordinate system the ephemeris is provided
-         * in.  This may be a natural origin, such as the center of the Earth, another
-         * satellite, etc.
-         *
-         * @return the name of the frame center
-         */
-        String getFrameCenterString();
-
-        /**
-         * Get the defining frame for this ephemeris segment.
-         *
-         * @return the frame identifier, as specified in the ephemeris file, or {@code
-         * null} if the ephemeris file does not specify a frame.
-         */
-        String getFrameString();
-
-        /**
-         * Get the reference frame for this ephemeris segment.
+         * Get the reference frame for this ephemeris segment. The defining frame for
+         * {@link #getCoordinates()}.
          *
          * @return the reference frame for this segment. Never {@code null}.
          */
         Frame getFrame();
 
         /**
-         * Get the time scale for this ephemeris segment.
+         * Get the inertial reference frame for this ephemeris segment. Defines the
+         * propagation frame for {@link #getPropagator(AttitudeProvider)}.
          *
-         * @return the time scale identifier, as specified in the ephemeris file, or
-         * {@code null} if the ephemeris file does not specify a time scale.
-         */
-        String getTimeScaleString();
-
-        /**
-         * Get the time scale for this ephemeris segment.
+         * <p>The default implementation returns {@link #getFrame()} if it is inertial.
+         * Otherwise it returns {@link Frame#getRoot()}. Implementors are encouraged to
+         * override this default implementation if a more suitable inertial frame is
+         * available.
          *
-         * @return the time scale for this segment. Never {@code null}.
+         * @return an reference frame that is inertial, i.e. {@link
+         * Frame#isPseudoInertial()} is {@code true}. May be the same as {@link
+         * #getFrame()} if it is inertial.
          */
-        TimeScale getTimeScale();
+        default Frame getInertialFrame() {
+            final Frame frame = getFrame();
+            if (frame.isPseudoInertial()) {
+                return frame;
+            }
+            return Frame.getRoot();
+        }
 
         /**
          * Get the number of samples to use in interpolation.
@@ -223,7 +249,7 @@ public interface EphemerisFile {
         CartesianDerivativesFilter getAvailableDerivatives();
 
         /**
-         * Get the coordinates for this ephemeris segment.
+         * Get the coordinates for this ephemeris segment in {@link #getFrame()}.
          *
          * @return a list of state vectors in chronological order. The coordinates are not
          * necessarily evenly spaced in time. The value of {@link
@@ -231,7 +257,7 @@ public interface EphemerisFile {
          * specified in the file. Any position, velocity, or acceleration coordinates that
          * are not specified in the ephemeris file are zero in the returned values.
          */
-        List<? extends TimeStampedPVCoordinates> getCoordinates();
+        List<C> getCoordinates();
 
         /**
          * Get the start date of this ephemeris segment.
@@ -256,21 +282,50 @@ public interface EphemerisFile {
         /**
          * View this ephemeris segment as a propagator.
          *
-         * <p>In order to view the ephemeris for this satellite as a {@link Propagator}
-         * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
-         * must be constructable from the frame and time scale specification in the
-         * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeScale()} return normally. Additionally,
+         * <p>
+         * In order to view the ephemeris for this satellite as a {@link Propagator}
+         * several conditions must be met. An Orekit {@link Frame} must be constructable
+         * from the frame specification in the ephemeris file. This condition is met when
+         * {@link EphemerisSegment#getFrame()} return normally. Additionally,
          * {@link #getMu()} must return a valid value. If these conditions are not met an
          * {@link OrekitException} may be thrown by this method or by one of the methods
          * of the returned {@link Propagator}.
+         * </p>
+         * <p>
+         * The {@link AttitudeProvider attitude provider} used is a {@link FrameAlignedProvider}
+         * aligned with the {@link #getInertialFrame() inertial frame}
+         * </p>
          *
-         * <p> Each call to this method creates a new propagator.
+         * <p>Each call to this method creates a new propagator.</p>
          *
          * @return a propagator for this ephemeris segment.
          */
         default BoundedPropagator getPropagator() {
-            return new EphemerisSegmentPropagator(this);
+            return new EphemerisSegmentPropagator<>(this,
+                                                    new FrameAlignedProvider(getInertialFrame()));
+        }
+
+        /**
+         * View this ephemeris segment as a propagator.
+         *
+         * <p>
+         * In order to view the ephemeris for this satellite as a {@link Propagator}
+         * several conditions must be met. An Orekit {@link Frame} must be constructable
+         * from the frame specification in the ephemeris file. This condition is met when
+         * {@link EphemerisSegment#getFrame()} return normally. Additionally,
+         * {@link #getMu()} must return a valid value. If these conditions are not met an
+         * {@link OrekitException} may be thrown by this method or by one of the methods
+         * of the returned {@link Propagator}.
+         * </p>
+         *
+         * <p>Each call to this method creates a new propagator.</p>
+         *
+         * @param attitudeProvider provider for attitude computation
+         * @return a propagator for this ephemeris segment.
+         * @since 12.0
+         */
+        default BoundedPropagator getPropagator(final  AttitudeProvider attitudeProvider) {
+            return new EphemerisSegmentPropagator<>(this, attitudeProvider);
         }
 
     }

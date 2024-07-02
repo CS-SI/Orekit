@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,9 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -44,16 +46,16 @@ public class LocalOrbitalFrame extends Frame {
      * propagations.
      *
      * @param parent parent frame (must be non-null)
-     * @param type frame type
+     * @param lof local orbital frame
      * @param provider provider used to compute frame motion.
      * @param name name of the frame
      * @exception IllegalArgumentException if the parent frame is null
      */
-    public LocalOrbitalFrame(final Frame parent, final LOFType type,
+    public LocalOrbitalFrame(final Frame parent, final LOF lof,
                              final PVCoordinatesProvider provider,
                              final String name)
         throws IllegalArgumentException {
-        super(parent, new LocalProvider(type, provider, parent, name), name, false);
+        super(parent, new LocalProvider(lof, provider, parent), name, false);
     }
 
     /** Local provider for transforms. */
@@ -62,8 +64,8 @@ public class LocalOrbitalFrame extends Frame {
         /** Serializable UID. */
         private static final long serialVersionUID = 20170421L;
 
-        /** Frame type. */
-        private final LOFType type;
+        /** Local orbital frame. */
+        private final LOF lof;
 
         /** Provider used to compute frame motion. */
         private final PVCoordinatesProvider provider;
@@ -71,26 +73,21 @@ public class LocalOrbitalFrame extends Frame {
         /** Reference frame. */
         private final Frame reference;
 
-        /** Name of the frame. */
-        private final String name;
-
         /** Simple constructor.
-         * @param type frame type
+         * @param lof local orbital frame
          * @param provider provider used to compute frame motion
          * @param reference reference frame
-         * @param name name of the frame
          */
-        LocalProvider(final LOFType type, final PVCoordinatesProvider provider,
-                      final Frame reference, final String name) {
-            this.type           = type;
-            this.provider       = provider;
-            this.reference      = reference;
-            this.name           = name;
+        LocalProvider(final LOF lof, final PVCoordinatesProvider provider,
+                      final Frame reference) {
+            this.lof       = lof;
+            this.provider  = provider;
+            this.reference = reference;
         }
 
         /** {@inheritDoc} */
         public Transform getTransform(final AbsoluteDate date) {
-            return type.transformFromInertial(date, provider.getPVCoordinates(date, reference));
+            return lof.transformFromInertial(date, provider.getPVCoordinates(date, reference));
         }
 
         /**
@@ -100,12 +97,10 @@ public class LocalOrbitalFrame extends Frame {
          *
          * @throws UnsupportedOperationException always.
          */
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(
+        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(
                 final FieldAbsoluteDate<T> date) throws UnsupportedOperationException {
             throw new UnsupportedOperationException(
-                    "FieldTransforms are not supported for a LocalOrbitalFrame: " + name +
-                            ". Please contact orekit-developers@orekit.org if you " +
-                            "would like to add this feature.");
+                    new OrekitException(OrekitMessages.INTERNAL_ERROR, "https://forum.orekit.org"));
         }
 
     }

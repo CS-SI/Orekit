@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,13 @@
  */
 package org.orekit.forces.drag;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
 /** Interface for spacecraft that are sensitive to atmospheric drag forces.
@@ -34,7 +33,12 @@ import org.orekit.utils.ParameterDriver;
  */
 public interface DragSensitive {
 
-    /** Parameter name for drag coefficient enabling Jacobian processing. */
+    /** Parameter name for global multiplicative factor.
+     * @since 12.0
+     */
+    String GLOBAL_DRAG_FACTOR = "global drag factor";
+
+    /** Parameter name for drag coefficient. */
     String DRAG_COEFFICIENT = "drag coefficient";
 
     /** Parameter name for lift ration enabling Jacobian processing.
@@ -49,30 +53,36 @@ public interface DragSensitive {
      */
     String LIFT_RATIO = "lift ratio";
 
+    /** Check if model depends on attitude's rotation rate or acceleration at a given, fixed date.
+     * If false, it essentially means that at most the attitude's rotation is used when computing the acceleration vector.
+     * The default implementation returns false as common models for orbital mechanics do not.
+     * @return true if force model depends on attitude derivatives
+     * @since 12.1
+     */
+    default boolean dependsOnAttitudeRate() {
+        return false;
+    }
+
     /** Get the drivers for supported parameters.
      * @return parameters drivers
      * @since 8.0
      */
-    ParameterDriver[] getDragParametersDrivers();
+    List<ParameterDriver> getDragParametersDrivers();
 
     /** Compute the acceleration due to drag.
      * <p>
      * The computation includes all spacecraft specific characteristics
      * like shape, area and coefficients.
      * </p>
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @param mass current mass
+     * @param state current state
      * @param density atmospheric density at spacecraft position
      * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
      * in the same inertial frame as spacecraft orbit (m/s)
      * @param parameters values of the force model parameters
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
+     * @since 12.0
      */
-    Vector3D dragAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
-                              Rotation rotation, double mass,
+    Vector3D dragAcceleration(SpacecraftState state,
                               double density, Vector3D relativeVelocity,
                               double[] parameters);
 
@@ -81,22 +91,16 @@ public interface DragSensitive {
      * The computation includes all spacecraft specific characteristics
      * like shape, area and coefficients.
      * </p>
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @param mass current mass
+     * @param state current state
      * @param density atmospheric density at spacecraft position
      * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
      * in the same inertial frame as spacecraft orbit (m/s)
      * @param parameters values of the force model parameters
-     * @param <T> instance of a RealFieldElement
+     * @param <T> instance of a CalculusFieldElement
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
-     * @since 9.0
+     * @since 12.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> dragAcceleration(FieldAbsoluteDate<T> date, Frame frame,
-                                                                      FieldVector3D<T> position,
-                                                                      FieldRotation<T> rotation, T mass,
-                                                                      T density, FieldVector3D<T> relativeVelocity,
-                                                                      T[] parameters);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> dragAcceleration(FieldSpacecraftState<T> state,
+                                                                          T density, FieldVector3D<T> relativeVelocity,
+                                                                          T[] parameters);
 }

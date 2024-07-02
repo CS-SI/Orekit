@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -35,6 +35,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 8.0
  */
 public class PV extends AbstractMeasurement<PV> {
+
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "PV";
 
     /** Identity matrix, for states derivatives. */
     private static final double[][] IDENTITY = new double[][] {
@@ -166,7 +169,7 @@ public class PV extends AbstractMeasurement<PV> {
               new double[] {
                   baseWeight, baseWeight, baseWeight,
                   baseWeight, baseWeight, baseWeight
-              }, Arrays.asList(satellite));
+              }, Collections.singletonList(satellite));
         this.covarianceMatrix = covarianceMatrix.clone();
     }
 
@@ -222,13 +225,35 @@ public class PV extends AbstractMeasurement<PV> {
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<PV> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
+                                                                                   final SpacecraftState[] states) {
+
+        // PV value
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<PV> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
+                                                       new TimeStampedPVCoordinates[] {
+                                                           pv
+                                                       });
+
+        estimated.setEstimatedValue(new double[] {
+            pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+            pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ()
+        });
+
+        return estimated;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<PV> theoreticalEvaluation(final int iteration, final int evaluation,
                                                              final SpacecraftState[] states) {
 
         // PV value
-        final ObservableSatellite      satellite = getSatellites().get(0);
-        final SpacecraftState          state     = states[satellite.getPropagatorIndex()];
-        final TimeStampedPVCoordinates pv        = state.getPVCoordinates();
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
 
         // prepare the evaluation
         final EstimatedMeasurement<PV> estimated =

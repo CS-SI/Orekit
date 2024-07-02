@@ -52,13 +52,14 @@ import org.orekit.time.AbsoluteDate;
  * in order to avoid wasting time looking for uninteresting events.
  * The wrapper will intercept the calls to the {@link
  * EventDetector#g(SpacecraftState) g function} and to the {@link
- * EventDetector#eventOccurred(SpacecraftState, boolean)
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
  * eventOccurred} method in order to ignore uninteresting events. The
  * wrapped regular {@link EventDetector event detector} will then see only
  * the interesting events, i.e. either only {@code increasing} events or
  * only {@code decreasing} events. The number of calls to the {@link
  * EventDetector#g(SpacecraftState) g function} will also be reduced.</p>
  * @see EventEnablingPredicateFilter
+ * @param <T> type of the detector
  */
 
 public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<EventSlopeFilter<T>> {
@@ -90,17 +91,17 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      */
     public EventSlopeFilter(final T rawDetector, final FilterType filter) {
         this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
-             rawDetector.getMaxIterationCount(), new LocalHandler<T>(),
+             rawDetector.getMaxIterationCount(), new LocalHandler<>(),
              rawDetector, filter);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -108,9 +109,9 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * @param filter filter to use
      * @since 6.1
      */
-    private EventSlopeFilter(final double maxCheck, final double threshold,
-                             final int maxIter, final EventHandler<? super EventSlopeFilter<T>> handler,
-                             final T rawDetector, final FilterType filter) {
+    protected EventSlopeFilter(final AdaptableInterval maxCheck, final double threshold,
+                               final int maxIter, final EventHandler handler,
+                               final T rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;
@@ -120,9 +121,25 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
 
     /** {@inheritDoc} */
     @Override
-    protected EventSlopeFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                         final int newMaxIter, final EventHandler<? super EventSlopeFilter<T>> newHandler) {
+    protected EventSlopeFilter<T> create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                         final int newMaxIter, final EventHandler newHandler) {
         return new EventSlopeFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
+    }
+
+    /**
+     * Get the wrapped raw detector.
+     * @return the wrapped raw detector
+     * @since 11.1
+     */
+    public T getDetector() {
+        return rawDetector;
+    }
+
+    /** Get filter type.
+     * @return filter type
+     */
+    public FilterType getFilter() {
+        return filter;
     }
 
     /**  {@inheritDoc} */
@@ -231,17 +248,21 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     }
 
     /** Local handler. */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventSlopeFilter<T>> {
+    private static class LocalHandler<T extends EventDetector> implements EventHandler {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventSlopeFilter<T> ef, final boolean increasing) {
-            return ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+            @SuppressWarnings("unchecked")
+            final EventSlopeFilter<T> esf = (EventSlopeFilter<T>) detector;
+            return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventSlopeFilter<T> ef, final SpacecraftState oldState) {
-            return ef.rawDetector.resetState(oldState);
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+            @SuppressWarnings("unchecked")
+            final EventSlopeFilter<T> esf = (EventSlopeFilter<T>) detector;
+            return esf.rawDetector.getHandler().resetState(esf.rawDetector, oldState);
         }
 
     }

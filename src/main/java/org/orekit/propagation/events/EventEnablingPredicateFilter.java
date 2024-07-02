@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -44,7 +44,7 @@ import org.orekit.time.AbsoluteDate;
  * in order to avoid wasting time looking for uninteresting events.
  * The wrapper will intercept the calls to the {@link
  * EventDetector#g(SpacecraftState) g function} and to the {@link
- * EventDetector#eventOccurred(SpacecraftState, boolean)
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
  * eventOccurred} method in order to ignore uninteresting events. The
  * wrapped regular {@link EventDetector event detector} will the see only
  * the interesting events, i.e. either only events that occur when a
@@ -56,17 +56,17 @@ import org.orekit.time.AbsoluteDate;
  * @since 7.1
  */
 
-public class EventEnablingPredicateFilter<T extends EventDetector>
-    extends AbstractDetector<EventEnablingPredicateFilter<T>> {
+public class EventEnablingPredicateFilter
+    extends AbstractDetector<EventEnablingPredicateFilter> {
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
 
     /** Wrapped event detector. */
-    private final T rawDetector;
+    private final EventDetector rawDetector;
 
     /** Enabling predicate function. */
-    private final EnablingPredicate<? super T> enabler;
+    private final EnablingPredicate enabler;
 
     /** Transformers of the g function. */
     private final Transformer[] transformers;
@@ -87,30 +87,30 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
      * @param rawDetector event detector to wrap
      * @param enabler event enabling predicate function to use
      */
-    public EventEnablingPredicateFilter(final T rawDetector,
-                                        final EnablingPredicate<? super T> enabler) {
+    public EventEnablingPredicateFilter(final EventDetector rawDetector,
+                                        final EnablingPredicate enabler) {
         this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
-             rawDetector.getMaxIterationCount(), new LocalHandler<T>(),
+             rawDetector.getMaxIterationCount(), new LocalHandler(),
              rawDetector, enabler);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
      */
-    private EventEnablingPredicateFilter(final double maxCheck, final double threshold,
-                                         final int maxIter, final EventHandler<? super EventEnablingPredicateFilter<T>> handler,
-                                         final T rawDetector,
-                                         final EnablingPredicate<? super T> enabler) {
+    protected EventEnablingPredicateFilter(final AdaptableInterval maxCheck, final double threshold,
+                                           final int maxIter, final EventHandler handler,
+                                           final EventDetector rawDetector,
+                                           final EnablingPredicate enabler) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;
@@ -120,10 +120,19 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
 
     /** {@inheritDoc} */
     @Override
-    protected EventEnablingPredicateFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                                     final int newMaxIter,
-                                                     final EventHandler<? super EventEnablingPredicateFilter<T>> newHandler) {
-        return new EventEnablingPredicateFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
+    protected EventEnablingPredicateFilter create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                                  final int newMaxIter,
+                                                  final EventHandler newHandler) {
+        return new EventEnablingPredicateFilter(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
+    }
+
+    /**
+     * Get the wrapped raw detector.
+     * @return the wrapped raw detector
+     * @since 11.1
+     */
+    public EventDetector getDetector() {
+        return rawDetector;
     }
 
     /**  {@inheritDoc} */
@@ -276,18 +285,20 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     }
 
     /** Local handler. */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventEnablingPredicateFilter<T>> {
+    private static class LocalHandler implements EventHandler {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventEnablingPredicateFilter<T> ef, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+            final EventEnablingPredicateFilter ef = (EventEnablingPredicateFilter) detector;
             final Transformer transformer = ef.forward ? ef.transformers[ef.transformers.length - 1] : ef.transformers[0];
-            return ef.rawDetector.eventOccurred(s, transformer == Transformer.PLUS ? increasing : !increasing);
+            return ef.rawDetector.getHandler().eventOccurred(s, ef.rawDetector, transformer == Transformer.PLUS ? increasing : !increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventEnablingPredicateFilter<T> ef, final SpacecraftState oldState) {
-            return ef.rawDetector.resetState(oldState);
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+            final EventEnablingPredicateFilter ef = (EventEnablingPredicateFilter) detector;
+            return ef.rawDetector.getHandler().resetState(ef.rawDetector, oldState);
         }
 
     }

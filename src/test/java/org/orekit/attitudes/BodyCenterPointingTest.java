@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,10 @@
  */
 package org.orekit.attitudes;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -29,23 +27,25 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -64,8 +64,11 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.ArrayList;
+import java.util.List;
 
-public class BodyCenterPointingTest {
+
+class BodyCenterPointingTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -82,25 +85,46 @@ public class BodyCenterPointingTest {
     // Earth center pointing attitude provider
     private BodyCenterPointing earthCenterAttitudeLaw;
 
+    @Test
+    void testGetPosition() {
+        // GIVEN (done in setup)
+        // WHEN
+        final Vector3D actualPosition = earthCenterAttitudeLaw.getTargetPosition(circ, date, circ.getFrame());
+        // Check that target is on Earth surface
+        final Vector3D expectedPosition = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame()).getPosition();
+        Assertions.assertEquals(expectedPosition, actualPosition);
+    }
+
+    @Test
+    void testGetPositionField() {
+        // GIVEN
+        final FieldCircularOrbit<Complex> fieldCircularOrbit = new FieldCircularOrbit<>(ComplexField.getInstance(), circ);
+        // WHEN
+        final FieldVector3D<Complex> actualPosition = earthCenterAttitudeLaw.getTargetPosition(fieldCircularOrbit, fieldCircularOrbit.getDate(), circ.getFrame());
+        // Check that target is on Earth surface
+        final FieldVector3D<Complex> expectedPosition = earthCenterAttitudeLaw.getTargetPV(fieldCircularOrbit, fieldCircularOrbit.getDate(), circ.getFrame()).getPosition();
+        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-10);
+    }
+
     /** Test if target is on Earth surface
      */
     @Test
-    public void testTarget() {
+    void testTarget() {
 
         // Call get target method
         TimeStampedPVCoordinates target = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame());
 
         // Check that target is on Earth surface
         GeodeticPoint gp = earth.transform(target.getPosition(), circ.getFrame(), date);
-        Assert.assertEquals(0.0, gp.getAltitude(), 1.0e-10);
-        Assert.assertEquals(date, target.getDate());
+        Assertions.assertEquals(0.0, gp.getAltitude(), 1.0e-10);
+        Assertions.assertEquals(date, target.getDate());
 
     }
 
     /** Test if body center belongs to the direction pointed by the satellite
      */
     @Test
-    public void testBodyCenterInPointingDirection() {
+    void testBodyCenterInPointingDirection() {
 
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
@@ -126,12 +150,13 @@ public class BodyCenterPointingTest {
                                      2.0e-8);
 
         // Check that the line contains Earth center
-        Assert.assertTrue(pointingLine.contains(Vector3D.ZERO));
+        Assertions.assertTrue(pointingLine.contains(Vector3D.ZERO));
 
     }
 
     @Test
-    public void testQDot() {
+    @DefaultDataContext
+    void testQDot() {
 
         Utils.setDataRoot("regular-data");
         final double ehMu  = 3.9860047e14;
@@ -151,10 +176,10 @@ public class BodyCenterPointingTest {
                 new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
         propagator.setAttitudeProvider(earthCenterAttitudeLaw);
 
-        List<WeightedObservedPoint> w0 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w1 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w2 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w3 = new ArrayList<WeightedObservedPoint>();
+        List<WeightedObservedPoint> w0 = new ArrayList<>();
+        List<WeightedObservedPoint> w1 = new ArrayList<>();
+        List<WeightedObservedPoint> w2 = new ArrayList<>();
+        List<WeightedObservedPoint> w3 = new ArrayList<>();
         for (double dt = -1; dt < 1; dt += 0.01) {
             Rotation rP = propagator.propagate(date.shiftedBy(dt)).getAttitude().getRotation();
             w0.add(new WeightedObservedPoint(1, dt, rP.getQ0()));
@@ -183,15 +208,16 @@ public class BodyCenterPointingTest {
         double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
         double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
 
-        Assert.assertEquals(q0DotRef, q0Dot, 5.0e-9);
-        Assert.assertEquals(q1DotRef, q1Dot, 5.0e-9);
-        Assert.assertEquals(q2DotRef, q2Dot, 5.0e-9);
-        Assert.assertEquals(q3DotRef, q3Dot, 5.0e-9);
+        Assertions.assertEquals(q0DotRef, q0Dot, 5.0e-9);
+        Assertions.assertEquals(q1DotRef, q1Dot, 5.0e-9);
+        Assertions.assertEquals(q2DotRef, q2Dot, 5.0e-9);
+        Assertions.assertEquals(q3DotRef, q3Dot, 5.0e-9);
 
     }
 
     @Test
-    public void testSpin() {
+    @DefaultDataContext
+    void testSpin() {
 
         Utils.setDataRoot("regular-data");
         final double ehMu  = 3.9860047e14;
@@ -221,42 +247,48 @@ public class BodyCenterPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-13);
+        Assertions.assertTrue(spin0.getNorm() > 1.0e-3);
+        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-13);
 
     }
 
     @Test
-    public void testTargetField() {
-        doTestTarget(Decimal64Field.getInstance());
+    @DefaultDataContext
+    void testTargetField() {
+        doTestTarget(Binary64Field.getInstance());
     }
+
     @Test
+    @DefaultDataContext
     public void doxBodyCenterInPointingDirectionTest() {
-        doTestBodyCenterInPointingDirection(Decimal64Field.getInstance());
+        doTestBodyCenterInPointingDirection(Binary64Field.getInstance());
     }
 
     @Test
-    public void testQDotField() {
-        doTestQDot(Decimal64Field.getInstance());
+    @DefaultDataContext
+    void testQDotField() {
+        doTestQDot(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSpinField() {
-        doTestSpin(Decimal64Field.getInstance());
+    @DefaultDataContext
+    void testSpinField() {
+        doTestSpin(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>void doTestTarget(final Field<T> field) {
+    @DefaultDataContext
+    private <T extends CalculusFieldElement<T>>void doTestTarget(final Field<T> field) {
 
         T mu = field.getZero().add(3.9860047e14);
         T zero = field.getZero();
@@ -268,13 +300,13 @@ public class BodyCenterPointingTest {
         final T pa=zero.add(FastMath.toRadians(45.));
         final T m =zero.add(FastMath.toRadians(5.3-270));
 
-     // Computation date
-        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+        // Computation date
+        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 4, 7),
                                                            TimeComponents.H00,
                                                            TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date, mu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -289,12 +321,13 @@ public class BodyCenterPointingTest {
         // Check that target is on Earth surface
         GeodeticPoint gp = earth.transform(target.getPosition().toVector3D(), circ.getFrame(), date.toAbsoluteDate());
 
-        Assert.assertEquals(0.0, gp.getAltitude(), 1.0e-8); //less precision because i suppose we are working with Keplerian instead of circular
-        Assert.assertEquals(date, target.getDate());
+        Assertions.assertEquals(0.0, gp.getAltitude(), 1.0e-8); //less precision because i suppose we are working with Keplerian instead of circular
+        Assertions.assertEquals(date, target.getDate());
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestBodyCenterInPointingDirection(final Field<T> field)  {
+    @DefaultDataContext
+    private <T extends CalculusFieldElement<T>> void doTestBodyCenterInPointingDirection(final Field<T> field)  {
 
         T zero = field.getZero();
         T mu = zero.add(3.9860047e14);
@@ -307,13 +340,13 @@ public class BodyCenterPointingTest {
 
         final T m =zero.add(FastMath.toRadians(5.300-270.));
 
-     // Computation date
-        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+        // Computation date
+        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 4, 7),
                                                            TimeComponents.H00,
                                                            TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date, mu);
 
         // WGS84 Earth model
@@ -321,12 +354,12 @@ public class BodyCenterPointingTest {
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Transform from EME2000 to ITRF2008
-        Transform eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date.toAbsoluteDate());
+        StaticTransform eme2000ToItrf = FramesFactory.getEME2000().getStaticTransformTo(earth.getBodyFrame(), date.toAbsoluteDate());
 
         // Earth center pointing attitude provider
         BodyCenterPointing earthCenterAttitudeLaw= new BodyCenterPointing(circ.getFrame(), earth);
         // Transform satellite position to position/velocity parameters in EME2000 frame
-        FieldPVCoordinates<T> pvSatEME2000 = circ.getPVCoordinates();
+        FieldVector3D<T> positionSatEME2000 = circ.getPosition();
 
         //  Pointing direction
         // ********************
@@ -341,21 +374,22 @@ public class BodyCenterPointingTest {
         FieldVector3D<T> zSatITRF2008C = eme2000ToItrf.transformVector(zSatEME2000);
 
         // Transform satellite position/velocity from EME2000 to ITRF2008
-        FieldPVCoordinates<T> pvSatITRF2008C = eme2000ToItrf.transformPVCoordinates(pvSatEME2000);
+        FieldVector3D<T> positionSatITRF2008C = eme2000ToItrf.transformPosition(positionSatEME2000);
 
 
        // Line containing satellite point and following pointing direction
-        Line pointingLine = new Line(pvSatITRF2008C.getPosition().toVector3D(),
-                                     pvSatITRF2008C.getPosition().toVector3D().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        Line pointingLine = new Line(positionSatITRF2008C.toVector3D(),
+                                     positionSatITRF2008C.toVector3D().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       zSatITRF2008C.toVector3D()),
                                      2.0e-8);
 
         // Check that the line contains Earth center
-        Assert.assertTrue(pointingLine.contains(Vector3D.ZERO));
+        Assertions.assertTrue(pointingLine.contains(Vector3D.ZERO));
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestQDot(final Field<T> field) {
+    @DefaultDataContext
+    private <T extends CalculusFieldElement<T>> void doTestQDot(final Field<T> field) {
 
         final double ae  = 6.378137e6;
         final double c20 = -1.08263e-3;
@@ -374,13 +408,13 @@ public class BodyCenterPointingTest {
         final T m     = zero.add(FastMath.toRadians(5.3-270));
         final T ehMu  = zero.add(3.9860047e14);
 
-     // Computation date
-        FieldAbsoluteDate<T> date_comp= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+        // Computation date
+        FieldAbsoluteDate<T> date_comp= new FieldAbsoluteDate<>(field, new DateComponents(2008, 4, 7),
                                                                 TimeComponents.H00,
                                                                 TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date_comp, ehMu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -401,10 +435,10 @@ public class BodyCenterPointingTest {
                 new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
         propagator.setAttitudeProvider(earthCenterAttitudeLaw);
 
-        List<WeightedObservedPoint> w0 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w1 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w2 = new ArrayList<WeightedObservedPoint>();
-        List<WeightedObservedPoint> w3 = new ArrayList<WeightedObservedPoint>();
+        List<WeightedObservedPoint> w0 = new ArrayList<>();
+        List<WeightedObservedPoint> w1 = new ArrayList<>();
+        List<WeightedObservedPoint> w2 = new ArrayList<>();
+        List<WeightedObservedPoint> w3 = new ArrayList<>();
         for (double dt = -1; dt < 1; dt += 0.01) {
             FieldRotation<T> rP = propagator.propagate(date.shiftedBy(dt)).getAttitude().getRotation();
             w0.add(new WeightedObservedPoint(1, dt, rP.getQ0().getReal()));
@@ -433,14 +467,15 @@ public class BodyCenterPointingTest {
         double q2Dot = 0.5 * MathArrays.linearCombination( q3.getReal(), oX.getReal(),  q0.getReal(), oY.getReal(), -q1.getReal(), oZ.getReal());
         double q3Dot = 0.5 * MathArrays.linearCombination(-q2.getReal(), oX.getReal(),  q1.getReal(), oY.getReal(),  q0.getReal(), oZ.getReal());
 
-        Assert.assertEquals(q0DotRef, q0Dot, 5.0e-9);
-        Assert.assertEquals(q1DotRef, q1Dot, 5.0e-9);
-        Assert.assertEquals(q2DotRef, q2Dot, 5.0e-9);
-        Assert.assertEquals(q3DotRef, q3Dot, 5.0e-9);
+        Assertions.assertEquals(q0DotRef, q0Dot, 5.0e-9);
+        Assertions.assertEquals(q1DotRef, q1Dot, 5.0e-9);
+        Assertions.assertEquals(q2DotRef, q2Dot, 5.0e-9);
+        Assertions.assertEquals(q3DotRef, q3Dot, 5.0e-9);
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) {
+    @DefaultDataContext
+    private <T extends CalculusFieldElement<T>> void doTestSpin(final Field<T> field) {
 
         final double ae  = 6.378137e6;
         final double c20 = -1.08263e-3;
@@ -460,12 +495,12 @@ public class BodyCenterPointingTest {
         final T ehMu  = zero.add(3.9860047e14);
 
         // Computation date
-        FieldAbsoluteDate<T> date_R = new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+        FieldAbsoluteDate<T> date_R = new FieldAbsoluteDate<>(field, new DateComponents(2008, 4, 7),
                                                               TimeComponents.H00,
                                                               TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date_R, ehMu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -497,30 +532,31 @@ public class BodyCenterPointingTest {
                                                        s0.getAttitude().getRotation());
         T evolutionAngleMinus = FieldRotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus.getReal(), 1.0e-6 * evolutionAngleMinus.getReal());
+        Assertions.assertEquals(0.0, errorAngleMinus.getReal(), 1.0e-6 * evolutionAngleMinus.getReal());
         T errorAnglePlus      = FieldRotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(zero.add(-h)).getAttitude().getRotation());
         T evolutionAnglePlus  = FieldRotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus.getReal(), 1.0e-6 * evolutionAnglePlus.getReal());
+        Assertions.assertEquals(0.0, errorAnglePlus.getReal(), 1.0e-6 * evolutionAnglePlus.getReal());
 
         FieldVector3D<T> spin0 = s0.getAttitude().getSpin();
         FieldVector3D<T> reference = FieldAngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assert.assertTrue(spin0.getNorm().getReal() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-13);
+        Assertions.assertTrue(spin0.getNorm().getReal() > 1.0e-3);
+        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.1e-13);
 
     }
 
-    @Before
+    @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 
@@ -529,7 +565,7 @@ public class BodyCenterPointingTest {
             final double raan = 270.;
             circ =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(raan),
-                                       FastMath.toRadians(5.300 - raan), PositionAngle.MEAN,
+                                       FastMath.toRadians(5.300 - raan), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
 
 
@@ -545,12 +581,12 @@ public class BodyCenterPointingTest {
             earthCenterAttitudeLaw = new BodyCenterPointing(circ.getFrame(), earth);
 
         } catch (OrekitException oe) {
-            Assert.fail(oe.getMessage());
+            Assertions.fail(oe.getMessage());
         }
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         date = null;
         earth = null;

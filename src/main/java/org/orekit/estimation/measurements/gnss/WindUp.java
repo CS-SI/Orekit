@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 Thales Alenia Space
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,30 +16,18 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Modifier for wind-up effect in GNSS {@link Phase phase measurements}.
- * @see <a href="https://gssc.esa.int/navipedia/index.php/Carrier_Phase_Wind-up_Effect">Carrier Phase Wind-up Effect</a>
  * @see WindUpFactory
  * @author Luc Maisonobe
  * @since 10.1
  */
-public class WindUp implements EstimationModifier<Phase> {
-
-    /** Cached angular value of wind-up. */
-    private double angularWindUp;
+public class WindUp extends AbstractWindUp<Phase> {
 
     /** Simple constructor.
      * <p>
@@ -47,60 +35,28 @@ public class WindUp implements EstimationModifier<Phase> {
      * and preserve phase continuity for successive measurements involving the same
      * satellite/receiver pair.
      * </p>
+     * @param emitter emitter dipole
      */
-    WindUp() {
-        angularWindUp = 0.0;
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * Wind-up effect has no parameters, the returned list is always empty.
-     * </p>
-     */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
+    WindUp(final Dipole emitter) {
+        super(emitter, Dipole.CANONICAL_I_J);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Phase> estimated) {
-
-        // signal line of sight
-        final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-        final Vector3D los = participants[1].getPosition().subtract(participants[0].getPosition()).normalize();
-
-        // get ground antenna dipole
-        final Frame         inertial      = estimated.getStates()[0].getFrame();
-        final GroundStation station       = estimated.getObservedMeasurement().getStation();
-        final Rotation      offsetToInert = station.getOffsetToInertial(inertial, estimated.getDate()).getRotation();
-        final Vector3D      iGround       = offsetToInert.applyTo(Vector3D.PLUS_I);
-        final Vector3D      jGround       = offsetToInert.applyTo(Vector3D.PLUS_J);
-        final Vector3D      dGround       = new Vector3D(1.0, iGround, -Vector3D.dotProduct(iGround, los), los).
-                                            add(Vector3D.crossProduct(los, jGround));
-
-        // get satellite dipole
+    protected Rotation emitterToInert(final EstimatedMeasurementBase<Phase> estimated) {
         // we don't use the basic yaw steering attitude model from ESA navipedia page
         // but rely on the attitude that was computed by the propagator, which takes
         // into account the proper noon and midnight turns for each satellite model
-        final Rotation      satToInert    = estimated.getStates()[0].toTransform().getRotation().revert();
-        final Vector3D      iSat          = satToInert.applyTo(Vector3D.PLUS_I);
-        final Vector3D      jSat          = satToInert.applyTo(Vector3D.PLUS_J);
-        final Vector3D      dSat          = new Vector3D(1.0, iSat, -Vector3D.dotProduct(iSat, los), los).
-                                            subtract(Vector3D.crossProduct(los, jSat));
+        return estimated.getStates()[0].toStaticTransform().getRotation().revert();
+    }
 
-        // raw correction
-        final double correction = FastMath.copySign(Vector3D.angle(dSat, dGround),
-                                                    Vector3D.dotProduct(los, Vector3D.crossProduct(dSat, dGround)));
-
-        // ensure continuity accross measurements
-        // we assume the various measurements are close enough in time
-        // (less the one satellite half-turn) so the angles remain close
-        angularWindUp = MathUtils.normalizeAngle(correction, angularWindUp);
-
-        // update estimate
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] + angularWindUp / MathUtils.TWO_PI);
-
+    /** {@inheritDoc} */
+    @Override
+    protected Rotation receiverToInert(final EstimatedMeasurementBase<Phase> estimated) {
+        final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
+        final Frame                      inertial     = estimated.getStates()[0].getFrame();
+        final GroundStation              station      = estimated.getObservedMeasurement().getStation();
+        return station.getOffsetToInertial(inertial, participants[1].getDate(), false).getRotation();
     }
 
 }

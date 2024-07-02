@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,15 +16,15 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.OccultationEngine;
 
 /** Finder for satellite eclipse related events.
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
@@ -33,117 +33,83 @@ import org.orekit.utils.PVCoordinatesProvider;
  * propagation when entering the eclipse and to {@link Action#STOP stop} propagation
  * when exiting the eclipse. This can be changed by calling {@link
  * #withHandler(FieldEventHandler)} after construction.</p>
+ * @param <T> the type of the field elements
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Pascal Parraud
  */
-public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldEclipseDetector<T>, T> {
+public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldEclipseDetector<T>, T> {
 
-
-    /** Occulting body. */
-    private final PVCoordinatesProvider occulting;
-
-    /** Occulting body radius (m). */
-    private final double occultingRadius;
-
-    /** Occulted body. */
-    private final PVCoordinatesProvider occulted;
-
-    /** Occulted body radius (m). */
-    private final double occultedRadius;
+    /** Occultation engine.
+     * @since 12.0
+     */
+    private final OccultationEngine occultationEngine;
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
     private boolean totalEclipse;
+
+    /** Margin to apply to eclipse angle. */
+    private final T margin;
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
      * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
+     * @param field field used by default
      * @param occulted the body to be occulted
      * @param occultedRadius the radius of the body to be occulted (m)
      * @param occulting the occulting body
-     * @param occultingRadius the occulting body radius (m)
-     * @param field field used by default
+     * @since 12.0
      */
-    public FieldEclipseDetector(final PVCoordinatesProvider occulted,  final double occultedRadius,
-                           final PVCoordinatesProvider occulting, final double occultingRadius, final Field<T> field) {
-        this(field.getZero().add(DEFAULT_MAXCHECK), field.getZero().add(DEFAULT_THRESHOLD),
-             occulted, occultedRadius, occulting, occultingRadius);
+    public FieldEclipseDetector(final Field<T> field,
+                                final ExtendedPVCoordinatesProvider occulted, final double occultedRadius,
+                                final OneAxisEllipsoid occulting) {
+        this(field, new OccultationEngine(occulted, occultedRadius, occulting));
     }
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * value for convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
-     * <p>The maximal interval between eclipse checks should be smaller than
-     * the half duration of the minimal pass to handle, otherwise some short
-     * passes could be missed.</p>
-     * @param maxCheck maximal checking interval (s)
-     * @param occulted the body to be occulted
-     * @param occultedRadius the radius of the body to be occulted in meters
-     * @param occulting the occulting body
-     * @param occultingRadius the occulting body radius in meters
+     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
+     * @param field field used by default
+     * @param occultationEngine occultation engine
+     * @since 12.0
      */
-    public FieldEclipseDetector(final T maxCheck,
-                           final PVCoordinatesProvider occulted,  final double occultedRadius,
-                           final PVCoordinatesProvider occulting, final double occultingRadius) {
-        this(maxCheck, maxCheck.getField().getZero().add(DEFAULT_THRESHOLD),
-             occulted, occultedRadius, occulting, occultingRadius);
+    public FieldEclipseDetector(final Field<T> field, final OccultationEngine occultationEngine) {
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
+             DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
+             occultationEngine, field.getZero(), true);
     }
 
-    /** Build a new eclipse detector.
-     * <p>The new instance is a total eclipse (umbra) detector.</p>
-     * <p>The maximal interval between eclipse checks should be smaller than
-     * the half duration of the minimal pass to handle, otherwise some short
-     * passes could be missed.</p>
-     * @param maxCheck maximal checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @param occulted the body to be occulted
-     * @param occultedRadius the radius of the body to be occulted in meters
-     * @param occulting the occulting body
-     * @param occultingRadius the occulting body radius in meters
-     */
-    public FieldEclipseDetector(final T maxCheck, final T threshold,
-                           final PVCoordinatesProvider occulted,  final double occultedRadius,
-                           final PVCoordinatesProvider occulting, final double occultingRadius) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<FieldEclipseDetector<T>, T>(),
-             occulted, occultedRadius, occulting, occultingRadius, true);
-    }
-
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
-     * @param occulted the body to be occulted
-     * @param occultedRadius the radius of the body to be occulted in meters
-     * @param occulting the occulting body
-     * @param occultingRadius the occulting body radius in meters
+     * @param occultationEngine occultation engine
+     * @param margin to apply to eclipse angle (rad)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
-     * @since 6.1
+     * @since 12.0
      */
-    private FieldEclipseDetector(final T maxCheck, final T threshold,
-                            final int maxIter, final FieldEventHandler<? super FieldEclipseDetector<T>, T> handler,
-                            final PVCoordinatesProvider occulted,  final double occultedRadius,
-                            final PVCoordinatesProvider occulting, final double occultingRadius,
-                            final boolean totalEclipse) {
+    protected FieldEclipseDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
+                                   final int maxIter, final FieldEventHandler<T> handler,
+                                   final OccultationEngine occultationEngine, final T margin, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
-        this.occulted        = occulted;
-        this.occultedRadius  = FastMath.abs(occultedRadius);
-        this.occulting       = occulting;
-        this.occultingRadius = FastMath.abs(occultingRadius);
-        this.totalEclipse    = totalEclipse;
+        this.occultationEngine = occultationEngine;
+        this.margin            = margin;
+        this.totalEclipse      = totalEclipse;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldEclipseDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                     final int nawMaxIter, final FieldEventHandler<? super FieldEclipseDetector<T>, T> newHandler) {
+    protected FieldEclipseDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int nawMaxIter,
+                                             final FieldEventHandler<T> newHandler) {
         return new FieldEclipseDetector<>(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                          occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
+                                          occultationEngine, margin, totalEclipse);
     }
 
     /**
@@ -157,8 +123,7 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
      */
     public FieldEclipseDetector<T> withUmbra() {
         return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                          occulted, occultedRadius, occulting, occultingRadius,
-                                          true);
+                                          occultationEngine, margin, true);
     }
 
     /**
@@ -172,36 +137,38 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
      */
     public FieldEclipseDetector<T> withPenumbra() {
         return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                          occulted, occultedRadius, occulting, occultingRadius,
-                                          false);
+                                          occultationEngine, margin, false);
     }
 
-    /** Get the occulting body.
-     * @return the occulting body
+    /**
+     * Setup a margin to angle detection.
+     * <p>
+     * A positive margin implies eclipses are "larger" hence entry occurs earlier and exit occurs later
+     * than a detector with 0 margin.
+     * </p>
+     * @param newMargin angular margin to apply to eclipse detection (rad)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
      */
-    public PVCoordinatesProvider getOcculting() {
-        return occulting;
+    public FieldEclipseDetector<T> withMargin(final T newMargin) {
+        return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                          occultationEngine, newMargin, totalEclipse);
     }
 
-    /** Get the occulting body radius (m).
-     * @return the occulting body radius
+    /** Get the angular margin used for eclipse detection.
+     * @return angular margin used for eclipse detection (rad)
+     * @since 12.0
      */
-    public double getOccultingRadius() {
-        return occultingRadius;
+    public T getMargin() {
+        return margin;
     }
 
-    /** Get the occulted body.
-     * @return the occulted body
+    /** Get the occultation engine.
+     * @return occultation engine
+     * @since 12.0
      */
-    public PVCoordinatesProvider getOcculted() {
-        return occulted;
-    }
-
-    /** Get the occulted body radius (m).
-     * @return the occulted body radius
-     */
-    public double getOccultedRadius() {
-        return occultedRadius;
+    public OccultationEngine getOccultationEngine() {
+        return occultationEngine;
     }
 
     /** Get the total eclipse detection flag.
@@ -219,22 +186,10 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
      * @return value of the switching function
      */
     public T g(final FieldSpacecraftState<T> s) {
-        final Vector3D pted = occulted.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition();
-        final Vector3D ping = occulting.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition();
-        final Vector3D psat = s.toSpacecraftState().getPVCoordinates().getPosition();
-        final Vector3D ps   = pted.subtract(psat);
-        final Vector3D po   = ping.subtract(psat);
-        final double angle  = Vector3D.angle(ps, po);
-        final double rs     = FastMath.asin(occultedRadius / ps.getNorm());
-        if (Double.isNaN(rs)) {
-            return s.getOrbit().getA().getField().getZero().add(FastMath.PI);
-        }
-        final double ro     = FastMath.asin(occultingRadius / po.getNorm());
-        if (Double.isNaN(ro)) {
-            return s.getOrbit().getA().getField().getZero().add(-FastMath.PI);
-        }
-        return totalEclipse ? (s.getOrbit().getA().getField().getZero().add(angle - ro + rs)) :
-                              (s.getOrbit().getA().getField().getZero().add(angle - ro - rs));
+        final OccultationEngine.FieldOccultationAngles<T> angles = occultationEngine.angles(s);
+        return totalEclipse ?
+               angles.getSeparation().subtract(angles.getLimbRadius()).add(angles.getOccultedApparentRadius().add(margin)) :
+               angles.getSeparation().subtract(angles.getLimbRadius()).subtract(angles.getOccultedApparentRadius().add(margin));
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,10 @@
  */
 package org.orekit.data;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.InputStream;
@@ -23,17 +27,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Test;
-
 public class ZipJarCrawlerTest {
 
     @Test
     public void testMultiZipClasspath() {
         CountingLoader crawler = new CountingLoader();
-        new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler);
-        Assert.assertEquals(6, crawler.getCount());
+        new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler,
+                                                           DataContext.getDefault().getDataProvidersManager());
+        Assertions.assertEquals(6, crawler.getCount());
     }
 
     @Test
@@ -41,8 +42,9 @@ public class ZipJarCrawlerTest {
         URL url =
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader();
-        new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler);
-        Assert.assertEquals(6, crawler.getCount());
+        new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler,
+                                                                DataContext.getDefault().getDataProvidersManager());
+        Assertions.assertEquals(6, crawler.getCount());
     }
 
     private static class CountingLoader implements DataLoader {
@@ -52,7 +54,7 @@ public class ZipJarCrawlerTest {
         }
         public void loadData(InputStream input, String name) {
             ++count;
-            Assert.assertThat(name, CoreMatchers.containsString("!/"));
+            MatcherAssert.assertThat(name, CoreMatchers.containsString("!/"));
         }
         public int getCount() {
             return count;

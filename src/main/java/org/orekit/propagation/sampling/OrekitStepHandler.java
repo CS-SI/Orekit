@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -46,8 +46,16 @@ public interface OrekitStepHandler {
 
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
-     * @param isLast if true, this is the last integration step
      */
-    void handleStep(OrekitStepInterpolator interpolator, boolean isLast);
+    void handleStep(OrekitStepInterpolator interpolator);
+
+    /**
+     * Finalize propagation.
+     * @param finalState state at propagation end
+     * @since 11.0
+     */
+    default void finish(SpacecraftState finalState) {
+        // nothing by default
+    }
 
 }

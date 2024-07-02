@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,21 +23,21 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Propagator converter using the real Jacobian.
  * @author Pascal Parraud
@@ -67,152 +67,206 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
 
     /** {@inheritDoc} */
     protected MultivariateVectorFunction getObjectiveFunction() {
-        return new MultivariateVectorFunction() {
-
-            /** {@inheritDoc} */
-            public double[] value(final double[] arg)
-                throws IllegalArgumentException, OrekitException {
-
-                final double[] value = new double[getTargetSize()];
-
-                final NumericalPropagator prop = builder.buildPropagator(arg);
-
-                final int stateSize = isOnlyPosition() ? 3 : 6;
-                final List<SpacecraftState> sample = getSample();
-                for (int i = 0; i < sample.size(); ++i) {
-                    final int row = i * stateSize;
-                    if (prop.getInitialState().getDate().equals(sample.get(i).getDate())) {
-                        // use initial state
-                        fillRows(value, row, prop.getInitialState());
-                    } else {
-                        // use a date detector to pick up states
-                        prop.addEventDetector(new DateDetector(sample.get(i).getDate()).withHandler(new EventHandler<DateDetector>() {
-                            /** {@inheritDoc} */
-                            @Override
-                            public Action eventOccurred(final SpacecraftState state, final DateDetector detector,
-                                                        final boolean increasing) {
-                                fillRows(value, row, state);
-                                return row + stateSize >= getTargetSize() ? Action.STOP : Action.CONTINUE;
-                            }
-                        }));
-                    }
-                }
-
-                prop.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
-
-                return value;
-            }
+        return point -> {
+            final NumericalPropagator propagator  = builder.buildPropagator(point);
+            final ValuesHandler handler = new ValuesHandler();
+            propagator.getMultiplexer().add(handler);
+            final List<SpacecraftState> sample = getSample();
+            propagator.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+            return handler.value;
         };
     }
 
     /** {@inheritDoc} */
     protected MultivariateJacobianFunction getModel() {
-        return new MultivariateJacobianFunction() {
-
-            /** {@inheritDoc} */
-            public Pair<RealVector, RealMatrix> value(final RealVector point)
-                throws IllegalArgumentException, OrekitException {
-
-                final RealVector value    = new ArrayRealVector(getTargetSize());
-                final RealMatrix jacobian = MatrixUtils.createRealMatrix(getTargetSize(), point.getDimension());
-
-                final NumericalPropagator prop  = builder.buildPropagator(point.toArray());
-                final int stateSize = isOnlyPosition() ? 3 : 6;
-                final ParameterDriversList orbitalParameters = builder.getOrbitalParametersDrivers();
-                final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
-                final ParameterDriversList propagationParameters = pde.getSelectedParameters();
-                prop.setInitialState(pde.setInitialJacobians(prop.getInitialState()));
-                final JacobiansMapper mapper  = pde.getMapper();
-
-                final List<SpacecraftState> sample = getSample();
-                for (int i = 0; i < sample.size(); ++i) {
-                    final int row = i * stateSize;
-                    if (prop.getInitialState().getDate().equals(sample.get(i).getDate())) {
-                        // use initial state and Jacobians
-                        fillRows(value, jacobian, row, prop.getInitialState(), stateSize,
-                                 orbitalParameters, propagationParameters, mapper);
-                    } else {
-                        // use a date detector to pick up state and Jacobians
-                        prop.addEventDetector(new DateDetector(sample.get(i).getDate()).withHandler(new EventHandler<DateDetector>() {
-                            /** {@inheritDoc} */
-                            @Override
-                            public Action eventOccurred(final SpacecraftState state, final DateDetector detector,
-                                                        final boolean increasing) {
-                                fillRows(value, jacobian, row, state, stateSize,
-                                         orbitalParameters, propagationParameters, mapper);
-                                return row + stateSize >= getTargetSize() ? Action.STOP : Action.CONTINUE;
-                            }
-                        }));
-                    }
-                }
-
-                prop.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
-
-                return new Pair<RealVector, RealMatrix>(value, jacobian);
-            }
+        return point -> {
+            final NumericalPropagator propagator  = builder.buildPropagator(point.toArray());
+            final JacobianHandler handler = new JacobianHandler(propagator, point.getDimension());
+            propagator.getMultiplexer().add(handler);
+            final List<SpacecraftState> sample = getSample();
+            propagator.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+            return new Pair<>(handler.value, handler.jacobian);
         };
     }
 
-    /** Fill up a few value rows (either 6 or 3 depending on velocities used or not).
-     * @param value values array
-     * @param row first row index
-     * @param state spacecraft state
+    /** Handler for picking up values at sample dates.
+     * <p>
+     * This class is heavily based on org.orekit.estimation.leastsquares.MeasurementHandler.
+     * </p>
+     * @since 11.1
      */
-    private void fillRows(final double[] value, final int row, final SpacecraftState state) {
-        final PVCoordinates pv = state.getPVCoordinates(getFrame());
-        value[row    ] = pv.getPosition().getX();
-        value[row + 1] = pv.getPosition().getY();
-        value[row + 2] = pv.getPosition().getZ();
-        if (!isOnlyPosition()) {
-            value[row + 3] = pv.getVelocity().getX();
-            value[row + 4] = pv.getVelocity().getY();
-            value[row + 5] = pv.getVelocity().getZ();
+    private class ValuesHandler implements OrekitStepHandler {
+
+        /** Values vector. */
+        private final double[] value;
+
+        /** Number of the next measurement. */
+        private int number;
+
+        /** Index of the next component in the model. */
+        private int index;
+
+        /** Simple constructor.
+         */
+        ValuesHandler() {
+            this.value = new double[getTargetSize()];
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+            number = 0;
+            index  = 0;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void handleStep(final OrekitStepInterpolator interpolator) {
+
+            while (number < getSample().size()) {
+
+                // Consider the next sample to handle
+                final SpacecraftState next = getSample().get(number);
+
+                // Current state date
+                final AbsoluteDate currentDate = interpolator.getCurrentState().getDate();
+                if (next.getDate().compareTo(currentDate) > 0) {
+                    return;
+                }
+
+                final PVCoordinates pv = interpolator.getInterpolatedState(next.getDate()).getPVCoordinates(getFrame());
+                value[index++] = pv.getPosition().getX();
+                value[index++] = pv.getPosition().getY();
+                value[index++] = pv.getPosition().getZ();
+                if (!isOnlyPosition()) {
+                    value[index++] = pv.getVelocity().getX();
+                    value[index++] = pv.getVelocity().getY();
+                    value[index++] = pv.getVelocity().getZ();
+                }
+
+                // prepare handling of next measurement
+                ++number;
+
+            }
+
+        }
+
     }
 
-    /** Fill up a few Jacobian rows (either 6 or 3 depending on velocities used or not).
-     * @param value values vector
-     * @param jacobian Jacobian matrix
-     * @param row first row index
-     * @param state spacecraft state
-     * @param stateSize state size
-     * @param orbitalParameters drivers for the orbital parameters
-     * @param propagationParameters drivers for the propagation model parameters
-     * @param mapper state mapper
+    /** Handler for picking up Jacobians at sample dates.
+     * <p>
+     * This class is heavily based on org.orekit.estimation.leastsquares.MeasurementHandler.
+     * </p>
+     * @since 11.1
      */
-    private void fillRows(final RealVector value, final RealMatrix jacobian, final int row,
-                          final SpacecraftState state, final int stateSize,
-                          final ParameterDriversList orbitalParameters,
-                          final ParameterDriversList propagationParameters,
-                          final JacobiansMapper mapper) {
+    private class JacobianHandler implements OrekitStepHandler {
 
-        // value part
-        final PVCoordinates pv = state.getPVCoordinates(getFrame());
-        value.setEntry(row,     pv.getPosition().getX());
-        value.setEntry(row + 1, pv.getPosition().getY());
-        value.setEntry(row + 2, pv.getPosition().getZ());
-        if (!isOnlyPosition()) {
-            value.setEntry(row + 3, pv.getVelocity().getX());
-            value.setEntry(row + 4, pv.getVelocity().getY());
-            value.setEntry(row + 5, pv.getVelocity().getZ());
+        /** Values vector. */
+        private final RealVector value;
+
+        /** Jacobian matrix. */
+        private final RealMatrix jacobian;
+
+        /** State size (3 or 6). */
+        private final int stateSize;
+
+        /** Matrices harvester. */
+        private final MatricesHarvester harvester;
+
+        /** Number of the next measurement. */
+        private int number;
+
+        /** Index of the next Jacobian component in the model. */
+        private int index;
+
+        /** Simple constructor.
+         * @param propagator propagator
+         * @param columns number of columns of the Jacobian matrix
+         */
+        JacobianHandler(final NumericalPropagator propagator, final int columns) {
+            this.value     = new ArrayRealVector(getTargetSize());
+            this.jacobian  = MatrixUtils.createRealMatrix(getTargetSize(), columns);
+            this.stateSize = isOnlyPosition() ? 3 : 6;
+            this.harvester = propagator.setupMatricesComputation("converter-partials", null, null);
         }
 
-        // Jacobian part
-        final double[][] dYdY0 = new double[JacobiansMapper.STATE_DIMENSION][JacobiansMapper.STATE_DIMENSION];
-        final double[][] dYdP  = new double[JacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        mapper.getStateJacobian(state, dYdY0);
-        mapper.getParametersJacobian(state, dYdP);
-        for (int k = 0; k < stateSize; k++) {
-            int index = 0;
-            for (int j = 0; j < orbitalParameters.getNbParams(); ++j) {
-                final ParameterDriver driver = orbitalParameters.getDrivers().get(j);
-                if (driver.isSelected()) {
-                    jacobian.setEntry(row + k, index++, dYdY0[k][j] * driver.getScale());
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+            number = 0;
+            index  = 0;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void handleStep(final OrekitStepInterpolator interpolator) {
+
+            while (number < getSample().size()) {
+
+                // Consider the next sample to handle
+                final SpacecraftState next = getSample().get(number);
+
+                // Current state date
+                final AbsoluteDate currentDate = interpolator.getCurrentState().getDate();
+                if (next.getDate().compareTo(currentDate) > 0) {
+                    return;
                 }
+
+                fillRows(index, interpolator.getInterpolatedState(next.getDate()),
+                         builder.getOrbitalParametersDrivers());
+
+                // prepare handling of next measurement
+                ++number;
+                index += stateSize;
+
             }
-            for (int j = 0; j < propagationParameters.getNbParams(); ++j) {
-                final ParameterDriver driver = propagationParameters.getDrivers().get(j);
-                jacobian.setEntry(row + k, index++, dYdP[k][j] * driver.getScale());
+
+        }
+
+        /** Fill up a few Jacobian rows (either 6 or 3 depending on velocities used or not).
+         * @param row first row index
+         * @param state spacecraft state
+         * @param orbitalParameters drivers for the orbital parameters
+         */
+        private void fillRows(final int row,
+                              final SpacecraftState state,
+                              final ParameterDriversList orbitalParameters) {
+
+            // value part
+            final PVCoordinates pv = state.getPVCoordinates(getFrame());
+            value.setEntry(row,     pv.getPosition().getX());
+            value.setEntry(row + 1, pv.getPosition().getY());
+            value.setEntry(row + 2, pv.getPosition().getZ());
+            if (!isOnlyPosition()) {
+                value.setEntry(row + 3, pv.getVelocity().getX());
+                value.setEntry(row + 4, pv.getVelocity().getY());
+                value.setEntry(row + 5, pv.getVelocity().getZ());
+            }
+
+            // Jacobian part
+            final RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
+            final RealMatrix dYdP  = harvester.getParametersJacobian(state);
+            for (int k = 0; k < stateSize; k++) {
+                int column = 0;
+                for (int j = 0; j < orbitalParameters.getNbParams(); ++j) {
+                    final ParameterDriver driver = orbitalParameters.getDrivers().get(j);
+                    if (driver.isSelected()) {
+                        jacobian.setEntry(row + k, column++, dYdY0.getEntry(k, j) * driver.getScale());
+                    }
+                }
+                if (dYdP != null) {
+                    for (int j = 0; j < dYdP.getColumnDimension(); ++j) {
+                        final String name = harvester.getJacobiansColumnsNames().get(j);
+                        for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
+
+                            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                if (name.equals(span.getData())) {
+                                    jacobian.setEntry(row + k, column++, dYdP.getEntry(k, j) * driver.getScale());
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 

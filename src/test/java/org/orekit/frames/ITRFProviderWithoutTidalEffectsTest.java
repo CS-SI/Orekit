@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,13 @@
  */
 package org.orekit.frames;
 
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -50,9 +49,9 @@ public class ITRFProviderWithoutTidalEffectsTest {
         Transform evolution = new Transform(date2, t0.getInverse(), t1);
 
         Vector3D p = new Vector3D(6000, 6000, 0);
-        Assert.assertEquals(0.0, evolution.transformPosition(Vector3D.ZERO).getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, evolution.transformVector(p).getZ(), 0.003);
-        Assert.assertEquals(2 * FastMath.PI * dt / 86164,
+        Assertions.assertEquals(0.0, evolution.transformPosition(Vector3D.ZERO).getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, evolution.transformVector(p).getZ(), 0.003);
+        Assertions.assertEquals(2 * FastMath.PI * dt / 86164,
                             Vector3D.angle(t0.transformVector(p), t1.transformVector(p)),
                             1.0e-9);
 
@@ -65,19 +64,19 @@ public class ITRFProviderWithoutTidalEffectsTest {
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         Vector3D u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
-        Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < FastMath.toRadians(0.5));
+        Assertions.assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
         u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
-        Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < FastMath.toRadians(0.5));
+        Assertions.assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
         u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
-        Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < FastMath.toRadians(0.5));
+        Assertions.assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
         u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
-        Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < FastMath.toRadians(0.5));
+        Assertions.assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < FastMath.toRadians(0.5));
 
     }
 
@@ -87,16 +86,16 @@ public class ITRFProviderWithoutTidalEffectsTest {
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
         TIRFProvider TIRF2000 = (TIRFProvider) FramesFactory.getTIRF(IERSConventions.IERS_2010).getTransformProvider();
 
-        Assert.assertEquals(180, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
+        Assertions.assertEquals(180, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
         date = date.shiftedBy(6 * 3600);
-        Assert.assertEquals(-90, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
+        Assertions.assertEquals(-90, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
         date = date.shiftedBy(6 * 3600);
-        Assert.assertEquals(0, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
+        Assertions.assertEquals(0, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
         date = date.shiftedBy(6 * 3600);
-        Assert.assertEquals(90, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
+        Assertions.assertEquals(90, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
     }
 
@@ -111,9 +110,9 @@ public class ITRFProviderWithoutTidalEffectsTest {
         // Positions
         Vector3D posTIRF =
             trans.transformPosition(new Vector3D(6500000.0, -1234567.0, 4000000.0));
-        Assert.assertEquals(0,  3011109.361 - posTIRF.getX(), 0.38);
-        Assert.assertEquals(0, -5889822.669 - posTIRF.getY(), 0.38);
-        Assert.assertEquals(0,  4002170.039 - posTIRF.getZ(), 0.27);
+        Assertions.assertEquals(0,  3011109.361 - posTIRF.getX(), 0.38);
+        Assertions.assertEquals(0, -5889822.669 - posTIRF.getY(), 0.38);
+        Assertions.assertEquals(0,  4002170.039 - posTIRF.getZ(), 0.27);
 
     }
 
@@ -190,11 +189,11 @@ public class ITRFProviderWithoutTidalEffectsTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }

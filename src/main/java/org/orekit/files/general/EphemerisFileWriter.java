@@ -1,5 +1,5 @@
 /* Copyright 2016 Applied Defense Solutions (ADS)
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * ADS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * An interface for writing out ephemeris files to disk.
@@ -48,13 +50,16 @@ public interface EphemerisFileWriter {
      *            a configured Appendable to feed with text
      * @param ephemerisFile
      *            a populated ephemeris file to serialize into the buffer
+     * @param <C> type of the Cartesian coordinates
+     * @param <S> type of the segment
      * @throws IOException
      *             if any buffer writing operations fail or if the underlying
      *             format doesn't support a configuration in the EphemerisFile
      *             (for example having multiple satellites in one file, having
      *             the origin at an unspecified celestial body, etc.)
      */
-    void write(Appendable writer, EphemerisFile ephemerisFile) throws IOException;
+    <C extends TimeStampedPVCoordinates, S extends EphemerisFile.EphemerisSegment<C>>
+        void write(Appendable writer, EphemerisFile<C, S> ephemerisFile) throws IOException;
 
     /**
      * Write the passed in {@link EphemerisFile} to a file at the output path
@@ -64,17 +69,21 @@ public interface EphemerisFileWriter {
      *            a file path that the corresponding file will be written to
      * @param ephemerisFile
      *            a populated ephemeris file to serialize into the buffer
+     * @param <C> type of the Cartesian coordinates
+     * @param <S> type of the segment
      * @throws IOException
      *             if any file writing operations fail or if the underlying
      *             format doesn't support a configuration in the EphemerisFile
      *             (for example having multiple satellites in one file, having
      *             the origin at an unspecified celestial body, etc.)
      */
-    default void write(final String outputFilePath, EphemerisFile ephemerisFile)
+    default <C extends TimeStampedPVCoordinates, S extends EphemerisFile.EphemerisSegment<C>>
+        void write(final String outputFilePath, EphemerisFile<C, S> ephemerisFile)
             throws IOException {
         try (BufferedWriter writer =
                         Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
             write(writer, ephemerisFile);
         }
     }
+
 }

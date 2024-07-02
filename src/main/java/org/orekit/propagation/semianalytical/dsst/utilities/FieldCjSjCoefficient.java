@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Compute the S<sub>j</sub>(k, h) and the C<sub>j</sub>(k, h) series
  *  and their partial derivatives with respect to k and h.
@@ -35,8 +35,9 @@ import org.hipparchus.exception.NullArgumentException;
  *  The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) elements are store as an
  *  {@link ArrayList} of {@link Complex} number, the C<sub>j</sub>(k, h) being
  *  represented by the real and the S<sub>j</sub>(k, h) by the imaginary part.
+ * @param <T> type of the field elements
  */
-public class FieldCjSjCoefficient <T extends RealFieldElement<T>> {
+public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
 
     /** Zero for initialization. /*/
     private final T zero;
@@ -58,8 +59,8 @@ public class FieldCjSjCoefficient <T extends RealFieldElement<T>> {
     public FieldCjSjCoefficient(final T k, final T h, final Field<T> field) {
         zero = field.getZero();
         kih  = new FieldComplex<>(k, h);
-        cjsj = new ArrayList<FieldComplex<T>>();
-        cjsj.add(new FieldComplex<>(zero.add(1.), zero));
+        cjsj = new ArrayList<>();
+        cjsj.add(new FieldComplex<>(zero.newInstance(1.), zero));
         cjsj.add(kih);
         jLast = 1;
     }
@@ -133,7 +134,7 @@ public class FieldCjSjCoefficient <T extends RealFieldElement<T>> {
         jLast = j;
     }
 
-    private static class FieldComplex <T extends RealFieldElement<T>> {
+    private static class FieldComplex <T extends CalculusFieldElement<T>> {
 
         /** The imaginary part. */
         private final T imaginary;
@@ -177,7 +178,6 @@ public class FieldCjSjCoefficient <T extends RealFieldElement<T>> {
          * @param imaginaryPart Imaginary part.
          * @return a new complex number instance.
          *
-         * @see #valueOf(double, double)
          */
         protected FieldComplex<T> createComplex(final T realPart, final T imaginaryPart) {
             return new FieldComplex<>(realPart, imaginaryPart);

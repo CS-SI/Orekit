@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,32 +16,21 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.hipparchus.RealFieldElement;
-import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBodies;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.Constants;
+import org.orekit.time.TimeScales;
+import org.orekit.time.UT1Scale;
+import org.orekit.time.UTCScale;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.OrekitConfiguration;
 
 
 /** Factory for predefined reference frames.
  *
- * <h1> FramesFactory Presentation </h1>
+ * <h2> FramesFactory Presentation </h2>
  * <p>
  * Several predefined reference {@link Frame frames} are implemented in OREKIT.
  * They are linked together in a tree with the <i>Geocentric
@@ -162,29 +151,34 @@ import org.orekit.utils.OrekitConfiguration;
  * @author Guylaine Prat
  * @author Luc Maisonobe
  * @author Pascal Parraud
+ * @see Frames
  */
 public class FramesFactory {
+
+    /* These constants were left here instead of being moved to LazyLoadedFrames because
+     * they are public.
+     */
 
     /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU1980 compatibles). */
     public static final String RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME = "^finals\\.[^.]*$";
 
-    /** Default regular expression for the Rapid Data and Prediction EOP XML files (IAU1980 compatibles). */
-    public static final String RAPID_DATA_PREDICTION_XML_1980_FILENAME = "^finals\\..*\\.xml$";
+    /** Default regular expression for the EOP XML files (IAU1980 compatibles). */
+    public static final String XML_1980_FILENAME = "^(:finals|eopc04_\\d\\d)\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
-    public static final String EOPC04_1980_FILENAME = "^eopc04_\\d\\d\\.(\\d\\d)$";
+    public static final String EOPC04_1980_FILENAME = "^eopc04(_\\d\\d)?\\.\\d\\d$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
     public static final String BULLETINB_1980_FILENAME = "^bulletinb(_IAU1980)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
     /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU2000 compatibles). */
-    public static final String RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
+    public static final String RAPID_DATA_PREDICTION_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
 
-    /** Default regular expression for the Rapid Data and Prediction EOP XML files (IAU2000 compatibles). */
-    public static final String RAPID_DATA_PREDICITON_XML_2000_FILENAME = "^finals2000A\\..*\\.xml$";
+    /** Default regular expression for the EOP XML files (IAU2000 compatibles). */
+    public static final String XML_2000_FILENAME = "^(:finals2000A|eopc04_\\d\\d_IAU2000)\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
-    public static final String EOPC04_2000_FILENAME = "^eopc04_\\d\\d_IAU2000\\.(\\d\\d)$";
+    public static final String EOPC04_2000_FILENAME = "^eopc04(_\\d\\d_IAU2000)?\\.\\d\\d$";
 
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
     public static final String BULLETINB_2000_FILENAME = "^bulletinb(_IAU2000)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
@@ -192,20 +186,10 @@ public class FramesFactory {
     /** Default regular expression for the BulletinA files (IAU1980 and IAU2000 compatibles). */
     public static final String BULLETINA_FILENAME = "^bulletina-[ivxlcdm]+-\\d\\d\\d\\.txt$";
 
-    /** Predefined frames. */
-    private static transient Map<Predefined, FactoryManagedFrame> FRAMES =
-        new HashMap<Predefined, FactoryManagedFrame>();
-
-    /** Predefined versioned ITRF frames. */
-    private static transient Map<ITRFKey, VersionedITRF> VERSIONED_ITRF_FRAMES =
-        new HashMap<ITRFKey, VersionedITRF>();
-
-    /** Loaders for Earth Orientation parameters. */
-    private static final Map<IERSConventions, List<EOPHistoryLoader>> EOP_HISTORY_LOADERS =
-        new HashMap<IERSConventions, List<EOPHistoryLoader>>();
-
-    /** Threshold for EOP continuity. */
-    private static double EOP_CONTINUITY_THRESHOLD = 5 * Constants.JULIAN_DAY;
+    /** Default regular expression for the csv files (IAU1980 and IAU2000 compatibles).
+     * @since 12.0
+     */
+    public static final String CSV_FILENAME = "^(?:eopc04|bulletina|bulletinb).*\\.csv$";
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -213,6 +197,17 @@ public class FramesFactory {
      * the compiler from generating one automatically.</p>
      */
     private FramesFactory() {
+    }
+
+    /**
+     * Get the instance of {@link Frames} that is called by the static methods in this
+     * class.
+     *
+     * @return the reference frames used by this factory.
+     */
+    @DefaultDataContext
+    public static LazyLoadedFrames getFrames() {
+        return DataContext.getDefault().getFrames();
     }
 
     /** Add the default loaders EOP history (IAU 1980 precession/nutation).
@@ -223,8 +218,7 @@ public class FramesFactory {
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
      * (may be null if the default IERS file names are used)
-     * @param rapidDataXMLSupportedNames regular expression for supported
-     * rapid data XML EOP files names
+     * @param rapidDataXMLSupportedNames regular expression for supported XML EOP files names
      * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
@@ -232,38 +226,28 @@ public class FramesFactory {
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
+     * @param csvSupportedNames regular expression for supported csv files names
+     * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, String)
+     * @since 12.0
      */
+    @DefaultDataContext
     public static void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                        final String rapidDataXMLSupportedNames,
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames,
-                                                       final String bulletinASupportedNames) {
-        final String rapidColNames =
-                (rapidDataColumnsSupportedNames == null) ?
-                RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME : rapidDataColumnsSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                            new RapidDataAndPredictionColumnsLoader(false, rapidColNames));
-        final String rapidXmlNames =
-                (rapidDataXMLSupportedNames == null) ?
-                RAPID_DATA_PREDICTION_XML_1980_FILENAME : rapidDataXMLSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                            new RapidDataAndPredictionXMLLoader(rapidXmlNames));
-        final String eopcNames =
-                (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                            new EOPC04FilesLoader(eopcNames));
-        final String bulBNames =
-                (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                            new BulletinBFilesLoader(bulBNames));
-        final String bulANames =
-                    (bulletinASupportedNames == null) ? BULLETINA_FILENAME : bulletinASupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                            new BulletinAFilesLoader(bulANames));
+                                                       final String bulletinASupportedNames,
+                                                       final String csvSupportedNames) {
+        getFrames().addDefaultEOP1980HistoryLoaders(
+                rapidDataColumnsSupportedNames,
+                rapidDataXMLSupportedNames,
+                eopC04SupportedNames,
+                bulletinBSupportedNames,
+                bulletinASupportedNames,
+                csvSupportedNames);
     }
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
@@ -275,8 +259,7 @@ public class FramesFactory {
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
      * (may be null if the default IERS file names are used)
-     * @param rapidDataXMLSupportedNames regular expression for supported
-     * rapid data XML EOP files names
+     * @param xmlSupportedNames regular expression for supported XML EOP files names
      * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
@@ -284,73 +267,48 @@ public class FramesFactory {
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
+     * @param csvSupportedNames regular expression for supported csv files names
+     * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
+     * @since 12.0
      */
+    @DefaultDataContext
     public static void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
-                                                       final String rapidDataXMLSupportedNames,
+                                                       final String xmlSupportedNames,
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames,
-                                                       final String bulletinASupportedNames) {
-        final String rapidColNames =
-                (rapidDataColumnsSupportedNames == null) ?
-                RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME : rapidDataColumnsSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                            new RapidDataAndPredictionColumnsLoader(true, rapidColNames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                            new RapidDataAndPredictionColumnsLoader(true, rapidColNames));
-        final String rapidXmlNames =
-            (rapidDataXMLSupportedNames == null) ?
-            RAPID_DATA_PREDICITON_XML_2000_FILENAME : rapidDataXMLSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                            new RapidDataAndPredictionXMLLoader(rapidXmlNames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                            new RapidDataAndPredictionXMLLoader(rapidXmlNames));
-        final String eopcNames =
-            (eopC04SupportedNames == null) ? EOPC04_2000_FILENAME : eopC04SupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                            new EOPC04FilesLoader(eopcNames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                            new EOPC04FilesLoader(eopcNames));
-        final String bulBNames =
-            (bulletinBSupportedNames == null) ? BULLETINB_2000_FILENAME : bulletinBSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                            new BulletinBFilesLoader(bulBNames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                            new BulletinBFilesLoader(bulBNames));
-        final String bulANames =
-                (bulletinASupportedNames == null) ? BULLETINA_FILENAME : bulletinASupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                            new BulletinAFilesLoader(bulANames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                            new BulletinAFilesLoader(bulANames));
+                                                       final String bulletinASupportedNames,
+                                                       final String csvSupportedNames) {
+        getFrames().addDefaultEOP2000HistoryLoaders(
+                rapidDataColumnsSupportedNames,
+                xmlSupportedNames,
+                eopC04SupportedNames,
+                bulletinBSupportedNames,
+                bulletinASupportedNames,
+                csvSupportedNames);
     }
 
     /** Add a loader for Earth Orientation Parameters history.
      * @param conventions IERS conventions to which EOP history applies
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      * @see #clearEOPHistoryLoaders()
      */
-    public static void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
-        synchronized (EOP_HISTORY_LOADERS) {
-            if (!EOP_HISTORY_LOADERS.containsKey(conventions)) {
-                EOP_HISTORY_LOADERS.put(conventions, new ArrayList<EOPHistoryLoader>());
-            }
-            EOP_HISTORY_LOADERS.get(conventions).add(loader);
-        }
+    @DefaultDataContext
+    public static void addEOPHistoryLoader(final IERSConventions conventions, final EopHistoryLoader loader) {
+        getFrames().addEOPHistoryLoader(conventions, loader);
     }
 
     /** Clear loaders for Earth Orientation Parameters history.
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      */
+    @DefaultDataContext
     public static void clearEOPHistoryLoaders() {
-        synchronized (EOP_HISTORY_LOADERS) {
-            EOP_HISTORY_LOADERS.clear();
-        }
+        getFrames().clearEOPHistoryLoaders();
     }
 
     /** Set the threshold to check EOP continuity.
@@ -369,18 +327,19 @@ public class FramesFactory {
      * </p>
      * @param threshold threshold to use for checking EOP continuity (in seconds)
      */
+    @DefaultDataContext
     public static void setEOPContinuityThreshold(final double threshold) {
-        EOP_CONTINUITY_THRESHOLD = threshold;
+        getFrames().setEOPContinuityThreshold(threshold);
     }
 
     /** Get Earth Orientation Parameters history.
      * <p>
-     * If no {@link EOPHistoryLoader} has been added by calling {@link
-     * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader}
+     * If no {@link EopHistoryLoader} has been added by calling {@link
+     * #addEOPHistoryLoader(IERSConventions, EopHistoryLoader) addEOPHistoryLoader}
      * or if {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been
      * called afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String,
-     * String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
-     * String, String, String, String)} methods will be called automatically with
+     * String, String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
+     * String, String, String, String, String)} methods will be called automatically with
      * supported file names parameters all set to null, in order to get the default
      * loaders configuration.
      * </p>
@@ -388,163 +347,27 @@ public class FramesFactory {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return Earth Orientation Parameters history
      */
+    @DefaultDataContext
     public static EOPHistory getEOPHistory(final IERSConventions conventions, final boolean simpleEOP) {
-
-        synchronized (EOP_HISTORY_LOADERS) {
-
-            if (EOP_HISTORY_LOADERS.isEmpty()) {
-                // set up using default loaders
-                addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
-                addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
-            }
-
-            // TimeStamped based set needed to remove duplicates
-            OrekitException pendingException = null;
-            final SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
-
-            // try to load canonical data if available
-            if (EOP_HISTORY_LOADERS.containsKey(conventions)) {
-                for (final EOPHistoryLoader loader : EOP_HISTORY_LOADERS.get(conventions)) {
-                    try {
-                        loader.fillHistory(conventions.getNutationCorrectionConverter(), data);
-                    } catch (OrekitException oe) {
-                        pendingException = oe;
-                    }
-                }
-            }
-
-            if (data.isEmpty() && pendingException != null) {
-                throw pendingException;
-            }
-
-            final EOPHistory history = new EOPHistory(conventions, data, simpleEOP);
-            history.checkEOPContinuity(EOP_CONTINUITY_THRESHOLD);
-            return history;
-
-        }
-
+        return getFrames().getEOPHistory(conventions, simpleEOP);
     }
 
     /** Get one of the predefined frames.
      * @param factoryKey key of the frame within the factory
      * @return the predefined frame
      */
+    @DefaultDataContext
     public static Frame getFrame(final Predefined factoryKey) {
-        switch (factoryKey) {
-            case GCRF :
-                return getGCRF();
-            case ICRF :
-                return getICRF();
-            case ECLIPTIC_CONVENTIONS_1996 :
-                return getEcliptic(IERSConventions.IERS_1996);
-            case ECLIPTIC_CONVENTIONS_2003 :
-                return getEcliptic(IERSConventions.IERS_2003);
-            case ECLIPTIC_CONVENTIONS_2010 :
-                return getEcliptic(IERSConventions.IERS_2010);
-            case EME2000 :
-                return getEME2000();
-            case ITRF_CIO_CONV_2010_SIMPLE_EOP :
-                return getITRF(IERSConventions.IERS_2010, true);
-            case ITRF_CIO_CONV_2010_ACCURATE_EOP :
-                return getITRF(IERSConventions.IERS_2010, false);
-            case ITRF_CIO_CONV_2003_SIMPLE_EOP :
-                return getITRF(IERSConventions.IERS_2003, true);
-            case ITRF_CIO_CONV_2003_ACCURATE_EOP :
-                return getITRF(IERSConventions.IERS_2003, false);
-            case ITRF_CIO_CONV_1996_SIMPLE_EOP :
-                return getITRF(IERSConventions.IERS_1996, true);
-            case ITRF_CIO_CONV_1996_ACCURATE_EOP :
-                return getITRF(IERSConventions.IERS_1996, false);
-            case ITRF_EQUINOX_CONV_2010_SIMPLE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_2010, true);
-            case ITRF_EQUINOX_CONV_2010_ACCURATE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_2010, false);
-            case ITRF_EQUINOX_CONV_2003_SIMPLE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_2003, true);
-            case ITRF_EQUINOX_CONV_2003_ACCURATE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_2003, false);
-            case ITRF_EQUINOX_CONV_1996_SIMPLE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_1996, true);
-            case ITRF_EQUINOX_CONV_1996_ACCURATE_EOP :
-                return getITRFEquinox(IERSConventions.IERS_1996, false);
-            case TIRF_CONVENTIONS_2010_SIMPLE_EOP :
-                return getTIRF(IERSConventions.IERS_2010, true);
-            case TIRF_CONVENTIONS_2010_ACCURATE_EOP :
-                return getTIRF(IERSConventions.IERS_2010, false);
-            case TIRF_CONVENTIONS_2003_SIMPLE_EOP :
-                return getTIRF(IERSConventions.IERS_2003, true);
-            case TIRF_CONVENTIONS_2003_ACCURATE_EOP :
-                return getTIRF(IERSConventions.IERS_2003, false);
-            case TIRF_CONVENTIONS_1996_SIMPLE_EOP :
-                return getTIRF(IERSConventions.IERS_1996, true);
-            case TIRF_CONVENTIONS_1996_ACCURATE_EOP :
-                return getTIRF(IERSConventions.IERS_1996, false);
-            case CIRF_CONVENTIONS_2010_ACCURATE_EOP :
-                return getCIRF(IERSConventions.IERS_2010, false);
-            case CIRF_CONVENTIONS_2010_SIMPLE_EOP :
-                return getCIRF(IERSConventions.IERS_2010, true);
-            case CIRF_CONVENTIONS_2003_ACCURATE_EOP :
-                return getCIRF(IERSConventions.IERS_2003, false);
-            case CIRF_CONVENTIONS_2003_SIMPLE_EOP :
-                return getCIRF(IERSConventions.IERS_2003, true);
-            case CIRF_CONVENTIONS_1996_ACCURATE_EOP :
-                return getCIRF(IERSConventions.IERS_1996, false);
-            case CIRF_CONVENTIONS_1996_SIMPLE_EOP :
-                return getCIRF(IERSConventions.IERS_1996, true);
-            case VEIS_1950 :
-                return getVeis1950();
-            case GTOD_WITHOUT_EOP_CORRECTIONS :
-                return getGTOD(IERSConventions.IERS_1996, false, true);
-            case GTOD_CONVENTIONS_2010_ACCURATE_EOP :
-                return getGTOD(IERSConventions.IERS_2010, true, false);
-            case GTOD_CONVENTIONS_2010_SIMPLE_EOP :
-                return getGTOD(IERSConventions.IERS_2010, true, true);
-            case GTOD_CONVENTIONS_2003_ACCURATE_EOP :
-                return getGTOD(IERSConventions.IERS_2003, true, false);
-            case GTOD_CONVENTIONS_2003_SIMPLE_EOP :
-                return getGTOD(IERSConventions.IERS_2003, true, true);
-            case GTOD_CONVENTIONS_1996_ACCURATE_EOP :
-                return getGTOD(IERSConventions.IERS_1996, true, false);
-            case GTOD_CONVENTIONS_1996_SIMPLE_EOP :
-                return getGTOD(IERSConventions.IERS_1996, true, true);
-            case TOD_WITHOUT_EOP_CORRECTIONS :
-                return getTOD(IERSConventions.IERS_1996, false, true);
-            case TOD_CONVENTIONS_2010_ACCURATE_EOP :
-                return getTOD(IERSConventions.IERS_2010, true, false);
-            case TOD_CONVENTIONS_2010_SIMPLE_EOP :
-                return getTOD(IERSConventions.IERS_2010, true, true);
-            case TOD_CONVENTIONS_2003_ACCURATE_EOP :
-                return getTOD(IERSConventions.IERS_2003, true, false);
-            case TOD_CONVENTIONS_2003_SIMPLE_EOP :
-                return getTOD(IERSConventions.IERS_2003, true, true);
-            case TOD_CONVENTIONS_1996_ACCURATE_EOP :
-                return getTOD(IERSConventions.IERS_1996, true, false);
-            case TOD_CONVENTIONS_1996_SIMPLE_EOP :
-                return getTOD(IERSConventions.IERS_1996, true, true);
-            case MOD_WITHOUT_EOP_CORRECTIONS :
-                return getMOD(IERSConventions.IERS_1996, false);
-            case MOD_CONVENTIONS_2010 :
-                return getMOD(IERSConventions.IERS_2010, true);
-            case MOD_CONVENTIONS_2003 :
-                return getMOD(IERSConventions.IERS_2003, true);
-            case MOD_CONVENTIONS_1996 :
-                return getMOD(IERSConventions.IERS_1996, true);
-            case TEME :
-                return getTEME();
-            case PZ90_11 :
-                return getPZ9011(IERSConventions.IERS_2010, true);
-            default :
-                // this should never happen
-                throw new OrekitInternalError(null);
-        }
+        return getFrames().getFrame(factoryKey);
     }
 
     /** Get the unique GCRF frame.
      * <p>The GCRF frame is the root frame in the frame tree.</p>
      * @return the unique instance of the GCRF frame
      */
+    @DefaultDataContext
     public static Frame getGCRF() {
-        return Frame.getRoot();
+        return getFrames().getGCRF();
     }
 
     /** Get the unique ICRF frame.
@@ -552,8 +375,9 @@ public class FramesFactory {
      * with GCRF.</p>
      * @return the unique instance of the ICRF frame
      */
+    @DefaultDataContext
     public static Frame getICRF() {
-        return CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame();
+        return getFrames().getICRF();
     }
 
     /** Get the ecliptic frame.
@@ -566,39 +390,9 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static Frame getEcliptic(final IERSConventions conventions) {
-        synchronized (FramesFactory.class) {
-
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = Predefined.ECLIPTIC_CONVENTIONS_1996;
-                    break;
-                case IERS_2003 :
-                    factoryKey = Predefined.ECLIPTIC_CONVENTIONS_2003;
-                    break;
-                case IERS_2010 :
-                    factoryKey = Predefined.ECLIPTIC_CONVENTIONS_2010;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            final Frame parent = getMOD(conventions);
-
-            // try to find an already built frame
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(parent, new EclipticProvider(conventions),
-                                                true, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getEcliptic(conventions);
     }
 
     /** Get the unique EME2000 frame.
@@ -606,21 +400,9 @@ public class FramesFactory {
      * The former denomination is preferred in Orekit.</p>
      * @return the unique instance of the EME2000 frame
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getEME2000() {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            FactoryManagedFrame frame = FRAMES.get(Predefined.EME2000);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getGCRF(), new EME2000Provider(), true, Predefined.EME2000);
-                FRAMES.put(Predefined.EME2000, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getEME2000();
     }
 
     /** Get an unspecified International Terrestrial Reference Frame.
@@ -644,47 +426,10 @@ public class FramesFactory {
           * @see #getITRF(ITRFVersion, IERSConventions, boolean)
      * @since 6.1
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getITRF(final IERSConventions conventions,
                                               final boolean simpleEOP) {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.ITRF_CIO_CONV_1996_SIMPLE_EOP :
-                                 Predefined.ITRF_CIO_CONV_1996_ACCURATE_EOP;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.ITRF_CIO_CONV_2003_SIMPLE_EOP :
-                                 Predefined.ITRF_CIO_CONV_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.ITRF_CIO_CONV_2010_SIMPLE_EOP :
-                                 Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final Frame tirfFrame = getTIRF(conventions, simpleEOP);
-                final TIRFProvider tirfProvider = (TIRFProvider) tirfFrame.getTransformProvider();
-                frame = new FactoryManagedFrame(tirfFrame,
-                                                new ITRFProvider(tirfProvider.getEOPHistory()),
-                                                false, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getITRF(conventions, simpleEOP);
     }
 
     /** Get the TIRF reference frame, ignoring tidal effects.
@@ -692,11 +437,12 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
           * library cannot be read.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getTIRF(final IERSConventions conventions) {
-        return getTIRF(conventions, true);
+        return getFrames().getTIRF(conventions);
     }
 
-    /** Get an specific International Terrestrial Reference Frame.
+    /** Get a specific International Terrestrial Reference Frame.
      * <p>
      * Note that if a specific version of ITRF is required, then {@code simpleEOP}
      * should most probably be set to {@code false}, as ignoring tidal effects
@@ -709,28 +455,32 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
           * @since 9.2
      */
+    @DefaultDataContext
     public static VersionedITRF getITRF(final ITRFVersion version,
                                         final IERSConventions conventions,
                                         final boolean simpleEOP) {
-        synchronized (FramesFactory.class) {
-            // try to find an already built frame
-            final ITRFKey key = new ITRFKey(version, conventions, simpleEOP);
-            VersionedITRF frame = VERSIONED_ITRF_FRAMES.get(key);
+        return getFrames().getITRF(version, conventions, simpleEOP);
+    }
 
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final FactoryManagedFrame rawITRF = getITRF(conventions, simpleEOP);
-                frame = new VersionedITRF(rawITRF.getParent(), version,
-                                          (ITRFProvider) rawITRF.getTransformProvider(),
-                                          version.toString().replace('_', '-') +
-                                          "/" +
-                                          rawITRF.getName());
-                VERSIONED_ITRF_FRAMES.put(key, frame);
-            }
-
-            return frame;
-
-        }
+    /** Build an uncached International Terrestrial Reference Frame with specific {@link EOPHistory EOP history}.
+     * <p>
+     * This frame and its parent frames (TIRF and CIRF) will <em>not</em> be cached, they are
+     * rebuilt from scratch each time this method is called. This factory method is intended
+     * to be used when EOP history is changed at run time. For regular ITRF use, the
+     * {@link #getITRF(IERSConventions, boolean)} and {link {@link #getITRF(ITRFVersion, IERSConventions, boolean)}
+     * are more suitable.
+     * </p>
+     * @param eopHistory EOP history
+     * @param utc UTC time scale
+     * @return an ITRF frame with specified EOP history
+     * @since 12.0
+     */
+    public static Frame buildUncachedITRF(final EOPHistory eopHistory, final UTCScale utc) {
+        final TimeScales timeScales = TimeScales.of(utc.getBaseOffsets(),
+                                                    (conventions, timescales) -> eopHistory.getEntries());
+        final UT1Scale   ut1        = timeScales.getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
+        final Frames     frames     = Frames.of(timeScales, (CelestialBodies) null);
+        return frames.buildUncachedITRF(ut1);
     }
 
     /** Get the TIRF reference frame.
@@ -739,48 +489,10 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      * @since 6.1
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getTIRF(final IERSConventions conventions,
                                               final boolean simpleEOP) {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.TIRF_CONVENTIONS_1996_SIMPLE_EOP :
-                                 Predefined.TIRF_CONVENTIONS_1996_ACCURATE_EOP;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.TIRF_CONVENTIONS_2003_SIMPLE_EOP :
-                                 Predefined.TIRF_CONVENTIONS_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.TIRF_CONVENTIONS_2010_SIMPLE_EOP :
-                                 Predefined.TIRF_CONVENTIONS_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final Frame cirf = getCIRF(conventions, simpleEOP);
-                final ShiftingTransformProvider cirfInterpolating =
-                        (ShiftingTransformProvider) cirf.getTransformProvider();
-                final CIRFProvider cirfRaw = (CIRFProvider) cirfInterpolating.getRawProvider();
-                final EOPHistory eopHistory = cirfRaw.getEOPHistory();
-                frame = new FactoryManagedFrame(cirf, new TIRFProvider(eopHistory), false, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getTIRF(conventions, simpleEOP);
     }
 
     /** Get the CIRF2000 reference frame.
@@ -788,124 +500,31 @@ public class FramesFactory {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getCIRF(final IERSConventions conventions,
                                               final boolean simpleEOP) {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.CIRF_CONVENTIONS_1996_SIMPLE_EOP :
-                                 Predefined.CIRF_CONVENTIONS_1996_ACCURATE_EOP;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.CIRF_CONVENTIONS_2003_SIMPLE_EOP :
-                                 Predefined.CIRF_CONVENTIONS_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.CIRF_CONVENTIONS_2010_SIMPLE_EOP :
-                                 Predefined.CIRF_CONVENTIONS_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final EOPHistory eopHistory = FramesFactory.getEOPHistory(conventions, simpleEOP);
-                final TransformProvider shifting =
-                        new ShiftingTransformProvider(new CIRFProvider(eopHistory),
-                                                      CartesianDerivativesFilter.USE_PVA,
-                                                      AngularDerivativesFilter.USE_R,
-                                                      6, Constants.JULIAN_DAY / 24,
-                                                      OrekitConfiguration.getCacheSlotsNumber(),
-                                                      Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(getGCRF(), shifting, true, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getCIRF(conventions, simpleEOP);
     }
 
     /** Get the VEIS 1950 reference frame.
-     * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.<p>
+     * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.</p>
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getVeis1950() {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey = Predefined.VEIS_1950;
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(FramesFactory.getGTOD(IERSConventions.IERS_1996, false, true),
-                                                new VEISProvider(), true, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getVeis1950();
     }
 
     /** Get the equinox-based ITRF reference frame.
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-          * @since 6.1
+     * @since 6.1
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getITRFEquinox(final IERSConventions conventions,
                                                      final boolean simpleEOP) {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.ITRF_EQUINOX_CONV_1996_SIMPLE_EOP :
-                                 Predefined.ITRF_EQUINOX_CONV_1996_ACCURATE_EOP;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.ITRF_EQUINOX_CONV_2003_SIMPLE_EOP :
-                                 Predefined.ITRF_EQUINOX_CONV_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.ITRF_EQUINOX_CONV_2010_SIMPLE_EOP :
-                                 Predefined.ITRF_EQUINOX_CONV_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final Frame gtod = getGTOD(conventions, true, simpleEOP);
-                final ShiftingTransformProvider gtodShifting =
-                        (ShiftingTransformProvider) gtod.getTransformProvider();
-                final GTODProvider gtodRaw    = (GTODProvider) gtodShifting.getRawProvider();
-                final EOPHistory   eopHistory = gtodRaw.getEOPHistory();
-                frame = new FactoryManagedFrame(gtod, new ITRFProvider(eopHistory), false, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getITRFEquinox(conventions, simpleEOP);
     }
 
     /** Get the GTOD reference frame.
@@ -921,8 +540,9 @@ public class FramesFactory {
      * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) {
-        return getGTOD(IERSConventions.IERS_1996, applyEOPCorr, true);
+        return getFrames().getGTOD(applyEOPCorr);
     }
 
     /** Get the GTOD reference frame.
@@ -930,76 +550,10 @@ public class FramesFactory {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getGTOD(final IERSConventions conventions,
                                               final boolean simpleEOP) {
-        return getGTOD(conventions, true, simpleEOP);
-    }
-
-    /** Get the GTOD reference frame.
-     * <p>
-     * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP correction parameters.
-     * Beware that setting this parameter to {@code false} leads to crude accuracy
-     * (order of magnitudes for errors might be above 250m in LEO and 1400m in GEO).
-     * For this reason, setting this parameter to false is restricted to {@link
-     * IERSConventions#IERS_1996 IERS 1996} conventions, and hence this method is private.
-     * </p>
-     * @param conventions IERS conventions to apply
-     * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return the selected reference frame singleton.
-     */
-    private static FactoryManagedFrame getGTOD(final IERSConventions conventions,
-                                               final boolean applyEOPCorr,
-                                               final boolean simpleEOP) {
-
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = applyEOPCorr ?
-                                 (simpleEOP ? Predefined.GTOD_CONVENTIONS_1996_SIMPLE_EOP : Predefined.GTOD_CONVENTIONS_1996_ACCURATE_EOP) :
-                                 Predefined.GTOD_WITHOUT_EOP_CORRECTIONS;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.GTOD_CONVENTIONS_2003_SIMPLE_EOP :
-                                 Predefined.GTOD_CONVENTIONS_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ? Predefined.GTOD_CONVENTIONS_2010_SIMPLE_EOP :
-                                             Predefined.GTOD_CONVENTIONS_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final Frame tod = getTOD(conventions, applyEOPCorr, simpleEOP);
-                final ShiftingTransformProvider todInterpolating =
-                        (ShiftingTransformProvider) tod.getTransformProvider();
-                final TODProvider       todRaw     = (TODProvider) todInterpolating.getRawProvider();
-                final EOPHistory        eopHistory = todRaw.getEOPHistory();
-                final GTODProvider      gtodRaw    = new GTODProvider(conventions, eopHistory);
-                final TransformProvider gtodShifting =
-                        new ShiftingTransformProvider(gtodRaw,
-                                                      CartesianDerivativesFilter.USE_PVA,
-                                                      AngularDerivativesFilter.USE_R,
-                                                      todInterpolating.getGridPoints(), todInterpolating.getStep(),
-                                                      OrekitConfiguration.getCacheSlotsNumber(),
-                                                      Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(tod, gtodShifting, false, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getGTOD(conventions, simpleEOP);
     }
 
     /** Get the TOD reference frame.
@@ -1015,8 +569,9 @@ public class FramesFactory {
      * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getTOD(final boolean applyEOPCorr) {
-        return getTOD(IERSConventions.IERS_1996, applyEOPCorr, false);
+        return getFrames().getTOD(applyEOPCorr);
     }
 
     /** Get the TOD reference frame.
@@ -1024,81 +579,10 @@ public class FramesFactory {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getTOD(final IERSConventions conventions,
                                              final boolean simpleEOP) {
-        return getTOD(conventions, true, simpleEOP);
-    }
-
-    /** Get the TOD reference frame.
-     * <p>
-     * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP correction parameters.
-     * Beware that setting this parameter to {@code false} leads to crude accuracy
-     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
-     * For this reason, setting this parameter to false is restricted to {@link
-     * IERSConventions#IERS_1996 IERS 1996} conventions, and hence this method is private.
-     * </p>
-     * @param conventions IERS conventions to apply
-     * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return the selected reference frame singleton.
-     */
-    private static FactoryManagedFrame getTOD(final IERSConventions conventions,
-                                              final boolean applyEOPCorr,
-                                              final boolean simpleEOP) {
-
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = applyEOPCorr ?
-                                 (simpleEOP ? Predefined.TOD_CONVENTIONS_1996_SIMPLE_EOP : Predefined.TOD_CONVENTIONS_1996_ACCURATE_EOP) :
-                                 Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
-                    break;
-                case IERS_2003 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.TOD_CONVENTIONS_2003_SIMPLE_EOP :
-                                     Predefined.TOD_CONVENTIONS_2003_ACCURATE_EOP;
-                    break;
-                case IERS_2010 :
-                    factoryKey = simpleEOP ?
-                                 Predefined.TOD_CONVENTIONS_2010_SIMPLE_EOP :
-                                 Predefined.TOD_CONVENTIONS_2010_ACCURATE_EOP;
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-            final int interpolationPoints;
-            final int pointsPerDay;
-            if (applyEOPCorr) {
-                interpolationPoints = 6;
-                pointsPerDay        = 24;
-            } else {
-                interpolationPoints = 6;
-                pointsPerDay        = 8;
-            }
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final EOPHistory eopHistory = applyEOPCorr ? getEOPHistory(conventions, simpleEOP) : null;
-                final TransformProvider shifting =
-                        new ShiftingTransformProvider(new TODProvider(conventions, eopHistory),
-                                                      CartesianDerivativesFilter.USE_PVA,
-                                                      AngularDerivativesFilter.USE_R,
-                                                      interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
-                                                      OrekitConfiguration.getCacheSlotsNumber(),
-                                                      Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(getMOD(conventions, applyEOPCorr), shifting, true, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getTOD(conventions, simpleEOP);
     }
 
     /** Get the MOD reference frame.
@@ -1114,71 +598,18 @@ public class FramesFactory {
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getMOD(final boolean applyEOPCorr) {
-        return getMOD(IERSConventions.IERS_1996, applyEOPCorr);
+        return getFrames().getMOD(applyEOPCorr);
     }
 
     /** Get the MOD reference frame.
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getMOD(final IERSConventions conventions) {
-        return getMOD(conventions, true);
-    }
-
-    /** Get the MOD reference frame.
-     * <p>
-     * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP correction parameters.
-     * Beware that setting this parameter to {@code false} leads to crude accuracy
-     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
-     * For this reason, setting this parameter to false is restricted to {@link
-     * IERSConventions#IERS_1996 IERS 1996} conventions, and hence this method is private.
-     * </p>
-     * @param conventions IERS conventions to apply
-     * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
-     * @return the selected reference frame singleton.
-     */
-    private static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr) {
-
-        synchronized (FramesFactory.class) {
-
-            final Predefined factoryKey;
-            final Frame parent;
-            switch (conventions) {
-                case IERS_1996 :
-                    factoryKey = applyEOPCorr ? Predefined.MOD_CONVENTIONS_1996 : Predefined.MOD_WITHOUT_EOP_CORRECTIONS;
-                    parent     = applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000();
-                    break;
-                case IERS_2003 :
-                    factoryKey = Predefined.MOD_CONVENTIONS_2003;
-                    // in IERS conventions 2003, the precession angles zetaA, thetaA and zA
-                    // from equation 33 are computed from EME2000, not from GCRF
-                    parent     = FramesFactory.getEME2000();
-                    break;
-                case IERS_2010 :
-                    factoryKey = Predefined.MOD_CONVENTIONS_2010;
-                    // precession angles epsilon0, psiA, omegaA and chiA
-                    // from equations 5.39 and 5.40 are computed from EME2000
-                    parent     = FramesFactory.getEME2000();
-                    break;
-                default :
-                    // this should never happen
-                    throw new OrekitInternalError(null);
-            }
-
-            // try to find an already built frame
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(parent, new MODProvider(conventions), true, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getMOD(conventions);
     }
 
     /** Get the TEME reference frame.
@@ -1191,34 +622,9 @@ public class FramesFactory {
      * </p>
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getTEME() {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey = Predefined.TEME;
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final Frame tod = getTOD(IERSConventions.IERS_1996, false, true);
-                final ShiftingTransformProvider todShifting =
-                        (ShiftingTransformProvider) tod.getTransformProvider();
-                final TEMEProvider temeRaw = new TEMEProvider(IERSConventions.IERS_1996, null);
-                final TransformProvider temeShifting =
-                        new ShiftingTransformProvider(temeRaw,
-                                                      CartesianDerivativesFilter.USE_PVA,
-                                                      AngularDerivativesFilter.USE_R,
-                                                      todShifting.getGridPoints(), todShifting.getStep(),
-                                                      OrekitConfiguration.getCacheSlotsNumber(),
-                                                      Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-
-                frame = new FactoryManagedFrame(tod, temeShifting, true, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getTEME();
     }
 
     /** Get the PZ-90.11 (Parametry Zemly  – 1990.11) reference frame.
@@ -1239,26 +645,10 @@ public class FramesFactory {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
      */
+    @DefaultDataContext
     public static FactoryManagedFrame getPZ9011(final IERSConventions convention,
                                                 final boolean simpleEOP) {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey = Predefined.PZ90_11;
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final Frame itrf = getITRF(ITRFVersion.ITRF_2008, convention, simpleEOP);
-                final HelmertTransformation pz90Raw = new HelmertTransformation(new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
-                                                                                +3.0, +1.0, -0.0, +0.019, -0.042, +0.002, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-                frame = new FactoryManagedFrame(itrf, pz90Raw, false, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
+        return getFrames().getPZ9011(convention, simpleEOP);
     }
 
     /** Get the transform between two frames, suppressing all interpolation.
@@ -1311,6 +701,8 @@ public class FramesFactory {
 
     }
 
+    /* The methods below are static helper methods for Frame and TransformProvider. */
+
     /** Get the transform between two frames, suppressing all interpolation.
      * <p>
      * This method is similar to {@link Frame#getTransformTo(Frame, AbsoluteDate)}
@@ -1330,7 +722,7 @@ public class FramesFactory {
      * @return transform between the two frames, avoiding interpolation
      * @since 9.0
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
                                                                                                  final FieldAbsoluteDate<T> date) {
 
         // common ancestor to both frames in the frames tree
@@ -1366,8 +758,8 @@ public class FramesFactory {
     /** Retrieve EOP from a frame hierarchy.
      * <p>
      * The frame hierarchy tree is walked from specified frame up to root
-     * goind though parent frames, and the providers are checked to see if they
-     * reference EOP history.the first EOP history found is returned.
+     * traversing parent frames, and the providers are checked to see if they
+     * reference EOP history. The first EOP history found is returned.
      * </p>
      * @param start frame from which to start search, will typically be some
      * Earth related frame, like a topocentric frame or an ITRF frame
@@ -1418,7 +810,7 @@ public class FramesFactory {
                 peeled = ((ShiftingTransformProvider) peeled).getRawProvider();
             } else if (peeled instanceof EOPBasedTransformProvider &&
                        ((EOPBasedTransformProvider) peeled).getEOPHistory() != null &&
-                       ((EOPBasedTransformProvider) peeled).getEOPHistory().usesInterpolation()) {
+                       ((EOPBasedTransformProvider) peeled).getEOPHistory().cachesTidalCorrection()) {
                 peeled = ((EOPBasedTransformProvider) peeled).getNonInterpolatingProvider();
             } else {
                 peeling = false;
@@ -1426,62 +818,6 @@ public class FramesFactory {
         }
 
         return peeled;
-
-    }
-
-    /** Local class for different ITRF versions keys.
-     * @since 9.2
-     */
-    private static class ITRFKey implements Serializable {
-
-        /** Serialized UID. */
-        private static final long serialVersionUID = 20180412L;
-
-        /** ITRF version. */
-        private final ITRFVersion version;
-
-        /** IERS conventions to apply. */
-        private final IERSConventions conventions;
-
-        /** Tidal effects flag. */
-        private final boolean simpleEOP;
-
-        /** Simple constructor.
-         * @param version ITRF version
-         * @param conventions IERS conventions to apply
-         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-         */
-        ITRFKey(final ITRFVersion version, final IERSConventions conventions, final boolean simpleEOP) {
-            this.version     = version;
-            this.conventions = conventions;
-            this.simpleEOP   = simpleEOP;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public int hashCode() {
-            return (version.ordinal()     << 5) +
-                   (conventions.ordinal() << 1) +
-                   (simpleEOP ? 0 : 1);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean equals(final Object other) {
-
-            if (this == other) {
-                return true;
-            }
-
-            if (other instanceof ITRFKey) {
-                final ITRFKey key = (ITRFKey) other;
-                return version     == key.version     &&
-                       conventions == key.conventions &&
-                       simpleEOP   == key.simpleEOP;
-            }
-
-            return false;
-        }
 
     }
 

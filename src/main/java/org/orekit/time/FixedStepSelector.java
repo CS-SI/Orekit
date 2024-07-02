@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,7 +25,7 @@ import org.hipparchus.util.FastMath;
  * <p>
  * The dates can be aligned to whole steps in some time scale. So for example
  * if a step of 60s is used and the alignment time scale is set to
- * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, dates will be selected
+ * {@link org.orekit.time.TimeScales#getUTC() UTC}, dates will be selected
  * at whole minutes in UTC time.
  * </p>
  * <p>

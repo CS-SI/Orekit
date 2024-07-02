@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,21 +16,22 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -88,15 +89,15 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
      * @param area cross sectional area of satellite
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param centralBody central body (for shadow computation)
      * @param mu central attraction coefficient
-     * @since 9.2
+     * @since 12.0
      */
     public DSSTSolarRadiationPressure(final double cr, final double area,
                                       final ExtendedPVCoordinatesProvider sun,
-                                      final double equatorialRadius,
+                                      final OneAxisEllipsoid centralBody,
                                       final double mu) {
-        this(D_REF, P_REF, cr, area, sun, equatorialRadius, mu);
+        this(D_REF, P_REF, cr, area, sun, centralBody, mu);
     }
 
     /**
@@ -110,16 +111,16 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * </ul>
      *
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param centralBody central body (for shadow computation)
      * @param spacecraft spacecraft model
      * @param mu central attraction coefficient
-     * @since 9.2
+     * @since 12.0
      */
     public DSSTSolarRadiationPressure(final ExtendedPVCoordinatesProvider sun,
-                                      final double equatorialRadius,
+                                      final OneAxisEllipsoid centralBody,
                                       final RadiationSensitive spacecraft,
                                       final double mu) {
-        this(D_REF, P_REF, sun, equatorialRadius, spacecraft, mu);
+        this(D_REF, P_REF, sun, centralBody, spacecraft, mu);
     }
 
     /**
@@ -136,21 +137,21 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
      * @param area cross sectional area of satellite
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param centralBody central body (for shadow computation)
      * @param mu central attraction coefficient
-     * @since 9.2
+     * @since 12.0
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
                                       final double cr, final double area,
                                       final ExtendedPVCoordinatesProvider sun,
-                                      final double equatorialRadius,
+                                      final OneAxisEllipsoid centralBody,
                                       final double mu) {
 
         // cR being the DSST SRP coef and assuming a spherical spacecraft,
         // the conversion is:
         // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
         // with kA arbitrary sets to 0
-        this(dRef, pRef, sun, equatorialRadius, new IsotropicRadiationSingleCoefficient(area, cr), mu);
+        this(dRef, pRef, sun, centralBody, new IsotropicRadiationSingleCoefficient(area, cr), mu);
     }
 
     /**
@@ -165,23 +166,23 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param dRef reference distance for the solar radiation pressure (m)
      * @param pRef reference solar radiation pressure at dRef (N/m²)
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param centralBody central body shape model (for umbra/penumbra computation)
      * @param spacecraft spacecraft model
      * @param mu central attraction coefficient
-     * @since 9.2
+     * @since 12.0
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
                                       final ExtendedPVCoordinatesProvider sun,
-                                      final double equatorialRadius,
+                                      final OneAxisEllipsoid centralBody,
                                       final RadiationSensitive spacecraft,
                                       final double mu) {
 
         //Call to the constructor from superclass using the numerical SRP model as ForceModel
         super(PREFIX, GAUSS_THRESHOLD,
-              new SolarRadiationPressure(dRef, pRef, sun, equatorialRadius, spacecraft), mu);
+              new SolarRadiationPressure(dRef, pRef, sun, centralBody, spacecraft), mu);
 
         this.sun  = sun;
-        this.ae   = equatorialRadius;
+        this.ae   = centralBody.getEquatorialRadius();
         this.spacecraft = spacecraft;
     }
 
@@ -193,18 +194,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    protected ParameterDriver[] getParametersDriversWithoutMu() {
+    protected List<ParameterDriver> getParametersDriversWithoutMu() {
         return spacecraft.getRadiationParametersDrivers();
     }
 
@@ -216,7 +206,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                              FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
 
         // Direction cosines of the Sun in the equinoctial frame
-        final Vector3D sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
+        final Vector3D sunDir = sun.getPosition(state.getDate(), state.getFrame()).normalize();
         final double alpha = sunDir.dotProduct(auxiliaryElements.getVectorF());
         final double beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final double gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());
@@ -298,20 +288,21 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
+    protected <T extends CalculusFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
                                                              final FieldAuxiliaryElements<T> auxiliaryElements) {
 
         final Field<T> field = state.getDate().getField();
         final T zero = field.getZero();
         final T one  = field.getOne();
+        final T pi   = one.getPi();
 
         // Default bounds without shadow [-PI, PI]
         final T[] ll = MathArrays.buildArray(field, 2);
-        ll[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
-        ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+        ll[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(pi);
+        ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
 
         // Direction cosines of the Sun in the equinoctial frame
-        final FieldVector3D<T> sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
+        final FieldVector3D<T> sunDir = sun.getPosition(state.getDate(), state.getFrame()).normalize();
         final T alpha = sunDir.dotProduct(auxiliaryElements.getVectorF());
         final T beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final T gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());
@@ -324,8 +315,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final T h2 = auxiliaryElements.getH().multiply(auxiliaryElements.getH());
             final T k2 = auxiliaryElements.getK().multiply(auxiliaryElements.getK());
             final T m  = (auxiliaryElements.getSma().multiply(auxiliaryElements.getB())).divide(ae).reciprocal();
-            final T m2 = m.multiply(m);
-            final T m4 = m2.multiply(m2);
+            final T m2 = m.square();
+            final T m4 = m2.square();
             final T bb = alpha.multiply(beta).add(m2.multiply(auxiliaryElements.getH()).multiply(auxiliaryElements.getK()));
             final T b2 = bb.multiply(bb);
             final T cc = alpha.multiply(alpha).subtract(bet2).add(m2.multiply(k2.subtract(h2)));
@@ -375,16 +366,16 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                 // Must be one entry and one exit or none
                 if (!(entryFound == exitFound)) {
                     // entry or exit found but not both ! In this case, consider there is no eclipse...
-                    ll[0] = zero.add(-FastMath.PI);
-                    ll[1] = zero.add(FastMath.PI);
+                    ll[0] = pi.negate();
+                    ll[1] = pi;
                 }
                 // Quadrature between L at exit and L at entry so Lexit must be lower than Lentry
                 if (ll[0].getReal() > ll[1].getReal()) {
                     // Keep the angles between [-2PI, 2PI]
                     if (ll[1].getReal() < 0.) {
-                        ll[1] = ll[1].add(zero.add(2. * FastMath.PI));
+                        ll[1] = ll[1].add(pi.multiply(2.0));
                     } else {
-                        ll[0] = ll[0].subtract(zero.add(2. * FastMath.PI));
+                        ll[0] = ll[0].subtract(pi.multiply(2.0));
                     }
                 }
             }
@@ -485,7 +476,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param field field of elements
      * @return the number of real roots
      */
-    private <T extends RealFieldElement<T>> int realQuarticRoots(final T[] a, final T[] y,
+    private <T extends CalculusFieldElement<T>> int realQuarticRoots(final T[] a, final T[] y,
                                                                  final Field<T> field) {
 
         final T zero = field.getZero();
@@ -507,7 +498,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         // Solve resolvant cubic
         final T[] z3 = MathArrays.buildArray(field, 3);
         final T[] i = MathArrays.buildArray(field, 4);
-        i[0] = zero.add(1.0);
+        i[0] = zero.newInstance(1.0);
         i[1] = c.negate();
         i[2] = b.multiply(d).subtract(e.multiply(4.0));
         i[3] = e.multiply(c.multiply(4.).subtract(b.multiply(b))).subtract(d.multiply(d));
@@ -530,13 +521,13 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         // Solve quadratic factors of quartic equation
         final T[] y1 = MathArrays.buildArray(field, 2);
         final T[] n = MathArrays.buildArray(field, 3);
-        n[0] = zero.add(1.0);
+        n[0] = zero.newInstance(1.0);
         n[1] = bh.subtract(pp);
         n[2] = zh.subtract(qq);
         final int n1 = realQuadraticRoots(n, y1);
         final T[] y2 = MathArrays.buildArray(field, 2);
         final T[] nn = MathArrays.buildArray(field, 3);
-        nn[0] = zero.add(1.0);
+        nn[0] = zero.newInstance(1.0);
         nn[1] = bh.add(pp);
         nn[2] = zh.add(qq);
         final int n2 = realQuadraticRoots(nn, y2);
@@ -653,7 +644,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param field field of elements
      * @return the number of real roots
      */
-    private <T extends RealFieldElement<T>> int realCubicRoots(final T[] a, final T[] y,
+    private <T extends CalculusFieldElement<T>> int realCubicRoots(final T[] a, final T[] y,
                                                                final Field<T> field) {
 
         if (Precision.equals(a[0].getReal(), 0.)) {
@@ -667,7 +658,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final T b  =  a[1].divide(a[0].multiply(3.)).negate();
         final T c  =  a[2].divide(a[0]);
         final T d  =  a[3].divide(a[0]);
-        final T b2 =  b.multiply(b);
+        final T b2 =  b.square();
         final T p  =  b2.subtract(c.divide(3.));
         final T q  =  b.multiply(b2.subtract(c.multiply(0.5))).subtract(d.multiply(0.5));
 
@@ -696,8 +687,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final T sqP = FastMath.sqrt(p).multiply(2.);
 
             y[0] = b.add(sqP.multiply(FastMath.cos(phi)));
-            y[1] = b.subtract(sqP.multiply(FastMath.cos(phi.add(FastMath.PI / 3.))));
-            y[2] = b.subtract(sqP.multiply(FastMath.cos(phi.negate().add(FastMath.PI / 3.))));
+            y[1] = b.subtract(sqP.multiply(FastMath.cos(phi.add(b.getPi().divide(3.)))));
+            y[2] = b.subtract(sqP.multiply(FastMath.cos(phi.negate().add(b.getPi().divide(3.)))));
 
             return 3;
 
@@ -780,7 +771,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param y the real roots sorted in descending order
      * @return the number of real roots
      */
-    private <T extends RealFieldElement<T>> int realQuadraticRoots(final T[] a, final T[] y) {
+    private <T extends CalculusFieldElement<T>> int realQuadraticRoots(final T[] a, final T[] y) {
 
         if (Precision.equals(a[0].getReal(), 0.)) {
             // Degenerate quadratic
@@ -798,7 +789,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final T c =  a[2].divide(a[0]);
 
         // Compute discriminant
-        final T d =  b.multiply(b).subtract(c);
+        final T d =  b.square().subtract(c);
 
         if (d.getReal() < 0.) {
             // No real roots

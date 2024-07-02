@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,7 @@ import org.orekit.propagation.SpacecraftState;
 
 /** Interface representing the Jacobian of a vector function depending on {@link SpacecraftState}.
  * @see Differentiation#differentiate(StateFunction, int, org.orekit.attitudes.AttitudeProvider,
- * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
+ * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngleType, double, int)
  * @see StateFunction
  * @author Luc Maisonobe
  * @since 8.0
@@ -29,7 +29,7 @@ public interface StateJacobian {
 
     /** Evaluate the Jacobian of the function.
      * @param state spacecraft state as the sole free parameter of the function.
-     * @return Jacobian matric
+     * @return Jacobian matrix
       */
     double[][] value(SpacecraftState state);
 

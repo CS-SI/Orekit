@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,12 +24,20 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScales;
 
 
 /**
@@ -47,7 +55,7 @@ import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
  * @since 8.0
  *
  */
-public class SEMParser implements DataLoader {
+public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
 
     // Constants
     /** The source of the almanacs. */
@@ -60,17 +68,17 @@ public class SEMParser implements DataLoader {
     private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.al3$";
 
     /** Separator for parsing. */
-    private static final String SEPARATOR = "\\s+";
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     // Fields
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** the list of all the almanacs read from the file. */
     private final List<GPSAlmanac> almanacs;
 
     /** the list of all the PRN numbers of all the almanacs read from the file. */
     private final List<Integer> prnList;
+
+    /** Set of time scales to use. */
+    private final TimeScales timeScales;
 
     /** Simple constructor.
      *
@@ -81,18 +89,51 @@ public class SEMParser implements DataLoader {
      *
      * <p>The supported files names are used when getting data from the
      * {@link #loadData() loadData()} method that relies on the
-     * {@link DataProvidersManager data providers manager}. They are useless when
+     * {@link DataContext#getDefault() default data context}. They are useless when
      * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
      * method.</p>
      *
      * @param supportedNames regular expression for supported files names
      * (if null, a default pattern matching files with a ".al3" extension will be used)
      * @see #loadData()
+     * @see #SEMParser(String, DataProvidersManager, TimeScales)
      */
+    @DefaultDataContext
     public SEMParser(final String supportedNames) {
-        this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
-        this.almanacs =  new ArrayList<GPSAlmanac>();
-        this.prnList = new ArrayList<Integer>();
+        this(supportedNames,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Create a SEM loader/parser with the given source of SEM auxiliary data files.
+     *
+     * <p>This constructor does not load any data by itself. Data must be loaded
+     * later on by calling one of the {@link #loadData() loadData()} method or
+     * the {@link #loadData(InputStream, String) loadData(inputStream, fileName)}
+     * method.</p>
+     *
+     * <p>The supported files names are used when getting data from the
+     * {@link #loadData() loadData()} method that relies on the
+     * {@code dataProvidersManager}. They are useless when
+     * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
+     * method.</p>
+     *
+     * @param supportedNames regular expression for supported files names
+     * (if null, a default pattern matching files with a ".al3" extension will be used)
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @param timeScales to use when parsing the GPS dates.
+     * @see #loadData()
+     * @since 10.1
+     */
+    public SEMParser(final String supportedNames,
+                     final DataProvidersManager dataProvidersManager,
+                     final TimeScales timeScales) {
+        super((supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames,
+                dataProvidersManager);
+        this.almanacs = new ArrayList<>();
+        this.prnList = new ArrayList<>();
+        this.timeScales = timeScales;
     }
 
     /**
@@ -106,7 +147,7 @@ public class SEMParser implements DataLoader {
      */
     public void loadData() {
         // load the data from the configured data providers
-        DataProvidersManager.getInstance().feed(supportedNames, this);
+        feed(this);
         if (almanacs.isEmpty()) {
             throw new OrekitException(OrekitMessages.NO_SEM_ALMANAC_AVAILABLE);
         }
@@ -121,9 +162,7 @@ public class SEMParser implements DataLoader {
         prnList.clear();
 
         // Creates the reader
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             // Reads the number of almanacs in the file from the first line
             String[] token = getTokens(reader);
             final int almanacNb = Integer.parseInt(token[0].trim());
@@ -138,10 +177,8 @@ public class SEMParser implements DataLoader {
                 // Reads the next lines to get one almanac from
                 readAlmanac(reader, week, toa);
             }
-        } catch (IndexOutOfBoundsException ioobe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
-        } catch (IOException ioe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
+        } catch (IndexOutOfBoundsException | IOException e) {
+            throw new OrekitException(e, OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
         }
     }
 
@@ -168,11 +205,9 @@ public class SEMParser implements DataLoader {
         return prnList;
     }
 
-    /** Get the supported names for data files.
-     * @return regular expression for the supported names for data files
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /**
@@ -188,53 +223,60 @@ public class SEMParser implements DataLoader {
         // Skips the empty line
         reader.readLine();
 
+        // Create an empty GPS almanac and set the source
+        final GPSAlmanac almanac = new GPSAlmanac();
+        almanac.setSource(SOURCE);
+
         try {
             // Reads the PRN number from the first line
             String[] token = getTokens(reader);
-            final int prn = Integer.parseInt(token[0].trim());
+            almanac.setPRN(Integer.parseInt(token[0].trim()));
 
             // Reads the SV number from the second line
             token = getTokens(reader);
-            final int svn = Integer.parseInt(token[0].trim());
+            almanac.setSVN(Integer.parseInt(token[0].trim()));
 
             // Reads the average URA number from the third line
             token = getTokens(reader);
-            final int ura = Integer.parseInt(token[0].trim());
+            almanac.setURA(Integer.parseInt(token[0].trim()));
 
             // Reads the fourth line to get ecc, inc and dom
             token = getTokens(reader);
-            final double ecc = Double.parseDouble(token[0].trim());
-            final double inc = getInclination(Double.parseDouble(token[1].trim()));
-            final double dom = toRadians(Double.parseDouble(token[2].trim()));
+            almanac.setE(Double.parseDouble(token[0].trim()));
+            almanac.setI0(getInclination(Double.parseDouble(token[1].trim())));
+            almanac.setOmegaDot(toRadians(Double.parseDouble(token[2].trim())));
 
             // Reads the fifth line to get sqa, raan and aop
             token = getTokens(reader);
-            final double sqa  = Double.parseDouble(token[0].trim());
-            final double om0 = toRadians(Double.parseDouble(token[1].trim()));
-            final double aop  = toRadians(Double.parseDouble(token[2].trim()));
+            almanac.setSqrtA(Double.parseDouble(token[0].trim()));
+            almanac.setOmega0(toRadians(Double.parseDouble(token[1].trim())));
+            almanac.setPa(toRadians(Double.parseDouble(token[2].trim())));
 
             // Reads the sixth line to get anom, af0 and af1
             token = getTokens(reader);
-            final double anom = toRadians(Double.parseDouble(token[0].trim()));
-            final double af0 = Double.parseDouble(token[1].trim());
-            final double af1 = Double.parseDouble(token[2].trim());
+            almanac.setM0(toRadians(Double.parseDouble(token[0].trim())));
+            almanac.setAf0(Double.parseDouble(token[1].trim()));
+            almanac.setAf1(Double.parseDouble(token[2].trim()));
 
             // Reads the seventh line to get health
             token = getTokens(reader);
-            final int health = Integer.parseInt(token[0].trim());
+            almanac.setHealth(Integer.parseInt(token[0].trim()));
 
             // Reads the eighth line to get Satellite Configuration
             token = getTokens(reader);
-            final int conf = Integer.parseInt(token[0].trim());
+            almanac.setSatConfiguration(Integer.parseInt(token[0].trim()));
 
             // Adds the almanac to the list
-            almanacs.add(new GPSAlmanac(SOURCE, prn, svn, week, toa, sqa, ecc, inc, om0,
-                                        dom, aop, anom, af0, af1, health, ura, conf));
+            final AbsoluteDate date = new GNSSDate(week, toa, SatelliteSystem.GPS, timeScales).getDate();
+            almanac.setDate(date);
+            almanac.setTime(toa);
+            almanac.setWeek(week);
+            almanacs.add(almanac);
 
             // Adds the PRN to the list
-            prnList.add(prn);
+            prnList.add(almanac.getPRN());
         } catch (IndexOutOfBoundsException aioobe) {
-            throw new IOException();
+            throw new IOException(aioobe);
         }
     }
 
@@ -246,7 +288,7 @@ public class SEMParser implements DataLoader {
     private String[] getTokens(final BufferedReader reader) throws IOException {
         final String line = reader.readLine();
         if (line != null) {
-            return line.trim().split(SEPARATOR);
+            return SEPARATOR.split(line.trim());
         } else {
             throw new IOException();
         }
@@ -269,7 +311,7 @@ public class SEMParser implements DataLoader {
      * @return the angular value in radians
      */
     private double toRadians(final double semicircles) {
-        return GPSOrbitalElements.GPS_PI * semicircles;
+        return GNSSConstants.GNSS_PI * semicircles;
     }
 
 }

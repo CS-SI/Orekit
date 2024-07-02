@@ -16,8 +16,10 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.function.DoubleFunction;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
@@ -26,8 +28,11 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -47,11 +52,15 @@ import org.orekit.time.FieldAbsoluteDate;
  * occurs at a bound rather than inside the step).</p>
  * @author Luc Maisonobe
  * @param <D> class type for the generic version
+ * @param <T> type of the field elements
  */
-public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFieldElement<T>> {
+public class FieldEventState<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
 
     /** Event detector. */
     private D detector;
+
+    /** Event handler. */
+    private FieldEventHandler<T> handler;
 
     /** Time of the previous call to g. */
     private FieldAbsoluteDate<T> lastT;
@@ -103,9 +112,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
     public FieldEventState(final D detector) {
 
         this.detector = detector;
+        this.handler  = detector.getHandler();
 
         // some dummy values ...
-        final Field<T> field   = detector.getMaxCheckInterval().getField();
+        final Field<T> field   = detector.getThreshold().getField();
         final T nan            = field.getZero().add(Double.NaN);
         lastT                  = FieldAbsoluteDate.getPastInfinity(field);
         lastG                  = nan;
@@ -142,7 +152,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         detector.init(s0, t);
-        final Field<T> field = detector.getMaxCheckInterval().getField();
+        final Field<T> field = detector.getThreshold().getField();
         lastT = FieldAbsoluteDate.getPastInfinity(field);
         lastG = field.getZero().add(Double.NaN);
     }
@@ -197,28 +207,29 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
     public boolean evaluateStep(final FieldOrekitStepInterpolator<T> interpolator)
         throws MathRuntimeException {
         forward = interpolator.isForward();
+        final FieldSpacecraftState<T> s0 = interpolator.getPreviousState();
         final FieldSpacecraftState<T> s1 = interpolator.getCurrentState();
         final FieldAbsoluteDate<T> t1 = s1.getDate();
         final T dt = t1.durationFrom(t0);
         if (FastMath.abs(dt.getReal()) < detector.getThreshold().getReal()) {
             // we cannot do anything on such a small step, don't trigger any events
+            pendingEvent     = false;
+            pendingEventTime = null;
             return false;
         }
-        // number of points to check in the current step
-        final int n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt.getReal()) / detector.getMaxCheckInterval().getReal()));
-        final T h = dt.divide(n);
-
 
         FieldAbsoluteDate<T> ta = t0;
         T ga = g0;
-        for (int i = 0; i < n; ++i) {
+        for (FieldSpacecraftState<T> sb = nextCheck(s0, s1, interpolator);
+             sb != null;
+             sb = nextCheck(sb, s1, interpolator)) {
 
             // evaluate handler value at the end of the substep
-            final FieldAbsoluteDate<T> tb = (i == n - 1) ? t1 : t0.shiftedBy(h.multiply(i + 1));
-            final T gb = g(interpolator.getInterpolatedState(tb));
+            final FieldAbsoluteDate<T> tb = sb.getDate();
+            final T gb = g(sb);
 
             // check events occurrence
-            if (gb.getReal() == 0.0 || (g0Positive ^ (gb.getReal() > 0))) {
+            if (gb.getReal() == 0.0 || (g0Positive ^ gb.getReal() > 0)) {
                 // there is a sign change: an event is expected during this step
                 if (findRoot(interpolator, ta, ga, tb, gb)) {
                     return true;
@@ -235,6 +246,29 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         pendingEventTime = null;
         return false;
 
+    }
+
+    /** Estimate next state to check.
+     * @param done state already checked
+     * @param target target state towards which we are checking
+     * @param interpolator step interpolator for the proposed step
+     * @return intermediate state to check, or exactly {@code null}
+     * if we already have {@code done == target}
+     * @since 12.0
+     */
+    private FieldSpacecraftState<T> nextCheck(final FieldSpacecraftState<T> done, final FieldSpacecraftState<T> target,
+                                              final FieldOrekitStepInterpolator<T> interpolator) {
+        if (done == target) {
+            // we have already reached target
+            return null;
+        } else {
+            // we have to select some intermediate state
+            // attempting to split the remaining time in an integer number of checks
+            final T dt            = target.getDate().durationFrom(done.getDate());
+            final double maxCheck = detector.getMaxCheckInterval().currentInterval(done);
+            final int    n        = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt).divide(maxCheck).getReal()));
+            return n == 1 ? target : interpolator.getInterpolatedState(done.getDate().shiftedBy(dt.divide(n)));
+        }
     }
 
     /**
@@ -257,11 +291,15 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         final T zero = ga.getField().getZero();
 
         // check there appears to be a root in [ta, tb]
-        check(ga.getReal() == 0.0 || gb.getReal() == 0.0 || (ga.getReal() > 0.0 && gb.getReal() < 0.0) || (ga.getReal() < 0.0 && gb.getReal() > 0.0));
+        check(ga.getReal() == 0.0 || gb.getReal() == 0.0 || ga.getReal() > 0.0 && gb.getReal() < 0.0 || ga.getReal() < 0.0 && gb.getReal() > 0.0);
         final T convergence = detector.getThreshold();
         final int maxIterationCount = detector.getMaxIterationCount();
         final BracketedUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0, convergence.getReal(), 0, 5);
+
+        // prepare loop below
+        FieldAbsoluteDate<T> loopT = ta;
+        T loopG = ga;
 
         // event time, just at or before the actual root.
         FieldAbsoluteDate<T> beforeRootT = null;
@@ -292,16 +330,26 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
             final T newGa = g(interpolator.getInterpolatedState(ta));
             if (ga.getReal() > 0 != newGa.getReal() > 0) {
                 // both non-zero, step sign change at ta, possibly due to reset state
-                beforeRootT = ta;
-                beforeRootG = newGa;
-                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+                final FieldAbsoluteDate<T> nextT = minTime(shiftedBy(ta, convergence), tb);
+                final T                    nextG = g(interpolator.getInterpolatedState(nextT));
+                if (nextG.getReal() > 0.0 == g0Positive) {
+                    // the sign change between ga and newGa just moved the root less than one convergence
+                    // threshold later, we are still in a regular search for another root before tb,
+                    // we just need to fix the bracketing interval
+                    // (see issue https://github.com/Hipparchus-Math/hipparchus/issues/184)
+                    loopT = nextT;
+                    loopG = nextG;
+                } else {
+                    beforeRootT = ta;
+                    beforeRootG = newGa;
+                    afterRootT  = nextT;
+                    afterRootG  = nextG;
+                }
             }
         }
+
         // loop to skip through "fake" roots, i.e. where g(t) = g'(t) = 0.0
         // executed once if we didn't hit a special case above
-        FieldAbsoluteDate<T> loopT = ta;
-        T loopG = ga;
         while ((afterRootG.getReal() == 0.0 || afterRootG.getReal() > 0.0 == g0Positive) &&
                 strictlyAfter(afterRootT, tb)) {
             if (loopG.getReal() == 0.0) {
@@ -315,25 +363,51 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
                 // both non-zero, the usual case, use a root finder.
                 // time zero for evaluating the function f. Needs to be final
                 final FieldAbsoluteDate<T> fT0 = loopT;
-                final UnivariateFunction f = dt -> {
-                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
+                final double tbDouble = tb.durationFrom(fT0).getReal();
+                final double middle   = 0.5 * tbDouble;
+                final DoubleFunction<FieldAbsoluteDate<T>> date = dt -> {
+                    // use either fT0 or tb as the base time for shifts
+                    // in order to ensure we reproduce exactly those times
+                    // using only one reference time like fT0 would imply
+                    // to use ft0.shiftedBy(tbDouble), which may be different
+                    // from tb due to numerical noise (see issue 921)
+                    if (forward == dt <= middle) {
+                        // use start of interval as reference
+                        return fT0.shiftedBy(dt);
+                    } else {
+                        // use end of interval as reference
+                        return tb.shiftedBy(dt - tbDouble);
+                    }
                 };
-                // tb as a double for use in f
-                final T tbDouble = tb.durationFrom(fT0);
+                final UnivariateFunction f = dt -> g(interpolator.getInterpolatedState(date.apply(dt))).getReal();
                 if (forward) {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
-                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    beforeRootG = zero.add(interval.getLeftValue());
-                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    afterRootG = zero.add(interval.getRightValue());
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                        beforeRootT = date.apply(interval.getLeftAbscissa());
+                        beforeRootG = zero.add(interval.getLeftValue());
+                        afterRootT  = date.apply(interval.getRightAbscissa());
+                        afterRootG  = zero.add(interval.getRightValue());
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, loopT, loopG, tb, gb, lastT, lastG);
+                    }
                 } else {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
-                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    beforeRootG = zero.add(interval.getRightValue());
-                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    afterRootG = zero.add(interval.getLeftValue());
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                        beforeRootT = date.apply(interval.getRightAbscissa());
+                        beforeRootG = zero.newInstance(interval.getRightValue());
+                        afterRootT  = date.apply(interval.getLeftAbscissa());
+                        afterRootG  = zero.newInstance(interval.getLeftValue());
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, tb, gb, loopT, loopG, lastT, lastG);
+                    }
                 }
             }
             // tolerance is set to less than 1 ulp
@@ -343,8 +417,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress
-            check((forward && afterRootT.compareTo(beforeRootT) > 0) ||
-                  (!forward && afterRootT.compareTo(beforeRootT) < 0));
+            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                  !forward && afterRootT.compareTo(beforeRootT) < 0);
             // setup next iteration
             loopT = afterRootT;
             loopG = afterRootG;
@@ -410,36 +484,45 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      */
     public boolean tryAdvance(final FieldSpacecraftState<T> state,
                               final FieldOrekitStepInterpolator<T> interpolator) {
-        // check this is only called before a pending event.
-
-        check(!(pendingEvent && strictlyAfter(pendingEventTime, state.getDate())));
         final FieldAbsoluteDate<T> t = state.getDate();
+        // check this is only called before a pending event.
+        check(!pendingEvent || !strictlyAfter(pendingEventTime, t));
 
-        // just found an event and we know the next time we want to search again
+        final boolean meFirst;
+
         if (strictlyAfter(t, earliestTimeConsidered)) {
-            return false;
-        }
-
-        final T g = g(state);
-        final boolean positive = g.getReal() > 0;
-
-        // check for new root, pendingEventTime may be null if there is not pending event
-        if ((g.getReal() == 0.0 && t.equals(pendingEventTime)) || positive == g0Positive) {
-            // at a root we already found, or g function has expected sign
-            t0 = t;
-            g0 = g; // g0Positive is the same
-            return false;
+            // just found an event and we know the next time we want to search again
+            meFirst = false;
         } else {
+            // check g function to see if there is a new event
+            final T g = g(state);
+            final boolean positive = g.getReal() > 0;
 
-            // found a root we didn't expect -> find precise location
-            return findRoot(interpolator, t0, g0, t, g);
+            if (positive == g0Positive) {
+                // g function has expected sign
+                g0 = g; // g0Positive is the same
+                meFirst = false;
+            } else {
+                // found a root we didn't expect -> find precise location
+                final FieldAbsoluteDate<T> oldPendingEventTime = pendingEventTime;
+                final boolean foundRoot = findRoot(interpolator, t0, g0, t, g);
+                // make sure the new root is not the same as the old root, if one exists
+                meFirst = foundRoot && !pendingEventTime.equals(oldPendingEventTime);
+            }
         }
+
+        if (!meFirst) {
+            // advance t0 to the current time so we can't find events that occur before t
+            t0 = t;
+        }
+
+        return meFirst;
     }
 
     /**
      * Notify the user's listener of the event. The event occurs wholly within this method
-     * call including a call to {@link FieldEventDetector#resetState(FieldSpacecraftState)}
-     * if necessary.
+     * call including a call to {@link FieldEventHandler#resetState(FieldEventDetector,
+     * FieldSpacecraftState)} if necessary.
      *
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
@@ -455,10 +538,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = handler.eventOccurred(state, detector, increasing == forward);
         final FieldSpacecraftState<T> newState;
         if (action == Action.RESET_STATE) {
-            newState = detector.resetState(state);
+            newState = handler.resetState(detector, state);
         } else {
             newState = state;
         }
@@ -471,7 +554,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         g0 = afterG;
         g0Positive = increasing;
         // check g0Positive set correctly
-        check(g0.getReal() == 0.0 || g0Positive == (g0.getReal() > 0));
+        check(g0.getReal() == 0.0 || g0Positive == g0.getReal() > 0);
         return new EventOccurrence<T>(action, newState, stopTime);
     }
 
@@ -510,7 +593,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @return min(a, b) if forward, else max (a, b)
      */
     private FieldAbsoluteDate<T> minTime(final FieldAbsoluteDate<T> a, final FieldAbsoluteDate<T> b) {
-        return (forward ^ (a.compareTo(b) > 0)) ? a : b;
+        return (forward ^ a.compareTo(b) > 0) ? a : b;
     }
 
     /**
@@ -544,8 +627,9 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
     /**
      * Class to hold the data related to an event occurrence that is needed to decide how
      * to modify integration.
+     * @param <T> type of the field elements
      */
-    public static class EventOccurrence<T extends RealFieldElement<T>> {
+    public static class EventOccurrence<T extends CalculusFieldElement<T>> {
 
         /** User requested action. */
         private final Action action;

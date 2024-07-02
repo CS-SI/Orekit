@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,8 +17,11 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.FieldElement;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -27,7 +30,7 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** Tridimensional references frames class.
  *
- * <h1> Frame Presentation </h1>
+ * <h2> Frame Presentation </h2>
  * <p>This class is the base class for all frames in OREKIT. The frames are
  * linked together in a tree with some specific frame chosen as the root of the tree.
  * Each frame is defined by {@link Transform transforms} combining any number
@@ -240,66 +243,188 @@ public class Frame implements Serializable {
      * @return transform from the instance to the destination frame
      */
     public Transform getTransformTo(final Frame destination, final AbsoluteDate date) {
-
-        if (this == destination) {
-            // shortcut for special case that may be frequent
-            return Transform.IDENTITY;
-        }
-
-        // common ancestor to both frames in the frames tree
-        final Frame common = findCommon(this, destination);
-
-        // transform from common to instance
-        Transform commonToInstance = Transform.IDENTITY;
-        for (Frame frame = this; frame != common; frame = frame.parent) {
-            commonToInstance =
-                new Transform(date, frame.transformProvider.getTransform(date), commonToInstance);
-        }
-
-        // transform from destination up to common
-        Transform commonToDestination = Transform.IDENTITY;
-        for (Frame frame = destination; frame != common; frame = frame.parent) {
-            commonToDestination =
-                new Transform(date, frame.transformProvider.getTransform(date), commonToDestination);
-        }
-
-        // transform from instance to destination via common
-        return new Transform(date, commonToInstance.getInverse(), commonToDestination);
-
+        return getTransformTo(
+                destination,
+                Transform.IDENTITY,
+                frame -> frame.getTransformProvider().getTransform(date),
+                (t1, t2) -> new Transform(date, t1, t2),
+                Transform::getInverse);
     }
 
     /** Get the transform from the instance to another frame.
      * @param destination destination frame to which we want to transform vectors
-     * @param date the date (can be null if it is sure than no date dependent frame is used)
+     * @param date the date (<em>must</em> be non-null, which is a more stringent condition
+     *      *                than in {@link #getTransformTo(Frame, FieldAbsoluteDate)})
      * @param <T> the type of the field elements
      * @return transform from the instance to the destination frame
      */
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
+
+        return getTransformTo(destination,
+                              FieldTransform.getIdentity(date.getField()),
+                              frame -> frame.getTransformProvider().getTransform(date),
+                              (t1, t2) -> new FieldTransform<>(date, t1, t2),
+                              FieldTransform::getInverse);
+    }
+
+    /**
+     * Get the kinematic portion of the transform from the instance to another
+     * frame. The returned transform is kinematic in the sense that it includes
+     * translations and rotations, with rates, but cannot transform an acceleration vector.
+     *
+     * <p>This method is often more performant than {@link
+     * #getTransformTo(Frame, AbsoluteDate)} when accelerations are not needed.
+     *
+     * @param destination destination frame to which we want to transform
+     *                    vectors
+     * @param date        the date (can be null if it is sure than no date
+     *                    dependent frame is used)
+     * @return kinematic transform from the instance to the destination frame
+     * @since 12.1
+     */
+    public KinematicTransform getKinematicTransformTo(final Frame destination, final AbsoluteDate date) {
+        return getTransformTo(
+            destination,
+            KinematicTransform.getIdentity(),
+            frame -> frame.getTransformProvider().getKinematicTransform(date),
+            (t1, t2) -> KinematicTransform.compose(date, t1, t2),
+            KinematicTransform::getInverse);
+    }
+
+    /**
+     * Get the static portion of the transform from the instance to another
+     * frame. The returned transform is static in the sense that it includes
+     * translations and rotations, but not rates.
+     *
+     * <p>This method is often more performant than {@link
+     * #getTransformTo(Frame, AbsoluteDate)} when rates are not needed.
+     *
+     * @param destination destination frame to which we want to transform
+     *                    vectors
+     * @param date        the date (can be null if it is sure than no date
+     *                    dependent frame is used)
+     * @return static transform from the instance to the destination frame
+     * @since 11.2
+     */
+    public StaticTransform getStaticTransformTo(final Frame destination,
+                                                final AbsoluteDate date) {
+        return getTransformTo(
+                destination,
+                StaticTransform.getIdentity(),
+                frame -> frame.getTransformProvider().getStaticTransform(date),
+                (t1, t2) -> StaticTransform.compose(date, t1, t2),
+                StaticTransform::getInverse);
+    }
+
+    /**
+     * Get the static portion of the transform from the instance to another
+     * frame. The returned transform is static in the sense that it includes
+     * translations and rotations, but not rates.
+     *
+     * <p>This method is often more performant than {@link
+     * #getTransformTo(Frame, FieldAbsoluteDate)} when rates are not needed.
+     *
+     * <p>A first check is made on the FieldAbsoluteDate because "fielded" transforms have low-performance.<br>
+     * The date field is checked with {@link FieldElement#isZero()}.<br>
+     * If true, the un-fielded version of the transform computation is used.
+     *
+     * @param <T>         type of the elements
+     * @param destination destination frame to which we want to transform
+     *                    vectors
+     * @param date        the date (<em>must</em> be non-null, which is a more stringent condition
+     *                    than in {@link #getStaticTransformTo(Frame, AbsoluteDate)})
+     * @return static transform from the instance to the destination frame
+     * @since 12.0
+     */
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransformTo(final Frame destination,
+                                                final FieldAbsoluteDate<T> date) {
+        if (date.hasZeroField()) {
+            // If date field is Zero, then use the un-fielded version for performances
+            return FieldStaticTransform.of(date, getStaticTransformTo(destination, date.toAbsoluteDate()));
+
+        } else {
+            // Use classic fielded function
+            return getTransformTo(destination,
+                                  FieldStaticTransform.getIdentity(date.getField()),
+                                  frame -> frame.getTransformProvider().getStaticTransform(date),
+                                  (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
+                                  FieldStaticTransform::getInverse);
+        }
+    }
+
+    /**
+     * Get the kinematic portion of the transform from the instance to another
+     * frame. The returned transform is kinematic in the sense that it includes
+     * translations and rotations, with rates, but cannot transform an acceleration vector.
+     *
+     * <p>This method is often more performant than {@link
+     * #getTransformTo(Frame, AbsoluteDate)} when accelerations are not needed.
+     * @param <T>          Type of transform returned.
+     * @param destination destination frame to which we want to transform
+     *                    vectors
+     * @param date        the date (<em>must</em> be non-null, which is a more stringent condition
+     *      *                    than in {@link #getKinematicTransformTo(Frame, AbsoluteDate)})
+     * @return kinematic transform from the instance to the destination frame
+     * @since 12.1
+     */
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransformTo(final Frame destination,
+                                                                                                  final FieldAbsoluteDate<T> date) {
+        if (date.hasZeroField()) {
+            // If date field is Zero, then use the un-fielded version for performances
+            final KinematicTransform kinematicTransform = getKinematicTransformTo(destination, date.toAbsoluteDate());
+            return FieldKinematicTransform.of(date.getField(), kinematicTransform);
+
+        } else {
+            // Use classic fielded function
+            return getTransformTo(destination,
+                    FieldKinematicTransform.getIdentity(date.getField()),
+                    frame -> frame.getTransformProvider().getKinematicTransform(date),
+                    (t1, t2) -> FieldKinematicTransform.compose(date, t1, t2),
+                    FieldKinematicTransform::getInverse);
+        }
+    }
+
+    /**
+     * Generic get transform method that builds the transform from {@code this}
+     * to {@code destination}.
+     *
+     * @param destination  destination frame to which we want to transform
+     *                     vectors
+     * @param identity     transform of the given type.
+     * @param getTransform method to get a transform from a frame.
+     * @param compose      method to combine two transforms.
+     * @param inverse      method to invert a transform.
+     * @param <T>          Type of transform returned.
+     * @return composite transform.
+     */
+    private <T> T getTransformTo(final Frame destination,
+                                 final T identity,
+                                 final Function<Frame, T> getTransform,
+                                 final BiFunction<T, T, T> compose,
+                                 final Function<T, T> inverse) {
 
         if (this == destination) {
             // shortcut for special case that may be frequent
-            return FieldTransform.getIdentity(date.getField());
+            return identity;
         }
 
         // common ancestor to both frames in the frames tree
         final Frame common = findCommon(this, destination);
 
         // transform from common to instance
-        FieldTransform<T> commonToInstance = FieldTransform.getIdentity(date.getField());
+        T commonToInstance = identity;
         for (Frame frame = this; frame != common; frame = frame.parent) {
-            commonToInstance =
-                new FieldTransform<>(date, frame.transformProvider.getTransform(date), commonToInstance);
+            commonToInstance = compose.apply(getTransform.apply(frame), commonToInstance);
         }
 
         // transform from destination up to common
-        FieldTransform<T> commonToDestination = FieldTransform.getIdentity(date.getField());
+        T commonToDestination = identity;
         for (Frame frame = destination; frame != common; frame = frame.parent) {
-            commonToDestination =
-                new FieldTransform<>(date, frame.transformProvider.getTransform(date), commonToDestination);
+            commonToDestination = compose.apply(getTransform.apply(frame), commonToDestination);
         }
 
         // transform from instance to destination via common
-        return new FieldTransform<>(date, commonToInstance.getInverse(), commonToDestination);
+        return compose.apply(inverse.apply(commonToInstance), commonToDestination);
 
     }
 
@@ -346,7 +471,7 @@ public class Frame implements Serializable {
     /** Get the unique root frame.
      * @return the unique instance of the root frame
      */
-    protected static Frame getRoot() {
+    public static Frame getRoot() {
         return LazyRootHolder.INSTANCE;
     }
 

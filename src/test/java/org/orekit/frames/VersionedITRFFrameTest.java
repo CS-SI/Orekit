@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,21 +16,14 @@
  */
 package org.orekit.frames;
 
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -39,6 +32,12 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class VersionedITRFFrameTest {
 
@@ -69,8 +68,8 @@ public class VersionedITRFFrameTest {
                                                        IERSConventions.IERS_2010, false);
         VersionedITRF itrf2014 = FramesFactory.getITRF(ITRFVersion.ITRF_2014,
                                                        IERSConventions.IERS_2010, false);
-        Assert.assertEquals(ITRFVersion.ITRF_2008, itrf2008.getITRFVersion());
-        Assert.assertEquals(ITRFVersion.ITRF_2014, itrf2014.getITRFVersion());
+        Assertions.assertEquals(ITRFVersion.ITRF_2008, itrf2008.getITRFVersion());
+        Assertions.assertEquals(ITRFVersion.ITRF_2014, itrf2014.getITRFVersion());
 
         GeodeticPoint laPaz = new GeodeticPoint(FastMath.toRadians(-16.50),
                                                 FastMath.toRadians(-68.15),
@@ -84,8 +83,8 @@ public class VersionedITRFFrameTest {
         Vector3D pUnspecified = unspecifiedITRF.getTransformTo(eme2000, date).transformPosition(p);
         Vector3D p2008        = itrf2008.getTransformTo(eme2000, date).transformPosition(p);
         Vector3D p2014        = itrf2014.getTransformTo(eme2000, date).transformPosition(p);
-        Assert.assertEquals(expectedDistance2008, Vector3D.distance(pUnspecified, p2008), tolerance);
-        Assert.assertEquals(expectedDistance2014, Vector3D.distance(pUnspecified, p2014), tolerance);
+        Assertions.assertEquals(expectedDistance2008, Vector3D.distance(pUnspecified, p2008), tolerance);
+        Assertions.assertEquals(expectedDistance2014, Vector3D.distance(pUnspecified, p2014), tolerance);
 
         // non-interpolating transform
         Vector3D pUnspecifiedNI = FramesFactory.getNonInterpolatingTransform(unspecifiedITRF,
@@ -93,17 +92,17 @@ public class VersionedITRFFrameTest {
                                                                              date).transformPosition(p);
         Vector3D p2008NI        = FramesFactory.getNonInterpolatingTransform(itrf2008, eme2000, date).transformPosition(p);
         Vector3D p2014NI        = FramesFactory.getNonInterpolatingTransform(itrf2014, eme2000, date).transformPosition(p);
-        Assert.assertEquals(expectedDistance2008, Vector3D.distance(pUnspecifiedNI, p2008NI), tolerance);
-        Assert.assertEquals(expectedDistance2014, Vector3D.distance(pUnspecifiedNI, p2014NI), tolerance);
+        Assertions.assertEquals(expectedDistance2008, Vector3D.distance(pUnspecifiedNI, p2008NI), tolerance);
+        Assertions.assertEquals(expectedDistance2014, Vector3D.distance(pUnspecifiedNI, p2014NI), tolerance);
 
         // field transform
-        FieldAbsoluteDate<Decimal64> dateField     = new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date);
-        FieldVector3D<Decimal64> pUnspecifiedField = unspecifiedITRF.getTransformTo(eme2000, dateField).transformPosition(p);
-        FieldVector3D<Decimal64> p2008Field        = itrf2008.getTransformTo(eme2000, dateField).transformPosition(p);
-        FieldVector3D<Decimal64> p2014Field        = itrf2014.getTransformTo(eme2000, dateField).transformPosition(p);
-        Assert.assertEquals(expectedDistance2008, FieldVector3D.distance(pUnspecifiedField, p2008Field).getReal(), tolerance);
-        Assert.assertEquals(expectedDistance2014, FieldVector3D.distance(pUnspecifiedField, p2014Field).getReal(), tolerance);
-        
+        FieldAbsoluteDate<Binary64> dateField     = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+        FieldVector3D<Binary64> pUnspecifiedField = unspecifiedITRF.getTransformTo(eme2000, dateField).transformPosition(p);
+        FieldVector3D<Binary64> p2008Field        = itrf2008.getTransformTo(eme2000, dateField).transformPosition(p);
+        FieldVector3D<Binary64> p2014Field        = itrf2014.getTransformTo(eme2000, dateField).transformPosition(p);
+        Assertions.assertEquals(expectedDistance2008, FieldVector3D.distance(pUnspecifiedField, p2008Field).getReal(), tolerance);
+        Assertions.assertEquals(expectedDistance2014, FieldVector3D.distance(pUnspecifiedField, p2014Field).getReal(), tolerance);
+
     }
 
     @Test
@@ -114,17 +113,17 @@ public class VersionedITRFFrameTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(itrf2008);
 
-        Assert.assertTrue(bos.size() > 40000);
-        Assert.assertTrue(bos.size() < 45000);
+        Assertions.assertTrue(bos.size() > 45000);
+        Assertions.assertTrue(bos.size() < 50000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         VersionedITRF deserialized  = (VersionedITRF) ois.readObject();
-        Assert.assertEquals(ITRFVersion.ITRF_2008, deserialized.getITRFVersion());
+        Assertions.assertEquals(ITRFVersion.ITRF_2008, deserialized.getITRFVersion());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("itrf-jump");
     }

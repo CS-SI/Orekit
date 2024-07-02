@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,10 +17,15 @@
 package org.orekit.estimation.measurements.generation;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -53,10 +58,76 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      */
     List<EstimationModifier<T>> getModifiers();
 
-    /** Generate a single measurement.
-     * @param states spacecraft states
-     * @return generated measurement
+    /** Get the satellites related to this measurement.
+     * @return satellites related to this measurement
+     * @since 12.0
      */
-    T build(SpacecraftState[] states);
+    ObservableSatellite[] getSatellites();
 
+    /** Generate a single measurement.
+     * @param date measurement date
+     * @param interpolators interpolators relevant for this builder
+     * @return generated measurement
+     * @since 13.0
+     */
+    EstimatedMeasurementBase<T> build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
+
+    /** Generate a single measurement.<p>
+     *
+     * Warning: This method uses "shiftedBy" so it is not as accurate as the method above that uses interpolators.
+     *
+     * @param date measurement date
+     * @param states all spacecraft states (i.e. including ones that may not be relevant for the current builder)
+     * @return generated measurement
+     * @since 12.1
+     */
+    default EstimatedMeasurementBase<T> build(AbsoluteDate date, SpacecraftState[] states) {
+        final Map<ObservableSatellite, OrekitStepInterpolator> interpolators = new ConcurrentHashMap<>();
+
+        for (int i = 0; i < states.length; i++) {
+            final ObservableSatellite sat = getSatellites()[i];
+            final SpacecraftState state = states[i];
+
+            final OrekitStepInterpolator interpolator = new OrekitStepInterpolator() {
+                /** {@inheritDoc} */
+                @Override
+                public OrekitStepInterpolator restrictStep(final SpacecraftState newPreviousState, final SpacecraftState newCurrentState) {
+                    return null;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isPreviousStateInterpolated() {
+                    return false;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isForward() {
+                    return true;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public boolean isCurrentStateInterpolated() {
+                    return false;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getPreviousState() {
+                    return state;
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getInterpolatedState(final AbsoluteDate date) {
+                    return state.shiftedBy(date.durationFrom(state));
+                }
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState getCurrentState() {
+                    return state;
+                }
+            };
+            interpolators.put(sat, interpolator);
+        }
+
+        return build( date, interpolators);
+    }
 }

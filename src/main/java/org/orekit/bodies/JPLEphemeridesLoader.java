@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,10 +18,9 @@ package org.orekit.bodies;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +28,13 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -38,20 +42,21 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for JPL ephemerides binary files (DE 4xx) and similar formats (INPOP 06/08/10).
  * <p>JPL ephemerides binary files contain ephemerides for all solar system planets.</p>
@@ -71,7 +76,8 @@ import org.orekit.utils.TimeStampedGenerator;
  * <p>The loader supports files in TDB or TCB time scales.</p>
  * @author Luc Maisonobe
  */
-public class JPLEphemeridesLoader implements CelestialBodyLoader {
+public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
+        implements CelestialBodyLoader {
 
     /** Default supported files name pattern for JPL DE files. */
     public static final String DEFAULT_DE_SUPPORTED_NAMES = "^[lu]nx([mp](\\d\\d\\d\\d))+\\.(?:4\\d\\d)$";
@@ -186,17 +192,31 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
          */
         PVCoordinates getRawPV(AbsoluteDate date);
 
+        /** Get the position at date.
+         * @param date date at which the position is desired
+         * @return position at the specified date
+         */
+        default Vector3D getRawPosition(final AbsoluteDate date) {
+            return getRawPV(date).getPosition();
+        }
+
         /** Get the position-velocity at date.
          * @param date date at which the position-velocity is desired
          * @param <T> type of the field elements
          * @return position-velocity at the specified date
          */
-        <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
+        <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
+
+        /** Get the position at date.
+         * @param date date at which the position is desired
+         * @param <T> type of the field elements
+         * @return position at the specified date
+         */
+        default <T extends CalculusFieldElement<T>> FieldVector3D<T> getRawPosition(final FieldAbsoluteDate<T> date) {
+            return getRawPV(date).getPosition();
+        }
 
     }
-
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
 
     /** Ephemeris for selected body. */
     private final GenericTimeStampedCache<PosVelChebyshev> ephemerides;
@@ -209,6 +229,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     /** Ephemeris type to load. */
     private final EphemerisType loadType;
+
+    /** Time scales to use when loading data. */
+    private final TimeScales timeScales;
+
+    /** The GCRF implementation. */
+    private final Frame gcrf;
 
     /** Current file start epoch. */
     private AbsoluteDate startEpoch;
@@ -243,14 +269,40 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Indicator for binary file endianness. */
     private boolean bigEndian;
 
+    /** Create a loader for JPL ephemerides binary files. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param generateType ephemeris type to generate
+     * @see #JPLEphemeridesLoader(String, EphemerisType, DataProvidersManager, TimeScales,
+     * Frame)
+     */
+    @DefaultDataContext
+    public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
+        this(supportedNames, generateType,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales(),
+                DataContext.getDefault().getFrames().getGCRF());
+    }
+
     /** Create a loader for JPL ephemerides binary files.
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
+     * @param dataProvidersManager provides access to the ephemeris files.
+     * @param timeScales used to access the TCB and TDB time scales while loading data.
+     * @param gcrf Earth centered frame aligned with ICRF.
+     * @since 10.1
      */
-    public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
+    public JPLEphemeridesLoader(final String supportedNames,
+                                final EphemerisType generateType,
+                                final DataProvidersManager dataProvidersManager,
+                                final TimeScales timeScales,
+                                final Frame gcrf) {
+        super(supportedNames, dataProvidersManager);
 
-        this.supportedNames = supportedNames;
-        constants = new AtomicReference<Map<String, Double>>();
+        this.timeScales = timeScales;
+        this.gcrf = gcrf;
+        constants = new AtomicReference<>();
 
         this.generateType  = generateType;
         if (generateType == EphemerisType.SOLAR_SYSTEM_BARYCENTER) {
@@ -261,9 +313,10 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             loadType = generateType;
         }
 
-        ephemerides = new GenericTimeStampedCache<PosVelChebyshev>(2, OrekitConfiguration.getCacheSlotsNumber(),
-                                                                   Double.POSITIVE_INFINITY, FIFTY_DAYS,
-                                                                   new EphemerisParser());
+        ephemerides = new GenericTimeStampedCache<>(
+                2, OrekitConfiguration.getCacheSlotsNumber(),
+                Double.POSITIVE_INFINITY, FIFTY_DAYS,
+                new EphemerisParser());
         maxChunksDuration = Double.NaN;
         chunksDuration    = Double.NaN;
 
@@ -276,7 +329,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     public CelestialBody loadCelestialBody(final String name) {
 
         final double gm       = getLoadedGravitationalCoefficient(generateType);
-        final IAUPole iauPole = PredefinedIAUPoles.getIAUPole(generateType);
+        final IAUPole iauPole = PredefinedIAUPoles
+                .getIAUPole(generateType, timeScales);
         final double scale;
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
@@ -285,8 +339,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         switch (generateType) {
             case SOLAR_SYSTEM_BARYCENTER : {
                 scale = -1.0;
-                final JPLEphemeridesLoader parentLoader =
-                        new JPLEphemeridesLoader(supportedNames, EphemerisType.EARTH_MOON);
+                final JPLEphemeridesLoader parentLoader = new JPLEphemeridesLoader(
+                        getSupportedNames(),
+                        EphemerisType.EARTH_MOON,
+                        getDataProvidersManager(),
+                        timeScales,
+                        gcrf);
                 final CelestialBody parentBody =
                         parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
@@ -297,23 +355,27 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
             case EARTH_MOON :
                 scale         = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-                definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
+                definingFrameAlignedWithICRF = gcrf;
                 rawPVProvider = new EphemerisRawPVProvider();
                 break;
             case EARTH :
                 scale         = 1.0;
-                definingFrameAlignedWithICRF = FramesFactory.getGCRF();
+                definingFrameAlignedWithICRF = gcrf;
                 rawPVProvider = new ZeroRawPVProvider();
                 break;
             case MOON :
                 scale         =  1.0;
-                definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
+                definingFrameAlignedWithICRF = gcrf;
                 rawPVProvider = new EphemerisRawPVProvider();
                 break;
             default : {
                 scale = 1.0;
-                final JPLEphemeridesLoader parentLoader =
-                        new JPLEphemeridesLoader(supportedNames, EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+                final JPLEphemeridesLoader parentLoader = new JPLEphemeridesLoader(
+                        getSupportedNames(),
+                        EphemerisType.SOLAR_SYSTEM_BARYCENTER,
+                        getDataProvidersManager(),
+                        timeScales,
+                        gcrf);
                 final CelestialBody parentBody =
                         parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
@@ -322,7 +384,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         // build the celestial body
-        return new JPLCelestialBody(name, supportedNames, generateType, rawPVProvider,
+        return new JPLCelestialBody(name, getSupportedNames(), generateType, rawPVProvider,
                                     gm, scale, iauPole, definingFrameAlignedWithICRF,
                                     inertialFrameName, bodyOrientedFrameName);
 
@@ -332,7 +394,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @return astronomical unit in meters
      */
     public double getLoadedAstronomicalUnit() {
-        return 1000.0 * getLoadedConstant(CONSTANT_AU);
+        return UnitsConverter.KILOMETRES_TO_METRES.convert(getLoadedConstant(CONSTANT_AU));
     }
 
     /** Get Earth/Moon mass ratio.
@@ -426,7 +488,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         Map<String, Double> map = constants.get();
         if (map == null) {
             final ConstantsParser parser = new ConstantsParser();
-            if (!DataProvidersManager.getInstance().feed(supportedNames, parser)) {
+            if (!feed(parser)) {
                 throw new OrekitException(OrekitMessages.NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND);
             }
             map = parser.getConstants();
@@ -435,7 +497,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         for (final String name : names) {
             if (map.containsKey(name)) {
-                return map.get(name).doubleValue();
+                return map.get(name);
             }
         }
 
@@ -463,8 +525,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // (x, y, z) are contained in the file, positions are in kilometers
         // and times are in TDB
         components   = 3;
-        positionUnit = 1000.0;
-        timeScale    = TimeScalesFactory.getTDB();
+        positionUnit = UnitsConverter.KILOMETRES_TO_METRES.convert(1.0);
+        timeScale    = timeScales.getTDB();
 
         if (deNum == INPOP_DE_NUMBER) {
             // an INPOP file may contain 6 components (including coefficients for the velocity vector)
@@ -482,7 +544,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             // INPOP files may have their times expressed in TCB
             final double timesc = getLoadedConstant("TIMESC");
             if (!Double.isNaN(timesc) && (int) timesc == 1) {
-                timeScale = TimeScalesFactory.getTCB();
+                timeScale = timeScales.getTCB();
             }
 
         }
@@ -497,18 +559,18 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             final int row1 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET     + 12 * i);
             final int row2 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 4 + 12 * i);
             final int row3 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 8 + 12 * i);
-            ok = ok && (row1 >= 0) && (row2 >= 0) && (row3 >= 0);
-            if (((i ==  0) && (loadType == EphemerisType.MERCURY))    ||
-                    ((i ==  1) && (loadType == EphemerisType.VENUS))      ||
-                    ((i ==  2) && (loadType == EphemerisType.EARTH_MOON)) ||
-                    ((i ==  3) && (loadType == EphemerisType.MARS))       ||
-                    ((i ==  4) && (loadType == EphemerisType.JUPITER))    ||
-                    ((i ==  5) && (loadType == EphemerisType.SATURN))     ||
-                    ((i ==  6) && (loadType == EphemerisType.URANUS))     ||
-                    ((i ==  7) && (loadType == EphemerisType.NEPTUNE))    ||
-                    ((i ==  8) && (loadType == EphemerisType.PLUTO))      ||
-                    ((i ==  9) && (loadType == EphemerisType.MOON))       ||
-                    ((i == 10) && (loadType == EphemerisType.SUN))) {
+            ok = ok && row1 >= 0 && row2 >= 0 && row3 >= 0;
+            if (i ==  0 && loadType == EphemerisType.MERCURY    ||
+                    i ==  1 && loadType == EphemerisType.VENUS      ||
+                    i ==  2 && loadType == EphemerisType.EARTH_MOON ||
+                    i ==  3 && loadType == EphemerisType.MARS       ||
+                    i ==  4 && loadType == EphemerisType.JUPITER    ||
+                    i ==  5 && loadType == EphemerisType.SATURN     ||
+                    i ==  6 && loadType == EphemerisType.URANUS     ||
+                    i ==  7 && loadType == EphemerisType.NEPTUNE    ||
+                    i ==  8 && loadType == EphemerisType.PLUTO      ||
+                    i ==  9 && loadType == EphemerisType.MOON       ||
+                    i == 10 && loadType == EphemerisType.SUN) {
                 firstIndex = row1;
                 coeffs     = row2;
                 chunks     = row3;
@@ -517,7 +579,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         // compute chunks duration
         final double timeSpan = extractDouble(record, HEADER_CHUNK_DURATION_OFFSET);
-        ok = ok && (timeSpan > 0) && (timeSpan < 100);
+        ok = ok && timeSpan > 0 && timeSpan < 100;
         chunksDuration = Constants.JULIAN_DAY * (timeSpan / chunks);
         if (Double.isNaN(maxChunksDuration)) {
             maxChunksDuration = chunksDuration;
@@ -554,7 +616,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final int deNum = extractInt(firstPart, HEADER_EPHEMERIS_TYPE_OFFSET);
 
         // the record size for this file
-        int recordSize = 0;
+        final int recordSize;
 
         if (deNum == INPOP_DE_NUMBER) {
             // INPOP files have an extended DE format, which includes also the record size
@@ -583,12 +645,11 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Parse constants from first two header records.
      * @param first first header record
      * @param second second header record
-     * @param name name of the file (or zip entry)
      * @return map of parsed constants
      */
-    private Map<String, Double> parseConstants(final byte[] first, final byte[] second, final String name) {
+    private Map<String, Double> parseConstants(final byte[] first, final byte[] second) {
 
-        final Map<String, Double> map = new HashMap<String, Double>();
+        final Map<String, Double> map = new HashMap<>();
 
         for (int i = 0; i < CONSTANTS_MAX_NUMBER; ++i) {
             // Note: for extracting the strings from the binary file, it makes no difference
@@ -774,11 +835,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @return extracted string, with whitespace characters stripped
      */
     private String extractString(final byte[] record, final int offset, final int length) {
-        try {
-            return new String(record, offset, length, "US-ASCII").trim();
-        } catch (UnsupportedEncodingException uee) {
-            throw new OrekitInternalError(uee);
-        }
+        return new String(record, offset, length, StandardCharsets.US_ASCII).trim();
     }
 
     /** Local parser for header constants. */
@@ -812,7 +869,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
             }
 
-            localConstants = parseConstants(first, second, name);
+            localConstants = parseConstants(first, second);
 
         }
 
@@ -833,11 +890,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         /** Simple constructor.
          */
         EphemerisParser() {
-            entries = new TreeSet<PosVelChebyshev>(new Comparator<PosVelChebyshev>() {
-                public int compare(final PosVelChebyshev o1, final PosVelChebyshev o2) {
-                    return o1.getDate().compareTo(o2.getDate());
-                }
-            });
+            entries = new TreeSet<>(new ChronologicalComparator());
         }
 
         /** {@inheritDoc} */
@@ -861,11 +914,11 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 }
 
                 // get new entries in the specified data range
-                if (!DataProvidersManager.getInstance().feed(supportedNames, this)) {
+                if (!feed(this)) {
                     throw new OrekitException(OrekitMessages.NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND);
                 }
 
-                return new ArrayList<PosVelChebyshev>(entries);
+                return new ArrayList<>(entries);
 
             } catch (OrekitException oe) {
                 throw new TimeStampedCacheException(oe);
@@ -906,12 +959,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
 
             if (constants.get() == null) {
-                constants.compareAndSet(null, parseConstants(first, second, name));
+                constants.compareAndSet(null, parseConstants(first, second));
             }
 
             // check astronomical unit consistency
             final double au = 1000 * extractDouble(first, HEADER_ASTRONOMICAL_UNIT_OFFSET);
-            if ((au < 1.4e11) || (au > 1.6e11)) {
+            if (au < 1.4e11 || au > 1.6e11) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
             if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 10.0) {
@@ -921,7 +974,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
             // check Earth-Moon mass ratio consistency
             final double emRat = extractDouble(first, HEADER_EM_RATIO_OFFSET);
-            if ((emRat < 80) || (emRat > 82)) {
+            if (emRat < 80 || emRat > 82) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
             if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-5) {
@@ -956,12 +1009,14 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             // extract time range covered by the record
             final AbsoluteDate rangeStart = extractDate(record, DATA_START_RANGE_OFFSET);
             if (rangeStart.compareTo(startEpoch) < 0) {
-                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeStart, startEpoch, finalEpoch);
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                        rangeStart, startEpoch, finalEpoch, startEpoch.durationFrom(rangeStart));
             }
 
             final AbsoluteDate rangeEnd   = extractDate(record, DATE_END_RANGE_OFFSET);
             if (rangeEnd.compareTo(finalEpoch) > 0) {
-                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeEnd, startEpoch, finalEpoch);
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                        rangeEnd, startEpoch, finalEpoch, rangeEnd.durationFrom(finalEpoch));
             }
 
             if (rangeStart.compareTo(end) > 0 || rangeEnd.compareTo(start) < 0) {
@@ -1010,10 +1065,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Raw position-velocity provider using ephemeris. */
     private class EphemerisRawPVProvider implements RawPVProvider {
 
-        /** {@inheritDoc} */
-        public PVCoordinates getRawPV(final AbsoluteDate date) {
 
-            // get raw PV from Chebyshev polynomials
+        /** Retrieve correct Chebyshev polynomial for given date.
+         * @param date date
+         * @return PosVelChebyshev Chebyshev polynomial class for position-velocity-acceleration
+         */
+        private PosVelChebyshev getChebyshev(final AbsoluteDate date) {
             PosVelChebyshev chebyshev;
             try {
                 chebyshev = ephemerides.getNeighbors(date).findFirst().get();
@@ -1025,6 +1082,14 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                     throw tce;
                 }
             }
+            return chebyshev;
+        }
+
+        /** {@inheritDoc} */
+        public PVCoordinates getRawPV(final AbsoluteDate date) {
+
+            // get raw PV from Chebyshev polynomials
+            final PosVelChebyshev chebyshev = getChebyshev(date);
 
             // evaluate the Chebyshev polynomials
             return chebyshev.getPositionVelocityAcceleration(date);
@@ -1032,24 +1097,34 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
 
             // get raw PV from Chebyshev polynomials
-            PosVelChebyshev chebyshev;
-            try {
-                chebyshev = ephemerides.getNeighbors(date.toAbsoluteDate()).findFirst().get();
-            } catch (TimeStampedCacheException tce) {
-                // we cannot bracket the date, check if the last available chunk covers the specified date
-                chebyshev = ephemerides.getLatest();
-                if (!chebyshev.inRange(date.toAbsoluteDate())) {
-                    // we were not able to recover from the error, the date is too far
-                    throw tce;
-                }
-            }
+            final PosVelChebyshev chebyshev = getChebyshev(date.toAbsoluteDate());
 
             // evaluate the Chebyshev polynomials
             return chebyshev.getPositionVelocityAcceleration(date);
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector3D getRawPosition(final AbsoluteDate date) {
+            // get raw PV from Chebyshev polynomials
+            final PosVelChebyshev chebyshev = getChebyshev(date);
+
+            // evaluate the Chebyshev polynomials
+            return chebyshev.getPosition(date);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getRawPosition(final FieldAbsoluteDate<T> date) {
+            // get raw PV from Chebyshev polynomials
+            final PosVelChebyshev chebyshev = getChebyshev(date.toAbsoluteDate());
+
+            // evaluate the Chebyshev polynomials
+            return chebyshev.getPosition(date);
         }
 
     }
@@ -1063,7 +1138,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+        public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
             return FieldPVCoordinates.getZero(date.getField());
         }
 

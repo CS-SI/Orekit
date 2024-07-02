@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,17 +20,16 @@ import java.util.List;
 
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
-import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
-import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -39,7 +38,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 public class RangeRateTest {
 
@@ -53,18 +51,19 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for values difference
         final StreamingStatistics diffStat = new StreamingStatistics();
@@ -74,19 +73,22 @@ public class RangeRateTest {
             // Propagate to measurement date
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            
+
             // Estimate the AZEL value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
+
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
         }
 
         // Mean and std errors check
-        Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
-        Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+        Assertions.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
+        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+
+        // Test measurement type
+        Assertions.assertEquals(RangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
-    
+
     /** Compare observed values and estimated values.
      *  Both are calculated with a different algorithm.
      *  Two-ways measurements.
@@ -97,18 +99,19 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, true),
+                                                               new RangeRateMeasurementCreator(context, true, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for values difference
         final StreamingStatistics diffStat = new StreamingStatistics();
@@ -118,19 +121,19 @@ public class RangeRateTest {
             // Propagate to measurement date
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            
+
             // Estimate the AZEL value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
+
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
         }
 
         // Mean and std errors check
-        Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
-        Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+        Assertions.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
+        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
     }
-    
+
     /** Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference.
      * One way measurements.
@@ -141,20 +144,21 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         for (final ObservedMeasurement<?> m : measurements) {
-            Assert.assertFalse(((RangeRate) m).isTwoWay());
+            Assertions.assertFalse(((RangeRate) m).isTwoWay());
         }
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -164,19 +168,19 @@ public class RangeRateTest {
             final SpacecraftState state = propagator.propagate(date);
 
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assert.assertEquals(2, estimated.getParticipants().length);
+            Assertions.assertEquals(2, estimated.getParticipants().length);
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate(state1 ->
+                                                      measurement.
+                                                          estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                          getEstimatedValue(),
+                                                  1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -188,7 +192,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.5e-8);
+        Assertions.assertEquals(0, maxRelativeError, 8.1e-6);
 
     }
 
@@ -202,20 +206,21 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, true),
+                                                               new RangeRateMeasurementCreator(context, true, satClkDrift),
                                                                1.0, 3.0, 300.0);
         for (final ObservedMeasurement<?> m : measurements) {
-            Assert.assertTrue(((RangeRate) m).isTwoWay());
+            Assertions.assertTrue(((RangeRate) m).isTwoWay());
         }
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -227,19 +232,19 @@ public class RangeRateTest {
             final SpacecraftState state     = propagator.propagate(date);
 
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assert.assertEquals(3, estimated.getParticipants().length);
+            Assertions.assertEquals(3, estimated.getParticipants().length);
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate(state1 ->
+                                                      measurement.
+                                                          estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                          getEstimatedValue(),
+                                                  1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -251,7 +256,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 2.6e-5);
+        Assertions.assertEquals(0, maxRelativeError, 8.1e-6);
 
     }
 
@@ -265,23 +270,34 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
+        final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
+        creator.getSatellite().getClockDriftDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setSelected(true);
+            station.getClockDriftDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+
+
+
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -300,29 +316,33 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
+                stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
-                stationParameter.getZenithOffsetDriver()
+                stationParameter.getZenithOffsetDriver(),
+                measurement.getSatellites().get(0).getClockDriftDriver()
             };
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                        return measurement.
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
@@ -336,23 +356,32 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
+        final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
         }
+
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+
+
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, true),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -373,27 +402,29 @@ public class RangeRateTest {
             final ParameterDriver[] drivers = new ParameterDriver[] {
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
-                stationParameter.getZenithOffsetDriver()
+                stationParameter.getZenithOffsetDriver(),
             };
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                        return measurement.
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 5.2e-5);
+        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
@@ -407,22 +438,28 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), true);
+            final RangeRateTroposphericDelayModifier modifier =
+                new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), true);
             ((RangeRate) measurement).addModifier(modifier);
 
             //
@@ -434,15 +471,13 @@ public class RangeRateTest {
             final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate( state1 -> measurement.
+                            estimate(0, 0, new SpacecraftState[] { state1 }).
+                                                       getEstimatedValue(), 1, propagator.getAttitudeProvider(),
+                                                   OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -454,7 +489,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.4e-7);
+        Assertions.assertEquals(0, maxRelativeError, 1.5e-7);
 
     }
 
@@ -468,29 +503,30 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
-
             // Add modifiers if test implies it
-            final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel(point.getLatitude(),
-                                                                                              point.getLongitude());
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
+            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
+            final EstimatedModel             tropoModel      = new EstimatedModel(mappingFunction, 5.0);
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(tropoModel, true);
             ((RangeRate) measurement).addModifier(modifier);
@@ -504,15 +540,13 @@ public class RangeRateTest {
             final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate(state1 -> measurement.
+                                                      estimate(0, 0, new SpacecraftState[] { state1 }).
+                                                      getEstimatedValue(), 1, propagator.getAttitudeProvider(),
+                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -524,7 +558,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 3.1e-7);
+        Assertions.assertEquals(0, maxRelativeError, 3.4e-7);
 
     }
 
@@ -538,28 +572,38 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
+        final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
+        creator.getSatellite().getClockDriftDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setSelected(true);
+            station.getClockDriftDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), true);
+            final RangeRateTroposphericDelayModifier modifier =
+                new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), true);
             ((RangeRate) measurement).addModifier(modifier);
 
             // parameter corresponding to station position offset
@@ -576,29 +620,33 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
+                stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
-                stationParameter.getZenithOffsetDriver()
+                stationParameter.getZenithOffsetDriver(),
+                measurement.getSatellites().get(0).getClockDriftDriver()
             };
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                        return measurement.
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
@@ -612,29 +660,30 @@ public class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
-
             // Add modifiers if test implies it
-            final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel(point.getLatitude(),
-                                                                                              point.getLongitude());
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 10.0);
-            
+            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
+            final EstimatedModel             tropoModel     = new EstimatedModel(mappingFunction, 10.0);
+
             final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
             for (ParameterDriver driver : parameters) {
                 driver.setSelected(true);
@@ -659,23 +708,25 @@ public class RangeRateTest {
             };
             for (int i = 0; i < 1; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                        return measurement.
+                                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 0.1 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 2.2e-7);
+        Assertions.assertEquals(0, maxRelativeError, 2.2e-7);
 
     }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -48,6 +48,9 @@ public class AstronomicalAmplitudeReader implements DataLoader {
     /** Pattern for fields with real type. */
     private static final String  REAL_TYPE_PATTERN =
             "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+
+    /** Pattern for regular data. */
+    private static final Pattern PATTERN = Pattern.compile("[.,]");
 
     /** Regular expression for supported files names. */
     private final String supportedNames;
@@ -100,7 +103,7 @@ public class AstronomicalAmplitudeReader implements DataLoader {
         this.columnHf       = columnHf;
         this.scale          = scale;
 
-        this.amplitudesMap  = new HashMap<Integer, Double>();
+        this.amplitudesMap  = new HashMap<>();
 
     }
 
@@ -122,13 +125,13 @@ public class AstronomicalAmplitudeReader implements DataLoader {
     public void loadData(final InputStream input, final String name)
         throws IOException {
 
+        int lineNumber = 0;
+        String line = null;
         // parse the file
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        int lineNumber      = 0;
-        for (String line = r.readLine(); line != null; line = r.readLine()) {
-            ++lineNumber;
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            try {
+            for (line = r.readLine(); line != null; line = r.readLine()) {
+                ++lineNumber;
 
                 // replace unicode minus sign ('−') by regular hyphen ('-') for parsing
                 // such unicode characters occur in tables that are copy-pasted from PDF files
@@ -137,16 +140,15 @@ public class AstronomicalAmplitudeReader implements DataLoader {
                 final Matcher regularMatcher = regularLinePattern.matcher(line);
                 if (regularMatcher.matches()) {
                     // we have found a regular data line
-                    final int    doodson = Integer.parseInt(regularMatcher.group(columnDoodson).replaceAll("[.,]", ""));
+                    final int    doodson = Integer.parseInt(PATTERN.matcher(regularMatcher.group(columnDoodson)).replaceAll(""));
                     final double hf      = scale * Double.parseDouble(regularMatcher.group(columnHf));
                     amplitudesMap.put(doodson, hf);
                 }
-
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
             }
 
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
 
         if (amplitudesMap.isEmpty()) {

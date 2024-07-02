@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,44 +16,22 @@
  */
 package org.orekit.files.general;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import org.orekit.data.DataSource;
 
 /**
  * Parse an ephemeris file.
  *
+ * @param <T> type of the parsed file
  * @author Evan Ward
  */
-public interface EphemerisFileParser {
+public interface EphemerisFileParser<T extends EphemerisFile<?, ?>> {
 
     /**
-     * Parse an ephemeris file from a stream.
+     * Parse an ephemeris file from a data source.
      *
-     * @param reader   containing the ephemeris file.
-     * @param fileName to use in error messages.
+     * @param source source providing the data to parse
      * @return a parsed ephemeris file.
-     * @throws IOException     if {@code reader} throws one.
      */
-    EphemerisFile parse(BufferedReader reader, String fileName)
-            throws IOException;
-
-    /**
-     * Parse an ephemeris file from a file on the local file system.
-     *
-     * <p>For Implementors: Most subclasses should implement this method as follows, but
-     * there is no default implementation because most subclasses should use a specialized
-     * return type.
-     *
-     * <pre>
-     * try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
-     *     return parse(reader, fileName);
-     * }
-     * </pre>
-     *
-     * @param fileName path to the ephemeris file.
-     * @return parsed ephemeris file.
-     * @throws IOException if one is thrown while opening or reading from {@code fileName}
-     */
-    EphemerisFile parse(String fileName) throws IOException;
+    T parse(DataSource source);
 
 }

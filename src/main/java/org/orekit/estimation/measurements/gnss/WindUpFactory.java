@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -37,43 +37,29 @@ public class WindUpFactory {
 
     /** Simple constructor.
      */
-    WindUpFactory() {
+    public WindUpFactory() {
         this.modifiers = new HashMap<>();
     }
 
     /** Get a modifier for a satellite/receiver pair.
      * @param system system the satellite belongs to
      * @param prnNumber PRN number
+     * @param emitterDipole emitter dipole
      * @param receiverName name of the receiver
      * @return modifier for the satellite/receiver pair
      */
-    public WindUp getWindUp(final SatelliteSystem system, final int prnNumber, final String receiverName) {
-
+    public WindUp getWindUp(final SatelliteSystem system, final int prnNumber,
+                            final Dipole emitterDipole, final String receiverName) {
         // select satellite system
-        Map<Integer, Map<String, WindUp>> systemModifiers = modifiers.get(system);
-        if (systemModifiers == null) {
-            // build a new map for this satellite system
-            systemModifiers = new HashMap<>();
-            modifiers.put(system, systemModifiers);
-        }
+        final Map<Integer, Map<String, WindUp>> systemModifiers =
+                modifiers.computeIfAbsent(system, s -> new HashMap<>());
 
         // select satellite
-        Map<String, WindUp> satelliteModifiers = systemModifiers.get(prnNumber);
-        if (satelliteModifiers == null) {
-            // build a new map for this satellite
-            satelliteModifiers = new HashMap<>();
-            systemModifiers.put(prnNumber, satelliteModifiers);
-        }
+        final Map<String, WindUp> satelliteModifiers =
+                systemModifiers.computeIfAbsent(prnNumber, n -> new HashMap<>());
 
         // select receiver
-        WindUp receiverModifier = satelliteModifiers.get(receiverName);
-        if (receiverModifier == null) {
-            // build a new wind-up modifier
-            receiverModifier = new WindUp();
-            satelliteModifiers.put(receiverName, receiverModifier);
-        }
-
-        return receiverModifier;
+        return satelliteModifiers.computeIfAbsent(receiverName, r -> new WindUp(emitterDipole));
 
     }
 

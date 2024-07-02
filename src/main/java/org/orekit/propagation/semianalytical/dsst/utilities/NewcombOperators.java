@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.util.FastMath;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.hipparchus.analysis.polynomials.PolynomialFunction;
-import org.hipparchus.util.FastMath;
 
 /**
  * Implementation of the Modified Newcomb Operators.
@@ -55,7 +55,26 @@ import org.hipparchus.util.FastMath;
 public class NewcombOperators {
 
     /** Storage map. */
-    private static final Map<NewKey, Double> MAP = new TreeMap<NewKey, Double>();
+    private static final Map<NewKey, Double> MAP = new TreeMap<>((k1, k2) -> {
+        if (k1.n == k2.n) {
+            if (k1.s == k2.s) {
+                if (k1.rho == k2.rho) {
+                    return Integer.compare(k1.sigma, k2.sigma);
+                } else if (k1.rho < k2.rho) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            } else if (k1.s < k2.s) {
+                return -1;
+            } else {
+                return 1;
+            }
+        } else if (k1.n < k2.n) {
+            return -1;
+        }
+        return 1;
+    });
 
     /** Private constructor as class is a utility.
      */
@@ -104,7 +123,18 @@ public class NewcombOperators {
 
         /** Polynomials storage. */
         private static final SortedMap<Couple, List<PolynomialFunction>> POLYNOMIALS =
-                new TreeMap<Couple, List<PolynomialFunction>>();
+                new TreeMap<>((c1, c2) -> {
+                    if (c1.rho == c2.rho) {
+                        if (c1.sigma < c2.sigma) {
+                            return -1;
+                        } else if (c1.sigma == c2.sigma) {
+                            return 0;
+                        }
+                    } else if (c1.rho < c2.rho) {
+                        return -1;
+                    }
+                    return 1;
+                });
 
         /** Private constructor as class is a utility.
          */
@@ -127,10 +157,10 @@ public class NewcombOperators {
 
                 if (POLYNOMIALS.isEmpty()) {
                     // Initialize lists
-                    final List<PolynomialFunction> l00 = new ArrayList<PolynomialFunction>();
-                    final List<PolynomialFunction> l01 = new ArrayList<PolynomialFunction>();
-                    final List<PolynomialFunction> l10 = new ArrayList<PolynomialFunction>();
-                    final List<PolynomialFunction> l11 = new ArrayList<PolynomialFunction>();
+                    final List<PolynomialFunction> l00 = new ArrayList<>();
+                    final List<PolynomialFunction> l01 = new ArrayList<>();
+                    final List<PolynomialFunction> l10 = new ArrayList<>();
+                    final List<PolynomialFunction> l11 = new ArrayList<>();
 
                     // Y(rho = 0, sigma = 0) = 1
                     l00.add(new PolynomialFunction(new double[] {
@@ -189,7 +219,7 @@ public class NewcombOperators {
         private static void computeFor(final int rho, final int sigma) {
 
             // Initialize result :
-            List<PolynomialFunction> result = new ArrayList<PolynomialFunction>();
+            List<PolynomialFunction> result = new ArrayList<>();
 
             // Get the coefficient from the recurrence relation
             final Map<Integer, List<PolynomialFunction>> map = generateRecurrenceCoefficients(rho, sigma);
@@ -251,7 +281,7 @@ public class NewcombOperators {
         private static List<PolynomialFunction> multiplyPolynomialList(final List<PolynomialFunction> poly1,
                                                                        final List<PolynomialFunction> poly2) {
             // Initialize the result list of polynomial function
-            final List<PolynomialFunction> result = new ArrayList<PolynomialFunction>();
+            final List<PolynomialFunction> result = new ArrayList<>();
             initializeListOfPolynomials(poly1.size() + poly2.size() - 1, result);
 
             int i = 0;
@@ -282,7 +312,7 @@ public class NewcombOperators {
             final int lowLength  = FastMath.min(poly1.size(), poly2.size());
             final int highLength = FastMath.max(poly1.size(), poly2.size());
             // Initialize the result list of polynomial function
-            final List<PolynomialFunction> result = new ArrayList<PolynomialFunction>();
+            final List<PolynomialFunction> result = new ArrayList<>();
             initializeListOfPolynomials(highLength, result);
 
             for (int i = 0; i < lowLength; i++) {
@@ -319,7 +349,7 @@ public class NewcombOperators {
          */
         private static List<PolynomialFunction> shiftList(final List<PolynomialFunction> polynomialList,
                                                           final int shift) {
-            final List<PolynomialFunction> shiftedList = new ArrayList<PolynomialFunction>();
+            final List<PolynomialFunction> shiftedList = new ArrayList<>();
             for (PolynomialFunction function : polynomialList) {
                 shiftedList.add(new PolynomialFunction(shift(function.getCoefficients(), shift)));
             }
@@ -367,8 +397,8 @@ public class NewcombOperators {
 
             // First polynomial coefficient.
             double shiftI = 1;
-            for (int i = 0; i < dp1; i++) {
-                newCoefficients[0] += coefficients[i] * shiftI;
+            for (double coefficient : coefficients) {
+                newCoefficients[0] += coefficient * shiftI;
                 shiftI *= shift;
             }
 
@@ -396,12 +426,12 @@ public class NewcombOperators {
             final double denx2 = 2. * den;
             final double denx4 = 4. * den;
             // Initialization :
-            final Map<Integer, List<PolynomialFunction>> list = new TreeMap<Integer, List<PolynomialFunction>>();
-            final List<PolynomialFunction> poly0 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> poly1 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> poly2 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> poly3 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> poly4 = new ArrayList<PolynomialFunction>();
+            final Map<Integer, List<PolynomialFunction>> list = new TreeMap<>();
+            final List<PolynomialFunction> poly0 = new ArrayList<>();
+            final List<PolynomialFunction> poly1 = new ArrayList<>();
+            final List<PolynomialFunction> poly2 = new ArrayList<>();
+            final List<PolynomialFunction> poly3 = new ArrayList<>();
+            final List<PolynomialFunction> poly4 = new ArrayList<>();
             // (s - n)
             poly0.add(new PolynomialFunction(new double[] {0., den}));
             poly0.add(new PolynomialFunction(new double[] {-den}));
@@ -430,7 +460,7 @@ public class NewcombOperators {
     }
 
     /** Private class to define a couple of value. */
-    private static class Couple implements Comparable<Couple> {
+    private static class Couple {
 
         /** first couple value. */
         private final int rho;
@@ -447,46 +477,10 @@ public class NewcombOperators {
             this.sigma = sigma;
         }
 
-        /** {@inheritDoc} */
-        public int compareTo(final Couple c) {
-            int result = 1;
-            if (rho == c.rho) {
-                if (sigma < c.sigma) {
-                    result = -1;
-                } else if (sigma == c.sigma) {
-                    result = 0;
-                }
-            } else if (rho < c.rho) {
-                result = -1;
-            }
-            return result;
-        }
-
-        /** {@inheritDoc} */
-        public boolean equals(final Object couple) {
-
-            if (couple == this) {
-                // first fast check
-                return true;
-            }
-
-            if ((couple != null) && (couple instanceof Couple)) {
-                return (rho == ((Couple) couple).rho) && (sigma == ((Couple) couple).sigma);
-            }
-
-            return false;
-
-        }
-
-        /** {@inheritDoc} */
-        public int hashCode() {
-            return 0x7ab17c0c ^ (rho << 8) ^ sigma;
-        }
-
     }
 
     /** Newcomb operator's key. */
-    private static class NewKey implements Comparable<NewKey> {
+    private static class NewKey {
 
         /** n value. */
         private final int n;
@@ -511,59 +505,6 @@ public class NewcombOperators {
             this.s = s;
             this.rho = rho;
             this.sigma = sigma;
-        }
-
-        /** {@inheritDoc} */
-        public int compareTo(final NewKey key) {
-            int result = 1;
-            if (n == key.n) {
-                if (s == key.s) {
-                    if (rho == key.rho) {
-                        if (sigma < key.sigma) {
-                            result = -1;
-                        } else if (sigma == key.sigma) {
-                            result = 0;
-                        } else {
-                            result = 1;
-                        }
-                    } else if (rho < key.rho) {
-                        result = -1;
-                    } else {
-                        result = 1;
-                    }
-                } else if (s < key.s) {
-                    result = -1;
-                } else {
-                    result = 1;
-                }
-            } else if (n < key.n) {
-                result = -1;
-            }
-            return result;
-        }
-
-        /** {@inheritDoc} */
-        public boolean equals(final Object key) {
-
-            if (key == this) {
-                // first fast check
-                return true;
-            }
-
-            if ((key != null) && (key instanceof NewKey)) {
-                return (n     == ((NewKey) key).n) &&
-                       (s     == ((NewKey) key).s) &&
-                       (rho   == ((NewKey) key).rho) &&
-                       (sigma == ((NewKey) key).sigma);
-            }
-
-            return false;
-
-        }
-
-        /** {@inheritDoc} */
-        public int hashCode() {
-            return 0x25baa451 ^ (n << 24) ^ (s << 16) ^ (rho << 8) ^ sigma;
         }
 
     }

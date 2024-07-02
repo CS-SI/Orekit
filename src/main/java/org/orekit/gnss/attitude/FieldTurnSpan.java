@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -33,7 +33,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 9.3
  */
-class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
+class FieldTurnSpan<T extends CalculusFieldElement<T>> implements TimeStamped {
 
     /** Margin in seconds after turn end. */
     private final double endMargin;

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,9 +19,12 @@ package org.orekit.frames;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 
 
 /** Provider for a specific version of International Terrestrial Reference Frame.
@@ -46,14 +49,21 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
     /** Converter between different ITRF versions. */
     private final AtomicReference<ITRFVersion.Converter> converter;
 
+    /** TT time scale. */
+    private final TimeScale tt;
+
     /** Simple constructor.
      * @param version ITRF version this provider should generate
      * @param rawProvider raw ITRF provider
+     * @param tt TT time scale.
      */
-    VersionedITRFProvider(final ITRFVersion version, final ITRFProvider rawProvider) {
+    VersionedITRFProvider(final ITRFVersion version,
+                          final ITRFProvider rawProvider,
+                          final TimeScale tt) {
         this.version     = version;
         this.rawProvider = rawProvider;
-        this.converter   = new AtomicReference<ITRFVersion.Converter>();
+        this.converter   = new AtomicReference<>();
+        this.tt = tt;
     }
 
     /** Get the ITRF version.
@@ -72,7 +82,7 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public VersionedITRFProvider getNonInterpolatingProvider() {
-        return new VersionedITRFProvider(version, rawProvider.getNonInterpolatingProvider());
+        return new VersionedITRFProvider(version, rawProvider.getNonInterpolatingProvider(), tt);
     }
 
     /** {@inheritDoc} */
@@ -94,7 +104,44 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+
+        // get the transform from the current EOP
+        final KinematicTransform rawTransform = rawProvider.getKinematicTransform(date);
+
+        // add the conversion layer
+        final ITRFVersion.Converter converterForDate = getConverter(date);
+        if (converterForDate == null) {
+            return rawTransform;
+        } else {
+            return KinematicTransform.compose(date, rawTransform, converterForDate.getKinematicTransform(date));
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+
+        // get the transform from the current EOP
+        final StaticTransform rawTransform = rawProvider.getStaticTransform(date);
+
+        // add the conversion layer
+        final ITRFVersion.Converter converterForDate = getConverter(date);
+        if (converterForDate == null) {
+            return rawTransform;
+        } else {
+            return StaticTransform.compose(
+                    date,
+                    rawTransform,
+                    converterForDate.getStaticTransform(date));
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // get the transform from the current EOP
         final FieldTransform<T> rawTransform = rawProvider.getTransform(date);
@@ -105,6 +152,43 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
             return rawTransform;
         } else {
             return new FieldTransform<>(date, rawTransform, converterForDate.getTransform(date));
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+
+        // get the transform from the current EOP
+        final FieldKinematicTransform<T> rawTransform = rawProvider.getKinematicTransform(date);
+
+        // add the conversion layer
+        final ITRFVersion.Converter converterForDate = getConverter(date.toAbsoluteDate());
+        if (converterForDate == null) {
+            return rawTransform;
+        } else {
+            return FieldKinematicTransform.compose(date, rawTransform, converterForDate.getKinematicTransform(date));
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+
+        // get the transform from the current EOP
+        final FieldStaticTransform<T> rawTransform = rawProvider.getStaticTransform(date);
+
+        // add the conversion layer
+        final ITRFVersion.Converter converterForDate = getConverter(date.toAbsoluteDate());
+        if (converterForDate == null) {
+            return rawTransform;
+        } else {
+            return FieldStaticTransform.compose(
+                    date,
+                    rawTransform,
+                    converterForDate.getStaticTransform(date));
         }
 
     }
@@ -130,7 +214,8 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
         }
 
         // we need to create a new converter from raw version to desired version
-        final ITRFVersion.Converter newConverter = ITRFVersion.getConverter(rawVersion, version);
+        final ITRFVersion.Converter newConverter =
+                ITRFVersion.getConverter(rawVersion, version, tt);
         converter.compareAndSet(null, newConverter);
         return newConverter;
 
@@ -139,11 +224,13 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(version, rawProvider);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -168,7 +255,8 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
          * @return replacement {@link VersionedITRFProvider}
          */
         private Object readResolve() {
-            return new VersionedITRFProvider(version, rawProvider);
+            return new VersionedITRFProvider(version, rawProvider,
+                    DataContext.getDefault().getTimeScales().getTT());
         }
 
     }

@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,9 @@
  */
 package org.orekit.models.earth;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -34,11 +34,12 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -160,8 +161,8 @@ public class Geoid implements EarthShape {
      *                           potential will be used. It is assumed that the
      *                           {@code geopotential} and the {@code
      *                           referenceEllipsoid} are defined in the same
-     *                           frame. Usually a {@link org.orekit.forces.gravity.potential.GravityFieldFactory#getConstantNormalizedProvider(int,
-     *                           int) constant geopotential} is used to define a
+     *                           frame. Usually a {@link GravityFields#getConstantNormalizedProvider(int,
+     *                           int, AbsoluteDate) constant geopotential} is used to define a
      *                           time-invariant Geoid.
      * @param referenceEllipsoid the normal gravity potential.
      * @throws NullPointerException if {@code geopotential == null ||
@@ -182,7 +183,7 @@ public class Geoid implements EarthShape {
         this.referenceEllipsoid = referenceEllipsoid;
         this.harmonics = new HolmesFeatherstoneAttractionModel(
                 referenceEllipsoid.getBodyFrame(), potential);
-        this.defaultDate = geopotential.getReferenceDate();
+        this.defaultDate = AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     @Override
@@ -233,7 +234,7 @@ public class Geoid implements EarthShape {
                 .getNormalGravity(geodeticLatitude);
 
         // calculate disturbing potential, T, eq 30.
-        final double mu = this.harmonics.getMu();
+        final double mu = this.harmonics.getMu(date);
         final double T  = this.harmonics.nonCentralPart(date, position, mu);
         // calculate undulation, eq 30
         return T / normalGravity;
@@ -299,11 +300,6 @@ public class Geoid implements EarthShape {
         @Override
         public AbsoluteDate getReferenceDate() {
             return this.provider.getReferenceDate();
-        }
-
-        @Override
-        public double getOffset(final AbsoluteDate date) {
-            return this.provider.getOffset(date);
         }
 
         @Override
@@ -385,7 +381,8 @@ public class Geoid implements EarthShape {
          */
         // transform to body frame
         final Frame bodyFrame = this.getBodyFrame();
-        final Transform frameToBody = frame.getTransformTo(bodyFrame, date);
+        final StaticTransform frameToBody =
+                frame.getStaticTransformTo(bodyFrame, date);
         final Vector3D close = frameToBody.transformPosition(closeInFrame);
         final Line lineInBodyFrame = frameToBody.transformLine(lineInFrame);
 
@@ -452,7 +449,8 @@ public class Geoid implements EarthShape {
         final GeodeticPoint gp = this.transform(point, frame, date);
         final GeodeticPoint gpZero =
                 new GeodeticPoint(gp.getLatitude(), gp.getLongitude(), 0);
-        final Transform bodyToFrame = this.getBodyFrame().getTransformTo(frame, date);
+        final StaticTransform bodyToFrame =
+                this.getBodyFrame().getStaticTransformTo(frame, date);
         return bodyToFrame.transformPosition(this.transform(gpZero));
     }
 
@@ -463,7 +461,7 @@ public class Geoid implements EarthShape {
      * specified line. This is accurate when the geoid is slowly varying.
      */
     @Override
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> lineInFrame,
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> lineInFrame,
                                                                                       final FieldVector3D<T> closeInFrame,
                                                                                       final Frame frame,
                                                                                       final FieldAbsoluteDate<T> date) {
@@ -475,7 +473,7 @@ public class Geoid implements EarthShape {
          */
         // transform to body frame
         final Frame bodyFrame = this.getBodyFrame();
-        final FieldTransform<T> frameToBody = frame.getTransformTo(bodyFrame, date);
+        final FieldStaticTransform<T> frameToBody = frame.getStaticTransformTo(bodyFrame, date);
         final FieldVector3D<T> close = frameToBody.transformPosition(closeInFrame);
         final FieldLine<T> lineInBodyFrame = frameToBody.transformLine(lineInFrame);
 
@@ -504,7 +502,7 @@ public class Geoid implements EarthShape {
         final T highPoint = maxAbscissa2.sqrt();
 
         // line search function
-        final RealFieldUnivariateFunction<T> heightFunction = z -> {
+        final CalculusFieldUnivariateFunction<T> heightFunction = z -> {
             try {
                 final FieldGeodeticPoint<T> geodetic =
                         transform(line.pointAt(z), bodyFrame, date);
@@ -522,9 +520,9 @@ public class Geoid implements EarthShape {
         }
         // solve line search problem to find the intersection
         final FieldBracketingNthOrderBrentSolver<T> solver =
-                        new FieldBracketingNthOrderBrentSolver<>(field.getZero().add(1.0e-14),
-                                                                 field.getZero().add(1.0e-6),
-                                                                 field.getZero().add(1.0e-15),
+                        new FieldBracketingNthOrderBrentSolver<>(field.getZero().newInstance(1.0e-14),
+                                                                 field.getZero().newInstance(1.0e-6),
+                                                                 field.getZero().newInstance(1.0e-15),
                                                                  5);
         try {
             final T abscissa = solver.solve(MAX_EVALUATIONS, heightFunction, lowPoint, highPoint,
@@ -586,7 +584,7 @@ public class Geoid implements EarthShape {
      * @see <a href="http://en.wikipedia.org/wiki/Orthometric_height">Orthometric_height</a>
      */
     @Override
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point, final Frame frame,
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point, final Frame frame,
                                                                            final FieldAbsoluteDate<T> date) {
         // convert using reference ellipsoid, altitude referenced to ellipsoid
         final FieldGeodeticPoint<T> ellipsoidal = this.getEllipsoid().transform(
@@ -652,7 +650,7 @@ public class Geoid implements EarthShape {
      * @since 9.0
      */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
         try {
             // convert orthometric height to height above ellipsoid using undulation
             // TODO pass in date to allow user to specify

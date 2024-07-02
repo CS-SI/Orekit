@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,180 +17,199 @@
 
 package org.orekit.propagation.events;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.data.DataContext;
 import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 
-/** Detector for South-Atlantic anomaly frontier crossing.
+/** Detector for Earth magnetic field strength.
  * <p>
- * The detector is based on the value of the earth magnetic field at see level at the satellite latitude and longitude.
+ * The detector is based on the field intensity calculated at the
+ * satellite's latitude and longitude, either at sea level or at
+ * satellite altitude, depending on the value chosen for the
+ * <code>atSeaLevel</code> indicator.<br>
+ * It can detect flyovers of the South-Atlantic anomaly with
+ * a classically accepted limit value of 32,000 nT at sea level.
  * </p>
  * @author Romaric Her
  */
 public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetector> {
 
-    /** Fixed threshold value of Magnetic field to be crossed. */
+    /** Fixed threshold value of Magnetic field to be crossed, in Teslas. */
     private final double limit;
 
-    /** Fixed altitude of computed magnetic field value. */
-    private final boolean seaLevel;
+    /** Switch for calculating field strength at sea level (true) or satellite altitude (false). */
+    private final boolean atSeaLevel;
 
-    /** earth geomagnetic field. */
+    /** Earth geomagnetic field. */
     private GeoMagneticField field;
 
     /** year of the current state. */
     private double currentYear;
 
-    /** the geomagnetic field model enum. */
-    private final FieldModel type;
+    /** Earth geomagnetic field model. */
+    private final FieldModel model;
 
-    /** the body. */
+    /** Earth body shape. */
     private final OneAxisEllipsoid body;
 
-    /** the timescale. */
-    private final TimeScale timeScale;
+    /** Current data context. */
+    private final DataContext dataContext;
 
 
     /** Build a new detector.
-     * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
-     * #DEFAULT_THRESHOLD}).</p>
-     * @param limit the threshold value of magnetic field at see level
-     * @param type the magnetic field model
-     * @param body the body
-     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
+     *
+     * <p>This constructor uses:
+     * <ul>
+     * <li>the {@link DataContext#getDefault() default data context}</li>
+     * <li>the {@link AbstractDetector#DEFAULT_MAXCHECK default value} for maximal checking interval</li>
+     * <li>the {@link AbstractDetector#DEFAULT_THRESHOLD default value} for convergence threshold</li>
+     * <li>the <code>atSeaLevel</code> switch set to false</li>
+     * </ul>
+     *
+     * @param limit threshold value for magnetic field detection, in Teslas
+     * @param model magnetic field model
+     * @param body  Earth body shape
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
-    public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body)
-        throws OrekitIllegalArgumentException {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, type, body, false);
+    @DefaultDataContext
+    public MagneticFieldDetector(final double limit, final FieldModel model, final OneAxisEllipsoid body) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, model, body, false);
     }
 
     /** Build a new detector.
-     * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
-     * #DEFAULT_THRESHOLD}).</p>
-     * @param limit the threshold value of magnetic field at see level
-     * @param type the magnetic field model
-     * @param body the body
-     * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
-     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
+     *
+     * <p>This constructor uses:
+     * <ul>
+     * <li>the {@link DataContext#getDefault() default data context}</li>
+     * <li>the {@link AbstractDetector#DEFAULT_MAXCHECK default value} for maximal checking interval</li>
+     * <li>the {@link AbstractDetector#DEFAULT_THRESHOLD default value} for convergence threshold </li>
+     * </ul>
+     *
+     * @param limit    threshold value for magnetic field detection, in Teslas
+     * @param model    magnetic field model
+     * @param body     Earth body shape
+     * @param atSeaLevel switch for calculating field intensity at sea level (true) or satellite altitude (false)
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
-    public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
-        throws OrekitIllegalArgumentException {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, type, body, seaLevel);
+    @DefaultDataContext
+    public MagneticFieldDetector(final double limit, final FieldModel model,
+                                 final OneAxisEllipsoid body, final boolean atSeaLevel) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, model, body, atSeaLevel);
     }
 
     /** Build a detector.
-     * @param maxCheck maximal checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @param limit the threshold value of magnetic field at see level
-     * @param type the magnetic field model
-     * @param body the body
-     * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
-     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.</p>
+     *
+     * @param maxCheck   maximal checking interval (s)
+     * @param threshold  convergence threshold (s)
+     * @param limit      threshold value for magnetic field detection, in Teslas
+     * @param model      magnetic field model
+     * @param body       Earth body shape
+     * @param atSeaLevel switch for calculating field intensity at sea level (true) or satellite altitude (false)
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
+    @DefaultDataContext
     public MagneticFieldDetector(final double maxCheck, final double threshold, final double limit,
-                                 final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
-        throws OrekitIllegalArgumentException {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<MagneticFieldDetector>(),
-             limit, type, body, seaLevel);
+                                 final FieldModel model, final OneAxisEllipsoid body, final boolean atSeaLevel) {
+        this(maxCheck, threshold, limit, model, body, atSeaLevel, DataContext.getDefault());
     }
 
-    /** Private constructor with full parameters.
+    /**
+     * Build a detector.
+     *
+     * @param maxCheck    maximal checking interval (s)
+     * @param threshold   convergence threshold (s)
+     * @param limit       threshold value for magnetic field detection, in Teslas
+     * @param model       magnetic field model
+     * @param body        Earth body shape
+     * @param atSeaLevel  switch for calculating field intensity at sea level (true) or satellite altitude (false)
+     * @param dataContext used to look up the magnetic field model.
+     * @since 10.1
+     */
+    public MagneticFieldDetector(final double maxCheck,
+                                 final double threshold,
+                                 final double limit,
+                                 final FieldModel model,
+                                 final OneAxisEllipsoid body,
+                                 final boolean atSeaLevel,
+                                 final DataContext dataContext) {
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+             limit, model, body, atSeaLevel, dataContext);
+    }
+
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
-     * @param limit the threshold value of magnetic field at see level
-     * @param type the magnetic field model
-     * @param body the body
-     * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
-     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
+     * @param maxCheck    maximal checking interval
+     * @param threshold   convergence threshold (s)
+     * @param maxIter     maximum number of iterations in the event time search
+     * @param handler     event handler to call at event occurrences
+     * @param limit       threshold value for magnetic field detection, in Teslas
+     * @param model       magnetic field model
+     * @param body        Earth body shape
+     * @param atSeaLevel  switch for calculating field intensity at sea level (true) or satellite altitude (false)
+     * @param dataContext used to look up the magnetic field model.
      */
-    private MagneticFieldDetector(final double maxCheck, final double threshold,
-                                  final int maxIter, final EventHandler<? super MagneticFieldDetector> handler,
-                                  final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
-        throws OrekitIllegalArgumentException {
-
+    protected MagneticFieldDetector(final AdaptableInterval maxCheck, final double threshold,
+                                    final int maxIter, final EventHandler handler,
+                                    final double limit, final FieldModel model, final OneAxisEllipsoid body,
+                                    final boolean atSeaLevel, final DataContext dataContext) {
         super(maxCheck, threshold, maxIter, handler);
-
-        this.limit = limit;
-        this.type = type;
-        this.body = body;
-        this.seaLevel = seaLevel;
-        this.timeScale = TimeScalesFactory.getUTC();
+        this.limit       = limit;
+        this.model       = model;
+        this.body        = body;
+        this.atSeaLevel  = atSeaLevel;
+        this.dataContext = dataContext;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected MagneticFieldDetector create(final double newMaxCheck, final double newThreshold,
-                                           final int newMaxIter, final EventHandler<? super MagneticFieldDetector> newHandler) {
-        try {
-            return new MagneticFieldDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                             limit, type, body, seaLevel);
-        } catch (OrekitException e) {
-            return null;
-        }
+    protected MagneticFieldDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                           final int newMaxIter, final EventHandler newHandler) {
+        return new MagneticFieldDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                         limit, model, body, atSeaLevel, dataContext);
     }
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
-        this.currentYear = s0.getDate().getComponents(timeScale).getDate().getYear();
-        this.field = GeoMagneticFieldFactory.getField(type, currentYear);
+        final TimeScale utc = dataContext.getTimeScales().getUTC();
+        this.currentYear = s0.getDate().getComponents(utc).getDate().getYear();
+        this.field = dataContext.getGeoMagneticFields().getField(model, currentYear);
     }
 
     /** Compute the value of the detection function.
      * <p>
-     * The value is the angle difference between the spacecraft and the fixed
-     * angle to be crossed, with some sign tweaks to ensure continuity.
-     * These tweaks imply the {@code increasing} flag in events detection becomes
-     * irrelevant here! As an example, the angle always increase in a Keplerian
-     * orbit, but this g function will increase and decrease so it
-     * will cross the zero value once per orbit, in increasing and decreasing
-     * directions on alternate orbits..
+     * The returned value is the difference between the field intensity at spacecraft location,
+     * taking <code>atSeaLevel</code> switch into account, and the fixed threshold value.
      * </p>
      * @param s the current state information: date, kinematics, attitude
-     * @return angle difference between the spacecraft and the fixed
-     * angle, with some sign tweaks to ensure continuity
+     * @return difference between the field intensity at spacecraft location
+     *         and the fixed threshold value
      */
     public double g(final SpacecraftState s) {
-        try {
-            if (s.getDate().getComponents(timeScale).getDate().getYear() != currentYear) {
-                this.currentYear = s.getDate().getComponents(timeScale).getDate().getYear();
-                this.field = GeoMagneticFieldFactory.getField(type, currentYear);
-            }
-            final GeodeticPoint geoPoint = body.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
-            final double altitude;
-            if (seaLevel) {
-                altitude = 0;
-            }
-            else {
-                altitude = geoPoint.getAltitude();
-            }
-            final double value = field.calculateField(geoPoint.getLatitude(), geoPoint.getLongitude(), altitude).getTotalIntensity();
-            return value - limit;
-
-        } catch (OrekitException e) {
-            e.printStackTrace();
-            return -1;
+        final TimeScale utc = dataContext.getTimeScales().getUTC();
+        if (s.getDate().getComponents(utc).getDate().getYear() != currentYear) {
+            this.currentYear = s.getDate().getComponents(utc).getDate().getYear();
+            this.field = dataContext.getGeoMagneticFields().getField(model, currentYear);
         }
+        final GeodeticPoint geoPoint = body.transform(s.getPosition(), s.getFrame(), s.getDate());
+        final double altitude = atSeaLevel ? 0. : geoPoint.getAltitude();
+        final double value = field.calculateField(geoPoint.getLatitude(), geoPoint.getLongitude(), altitude).getTotalIntensity();
+        return value - limit;
     }
+
 }

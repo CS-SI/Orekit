@@ -1,0 +1,90 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit #ECEBD8 {
+
+    package data #DDEBD8 {
+      class DataSource {
+        +getName()
+        +getOpener()
+      }
+    }
+
+    package files.ccsds.utils #DDEBD8 {
+
+      enum FileFormat {
+        +KVN
+        +XML
+      }
+
+      package lexical #CBDBC8 {
+        class KvnLexicalAnalyzer
+        class XmlLexicalAnalyzer
+        interface LexicalAnalyzer {
+          +accept(MessageParser)
+        }
+        class LexicalAnalyzerSelector {
+          +LexicalAnalyzer select(DataSource)
+        }
+        note right
+          selection is based on
+          data source first bytes
+          (looking for XML declaration)
+       end note
+        enum TokenType {
+          +START
+          +ENTRY
+          +STOP
+          +RAW_LINE
+        }
+        class ParseToken
+        interface "MessageParser<T>" as MessageParser {
+          +parseMessage(Datasource)
+          +reset(FileFormat)
+          +process(ParseToken)
+          +T build()
+        }
+      }
+
+    }
+  }
+
+  DataSource <-- KvnLexicalAnalyzer
+  DataSource <-- XmlLexicalAnalyzer
+  KvnLexicalAnalyzer ..|> LexicalAnalyzer
+  XmlLexicalAnalyzer ..|> LexicalAnalyzer
+  LexicalAnalyzer -right-> ParseToken : produces
+  LexicalAnalyzer <-- LexicalAnalyzerSelector : create
+  LexicalAnalyzer --> MessageParser : reset
+  MessageParser --> LexicalAnalyzerSelector : select
+  FileFormat <-left- LexicalAnalyzer
+  TokenType "1" <--o ParseToken
+  ParseToken <-- MessageParser : "process"
+
+@enduml

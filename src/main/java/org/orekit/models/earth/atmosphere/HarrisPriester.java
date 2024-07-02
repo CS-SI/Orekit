@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,11 +16,12 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -59,10 +60,9 @@ public class HarrisPriester implements Atmosphere {
 
     /** Lag angle for diurnal bulge. */
     private static final double LAG = FastMath.toRadians(30.0);
-    /** Lag angle cosine. */
-    private static final double COSLAG = FastMath.cos(LAG);
-    /** Lag angle sine. */
-    private static final double SINLAG = FastMath.sin(LAG);
+
+    /** Lag angle sine and cosine. */
+    private static final SinCos SCLAG = FastMath.sinCos(LAG);
 
     // CHECKSTYLE: stop NoWhitespaceAfter check
     /** Harris-Priester min-max density (kg/m3) vs. altitude (m) table.
@@ -288,8 +288,8 @@ public class HarrisPriester implements Atmosphere {
 
         // Diurnal bulge apex direction
         final Vector3D sunDir = sunInEarth.normalize();
-        final Vector3D bulDir = new Vector3D(sunDir.getX() * COSLAG - sunDir.getY() * SINLAG,
-                                             sunDir.getX() * SINLAG + sunDir.getY() * COSLAG,
+        final Vector3D bulDir = new Vector3D(sunDir.getX() * SCLAG.cos() - sunDir.getY() * SCLAG.sin(),
+                                             sunDir.getX() * SCLAG.sin() + sunDir.getY() * SCLAG.cos(),
                                              sunDir.getZ());
 
         // Cosine of angle Psi between the diurnal bulge apex and the satellite
@@ -325,9 +325,9 @@ public class HarrisPriester implements Atmosphere {
      * @param sunInEarth position of the Sun in Earth frame (m)
      * @param posInEarth target position in Earth frame (m)
      * @return the local density (kg/m³)
-     * @param <T> instance of RealFieldElement&lt;T&gt;
+     * @param <T> instance of CalculusFieldElement&lt;T&gt;
      */
-    public <T extends RealFieldElement<T>> T getDensity(final Vector3D sunInEarth, final FieldVector3D<T> posInEarth) {
+    public <T extends CalculusFieldElement<T>> T getDensity(final Vector3D sunInEarth, final FieldVector3D<T> posInEarth) {
         final T zero = posInEarth.getX().getField().getZero();
         final T posAlt = getHeight(posInEarth);
         // Check for height boundaries
@@ -340,8 +340,8 @@ public class HarrisPriester implements Atmosphere {
 
         // Diurnal bulge apex direction
         final Vector3D sunDir = sunInEarth.normalize();
-        final Vector3D bulDir = new Vector3D(sunDir.getX() * COSLAG - sunDir.getY() * SINLAG,
-                                             sunDir.getX() * SINLAG + sunDir.getY() * COSLAG,
+        final Vector3D bulDir = new Vector3D(sunDir.getX() * SCLAG.cos() - sunDir.getY() * SCLAG.sin(),
+                                             sunDir.getX() * SCLAG.sin() + sunDir.getY() * SCLAG.cos(),
                                              sunDir.getZ());
 
         // Cosine of angle Psi between the diurnal bulge apex and the satellite
@@ -361,13 +361,13 @@ public class HarrisPriester implements Atmosphere {
         final T dH = posAlt.negate().add(tabAltRho[ia][0]).divide(tabAltRho[ia][0] - tabAltRho[ia + 1][0]);
 
         // Min exponential density interpolation
-        final T rhoMin = zero.add(tabAltRho[ia + 1][1] / tabAltRho[ia][1]).pow(dH).multiply(tabAltRho[ia][1]);
+        final T rhoMin = zero.newInstance(tabAltRho[ia + 1][1] / tabAltRho[ia][1]).pow(dH).multiply(tabAltRho[ia][1]);
 
         if (Precision.equals(cosPow.getReal(), 0.)) {
-            return zero.add(rhoMin);
+            return rhoMin;
         } else {
             // Max exponential density interpolation
-            final T rhoMax = zero.add(tabAltRho[ia + 1][2] / tabAltRho[ia][2]).pow(dH).multiply(tabAltRho[ia][2]);
+            final T rhoMax = zero.newInstance(tabAltRho[ia + 1][2] / tabAltRho[ia][2]).pow(dH).multiply(tabAltRho[ia][2]);
             return rhoMin.add(rhoMax.subtract(rhoMin).multiply(cosPow));
         }
 
@@ -383,10 +383,12 @@ public class HarrisPriester implements Atmosphere {
     public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame) {
 
         // Sun position in earth frame
-        final Vector3D sunInEarth = sun.getPVCoordinates(date, earth.getBodyFrame()).getPosition();
+        final Vector3D sunInEarth = sun.getPosition(date, earth.getBodyFrame());
 
         // Target position in earth frame
-        final Vector3D posInEarth = frame.getTransformTo(earth.getBodyFrame(), date).transformPosition(position);
+        final Vector3D posInEarth = frame
+                .getStaticTransformTo(earth.getBodyFrame(), date)
+                .transformPosition(position);
 
         return getDensity(sunInEarth, posInEarth);
     }
@@ -394,19 +396,21 @@ public class HarrisPriester implements Atmosphere {
     /** Get the local density at some position.
      * @param date current date
      * @param position current position
-     * @param <T> implements a RealFieldElement
+     * @param <T> implements a CalculusFieldElement
      * @param frame the frame in which is defined the position
      * @return local density (kg/m³)
           *            or if altitude is below the model minimal altitude
      */
-    public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
                                                         final Frame frame) {
         // Sun position in earth frame
-        final Vector3D sunInEarth = sun.getPVCoordinates(date.toAbsoluteDate(), earth.getBodyFrame()).getPosition();
+        final Vector3D sunInEarth = sun.getPosition(date.toAbsoluteDate(), earth.getBodyFrame());
 
         // Target position in earth frame
-        final FieldVector3D<T> posInEarth = frame.getTransformTo(earth.getBodyFrame(), date.toAbsoluteDate()).transformPosition(position);
+        final FieldVector3D<T> posInEarth = frame
+                .getStaticTransformTo(earth.getBodyFrame(), date.toAbsoluteDate())
+                .transformPosition(position);
 
         return getDensity(sunInEarth, posInEarth);
     }
@@ -435,16 +439,16 @@ public class HarrisPriester implements Atmosphere {
      *  The height computation is an approximation valid for the considered atmosphere.
      *  </p>
      *  @param position current position in Earth frame
-     *  @param <T> instance of RealFieldElement<T>
+     *  @param <T> instance of CalculusFieldElement<T>
      *  @return height (m)
      */
-    private <T extends RealFieldElement<T>> T getHeight(final FieldVector3D<T> position) {
+    private <T extends CalculusFieldElement<T>> T getHeight(final FieldVector3D<T> position) {
         final double a    = earth.getEquatorialRadius();
         final double f    = earth.getFlattening();
         final double e2   = f * (2. - f);
         final T r    = position.getNorm();
         final T sl   = position.getZ().divide(r);
-        final T cl2  = sl.multiply(sl).negate().add(1.);
+        final T cl2  = sl.square().negate().add(1.);
         final T coef = cl2.multiply(-e2).add(1.).reciprocal().multiply(1. - e2).sqrt();
 
         return r.subtract(coef.multiply(a));

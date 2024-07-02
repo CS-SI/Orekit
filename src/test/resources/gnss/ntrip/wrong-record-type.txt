@@ -1,0 +1,17 @@
+HTTP/1.1 200 OK
+Ntrip-Version: Ntrip/2.0
+Ntrip-Flags: st_filter,st_auth,st_match,st_strict,rtsp,plain_rtp
+Server: NTRIP BKG Caster/2.0.34
+Date: Tue, 29 Jan 2019 16:40:58 GMT
+Connection: close
+Content-Type: gnss/sourcetable
+Content-Length: 6552
+
+CAS;products.igs-ip.net;2101;PRODUCTS;BKG;0;DEU;50.12;8.69;0.0.0.0;0;http://products.igs-ip.net/home
+CAS;rtcm-ntrip.org;2101;NtripInfoCaster;BKG;0;DEU;50.12;8.69;0.0.0.0;0;http://www.rtcm-ntrip.org/home
+NET;IGS;IGS;B;N;https://igs.bkg.bund.de/root_ftp/NTRIP/streams/streamlist_igs-ip.htm;https://igs.bkg.bund.de:443/root_ftp/IGS/station/rnxskl/;http://register.rtcm-ntrip.org;none
+NET;MISC;BKG;B;N;http://igs.bkg.bund.de/root_ftp/NTRIP/streams/streamlist_igs-ip.htm;https://igs.bkg.bund.de:443/root_ftp/MISC/station/rnxskl/;http://register.rtcm-ntrip.org;none
+STR;CLK00;BRDC_CoM_ITRF;RTCM 3.1;1057(60),1058(5),1059(5);0;GPS;MISC;DEU;50.09;8.66;0;1;RTNet;none;B;N;1000;BKG
+STR;CLK01;BRDC_CoM_ITRF;RTCM 3.1;1057(60),1058(5),1059(5),1063(60),1064(5);0;GPS+GLO;MISC;DEU;50.09;8.66;0;1;RTNet;none;B;N;1400;BKG
+BCE;CLK01;BRDC_CoM_ITRF;RTCM 3.1;1057(60),1058(5),1059(5),1063(60),1064(5);0;GPS+GLO;MISC;DEU;50.09;8.66;0;1;RTNet;none;B;N;1400;BKG
+ENDSOURCETABLE

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2024 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -78,7 +78,7 @@ The user can retrieve them using various static methods: `getGCRF()`, `getEME200
 `getICRF()`, `getCIRF(IERSConventions, boolean)`, `getTIRF(IERSConventions, boolean)`,
 `getITRF(IERSConventions, boolean)`, `getMOD(IERSConventions)`, `getTOD(IERSConventions)`,
 `getGTOD(IERSConventions)`, `getITRFEquinox(IERSConventions, boolean)`, `getTEME()`,
-and `getVeis1950()`.
+`getPZ9011(IERSConventions, boolean)`, and `getVeis1950()`.
 One of these reference frames has been arbitrarily chosen as the root of the frames tree:
 the `Geocentric Celestial Reference Frame` (GCRF) which is an inertial reference defined by IERS.
 
@@ -117,8 +117,8 @@ very small, slightly time-dependent transformations.
 The precession-nutation models for Non-Rotating Origin paradigm available in Orekit are those
 defined in either IERS 1996 conventions, IERS 2003 conventions or IERS 2010 conventions.
 
-In summary, four frames are involved along this path, with various precession-nutation
-models: GCRF, CIRF, TIRF and ITRF.
+In summary, five frames are involved along this path, with various precession-nutation
+models: GCRF, CIRF, TIRF, ITRF and PZ-90.11.
 
 ### Classical paradigm: equinox-based transformations
 
@@ -246,14 +246,19 @@ system barycenter, as its associated frame is the ICRF.
 
 As explained above, the IERS conventions define Earth frames, the ITRF frames.
 Depending on which Earth Orientation Parameters are loaded at run time by
-users, the ITRF frame computed my be an older or a newer one. As of mid-2017,
-if EOP parameters are loaded from EOP C04 14 files, the ITRF will be ITRF 2014,
+users, the ITRF frame computed may be an older or a newer one. If EOP parameters
+are loaded from EOP C04 14 files, the ITRF will be ITRF 2014,
 whereas if EOP parameters are loaded from EOP C04 08, or from Bulletin A or
 from Bulletin B, the ITRF be be ITRF 2008. When IERS will update its references,
-the ITRF produce will change accordingly. Orekit always allows to convert
-from one ITRF to any other ITRF. All ITRF versions since 1988 are supported,
-as of Orekit 9.0, it corresponds to ITRF88, ITRF89, ITRF90, ITRF91, ITRF92,
-ITRF93, ITRF94, ITRF96, ITRF97, ITRF2000, ITRF2005, ITRF2008 and ITRF2014).
+the ITRF products change accordingly. Orekit knows about these changes and always
+allows to convert from one ITRF to any other ITRF or to get a specific ITRF version even if the
+loaded EOP were related to one or several different ITRF versions. As an example,
+one can load yearly EOP C04 files with some files referring to ITRF 2008, some other
+files referring to ITRF 2014, and use this mixed history to compute ITRF 2020: Orekit will
+manage the required Helmert conversions for each date internally, users do not
+need to bother about this. All ITRF versions since 1988 are supported.
+As of Orekit 12.0, it corresponds to ITRF88, ITRF89, ITRF90, ITRF91, ITRF92,
+ITRF93, ITRF94, ITRF96, ITRF97, ITRF2000, ITRF2005, ITRF2008, ITRF2014 and ITRF2020.
 
 ## Topocentric Frame
   

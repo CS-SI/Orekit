@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,18 +16,18 @@
  */
 package org.orekit.forces.gravity.potential;
 
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-
-import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.Utils;
-import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 
 public class FESCHatEpsilonReaderTest {
 
@@ -38,7 +38,7 @@ public class FESCHatEpsilonReaderTest {
         try {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
-        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         OceanTidesReader reader2 = new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                             0.01, FastMath.toRadians(1.0),
@@ -46,11 +46,11 @@ public class FESCHatEpsilonReaderTest {
                                                             map);
         reader2.setMaxParseDegree(8);
         reader2.setMaxParseOrder(8);
-        DataProvidersManager.getInstance().feed(reader2.getSupportedNames(), reader2);
+        DataContext.getDefault().getDataProvidersManager().feed(reader2.getSupportedNames(), reader2);
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OCEAN_TIDE_LOAD_DEFORMATION_LIMITS, oe.getSpecifier());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals(7, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(OrekitMessages.OCEAN_TIDE_LOAD_DEFORMATION_LIMITS, oe.getSpecifier());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(7, ((Integer) oe.getParts()[1]).intValue());
         }
     }
 
@@ -87,12 +87,12 @@ public class FESCHatEpsilonReaderTest {
         OceanTidesReader reader1 = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
         reader1.setMaxParseDegree(6);
         reader1.setMaxParseOrder(6);
-        DataProvidersManager.getInstance().feed(reader1.getSupportedNames(), reader1);
+        DataContext.getDefault().getDataProvidersManager().feed(reader1.getSupportedNames(), reader1);
         List<OceanTidesWave> waves1 =  reader1.getWaves();
 
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
-        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         OceanTidesReader reader2 = new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                             0.01, FastMath.toRadians(1.0),
@@ -100,7 +100,7 @@ public class FESCHatEpsilonReaderTest {
                                                             map);
         reader2.setMaxParseDegree(6);
         reader2.setMaxParseOrder(6);
-        DataProvidersManager.getInstance().feed(reader2.getSupportedNames(), reader2);
+        DataContext.getDefault().getDataProvidersManager().feed(reader2.getSupportedNames(), reader2);
         List<OceanTidesWave> waves2 =  reader2.getWaves();
 
         for (OceanTidesWave wave1 : waves1) {
@@ -110,8 +110,8 @@ public class FESCHatEpsilonReaderTest {
                 if (wave1.getDoodson() == wave2.getDoodson()) {
                     found = true;
 
-                    Assert.assertEquals(wave1.getMaxDegree(), wave2.getMaxDegree());
-                    Assert.assertEquals(wave1.getMaxOrder(),  wave2.getMaxOrder());
+                    Assertions.assertEquals(wave1.getMaxDegree(), wave2.getMaxDegree());
+                    Assertions.assertEquals(wave1.getMaxOrder(),  wave2.getMaxOrder());
                     double[][] cP1 = (double[][])  cPlusField.get(wave1);
                     double[][] sP1 = (double[][])  sPlusField.get(wave1);
                     double[][] cM1 = (double[][])  cMinusField.get(wave1);
@@ -123,21 +123,21 @@ public class FESCHatEpsilonReaderTest {
 
                     for (int n = 2; n <= wave1.getMaxDegree(); ++n) {
                         for (int m = 0; m <= FastMath.min(wave1.getMaxOrder(), n); ++m) {
-                            Assert.assertEquals(cP1[n][m], cP2[n][m], threshold);
-                            Assert.assertEquals(sP1[n][m], sP2[n][m], threshold);
-                            Assert.assertEquals(cM1[n][m], cM2[n][m], threshold);
-                            Assert.assertEquals(sM1[n][m], sM2[n][m], threshold);
+                            Assertions.assertEquals(cP1[n][m], cP2[n][m], threshold);
+                            Assertions.assertEquals(sP1[n][m], sP2[n][m], threshold);
+                            Assertions.assertEquals(cM1[n][m], cM2[n][m], threshold);
+                            Assertions.assertEquals(sM1[n][m], sM2[n][m], threshold);
                         }
                     }
 
                 }
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:tides");
     }

@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,29 +25,45 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit.propagation #ECEBD8 {
 
     interface Propagator {
-      +int getMode()
-      +void setSlaveMode()
-      +void setMasterMode(double h, OrekitFixedStepHandler handler)
-      +void setMasterMode(OrekitStepHandler handler)
-      +void setEphemerisMode()
-      +BoundedPropagator getGeneratedEphemeris()
+        +StepHandlerMultiplexer getMultiplexer()
+        +void clearStepHandlers()
+        +void setStepHandler(double h, OrekitFixedStepHandler handler)
+        +void setStepHandler(OrekitStepHandler handler)
     }
 
     package sampling #DDEBD8 {
 
-      interface OrekitStepHandler {
-        +void init(SpacecraftState s0, AbsoluteDate t)
-        +void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
+      class StepHandlerMultiplexer {
+        +void add(double h, OrekitFixedStepHandler handler)
+        +void add(OrekitStepHandler handler)
+        +void remove(OrekitFixedStepHandler handler)
+        +void remove(OrekitStepHandler handler)
+        +void clear()
+        +List<OrekitStepHandler> getHandlers()
       }
 
       interface OrekitFixedStepHandler {
         +void init(SpacecraftState s0, AbsoluteDate t)
-        +void handleStep(SpacecraftState currentState, boolean isLast)
+        +void handleStep(SpacecraftState currentState)
+        +void finish(SpacecraftState finalState)
       }
+      note bottom
+      handle single discrete state
+      end note
+
+      interface OrekitStepHandler {
+        +void init(SpacecraftState s0, AbsoluteDate t)
+        +void handleStep(OrekitStepInterpolator interpolator)
+        +void finish(SpacecraftState finalState)
+      }
+      note bottom
+      handle continuous states valid throughout the step
+      end note
 
       interface OrekitStepInterpolator {
         +SpacecraftState getCurrentState()
@@ -56,10 +72,14 @@
         +boolean isForward()
       }
 
-      OrekitStepHandler <-down- Propagator : step handler
+      Propagator o--> StepHandlerMultiplexer : multiplexer
+      Propagator o--> OrekitStepInterpolator
+      StepHandlerMultiplexer -right->      OrekitStepInterpolator : interpolator
+      StepHandlerMultiplexer --|>      OrekitStepHandler
+      StepHandlerMultiplexer o--> "*" OrekitStepHandler
+      StepHandlerMultiplexer o--> "*" OrekitFixedStepHandler
       OrekitStepInterpolator <-down- OrekitStepHandler : interpolator
-      OrekitFixedStepHandler <-- Propagator : step handler
-
+ 
     }
 
   }

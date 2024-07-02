@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,12 +17,12 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
@@ -46,7 +46,7 @@ import org.orekit.utils.PVCoordinates;
 public class FieldLatitudeCrossingDetectorTest {
 
     /** Arbitrary Field. */
-    private static final Decimal64Field field = Decimal64Field.getInstance();
+    private static final Binary64Field field = Binary64Field.getInstance();
 
     @Test
     public void testRegularCrossing() {
@@ -55,25 +55,25 @@ public class FieldLatitudeCrossingDetectorTest {
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
-        FieldLatitudeCrossingDetector<Decimal64> d =
+        FieldLatitudeCrossingDetector<Binary64> d =
                 new FieldLatitudeCrossingDetector<>(v(60.0), v(1.e-6), earth, FastMath.toRadians(60.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assert.assertEquals(60.0, d.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(60.0, FastMath.toDegrees(d.getLatitude()), 1.0e-14);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(60.0, FastMath.toDegrees(d.getLatitude()), 1.0e-14);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
-        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
-        final FieldOrbit<Decimal64> orbit = new FieldEquinoctialOrbit<>(
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
+        final FieldOrbit<Binary64> orbit = new FieldEquinoctialOrbit<>(
                 new FieldPVCoordinates<>(v(1), new PVCoordinates(position,  velocity)),
                 FramesFactory.getEME2000(), date,
                 v(Constants.EIGEN5C_EARTH_MU));
 
-        FieldPropagator<Decimal64> propagator =
+        FieldPropagator<Binary64> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit,
                                           Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                           v(Constants.EIGEN5C_EARTH_MU),
@@ -83,30 +83,30 @@ public class FieldLatitudeCrossingDetectorTest {
                                           Constants.EIGEN5C_EARTH_C50,
                                           Constants.EIGEN5C_EARTH_C60);
 
-        FieldEventsLogger<Decimal64> logger = new FieldEventsLogger<>();
+        FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
         AbsoluteDate previous = null;
-        for (FieldLoggedEvent<Decimal64> e : logger.getLoggedEvents()) {
-            FieldSpacecraftState<Decimal64> state = e.getState();
-            double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+        for (FieldLoggedEvent<Binary64> e : logger.getLoggedEvents()) {
+            FieldSpacecraftState<Binary64> state = e.getState();
+            double latitude = earth.transform(state.getPosition(earth.getBodyFrame()),
                                               earth.getBodyFrame(), date).getLatitude().getReal();
-            Assert.assertEquals(60.0, FastMath.toDegrees(latitude), 3.0e-10);
+            Assertions.assertEquals(60.0, FastMath.toDegrees(latitude), 3.0e-10);
             if (previous != null) {
                 if (e.isIncreasing()) {
                     // crossing northward
-                    Assert.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() > 3611.0);
-                    Assert.assertEquals(4954.70, state.getDate().durationFrom(previous).getReal(), 0.01);
+                    Assertions.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() > 3611.0);
+                    Assertions.assertEquals(4954.70, state.getDate().durationFrom(previous).getReal(), 0.01);
                 } else {
                     // crossing southward
-                    Assert.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() < -3615.0);
-                    Assert.assertEquals(956.17, state.getDate().durationFrom(previous).getReal(), 0.01);
+                    Assertions.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() < -3615.0);
+                    Assertions.assertEquals(956.17, state.getDate().durationFrom(previous).getReal(), 0.01);
                 }
             }
             previous = state.getDate().toAbsoluteDate();
         }
-        Assert.assertEquals(30, logger.getLoggedEvents().size());
+        Assertions.assertEquals(30, logger.getLoggedEvents().size());
 
     }
 
@@ -117,25 +117,25 @@ public class FieldLatitudeCrossingDetectorTest {
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
-        FieldLatitudeCrossingDetector<Decimal64> d =
+        FieldLatitudeCrossingDetector<Binary64> d =
                 new FieldLatitudeCrossingDetector<>(v(10.0), v(1.e-6), earth, FastMath.toRadians(82.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assert.assertEquals(10.0, d.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(82.0, FastMath.toDegrees(d.getLatitude()), 1.0e-14);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertEquals(10.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(82.0, FastMath.toDegrees(d.getLatitude()), 1.0e-14);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
-        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
-        final FieldOrbit<Decimal64> orbit = new FieldEquinoctialOrbit<>(
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
+        final FieldOrbit<Binary64> orbit = new FieldEquinoctialOrbit<>(
                 new FieldPVCoordinates<>(v(1), new PVCoordinates(position,  velocity)),
                 FramesFactory.getEME2000(), date,
                 v(Constants.EIGEN5C_EARTH_MU));
 
-        FieldPropagator<Decimal64> propagator =
+        FieldPropagator<Binary64> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit,
                                           Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                           v(Constants.EIGEN5C_EARTH_MU),
@@ -145,11 +145,11 @@ public class FieldLatitudeCrossingDetectorTest {
                                           Constants.EIGEN5C_EARTH_C50,
                                           Constants.EIGEN5C_EARTH_C60);
 
-        FieldEventsLogger<Decimal64> logger = new FieldEventsLogger<Decimal64>();
+        FieldEventsLogger<Binary64> logger = new FieldEventsLogger<Binary64>();
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(0, logger.getLoggedEvents().size());
+        Assertions.assertEquals(0, logger.getLoggedEvents().size());
 
     }
 
@@ -159,11 +159,11 @@ public class FieldLatitudeCrossingDetectorTest {
      * @param value to box.
      * @return boxed value.
      */
-    private static Decimal64 v(double value) {
-        return new Decimal64(value);
+    private static Binary64 v(double value) {
+        return new Binary64(value);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

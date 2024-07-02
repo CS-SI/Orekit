@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,15 +19,17 @@ package org.orekit.attitudes;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
+import org.orekit.frames.LOF;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -35,7 +37,9 @@ import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 /**
  * This class handles an attitude provider interpolating from a predefined table
@@ -46,44 +50,72 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class TabulatedLofOffset implements AttitudeProvider {
+public class TabulatedLofOffset implements BoundedAttitudeProvider {
 
     /** Inertial frame with respect to which orbit should be computed. */
     private final Frame inertialFrame;
 
-    /** Type of Local Orbital Frame. */
-    private LOFType type;
+    /** Local Orbital Frame. */
+    private final LOF type;
 
     /** Cached attitude table. */
-    private final transient ImmutableTimeStampedCache<TimeStampedAngularCoordinates> table;
+    private final transient ImmutableTimeStampedCache<? extends TimeStampedAngularCoordinates> table;
 
     /** Filter for derivatives from the sample to use in interpolation. */
     private final AngularDerivativesFilter filter;
 
+    /** First date of the range. */
+    private final AbsoluteDate minDate;
+
+    /** Last date of the range. */
+    private final AbsoluteDate maxDate;
+
     /** Creates new instance.
+     * <p>
+     * This constructor uses the first and last point samples as the min and max dates.
+     * </p>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @param type type of Local Orbital Frame
+     * @param lof local orbital frame
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param filter filter for derivatives from the sample to use in interpolation
      */
-    public TabulatedLofOffset(final Frame inertialFrame, final LOFType type,
-                              final List<TimeStampedAngularCoordinates> table,
+    public TabulatedLofOffset(final Frame inertialFrame, final LOF lof,
+                              final List<? extends TimeStampedAngularCoordinates> table,
                               final int n, final AngularDerivativesFilter filter) {
+        this(inertialFrame, lof, table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate());
+    }
+
+    /** Creates new instance.
+     * @param inertialFrame inertial frame with respect to which orbit should be computed
+     * @param lof local orbital frame
+     * @param table tabulated attitudes
+     * @param n number of attitude to use for interpolation
+     * @param minDate min date to use
+     * @param maxDate max date to use
+     * @param filter filter for derivatives from the sample to use in interpolation
+     * @since 11.0
+     */
+    public TabulatedLofOffset(final Frame inertialFrame, final LOF lof,
+                              final List<? extends TimeStampedAngularCoordinates> table,
+                              final int n, final AngularDerivativesFilter filter,
+                              final AbsoluteDate minDate, final AbsoluteDate maxDate) {
         if (!inertialFrame.isPseudoInertial()) {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                       inertialFrame.getName());
         }
         this.inertialFrame = inertialFrame;
-        this.type          = type;
+        this.type          = lof;
         this.table         = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
         this.filter        = filter;
+        this.minDate       = minDate;
+        this.maxDate       = maxDate;
     }
 
     /** Get an unmodifiable view of the tabulated attitudes.
      * @return unmodifiable view of the tabulated attitudes
      */
-    public List<TimeStampedAngularCoordinates> getTable() {
+    public List<? extends TimeStampedAngularCoordinates> getTable() {
         return table.getAll();
     }
 
@@ -94,9 +126,12 @@ public class TabulatedLofOffset implements AttitudeProvider {
         // get attitudes sample on which interpolation will be performed
         final List<TimeStampedAngularCoordinates> sample = table.getNeighbors(date).collect(Collectors.toList());
 
+        // create interpolator
+        final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =
+                new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), filter);
+
         // interpolate
-        final TimeStampedAngularCoordinates interpolated =
-                TimeStampedAngularCoordinates.interpolate(date, filter, sample);
+        final TimeStampedAngularCoordinates interpolated = interpolator.interpolate(date, sample);
 
         // construction of the local orbital frame, using PV from inertial frame
         final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
@@ -112,7 +147,7 @@ public class TabulatedLofOffset implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame) {
 
@@ -123,9 +158,12 @@ public class TabulatedLofOffset implements AttitudeProvider {
                         map(ac -> new TimeStampedFieldAngularCoordinates<>(date.getField(), ac)).
                         collect(Collectors.toList());
 
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<T>, T> interpolator =
+                new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(sample.size(), filter);
+
         // interpolate
-        final TimeStampedFieldAngularCoordinates<T> interpolated =
-                TimeStampedFieldAngularCoordinates.interpolate(date, filter, sample);
+        final TimeStampedFieldAngularCoordinates<T> interpolated = interpolator.interpolate(date, sample);
 
         // construction of the local orbital frame, using PV from inertial frame
         final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);
@@ -138,6 +176,16 @@ public class TabulatedLofOffset implements AttitudeProvider {
         // compose with interpolated rotation
         return new FieldAttitude<>(date, frame,
                                    interpolated.addOffset(frameToLof.getAngular()));
+    }
+
+    /** {@inheritDoc} */
+    public AbsoluteDate getMinDate() {
+        return minDate;
+    }
+
+    /** {@inheritDoc} */
+    public AbsoluteDate getMaxDate() {
+        return maxDate;
     }
 
 }

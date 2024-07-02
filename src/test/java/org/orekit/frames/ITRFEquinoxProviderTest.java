@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,17 +16,14 @@
  */
 package org.orekit.frames;
 
-
-import java.util.ArrayList;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -38,6 +35,8 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.ArrayList;
 
 
 public class ITRFEquinoxProviderTest {
@@ -51,7 +50,7 @@ public class ITRFEquinoxProviderTest {
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(10000)) {
             double angularOffset =
                     itrfEquinox.getTransformTo(itrfCIO, date).getRotation().getAngle();
-            Assert.assertEquals(0, angularOffset / Constants.ARC_SECONDS_TO_RADIANS, 0.07);
+            Assertions.assertEquals(0, angularOffset / Constants.ARC_SECONDS_TO_RADIANS, 0.07);
         }
     }
 
@@ -171,16 +170,16 @@ public class ITRFEquinoxProviderTest {
 
         // time scales checks
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2007, 4, 5), TimeComponents.H12, utc);
-        Assert.assertEquals(0.50075444444444,
+        Assertions.assertEquals(0.50075444444444,
                             date.getComponents(tt).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             5.0e-15);
-        Assert.assertEquals(0.499999165813831,
+        Assertions.assertEquals(0.499999165813831,
                             date.getComponents(ut1).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             1.0e-15);
 
         // sidereal time check
         double gast = IERSConventions.IERS_1996.getGASTFunction(ut1, eopHistory).value(date);
-        Assert.assertEquals(13.412402380740 * 3600 * 1.0e6,
+        Assertions.assertEquals(13.412402380740 * 3600 * 1.0e6,
                             radToMicroAS(MathUtils.normalizeAngle(gast, 0)),
                             25);
 
@@ -191,7 +190,7 @@ public class ITRFEquinoxProviderTest {
             { +0.000712264667137, +0.000044385492226, +0.999999745354454 }
         }, 1.0e-13);
         Rotation npb = gcrf.getTransformTo(tod, date).getRotation();
-        Assert.assertEquals(0.0, radToMicroAS(Rotation.distance(refNPB, npb)), 27.0);
+        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refNPB, npb)), 27.0);
 
         // celestial to terrestrial frames matrix, without polar motion
         Rotation refWithoutPolarMotion = new Rotation(new double[][] {
@@ -200,7 +199,7 @@ public class ITRFEquinoxProviderTest {
             { +0.000712264667137, +0.000044385492226, +0.999999745354454 }
         }, 1.0e-13);
         Rotation withoutPM = gcrf.getTransformTo(gtod, date).getRotation();
-        Assert.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithoutPolarMotion, withoutPM)), 9);
+        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithoutPolarMotion, withoutPM)), 9);
 
         // celestial to terrestrial frames matrix, with polar motion
         Rotation refWithPolarMotion = new Rotation(new double[][] {
@@ -209,7 +208,7 @@ public class ITRFEquinoxProviderTest {
             { +0.000711560100206, +0.000046626645796, +0.999999745754058 }
         }, 1.0e-13);
         Rotation withPM = gcrf.getTransformTo(itrf, date).getRotation();
-        Assert.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithPolarMotion, withPM)), 10);
+        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithPolarMotion, withPM)), 10);
 
     }
 
@@ -253,11 +252,11 @@ public class ITRFEquinoxProviderTest {
             Transform t = FramesFactory.getNonInterpolatingTransform(frame1, frame2, date);
             Vector3D a = t.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR);
             double delta = FastMath.copySign(radToMicroAS(t.getRotation().getAngle()), a.getZ());
-            Assert.assertEquals(0.0, delta, toleranceMicroAS);
+            Assertions.assertEquals(0.0, delta, toleranceMicroAS);
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("rapid-data-columns");
     }
@@ -267,8 +266,8 @@ public class ITRFEquinoxProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     double radToMicroAS(double deltaRad) {

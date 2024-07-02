@@ -1,0 +1,27 @@
+%=SNX 2.02 JCT 20:111:61200 JCT 68:041:00000 20:111:61200 L 00549 0 X         
++FILE/REFERENCE                                                                 
+ DESCRIPTION        UNE 200420 ILRS eccentricities file
+ OUTPUT             ILRS SINEX Formatted Eccentricity File                 
+ CONTACT            epavlis@UMBC.edu                                       
+ SOFTWARE           JCET's eccCDDIS2snx
+ HARDWARE           Apple MacBook Pro                                              
+ INPUT              Official Eccentricity file from CDDIS (110707)                            
+ INPUT              and previous version slrecc.191030.ILRS.une.snx                            
+ INPUT              Numerous emails/reports from Van Husson’s review                            
+-FILE/REFERENCE                                                                 
++INPUT/HISTORY                                                                  
+ =SNX 2.02 JCT 20:111:61200 JCT 68:041:00000 20:111:61200 L 00549 0 X        
+-INPUT/HISTORY                                                                  
++SITE/ID
+*Code PT __DOMES__ T _STATION DESCRIPTION__ APPROX_LON_ APPROX_LAT_ _APP_H_     CDP-SOD_
+ 1148  A   ---     L Ondrejov   OND. FIXED   14 47 08.1  49 54 49.3   592.6     11480901
+ 7035  A 40436M003 L Otay Mount TLRS-3      243  9 32.9  34 22 55.2  2200.0     70351301
+ 7120  A 40445M002 L Haleakala  MOBLAS-1    203 44 38.2  20 42 27.4  3069.6     71200101
+-SITE/ID
++SITE/ECCENTRICITY
+*SITE PT SOLN T DATA_START__ DATA_END____ UNE UP______ NORTH___ EAST____        CDP-SOD_
+ 1148  A    1 L 88:001:00000 91:365:86399 UNE   0.0000   0.0000   0.0000        11480901
+ 7035  A    1 L 88:176:00000 88:265:86399 UNE   2.5870   0.0060   0.0170        70351301
+ 7120  A    1 L 80:167:00000 82:022:86399 UNE   3.6020  -0.0130   0.0090        71200101
+-SITE/ECCENTRICITY
+%ENDSNX

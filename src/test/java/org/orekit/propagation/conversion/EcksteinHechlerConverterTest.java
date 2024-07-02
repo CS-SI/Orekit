@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,13 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -33,13 +30,16 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EcksteinHechlerConverterTest {
 
@@ -48,12 +48,12 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.781e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.610e-8);
     }
 
     @Test
     public void testConversionPositionOnly() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 3.208e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 3.673e-8);
     }
 
     protected void checkFit(final Orbit orbit,
@@ -66,7 +66,7 @@ public class EcksteinHechlerConverterTest {
 
         // shift position by 3m
         CircularOrbit modified = new CircularOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
-                                                                                new Vector3D(1, orbit.getPVCoordinates().getPosition(),
+                                                                                new Vector3D(1, orbit.getPosition(),
                                                                                              3.0, Vector3D.PLUS_J),
                                                                                 orbit.getPVCoordinates().getVelocity()),
                                                    orbit.getFrame(),
@@ -88,7 +88,7 @@ public class EcksteinHechlerConverterTest {
                                                                          harmonics.getUnnormalizedCnm(5, 0),
                                                                          harmonics.getUnnormalizedCnm(6, 0),
                                                                          OrbitType.CIRCULAR,
-                                                                         PositionAngle.TRUE,
+                                                                         PositionAngleType.TRUE,
                                                                          1.0);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder,
@@ -97,35 +97,35 @@ public class EcksteinHechlerConverterTest {
 
         fitter.convert(sample, positionOnly);
 
-        Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
+        Assertions.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
         EcksteinHechlerPropagator prop = (EcksteinHechlerPropagator)fitter.getAdaptedPropagator();
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assert.assertEquals(modified.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
-                            eps * modified.getPVCoordinates().getPosition().getX());
-        Assert.assertEquals(modified.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
-                            eps * modified.getPVCoordinates().getPosition().getY());
-        Assert.assertEquals(modified.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
-                            eps * modified.getPVCoordinates().getPosition().getZ());
+        Assertions.assertEquals(modified.getPosition().getX(),
+                            fitted.getPosition().getX(),
+                            eps * modified.getPosition().getX());
+        Assertions.assertEquals(modified.getPosition().getY(),
+                            fitted.getPosition().getY(),
+                            eps * modified.getPosition().getY());
+        Assertions.assertEquals(modified.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
+                            eps * modified.getPosition().getZ());
 
-        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
+        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),
                             eps * modified.getPVCoordinates().getVelocity().getX());
-        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getY(),
+        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getY(),
                             fitted.getPVCoordinates().getVelocity().getY(),
                             -eps * modified.getPVCoordinates().getVelocity().getY());
-        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getZ(),
+        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getZ(),
                             fitted.getPVCoordinates().getVelocity().getZ(),
                             -eps * modified.getPVCoordinates().getVelocity().getZ());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 

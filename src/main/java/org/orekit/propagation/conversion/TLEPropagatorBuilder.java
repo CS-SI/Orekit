@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,62 +16,44 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
-import org.orekit.orbits.KeplerianOrbit;
+import java.util.List;
+
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.data.DataContext;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.BatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
+ * @author Thomas Paulet
  * @since 6.0
  */
 public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
-    /** Parameter name for B* coefficient. */
-    public static final String B_STAR = "BSTAR";
+    /** Data context used to access frames and time scales. */
+    private final DataContext dataContext;
 
-    /** B* scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
+    /** Template TLE. */
+    private final TLE templateTLE;
 
-    /** Satellite number. */
-    private final int satelliteNumber;
+    /** TLE generation algorithm. */
+    private final TleGenerationAlgorithm generationAlgorithm;
 
-    /** Classification (U for unclassified). */
-    private final char classification;
-
-    /** Launch year (all digits). */
-    private final int launchYear;
-
-    /** Launch number. */
-    private final int launchNumber;
-
-    /** Launch piece. */
-    private final String launchPiece;
-
-    /** Element number. */
-    private final int elementNumber;
-
-    /** Revolution number at epoch. */
-    private final int revolutionNumberAtEpoch;
-
-    /** Ballistic coefficient. */
-    private double bStar;
-
-    /** Build a new instance.
+    /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
      * <p>
      * The template TLE is used as a model to {@link
      * #createInitialOrbit() create initial orbit}. It defines the
@@ -81,62 +63,96 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * parameters used by the callers of this builder to the real orbital parameters.
      * </p>
      * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @since 7.1
+     * @param generationAlgorithm TLE generation algorithm
+     * @since 12.0
+     * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm)
      */
-    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
-                                final double positionScale) {
-        super(TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getOrbit(),
-              positionAngle, positionScale, false);
-        this.satelliteNumber         = templateTLE.getSatelliteNumber();
-        this.classification          = templateTLE.getClassification();
-        this.launchYear              = templateTLE.getLaunchYear();
-        this.launchNumber            = templateTLE.getLaunchNumber();
-        this.launchPiece             = templateTLE.getLaunchPiece();
-        this.elementNumber           = templateTLE.getElementNumber();
-        this.revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
-        this.bStar                   = 0.0;
-        try {
-            final ParameterDriver driver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
-                                                               Double.NEGATIVE_INFINITY,
-                                                               Double.POSITIVE_INFINITY);
-            driver.addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    TLEPropagatorBuilder.this.bStar = driver.getValue();
-                }
-            });
-            addSupportedParameter(driver);
-        } catch (OrekitException oe) {
-            // this should never happen
-            throw new OrekitInternalError(oe);
-        }
+    @DefaultDataContext
+    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
+                                final double positionScale, final TleGenerationAlgorithm generationAlgorithm) {
+        this(templateTLE, positionAngleType, positionScale, DataContext.getDefault(), generationAlgorithm);
+    }
 
+    /** Build a new instance.
+     * <p>
+     * The template TLE is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, orbit type, satellite number,
+     * classification, .... and is also used together with the {@code positionScale} to
+     * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
+     * parameters used by the callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
+     * </p>
+     * @param templateTLE reference TLE from which real orbits will be built
+     * @param positionAngleType position angle type to use
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param dataContext used to access frames and time scales.
+     * @param generationAlgorithm TLE generation algorithm
+     * @since 12.0
+     */
+    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
+                                final double positionScale, final DataContext dataContext,
+                                final TleGenerationAlgorithm generationAlgorithm) {
+        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames().getTEME()).getInitialState().getOrbit(),
+                positionAngleType, positionScale, false, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
+
+        // Supported parameters: Bstar
+        addSupportedParameters(templateTLE.getParametersDrivers());
+
+        this.templateTLE         = templateTLE;
+        this.dataContext         = dataContext;
+        this.generationAlgorithm = generationAlgorithm;
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    @Override
+    public TLEPropagatorBuilder copy() {
+        return new TLEPropagatorBuilder(templateTLE, getPositionAngleType(), getPositionScale(),
+                                        dataContext, generationAlgorithm);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TLEPropagator buildPropagator(final double[] normalizedParameters) {
 
         // create the orbit
         setParameters(normalizedParameters);
-        final Orbit orbit = createInitialOrbit();
+        final Orbit           orbit = createInitialOrbit();
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final Frame           teme  = dataContext.getFrames().getTEME();
 
-        // we really need a Keplerian orbit type
-        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        // TLE related to the orbit
+        final TLE tle = generationAlgorithm.generate(state, templateTLE);
+        final List<ParameterDriver> drivers = templateTLE.getParametersDrivers();
+        for (int index = 0; index < drivers.size(); index++) {
+            if (drivers.get(index).isSelected()) {
+                tle.getParametersDrivers().get(index).setSelected(true);
+            }
+        }
 
-        final TLE tle = new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
-                                TLE.DEFAULT, elementNumber, orbit.getDate(),
-                                kep.getKeplerianMeanMotion(), 0.0, 0.0,
-                                kep.getE(), MathUtils.normalizeAngle(orbit.getI(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getPerigeeArgument(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getMeanAnomaly(), FastMath.PI),
-                                revolutionNumberAtEpoch, bStar);
+        // propagator
+        return TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), Propagator.DEFAULT_MASS, teme);
 
-        return TLEPropagator.selectExtrapolator(tle);
+    }
+
+    /** Getter for the template TLE.
+     * @return the template TLE
+     */
+    public TLE getTemplateTLE() {
+        return templateTLE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
 }

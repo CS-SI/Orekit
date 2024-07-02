@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,9 +19,14 @@ package org.orekit.utils;
 import java.io.Serializable;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Blendable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -41,7 +46,7 @@ import org.orekit.time.TimeShiftable;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable {
+public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PVCoordinates>, Serializable {
 
     /** Fixed position/velocity at origin (both p, v and a are zero vectors). */
     public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
@@ -170,14 +175,15 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                     a3, pv3.acceleration, a4, pv4.acceleration);
     }
 
-    /** Builds a PVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a PVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.
      * </p>
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public PVCoordinates(final FieldVector3D<DerivativeStructure> p) {
+    public <U extends Derivative<U>> PVCoordinates(final FieldVector3D<U> p) {
         position = new Vector3D(p.getX().getReal(), p.getY().getReal(), p.getZ().getReal());
         if (p.getX().getOrder() >= 1) {
             velocity = new Vector3D(p.getX().getPartialDerivative(1),
@@ -196,6 +202,16 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         }
     }
 
+    /**
+     * Builds PV coordinates with the givne position, zero velocity, and zero
+     * acceleration.
+     *
+     * @param position position vector (m)
+     */
+    public PVCoordinates(final Vector3D position) {
+        this(position, Vector3D.ZERO);
+    }
+
     /** Transform the instance to a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
      * <p>
      * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
@@ -210,7 +226,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         final DerivativeStructure x;
         final DerivativeStructure y;
         final DerivativeStructure z;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new DSFactory(1, order);
                 x = factory.build(position.getX());
@@ -237,6 +253,42 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
 
     }
 
+    /** Transform the instance to a {@link FieldVector3D}&lt;{@link UnivariateDerivative1}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative1} coordinates correspond to time-derivatives up
+     * to the order 1.
+     * </p>
+     * @return vector with time-derivatives embedded within the coordinates
+     * @see #toUnivariateDerivative2Vector()
+     * @since 10.2
+     */
+    public FieldVector3D<UnivariateDerivative1> toUnivariateDerivative1Vector() {
+
+        final UnivariateDerivative1 x = new UnivariateDerivative1(position.getX(), velocity.getX());
+        final UnivariateDerivative1 y = new UnivariateDerivative1(position.getY(), velocity.getY());
+        final UnivariateDerivative1 z = new UnivariateDerivative1(position.getZ(), velocity.getZ());
+
+        return new FieldVector3D<>(x, y, z);
+    }
+
+    /** Transform the instance to a {@link FieldVector3D}&lt;{@link UnivariateDerivative2}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative2} coordinates correspond to time-derivatives up
+     * to the order 2.
+     * </p>
+     * @return vector with time-derivatives embedded within the coordinates
+     * @see #toUnivariateDerivative1Vector()
+     * @since 10.2
+     */
+    public FieldVector3D<UnivariateDerivative2> toUnivariateDerivative2Vector() {
+
+        final UnivariateDerivative2 x = new UnivariateDerivative2(position.getX(), velocity.getX(), acceleration.getX());
+        final UnivariateDerivative2 y = new UnivariateDerivative2(position.getY(), velocity.getY(), acceleration.getY());
+        final UnivariateDerivative2 z = new UnivariateDerivative2(position.getZ(), velocity.getZ(), acceleration.getZ());
+
+        return new FieldVector3D<>(x, y, z);
+    }
+
     /** Transform the instance to a {@link FieldPVCoordinates}&lt;{@link DerivativeStructure}&gt;.
      * <p>
      * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
@@ -256,7 +308,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * </p>
      * @param order derivation order for the vector components (must be either 0, 1 or 2)
      * @return pv coordinates with time-derivatives embedded within the coordinates
-          * @since 9.2
+     * @since 9.2
      */
     public FieldPVCoordinates<DerivativeStructure> toDerivativeStructurePV(final int order) {
 
@@ -270,7 +322,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         final DerivativeStructure x2;
         final DerivativeStructure y2;
         final DerivativeStructure z2;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new DSFactory(1, order);
                 x0 = factory.build(position.getX());
@@ -336,6 +388,81 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
 
     }
 
+    /** Transform the instance to a {@link FieldPVCoordinates}&lt;{@link UnivariateDerivative1}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative1} coordinates correspond to time-derivatives up
+     * to the order 1.
+     * The first derivative of acceleration will be computed as a Keplerian-only jerk.
+     * </p>
+     * @return pv coordinates with time-derivatives embedded within the coordinates
+     * @since 10.2
+     */
+    public FieldPVCoordinates<UnivariateDerivative1> toUnivariateDerivative1PV() {
+
+        final double   r2            = position.getNormSq();
+        final double   r             = FastMath.sqrt(r2);
+        final double   pvOr2         = Vector3D.dotProduct(position, velocity) / r2;
+        final double   a             = acceleration.getNorm();
+        final double   aOr           = a / r;
+        final Vector3D keplerianJerk = new Vector3D(-3 * pvOr2, acceleration, -aOr, velocity);
+
+        final UnivariateDerivative1 x0 = new UnivariateDerivative1(position.getX(),     velocity.getX());
+        final UnivariateDerivative1 y0 = new UnivariateDerivative1(position.getY(),     velocity.getY());
+        final UnivariateDerivative1 z0 = new UnivariateDerivative1(position.getZ(),     velocity.getZ());
+        final UnivariateDerivative1 x1 = new UnivariateDerivative1(velocity.getX(),     acceleration.getX());
+        final UnivariateDerivative1 y1 = new UnivariateDerivative1(velocity.getY(),     acceleration.getY());
+        final UnivariateDerivative1 z1 = new UnivariateDerivative1(velocity.getZ(),     acceleration.getZ());
+        final UnivariateDerivative1 x2 = new UnivariateDerivative1(acceleration.getX(), keplerianJerk.getX());
+        final UnivariateDerivative1 y2 = new UnivariateDerivative1(acceleration.getY(), keplerianJerk.getY());
+        final UnivariateDerivative1 z2 = new UnivariateDerivative1(acceleration.getZ(), keplerianJerk.getZ());
+
+        return new FieldPVCoordinates<>(new FieldVector3D<>(x0, y0, z0),
+                                        new FieldVector3D<>(x1, y1, z1),
+                                        new FieldVector3D<>(x2, y2, z2));
+
+    }
+
+    /** Transform the instance to a {@link FieldPVCoordinates}&lt;{@link UnivariateDerivative2}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative2} coordinates correspond to time-derivatives up
+     * to the order 2.
+     * As derivation order is 2, the second derivative of velocity (which
+     * is also the first derivative of acceleration) will be computed as a Keplerian-only jerk,
+     * and the second derivative of acceleration will be computed as a Keplerian-only jounce.
+     * </p>
+     * @return pv coordinates with time-derivatives embedded within the coordinates
+     * @since 10.2
+     */
+    public FieldPVCoordinates<UnivariateDerivative2> toUnivariateDerivative2PV() {
+
+        final double   r2              = position.getNormSq();
+        final double   r               = FastMath.sqrt(r2);
+        final double   pvOr2           = Vector3D.dotProduct(position, velocity) / r2;
+        final double   a               = acceleration.getNorm();
+        final double   aOr             = a / r;
+        final Vector3D keplerianJerk   = new Vector3D(-3 * pvOr2, acceleration, -aOr, velocity);
+        final double   v2              = velocity.getNormSq();
+        final double   pa              = Vector3D.dotProduct(position, acceleration);
+        final double   aj              = Vector3D.dotProduct(acceleration, keplerianJerk);
+        final Vector3D keplerianJounce = new Vector3D(-3 * (v2 + pa) / r2 + 15 * pvOr2 * pvOr2 - aOr, acceleration,
+                                                      4 * aOr * pvOr2 - aj / (a * r), velocity);
+
+        final UnivariateDerivative2 x0 = new UnivariateDerivative2(position.getX(),     velocity.getX(),      acceleration.getX());
+        final UnivariateDerivative2 y0 = new UnivariateDerivative2(position.getY(),     velocity.getY(),      acceleration.getY());
+        final UnivariateDerivative2 z0 = new UnivariateDerivative2(position.getZ(),     velocity.getZ(),      acceleration.getZ());
+        final UnivariateDerivative2 x1 = new UnivariateDerivative2(velocity.getX(),     acceleration.getX(),  keplerianJerk.getX());
+        final UnivariateDerivative2 y1 = new UnivariateDerivative2(velocity.getY(),     acceleration.getY(),  keplerianJerk.getY());
+        final UnivariateDerivative2 z1 = new UnivariateDerivative2(velocity.getZ(),     acceleration.getZ(),  keplerianJerk.getZ());
+        final UnivariateDerivative2 x2 = new UnivariateDerivative2(acceleration.getX(), keplerianJerk.getX(), keplerianJounce.getX());
+        final UnivariateDerivative2 y2 = new UnivariateDerivative2(acceleration.getY(), keplerianJerk.getY(), keplerianJounce.getY());
+        final UnivariateDerivative2 z2 = new UnivariateDerivative2(acceleration.getZ(), keplerianJerk.getZ(), keplerianJounce.getZ());
+
+        return new FieldPVCoordinates<>(new FieldVector3D<>(x0, y0, z0),
+                                        new FieldVector3D<>(x1, y1, z1),
+                                        new FieldVector3D<>(x2, y2, z2));
+
+    }
+
     /** Estimate velocity between two positions.
      * <p>Estimation is based on a simple fixed velocity translation
      * during the time interval between the two positions.</p>
@@ -360,9 +487,27 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public PVCoordinates shiftedBy(final double dt) {
-        return new PVCoordinates(new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration),
+        return new PVCoordinates(positionShiftedBy(dt),
                                  new Vector3D(1, velocity, dt, acceleration),
                                  acceleration);
+    }
+
+    /**
+     * Get a time-shifted position. Same as {@link #shiftedBy(double)} except
+     * that only the sifted position is returned.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement
+     * for proper orbit propagation (it is not even Keplerian!) but should be
+     * sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     *
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is
+     * immutable)
+     */
+    public Vector3D positionShiftedBy(final double dt) {
+        return new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration);
     }
 
     /** Gets the position.
@@ -469,7 +614,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      */
     public String toString() {
         final String comma = ", ";
-        return new StringBuffer().append('{').append("P(").
+        return new StringBuilder().append('{').append("P(").
                 append(position.getX()).append(comma).
                 append(position.getY()).append(comma).
                 append(position.getZ()).append("), V(").
@@ -486,6 +631,17 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      */
     private Object writeReplace() {
         return new DTO(this);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PVCoordinates blendArithmeticallyWith(final PVCoordinates other, final double blendingValue)
+            throws MathIllegalArgumentException {
+        final Vector3D blendedPosition     = position.blendArithmeticallyWith(other.position, blendingValue);
+        final Vector3D blendedVelocity     = velocity.blendArithmeticallyWith(other.velocity, blendingValue);
+        final Vector3D blendedAcceleration = acceleration.blendArithmeticallyWith(other.acceleration, blendingValue);
+
+        return new PVCoordinates(blendedPosition, blendedVelocity, blendedAcceleration);
     }
 
     /** Internal class used only for serialization. */

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,9 +37,11 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.utils.Constants;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for bulletin A files.
  * <p>Bulletin A files contain {@link EOPEntry
@@ -101,7 +104,7 @@ import org.orekit.utils.IERSConventions;
  * of a month, it will have a roughly one month wide hole between the
  * final data and the rapid data. This hole will trigger an error as EOP
  * continuity is checked by default for at most 5 days holes. In this case,
- * users should call something like {@link FramesFactory#setEOPContinuityThreshold(double)
+ * users should call something like {@link Frames#setEOPContinuityThreshold(double)
  * FramesFactory.setEOPContinuityThreshold(Constants.JULIAN_YEAR)} to prevent
  * the error to be triggered.
  * </p>
@@ -111,15 +114,19 @@ import org.orekit.utils.IERSConventions;
  * where x stands for a roman numeral character and # stands for a digit
  * character.</p>
  * <p>
+ * Bulletin A in csv format must be read using {@link EopCsvFilesLoader} rather
+ * than using this loader. Bulletin A in xml format must be read using {@link EopXmlLoader}
+ * rather than using this loader.
+ * </p>
+ * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
  * @since 7.0
+ * @see EopCsvFilesLoader
+ * @see EopXmlLoader
  */
-class BulletinAFilesLoader implements EOPHistoryLoader {
-
-    /** Conversion factor. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
+class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Regular expression matching blanks at start of line. */
     private static final String LINE_START_REGEXP     = "^\\p{Blank}+";
@@ -175,28 +182,28 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
                           STORED_REAL_FIELD + IGNORED_REAL_FIELD +
                           LINE_END_REGEXP),
 
-       /** Earth Orientation Parameters final values. */
-       // the first bulletin A of each month also includes final values for the
-       // period covering from day 2 of month m-2 to day 1 of month m-1.
-       //                                IERS Final Values
-       //                                 MJD        x        y      UT1-UTC
-       //                                            "        "         s
-       //             13  7  2           56475    0.1441   0.3901   0.05717
-       //             13  7  3           56476    0.1457   0.3895   0.05716
-       //             13  7  4           56477    0.1467   0.3887   0.05728
-       //             13  7  5           56478    0.1477   0.3875   0.05755
-       //             13  7  6           56479    0.1490   0.3862   0.05793
-       //             13  7  7           56480    0.1504   0.3849   0.05832
-       //             13  7  8           56481    0.1516   0.3835   0.05858
-       //             13  7  9           56482    0.1530   0.3822   0.05877
-       EOP_FINAL_VALUES("^ *IERS Final Values *$",
-                        LINE_START_REGEXP +
-                        STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
-                        STORED_MJD_FIELD +
-                        STORED_REAL_FIELD +
-                        STORED_REAL_FIELD +
-                        STORED_REAL_FIELD +
-                        LINE_END_REGEXP),
+        /** Earth Orientation Parameters final values. */
+        // the first bulletin A of each month also includes final values for the
+        // period covering from day 2 of month m-2 to day 1 of month m-1.
+        //                                IERS Final Values
+        //                                 MJD        x        y      UT1-UTC
+        //                                            "        "         s
+        //             13  7  2           56475    0.1441   0.3901   0.05717
+        //             13  7  3           56476    0.1457   0.3895   0.05716
+        //             13  7  4           56477    0.1467   0.3887   0.05728
+        //             13  7  5           56478    0.1477   0.3875   0.05755
+        //             13  7  6           56479    0.1490   0.3862   0.05793
+        //             13  7  7           56480    0.1504   0.3849   0.05832
+        //             13  7  8           56481    0.1516   0.3835   0.05858
+        //             13  7  9           56482    0.1530   0.3822   0.05877
+        EOP_FINAL_VALUES("^ *IERS Final Values *$",
+                         LINE_START_REGEXP +
+                         STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
+                         STORED_MJD_FIELD +
+                         STORED_REAL_FIELD +
+                         STORED_REAL_FIELD +
+                         STORED_REAL_FIELD +
+                         LINE_END_REGEXP),
 
         /** Earth Orientation Parameters prediction. */
         // section 3 always contain prediction data without error fields
@@ -252,22 +259,6 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
                                             LINE_END_REGEXP),
 
         /** Pole offsets, IAU-1980 final values. */
-        // the format for the IAU-2000 series is similar, but the meanings of the fields
-        // are different
-        //                       IAU2000A Celestial Pole Offset Series
-        //                        MJD      dX     error     dY     error
-        //                                      (msec. of arc)
-        //                       56519   -0.246   0.052   -0.223   0.080
-        //                       56520   -0.239   0.052   -0.248   0.080
-        //                       56521   -0.224   0.076   -0.277   0.110
-        POLE_OFFSETS_IAU_1980_FINAL_VALUES("^ *IERS Celestial Pole Offset Final Series *$",
-                                           LINE_START_REGEXP +
-                                           STORED_MJD_FIELD +
-                                           STORED_REAL_FIELD +
-                                           STORED_REAL_FIELD +
-                                           LINE_END_REGEXP),
-
-        /** Pole offsets, IAU-2000. */
         // the first bulletin A of each month also includes final values for the
         // period covering from day 2 of month m-2 to day 1 of month m-1.
         //                    IERS Celestial Pole Offset Final Series
@@ -279,6 +270,22 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         //                         56478       -82.2     -13.5
         //                         56479       -82.5     -13.6
         //                         56480       -82.5     -13.7
+        POLE_OFFSETS_IAU_1980_FINAL_VALUES("^ *IERS Celestial Pole Offset Final Series *$",
+                                           LINE_START_REGEXP +
+                                           STORED_MJD_FIELD +
+                                           STORED_REAL_FIELD +
+                                           STORED_REAL_FIELD +
+                                           LINE_END_REGEXP),
+
+        /** Pole offsets, IAU-2000. */
+        // the format for the IAU-2000 series is similar, but the meanings of the fields
+        // are different
+        //                       IAU2000A Celestial Pole Offset Series
+        //                        MJD      dX     error     dY     error
+        //                                      (msec. of arc)
+        //                       56519   -0.246   0.052   -0.223   0.080
+        //                       56520   -0.239   0.052   -0.248   0.080
+        //                       56521   -0.224   0.076   -0.277   0.110
         POLE_OFFSETS_IAU_2000_RAPID_SERVICE("^ *IAU2000A Celestial Pole Offset Series *$",
                                             LINE_START_REGEXP +
                                             STORED_MJD_FIELD +
@@ -347,26 +354,27 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
 
     }
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Build a loader for IERS bulletins A files.
-    * @param supportedNames regular expression for supported files names
-    */
-    BulletinAFilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+     * @param supportedNames regular expression for supported files names
+     * @param manager provides access to the bulletin A files.
+     * @param utcSupplier UTC time scale.
+     */
+    BulletinAFilesLoader(final String supportedNames,
+                         final DataProvidersManager manager,
+                         final Supplier<TimeScale> utcSupplier) {
+        super(supportedNames, manager, utcSupplier);
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser();
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         parser.fill(history);
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    private class Parser implements DataLoader {
 
         /** Map for xp, yp, dut1 fields read in different sections. */
         private final Map<Integer, double[]> eopFieldsMap;
@@ -375,7 +383,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         private final Map<Integer, double[]> poleOffsetsFieldsMap;
 
         /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
+        private final ItrfVersionProvider itrfVersionProvider;
 
         /** ITRF version configuration. */
         private ITRFVersionLoader.ITRFVersionConfiguration configuration;
@@ -401,9 +409,11 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         /** Simple constructor.
          */
         Parser() {
-            this.eopFieldsMap         = new HashMap<Integer, double[]>();
-            this.poleOffsetsFieldsMap = new HashMap<Integer, double[]>();
-            this.itrfVersionLoader    = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            this.eopFieldsMap         = new HashMap<>();
+            this.poleOffsetsFieldsMap = new HashMap<>();
+            this.itrfVersionProvider = new ITRFVersionLoader(
+                    ITRFVersionLoader.SUPPORTED_NAMES,
+                    getDataProvidersManager());
             this.lineNumber           = 0;
             this.mjdMin               = Integer.MAX_VALUE;
             this.mjdMax               = Integer.MIN_VALUE;
@@ -423,51 +433,51 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
             this.fileName      = name;
 
             // set up a reader for line-oriented bulletin A files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-            lineNumber =  0;
-            firstMJD   = -1;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                lineNumber =  0;
+                firstMJD   = -1;
 
-            // loop over sections
-            final List<Section> remaining = new ArrayList<Section>();
-            remaining.addAll(Arrays.asList(Section.values()));
-            for (Section section = nextSection(remaining, reader, name);
-                 section != null;
-                 section = nextSection(remaining, reader, name)) {
+                // loop over sections
+                final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
+                for (Section section = nextSection(remaining, reader);
+                     section != null;
+                     section = nextSection(remaining, reader)) {
 
-                switch (section) {
-                    case EOP_RAPID_SERVICE :
-                    case EOP_FINAL_VALUES  :
-                    case EOP_PREDICTION    :
-                        loadXYDT(section, reader, name);
-                        break;
-                    case POLE_OFFSETS_IAU_1980_RAPID_SERVICE :
-                    case POLE_OFFSETS_IAU_1980_FINAL_VALUES  :
-                        loadPoleOffsets(section, false, reader, name);
-                        break;
-                    case POLE_OFFSETS_IAU_2000_RAPID_SERVICE :
-                    case POLE_OFFSETS_IAU_2000_FINAL_VALUES  :
-                        loadPoleOffsets(section, true, reader, name);
-                        break;
-                    default :
-                        // this should never happen
-                        throw new OrekitInternalError(null);
+                    switch (section) {
+                        case EOP_RAPID_SERVICE :
+                        case EOP_FINAL_VALUES  :
+                        case EOP_PREDICTION    :
+                            loadXYDT(section, reader, name);
+                            break;
+                        case POLE_OFFSETS_IAU_1980_RAPID_SERVICE :
+                        case POLE_OFFSETS_IAU_1980_FINAL_VALUES  :
+                            loadPoleOffsets(section, false, reader, name);
+                            break;
+                        case POLE_OFFSETS_IAU_2000_RAPID_SERVICE :
+                        case POLE_OFFSETS_IAU_2000_FINAL_VALUES  :
+                            loadPoleOffsets(section, true, reader, name);
+                            break;
+                        default :
+                            // this should never happen
+                            throw new OrekitInternalError(null);
+                    }
+
+                    // remove the already parsed section from the list
+                    remaining.remove(section);
+
                 }
 
-                // remove the already parsed section from the list
-                remaining.remove(section);
+                // check that the mandatory sections have been parsed
+                if (remaining.contains(Section.EOP_RAPID_SERVICE) ||
+                    remaining.contains(Section.EOP_PREDICTION) ||
+                    (remaining.contains(Section.POLE_OFFSETS_IAU_1980_RAPID_SERVICE) ^
+                     remaining.contains(Section.POLE_OFFSETS_IAU_2000_RAPID_SERVICE)) ||
+                    (remaining.contains(Section.POLE_OFFSETS_IAU_1980_FINAL_VALUES) ^
+                     remaining.contains(Section.POLE_OFFSETS_IAU_2000_FINAL_VALUES))) {
+                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
+                }
 
             }
-
-            // check that the mandatory sections have been parsed
-            if (remaining.contains(Section.EOP_RAPID_SERVICE) ||
-                remaining.contains(Section.EOP_PREDICTION) ||
-                (remaining.contains(Section.POLE_OFFSETS_IAU_1980_RAPID_SERVICE) ^
-                 remaining.contains(Section.POLE_OFFSETS_IAU_2000_RAPID_SERVICE)) ||
-                (remaining.contains(Section.POLE_OFFSETS_IAU_1980_FINAL_VALUES) ^
-                 remaining.contains(Section.POLE_OFFSETS_IAU_2000_FINAL_VALUES))) {
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
-            }
-
         }
 
         /** Fill EOP history obtained after reading several files.
@@ -479,9 +489,9 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
             double[] nextEOP    = eopFieldsMap.get(mjdMin);
             for (int mjd = mjdMin; mjd <= mjdMax; ++mjd) {
 
+                final AbsoluteDate mjdDate = AbsoluteDate.createMJDDate(mjd, 0, getUtc());
                 final double[] currentPole = poleOffsetsFieldsMap.get(mjd);
 
-                final double[] previousEOP = currentEOP;
                 currentEOP = nextEOP;
                 nextEOP    = eopFieldsMap.get(mjd + 1);
 
@@ -490,61 +500,46 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
                         // we have only pole offsets for this date
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = itrfVersionLoader.getConfiguration(fileName, mjd);
+                            configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
                         }
                         history.add(new EOPEntry(mjd,
-                                                 0.0, 0.0, 0.0, 0.0,
-                                                 currentPole[1] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[2] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[3] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[4] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 configuration.getVersion()));
+                                                 0.0, Double.NaN, 0.0, 0.0, Double.NaN, Double.NaN,
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[4]),
+                                                 configuration.getVersion(),
+                                                 mjdDate));
                     }
                 } else {
 
-                    // compute LOD as the opposite of the time derivative of UT1-UTC
-                    final double lod;
-                    if (previousEOP == null) {
-                        if (nextEOP == null) {
-                            // isolated point
-                            lod = 0;
-                        } else {
-                            // first entry, we use a forward difference
-                            lod = currentEOP[3] - nextEOP[3];
-                        }
-                    } else {
-                        if (nextEOP == null) {
-                            // last entry, we use a backward difference
-                            lod = previousEOP[3] - currentEOP[3];
-                        } else {
-                            // regular entry, we use a centered difference
-                            lod = 0.5 * (previousEOP[3] - nextEOP[3]);
-                        }
-                    }
-
                     if (configuration == null || !configuration.isValid(mjd)) {
                         // get a configuration for current name and date range
-                        configuration = itrfVersionLoader.getConfiguration(fileName, mjd);
+                        configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
                     }
                     if (currentPole == null) {
                         // we have only EOP for this date
                         history.add(new EOPEntry(mjd,
-                                                 currentEOP[3], lod,
-                                                 currentEOP[1] * Constants.ARC_SECONDS_TO_RADIANS,
-                                                 currentEOP[2] * Constants.ARC_SECONDS_TO_RADIANS,
+                                                 currentEOP[3], Double.NaN,
+                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1]),
+                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2]),
+                                                 Double.NaN, Double.NaN,
                                                  0.0, 0.0, 0.0, 0.0,
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(),
+                                                 mjdDate));
                     } else {
                         // we have complete data
                         history.add(new EOPEntry(mjd,
-                                                 currentEOP[3], lod,
-                                                 currentEOP[1]  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                 currentEOP[2]  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[1] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[2] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[3] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[4] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 configuration.getVersion()));
+                                                 currentEOP[3], Double.NaN,
+                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1] ),
+                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2] ),
+                                                 Double.NaN, Double.NaN,
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[4]),
+                                                 configuration.getVersion(),
+                                                 mjdDate));
                     }
                 }
 
@@ -555,12 +550,11 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         /** Skip to next section header.
          * @param sections sections to check for
          * @param reader reader from where file content is obtained
-         * @param name name of the file (or zip entry)
          * @return the next section or null if no section is found until end of file
          * @exception IOException if data can't be read
          */
         private Section nextSection(final List<Section> sections,
-                                    final BufferedReader reader, final String name)
+                                    final BufferedReader reader)
             throws IOException {
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {

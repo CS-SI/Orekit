@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.frames.Frame;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -59,34 +60,35 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      *
      * @param frame the reference frame attached to the sensor.
      * @param fov   Field Of View of the sensor.
+     * @since 10.1
      */
     public GroundFieldOfViewDetector(final Frame frame,
                                      final FieldOfView fov) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                new StopOnIncreasing<GroundFieldOfViewDetector>(),
-                frame, fov);
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing(),
+             frame, fov);
     }
 
     /**
-     * Private constructor with full parameters.
-     *
-     * <p> This constructor is private as users are expected to use the builder
+     * Protected constructor with full parameters.
+     * <p>
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance in
      * a readable manner without using a huge amount of parameters. </p>
      *
-     * @param maxCheck  maximum checking interval (s)
+     * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      * @param frame     the reference frame attached to the sensor.
      * @param fov       Field Of View of the sensor.
      */
-    private GroundFieldOfViewDetector(final double maxCheck,
-                                      final double threshold,
-                                      final int maxIter,
-                                      final EventHandler<? super GroundFieldOfViewDetector> handler,
-                                      final Frame frame,
-                                      final FieldOfView fov) {
+    protected GroundFieldOfViewDetector(final AdaptableInterval maxCheck,
+                                        final double threshold,
+                                        final int maxIter,
+                                        final EventHandler handler,
+                                        final Frame frame,
+                                        final FieldOfView fov) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
         this.fov = fov;
@@ -94,10 +96,10 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
 
     /** {@inheritDoc} */
     @Override
-    protected GroundFieldOfViewDetector create(final double newMaxCheck,
+    protected GroundFieldOfViewDetector create(final AdaptableInterval newMaxCheck,
                                                final double newThreshold,
                                                final int newMaxIter,
-                                               final EventHandler<? super GroundFieldOfViewDetector> newHandler) {
+                                               final EventHandler newHandler) {
         return new GroundFieldOfViewDetector(newMaxCheck, newThreshold,
                 newMaxIter, newHandler, this.frame, this.fov);
     }
@@ -111,12 +113,11 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
         return this.frame;
     }
 
-    /**
-     * Get the Field Of View.
-     *
+    /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
     }
 
@@ -124,10 +125,10 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      * {@inheritDoc}
      *
      * <p> The g function value is the angular offset between the satellite and
-     * the {@link FieldOfView#offsetFromBoundary(Vector3D) Field Of View
-     * boundary}. It is negative if the satellite is visible within the Field Of
-     * View and positive if it is outside of the Field Of View, including the
-     * margin. </p>
+     * the {@link FieldOfView#offsetFromBoundary(Vector3D, double, VisibilityTrigger)
+     * Field Of View boundary}. It is negative if the satellite is visible within
+     * the Field Of View and positive if it is outside of the Field Of View,
+     * including the margin. </p>
      *
      * <p> As per the previous definition, when the satellite enters the Field
      * Of View, a decreasing event is generated, and when the satellite leaves
@@ -136,8 +137,8 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
     public double g(final SpacecraftState s) {
 
         // get line of sight in sensor frame
-        final Vector3D los = s.getPVCoordinates(this.frame).getPosition();
-        return this.fov.offsetFromBoundary(los);
+        final Vector3D los = s.getPosition(this.frame);
+        return this.fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
 
     }
 

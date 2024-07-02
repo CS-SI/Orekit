@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.orbits.FieldOrbit;
@@ -38,8 +38,20 @@ import org.orekit.utils.FieldPVCoordinates;
  * after the maneuver has been performed!</p>
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
-public class FieldApsideDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldApsideDetector<T>, T> {
+public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldApsideDetector<T>, T> {
+
+    /** Build a new instance.
+     * <p>The Keplerian period is used only to set an upper bound for the
+     * max check interval to period/3 and to set the convergence threshold.</p>
+     * @param keplerianPeriod estimate of the Keplerian period
+     * @since 12.1
+     */
+    public FieldApsideDetector(final T keplerianPeriod) {
+        super(FieldAdaptableInterval.of(keplerianPeriod.divide(3).getReal()), keplerianPeriod.multiply(1e-13),
+            DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>());
+    }
 
     /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the
@@ -48,7 +60,7 @@ public class FieldApsideDetector<T extends RealFieldElement<T>> extends FieldAbs
      * @param orbit initial orbit
      */
     public FieldApsideDetector(final FieldOrbit<T> orbit) {
-        this(orbit.getKeplerianPeriod().multiply(1.0e-13), orbit);
+        this(orbit.getKeplerianPeriod());
     }
 
     /** Build a new instance.
@@ -58,31 +70,29 @@ public class FieldApsideDetector<T extends RealFieldElement<T>> extends FieldAbs
      * @param orbit initial orbit
      */
     public FieldApsideDetector(final T threshold, final FieldOrbit<T> orbit) {
-        super(orbit.getKeplerianPeriod().divide(3), threshold,
-              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<FieldApsideDetector<T>, T>());
+        super(FieldAdaptableInterval.of(orbit.getKeplerianPeriod().divide(3).getReal()), threshold,
+              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>());
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
+     * This constructor is public because otherwise all accessible ones would require an orbit.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    private FieldApsideDetector(final T maxCheck, final T threshold,
-                                final int maxIter, final FieldEventHandler<? super FieldApsideDetector<T>, T> handler) {
+    public FieldApsideDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
+                               final int maxIter, final FieldEventHandler<T> handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldApsideDetector<T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldApsideDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                             final int newMaxIter,
-                                            final FieldEventHandler<? super FieldApsideDetector<T>, T> newHandler) {
+                                            final FieldEventHandler<T> newHandler) {
         return new FieldApsideDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 

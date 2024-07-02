@@ -1,0 +1,108 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit.files.ccsds #ECEBD8 {
+
+    package section #DDEBD8 {
+      interface Section {
+        checkMandatoryEntries()
+      }
+      class Header {
+       -formatVersion
+       -creationDate
+       -originator
+       -messageId
+      }
+      class Metadata {
+        -timeSystem
+      }
+      interface Data
+      note top
+      marker interface
+      end note
+      class Segment
+      Section  <|.. Header
+      Section  <|.. Metadata
+      Section  <|.. Data
+      Metadata <--o Segment
+      Data     <--o Segment
+    }
+
+    package ndm #DDEBD8 {
+
+      package odm #CBDBC8 {
+
+        class OdmMetadata
+        Metadata <|-- OdmMetadata
+
+        package oem #CCCCC7 {
+          class OemData {
+            -ephemeridesDataLines
+            -covarianceMatrices
+          }
+          class OemMetadata
+          class Oem
+          Data <|.. OemData
+          OdmMetadata <|-- OemMetadata
+        }
+
+        package opm #CCCCC7 {
+          class OpmMetadata
+          class OpmData {
+            - stateVector
+            - keplerianElements
+            - spacecraftParameters
+            - covariance
+            - maneuvers
+            - userDefinedParameters
+          }
+          class Opm
+          OdmMetadata <|-- OpmMetadata
+          Data <|.. OpmData
+         }
+
+      }
+      note bottom
+        only OEM and OPM are detailed here
+        similar constructions exist for messages
+        OMM, OCM, TDM, APM, and AEM
+      end note
+
+      abstract class NdmConstituent
+      class Ndm
+
+      NdmConstituent <|-- Oem
+      NdmConstituent <|-- Opm
+      Header  "1" <--o NdmConstituent
+      Segment "*" <--o NdmConstituent
+      NdmConstituent "*" <--o Ndm
+
+    }
+  }
+@enduml

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,75 +16,59 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.util.FastMath;
-import org.orekit.data.DataLoader;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
-import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimationLoader.LineParameters;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
-import org.orekit.time.Month;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.TimeStamped;
+import org.orekit.time.TimeStampedDouble;
 import org.orekit.utils.Constants;
+import org.orekit.utils.GenericTimeStampedCache;
+import org.orekit.utils.OrekitConfiguration;
+import org.orekit.utils.TimeStampedGenerator;
 
 /**
- * This class reads and provides solar activity data needed by
- * atmospheric models: F107 solar flux, Ap and Kp indexes.
+ * This class provides solar activity data needed by atmospheric models: F107 solar flux, Ap and Kp indexes.
  * <p>
- * The data are retrieved through the NASA Marshall
- * Solar Activity Future Estimation (MSAFE) as estimates of monthly
- * F10.7 Mean solar flux and Ap geomagnetic parameter.
- * The data can be retrieved at the NASA <a
- * href="http://sail.msfc.nasa.gov/archive_index.htm">
- * Marshall Solar Activity website</a>.
- * Here Kp indices are deduced from Ap indexes, which in turn are tabulated
- * equivalent of retrieved Ap values.
- * </p>
- * <p>
- * If several MSAFE files are available, some dates may appear in several
- * files (for example August 2007 is in all files from the first one
- * published in March 1999 to the February 2008 file). In this case, the
- * data from the most recent file is used and the older ones are discarded.
- * The date of the file is assumed to be 6 months after its first entry
- * (which explains why the file having August 2007 as its first entry is the
- * February 2008 file). This implies that MSAFE files must <em>not</em> be
- * edited to change their time span, otherwise this would break the old
- * entries overriding mechanism.
- * </p>
- * <p>
- * With these data, the {@link #getInstantFlux(AbsoluteDate)} and {@link
- * #getMeanFlux(AbsoluteDate)} methods return the same values and the {@link
- * #get24HoursKp(AbsoluteDate)} and {@link #getThreeHourlyKP(AbsoluteDate)}
- * methods return the same values.
- * </p>
- * <p>
- * Conversion from Ap index values in the MSAFE file to Kp values used by atmosphere
- * models is done using Jacchia's equation in [1].
- * </p>
- * <p>
- * With these data, the {@link #getAp(AbsoluteDate date)} method returns an array
- * of seven times the same daily Ap value, i.e. it is suited to be used only with
- * the {@link org.orekit.models.earth.atmosphere.NRLMSISE00 NRLMSISE00} atmospheric
+ * Data comes from the NASA Marshall Solar Activity Future Estimation (MSAFE) as estimates of monthly F10.7
+ * Mean solar flux and Ap geomagnetic parameter
+ * (see <a href="https://www.nasa.gov/solar-cycle-progression-and-forecast"> Marshall Solar Activity website</a>).
+ *
+ * <p>Data can be retrieved at the NASA
+ * <a href="https://www.nasa.gov/solar-cycle-progression-and-forecast/archived-forecast/"> Marshall Solar Activity archived forecast</a>.
+ * Here Kp indices are deduced from Ap indexes, which in turn are tabulated equivalent of retrieved Ap values.
+ *
+ * <p> If several MSAFE files are available, some dates may appear in several files (for example August 2007 is in all files from
+ * the first one published in March 1999 to the February 2008 file). In this case, the data from the most recent file is used
+ * and the older ones are discarded. The date of the file is assumed to be 6 months after its first entry (which explains why
+ * the file having August 2007 as its first entry is the February 2008 file). This implies that MSAFE files must <em>not</em>
+ * be edited to change their time span, otherwise this would break the old entries overriding mechanism.
+ *
+ * <p>With these data, the {@link #getInstantFlux(AbsoluteDate)} and {@link #getMeanFlux(AbsoluteDate)} methods return the same
+ * values and the {@link #get24HoursKp(AbsoluteDate)} and {@link #getThreeHourlyKP(AbsoluteDate)} methods return the same
+ * values.
+ *
+ * <p>Conversion from Ap index values in the MSAFE file to Kp values used by atmosphere models is done using Jacchia's equation
+ * in [1].
+ *
+ * <p>With these data, the {@link #getAp(AbsoluteDate date)} method returns an array of seven times the same daily Ap value,
+ * i.e. it is suited to be used only with the {@link org.orekit.models.earth.atmosphere.NRLMSISE00 NRLMSISE00} atmospheric
  * model where the switch #9 is set to 1.
- * </p>
  *
  * <h2>References</h2>
  *
@@ -95,168 +79,190 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  * @author Evan Ward
  * @author Pascal Parraud
+ * @author Vincent Cucchietti
  */
-public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM2000InputParameters, NRLMSISE00InputParameters {
+public class MarshallSolarActivityFutureEstimation
+        extends AbstractSolarActivityData<LineParameters, MarshallSolarActivityFutureEstimationLoader> {
 
-    /** Default regular expression for the supported name that work with all officially published files.
+    /**
+     * Default regular expression for the supported name that work with all officially published files.
+     *
      * @since 10.0
      */
     public static final String DEFAULT_SUPPORTED_NAMES =
-                    "\\p{Alpha}\\p{Lower}\\p{Lower}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}(?:f|F)10(?:_prd)?\\.(?:txt|TXT)";
-
-    /** Strength level of activity. */
-    public enum StrengthLevel {
-
-        /** Strong level of activity. */
-        STRONG,
-
-        /** Average level of activity. */
-        AVERAGE,
-
-        /** Weak level of activity. */
-        WEAK
-
-    }
+            "\\p{Alpha}\\p{Lower}\\p{Lower}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}(?:f|F)10(?:[-_]prd)?\\.(?:txt|TXT)";
 
     /** Serializable UID. */
     private static final long serialVersionUID = -5212198874900835369L;
 
-    /** Pattern for the data fields of MSAFE data. */
-    private final Pattern dataPattern;
-
-    /** Data set. */
-    private final SortedSet<TimeStamped> data;
-
     /** Selected strength level of activity. */
     private final StrengthLevel strengthLevel;
 
-    /** First available date. */
-    private AbsoluteDate firstDate;
+    /** Cache dedicated to average flux. */
+    private final transient GenericTimeStampedCache<TimeStampedDouble> averageFluxCache;
 
-    /** Last available date. */
-    private AbsoluteDate lastDate;
-
-    /** Previous set of solar activity parameters. */
-    private LineParameters previousParam;
-
-    /** Current set of solar activity parameters. */
-    private LineParameters currentParam;
-
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Simple constructor.
+    /**
+     * Simple constructor. This constructor uses the {@link DataContext#getDefault() default data context}.
      * <p>
-     * The original file names used by NASA Marshall space center are of the
-     * form: may2019f10_prd.txt or Oct1999F10.TXT. So a recommended regular
-     * expression for the supported name that work with all published files is:
+     * The original file names used by NASA Marshall space center are of the form: may2019f10_prd.txt or Oct1999F10.TXT. So a
+     * recommended regular expression for the supported name that work with all published files is:
      * {@link #DEFAULT_SUPPORTED_NAMES}.
-     * </p>
+     * <p>
+     * It provides a default configuration for the thread safe cache :
+     * <ul>
+     *     <li>Number of slots : {@code OrekitConfiguration.getCacheSlotsNumber()}</li>
+     *     <li>Max span : {@code Constants.JULIAN_YEAR}</li>
+     *     <li>Max span interval : {@code 0}</li>
+     * </ul>
+     *
      * @param supportedNames regular expression for supported files names
      * @param strengthLevel selected strength level of activity
+     *
+     * @see #MarshallSolarActivityFutureEstimation(String, StrengthLevel, DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public MarshallSolarActivityFutureEstimation(final String supportedNames,
                                                  final StrengthLevel strengthLevel) {
-
-        firstDate           = null;
-        lastDate            = null;
-        data                = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        this.supportedNames = supportedNames;
-        this.strengthLevel  = strengthLevel;
-
-        // the data lines have the following form:
-        // 2010.5003   JUL    83.4      81.3      78.7       6.4       5.9       5.2
-        // 2010.5837   AUG    87.3      83.4      78.5       7.0       6.1       4.9
-        // 2010.6670   SEP    90.8      85.5      79.4       7.8       6.2       4.7
-        // 2010.7503   OCT    94.2      87.6      80.4       9.1       6.4       4.9
-        final StringBuilder builder = new StringBuilder("^");
-
-        // first group: year
-        builder.append("\\p{Blank}*(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})");
-
-        // month as fraction of year, not stored in a group
-        builder.append("\\.\\p{Digit}+");
-
-        // second group: month as a three upper case letters abbreviation
-        builder.append("\\p{Blank}+(");
-        for (final Month month : Month.values()) {
-            builder.append(month.getUpperCaseAbbreviation());
-            builder.append('|');
-        }
-        builder.delete(builder.length() - 1, builder.length());
-        builder.append(")");
-
-        // third to eighth group: data fields
-        for (int i = 0; i < 6; ++i) {
-            builder.append("\\p{Blank}+([-+]?[0-9]+\\.[0-9]+)");
-        }
-
-        // end of line
-        builder.append("\\p{Blank}*$");
-
-        // compile the pattern
-        dataPattern = Pattern.compile(builder.toString());
-
+        this(supportedNames, strengthLevel,
+             DataContext.getDefault().getDataProvidersManager(),
+             DataContext.getDefault().getTimeScales().getUTC());
     }
 
-    /** Get the strength level for activity.
-     * @return strength level to set
+    /**
+     * Constructor that allows specifying the source of the MSAFE auxiliary data files.
+     * <p>
+     * It provides a default configuration for the thread safe cache :
+     * <ul>
+     *     <li>Number of slots : {@code OrekitConfiguration.getCacheSlotsNumber()}</li>
+     *     <li>Max span : {@code 31 * Constants.JULIAN_DAY}</li>
+     *     <li>Max interval : {@code 0}</li>
+     *     <li>Minimum step: {@code 27 * Constants.JULIAN_DAY}</li>
+     * </ul>
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param strengthLevel selected strength level of activity
+     * @param dataProvidersManager provides access to auxiliary data files.
+     * @param utc UTC time scale.
+     *
+     * @since 10.1
      */
-    public StrengthLevel getStrengthLevel() {
-        return strengthLevel;
+    public MarshallSolarActivityFutureEstimation(final String supportedNames,
+                                                 final StrengthLevel strengthLevel,
+                                                 final DataProvidersManager dataProvidersManager,
+                                                 final TimeScale utc) {
+        this(supportedNames, strengthLevel, dataProvidersManager, utc, OrekitConfiguration.getCacheSlotsNumber(),
+             Constants.JULIAN_DAY * 31, 0, Constants.JULIAN_DAY * 27);
     }
 
-    /** Find the data bracketing a specified date.
-     * @param date date to bracket
+    /**
+     * Constructor that allows specifying the source of the MSAFE auxiliary data files and customizable thread safe cache
+     * configuration.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param strengthLevel selected strength level of activity
+     * @param dataProvidersManager provides access to auxiliary data files.
+     * @param utc UTC time scale.
+     * @param maxSlots maximum number of independent cached time slots in the
+     * {@link GenericTimeStampedCache time-stamped cache}
+     * @param maxSpan maximum duration span in seconds of one slot in the {@link GenericTimeStampedCache time-stamped cache}
+     * @param maxInterval time interval above which a new slot is created in the
+     * {@link GenericTimeStampedCache time-stamped cache}
+     * @param minimumStep overriding minimum step designed for non-homogeneous tabulated values. To be used for example when
+     * caching monthly tabulated values. May be null.
+     *
+     * @since 10.1
      */
-    private void bracketDate(final AbsoluteDate date) {
+    public MarshallSolarActivityFutureEstimation(final String supportedNames,
+                                                 final StrengthLevel strengthLevel,
+                                                 final DataProvidersManager dataProvidersManager,
+                                                 final TimeScale utc,
+                                                 final int maxSlots,
+                                                 final double maxSpan,
+                                                 final double maxInterval,
+                                                 final double minimumStep) {
+        super(supportedNames, new MarshallSolarActivityFutureEstimationLoader(strengthLevel, utc),
+              dataProvidersManager, utc, maxSlots, maxSpan, maxInterval, minimumStep);
 
-        if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > 0)) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
-                                      date, firstDate, lastDate);
-        }
-
-        // don't search if the cached selection is fine
-        if ((previousParam != null) &&
-            (date.durationFrom(previousParam.getDate()) > 0) &&
-            (date.durationFrom(currentParam.getDate()) <= 0 )) {
-            return;
-        }
-
-        if (date.equals(firstDate)) {
-            currentParam  = (LineParameters) data.tailSet(date.shiftedBy(1)).first();
-            previousParam = (LineParameters) data.first();
-        } else if (date.equals(lastDate)) {
-            currentParam  = (LineParameters) data.last();
-            previousParam = (LineParameters) data.headSet(date.shiftedBy(-1)).last();
-        } else {
-            currentParam  = (LineParameters) data.tailSet(date).first();
-            previousParam = (LineParameters) data.headSet(date).last();
-        }
-
+        // Initialise fields
+        this.strengthLevel    = strengthLevel;
+        this.averageFluxCache = new GenericTimeStampedCache<>(N_NEIGHBORS, OrekitConfiguration.getCacheSlotsNumber(),
+                                                              Constants.JULIAN_DAY, 0, new AverageFluxGenerator());
     }
 
-    /** Get the supported names for data files.
-     * @return regular expression for the supported names for data files
+    /**
+     * Simple constructor which use the {@link DataContext#getDefault() default data context}.
+     * <p>
+     * It provides a default configuration for the thread safe cache :
+     * <ul>
+     *     <li>Number of slots : {@code OrekitConfiguration.getCacheSlotsNumber()}</li>
+     *     <li>Max span : {@code 31 * Constants.JULIAN_DAY}</li>
+     *     <li>Max interval : {@code 0}</li>
+     *     <li>Minimum step: {@code 27 * Constants.JULIAN_DAY}</li>
+     * </ul>
+     *
+     * @param source source for the data
+     * @param strengthLevel selected strength level of activity
+     *
+     * @since 12.0
      */
-    public String getSupportedNames() {
-        return supportedNames;
+    @DefaultDataContext
+    public MarshallSolarActivityFutureEstimation(final DataSource source,
+                                                 final StrengthLevel strengthLevel) {
+        this(source, strengthLevel, DataContext.getDefault().getTimeScales().getUTC());
     }
 
-    /** {@inheritDoc} */
-    public AbsoluteDate getMinDate() {
-        if (firstDate == null) {
-            DataProvidersManager.getInstance().feed(getSupportedNames(), this);
-        }
-        return firstDate;
+    /**
+     * Simple constructor.
+     * <p>
+     * It provides a default configuration for the thread safe cache :
+     * <ul>
+     *     <li>Number of slots : {@code OrekitConfiguration.getCacheSlotsNumber()}</li>
+     *     <li>Max span : {@code 31 * Constants.JULIAN_DAY}</li>
+     *     <li>Max interval : {@code 0}</li>
+     *     <li>Minimum step: {@code 27 * Constants.JULIAN_DAY}</li>
+     * </ul>
+     *
+     * @param source source for the data
+     * @param strengthLevel selected strength level of activity
+     * @param utc UTC time scale
+     *
+     * @since 12.0
+     */
+    public MarshallSolarActivityFutureEstimation(final DataSource source,
+                                                 final StrengthLevel strengthLevel,
+                                                 final TimeScale utc) {
+        this(source, strengthLevel, utc, OrekitConfiguration.getCacheSlotsNumber(),
+             Constants.JULIAN_DAY * 31, 0, Constants.JULIAN_DAY * 27);
     }
 
-    /** {@inheritDoc} */
-    public AbsoluteDate getMaxDate() {
-        if (lastDate == null) {
-            DataProvidersManager.getInstance().feed(getSupportedNames(), this);
-        }
-        return lastDate;
+    /**
+     * Constructor with customizable thread safe cache configuration.
+     *
+     * @param source source for the data
+     * @param strengthLevel selected strength level of activity
+     * @param utc UTC time scale
+     * @param maxSlots maximum number of independent cached time slots in the
+     * {@link GenericTimeStampedCache time-stamped cache}
+     * @param maxSpan maximum duration span in seconds of one slot in the {@link GenericTimeStampedCache time-stamped cache}
+     * @param maxInterval time interval above which a new slot is created in the
+     * {@link GenericTimeStampedCache time-stamped cache}
+     * @param minimumStep overriding minimum step designed for non-homogeneous tabulated values. To be used for example when
+     * caching monthly tabulated values. Use {@code Double.NaN} otherwise.
+     *
+     * @since 12.0
+     */
+    public MarshallSolarActivityFutureEstimation(final DataSource source,
+                                                 final StrengthLevel strengthLevel,
+                                                 final TimeScale utc,
+                                                 final int maxSlots,
+                                                 final double maxSpan,
+                                                 final double maxInterval,
+                                                 final double minimumStep) {
+        super(source, new MarshallSolarActivityFutureEstimationLoader(strengthLevel, utc), utc,
+              maxSlots, maxSpan, maxInterval, minimumStep);
+        this.strengthLevel    = strengthLevel;
+        this.averageFluxCache = new GenericTimeStampedCache<>(N_NEIGHBORS, OrekitConfiguration.getCacheSlotsNumber(),
+                                                              Constants.JULIAN_DAY, 0, new AverageFluxGenerator());
     }
 
     /** {@inheritDoc} */
@@ -266,21 +272,7 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
 
     /** {@inheritDoc} */
     public double getMeanFlux(final AbsoluteDate date) {
-
-        // get the neighboring dates
-        bracketDate(date);
-
-        // perform a linear interpolation
-        final AbsoluteDate previousDate = previousParam.getDate();
-        final AbsoluteDate currentDate  = currentParam.getDate();
-        final double dt                 = currentDate.durationFrom(previousDate);
-        final double previousF107       = previousParam.getF107();
-        final double currentF107        = currentParam.getF107();
-        final double previousWeight     = currentDate.durationFrom(date)  / dt;
-        final double currentWeight      = date.durationFrom(previousDate) / dt;
-
-        return previousF107 * previousWeight + currentF107 * currentWeight;
-
+        return getLinearInterpolation(date, LineParameters::getF107);
     }
 
     /** {@inheritDoc} */
@@ -288,35 +280,39 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
         return get24HoursKp(date);
     }
 
-    /** Get the date of the file from which data at the specified date comes from.
+    /**
+     * Get the date of the file from which data at the specified date comes from.
      * <p>
-     * If several MSAFE files are available, some dates may appear in several
-     * files (for example August 2007 is in all files from the first one
-     * published in March 1999 to the February 2008 file). In this case, the
-     * data from the most recent file is used and the older ones are discarded.
-     * The date of the file is assumed to be 6 months after its first entry
-     * (which explains why the file having August 2007 as its first entry is the
-     * February 2008 file). This implies that MSAFE files must <em>not</em> be
-     * edited to change their time span, otherwise this would break the old
-     * entries overriding mechanism.
+     * If several MSAFE files are available, some dates may appear in several files (for example August 2007 is in all files
+     * from the first one published in March 1999 to the February 2008 file). In this case, the data from the most recent
+     * file is used and the older ones are discarded. The date of the file is assumed to be 6 months after its first entry
+     * (which explains why the file having August 2007 as its first entry is the February 2008 file). This implies that MSAFE
+     * files must <em>not</em> be edited to change their time span, otherwise this would break the old entries overriding
+     * mechanism.
      * </p>
+     *
      * @param date date of the solar activity data
+     *
      * @return date of the file
      */
     public DateComponents getFileDate(final AbsoluteDate date) {
-        bracketDate(date);
+        // Get the neighboring solar activity
+        final LocalSolarActivity localSolarActivity = new LocalSolarActivity(date);
+        final LineParameters     previousParam      = localSolarActivity.getPreviousParam();
+        final LineParameters     currentParam       = localSolarActivity.getNextParam();
+
+        // Choose which file date to return
         final double dtP = date.durationFrom(previousParam.getDate());
         final double dtC = currentParam.getDate().durationFrom(date);
         return (dtP < dtC) ? previousParam.getFileDate() : currentParam.getFileDate();
     }
 
-    /** The Kp index is derived from the Ap index.
+    /**
+     * The Kp index is derived from the Ap index.
      * <p>The method used is explained on <a
-     * href="http://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html">
-     * NOAA website.</a> as follows:</p>
+     * href="http://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html"> NOAA website.</a> as follows:</p>
      * <p>The scale is 0 to 9 expressed in thirds of a unit, e.g. 5- is 4 2/3,
-     * 5 is 5 and 5+ is 5 1/3. The ap (equivalent range) index is derived from
-     * the Kp index as follows:</p>
+     * 5 is 5 and 5+ is 5 1/3. The ap (equivalent range) index is derived from the Kp index as follows:</p>
      * <table border="1">
      * <caption>Kp / Ap Conversion Table</caption>
      * <tbody>
@@ -334,11 +330,12 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
      * </tr>
      * </tbody>
      * </table>
+     *
      * @param date date of the Kp data
+     *
      * @return the 24H geomagnetic index
      */
     public double get24HoursKp(final AbsoluteDate date) {
-
         // get the daily Ap
         final double ap = getDailyAp(date);
 
@@ -352,217 +349,218 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
         return getMeanFlux(date.shiftedBy(-Constants.JULIAN_DAY));
     }
 
-    /** {@inheritDoc} */
     public double getAverageFlux(final AbsoluteDate date) {
+        // Extract closest neighbours average
+        final List<TimeStampedDouble> neighbors = averageFluxCache.getNeighbors(date).collect(Collectors.toList());
 
-        // Initializes the average flux
-        double average = 0.;
+        // Create linear interpolating function
+        final double[] x = new double[] { 0, 1 };
+        final double[] y = neighbors.stream().map(TimeStampedDouble::getValue).mapToDouble(Double::doubleValue).toArray();
 
-        // Loops over the 81 days centered on the given date
-        for (int i = -40; i < 41; i++) {
-            average += getMeanFlux(date.shiftedBy(i * Constants.JULIAN_DAY));
-        }
+        final LinearInterpolator interpolator          = new LinearInterpolator();
+        final UnivariateFunction interpolatingFunction = interpolator.interpolate(x, y);
 
-        // Returns the 81 day average flux
-        return average / 81;
+        // Interpolate
+        final AbsoluteDate previousDate = neighbors.get(0).getDate();
+        final AbsoluteDate nextDate     = neighbors.get(1).getDate();
+        return interpolatingFunction.value(date.durationFrom(previousDate) / nextDate.durationFrom(previousDate));
     }
 
     /** {@inheritDoc} */
     public double[] getAp(final AbsoluteDate date) {
-
         // Gets the AP for the current date
         final double ap = getDailyAp(date);
 
         // Retuns an array of Ap filled in with the daily Ap only
-        return new double[] {ap, ap, ap, ap, ap, ap, ap};
+        return new double[] { ap, ap, ap, ap, ap, ap, ap };
     }
 
-    /** Gets the daily Ap index.
+    /**
+     * Gets the daily Ap index.
      *
      * @param date the current date
+     *
      * @return the daily Ap index
      */
     private double getDailyAp(final AbsoluteDate date) {
-
-        // get the neighboring dates
-        bracketDate(date);
-
-        // perform a linear interpolation
-        final AbsoluteDate previousDate = previousParam.getDate();
-        final AbsoluteDate currentDate  = currentParam.getDate();
-        final double dt                 = currentDate.durationFrom(previousDate);
-        final double previousAp         = previousParam.getAp();
-        final double currentAp          = currentParam.getAp();
-        final double previousWeight     = currentDate.durationFrom(date)  / dt;
-        final double currentWeight      = date.durationFrom(previousDate) / dt;
-
-        // returns the daily Ap interpolated at the date
-        return previousAp * previousWeight + currentAp * currentWeight;
+        return getLinearInterpolation(date, LineParameters::getAp);
     }
 
-    /** Container class for Solar activity indexes.  */
-    private static class LineParameters implements TimeStamped, Serializable {
+    /**
+     * Replace the instance with a data transfer object for serialization.
+     *
+     * @return data transfer object that will be serialized
+     */
+    @DefaultDataContext
+    private Object writeReplace() {
+        return new DataTransferObject(getSupportedNames(), strengthLevel);
+    }
+
+    /**
+     * Get the strength level for activity.
+     *
+     * @return strength level to set
+     */
+    public StrengthLevel getStrengthLevel() {
+        return strengthLevel;
+    }
+
+    /** Strength level of activity. */
+    public enum StrengthLevel {
+
+        /** Strong level of activity. */
+        STRONG,
+
+        /** Average level of activity. */
+        AVERAGE,
+
+        /** Weak level of activity. */
+        WEAK
+
+    }
+
+    /** Generator generating average flux data between given dates. */
+    private class AverageFluxGenerator implements TimeStampedGenerator<TimeStampedDouble> {
+
+        /** {@inheritDoc} */
+        @Override
+        public List<TimeStampedDouble> generate(final AbsoluteDate existingDate, final AbsoluteDate date) {
+            // No prior data in the cache
+            if (existingDate == null) {
+                return generateDataFromEarliestToLatestDates(getCurrentDay(date), getNextDay(date));
+            }
+            // Prior data in the cache, fill with data between date and existing date
+            if (date.isBefore(existingDate)) {
+                return generateDataFromEarliestToLatestDates(date, existingDate);
+            }
+            return generateDataFromEarliestToLatestDates(existingDate, date);
+        }
+
+        /**
+         * Generate data from earliest to latest date.
+         *
+         * @param earliest earliest date
+         * @param latest latest date
+         *
+         * @return data generated from earliest to latest date
+         */
+        private List<TimeStampedDouble> generateDataFromEarliestToLatestDates(final AbsoluteDate earliest,
+                                                                              final AbsoluteDate latest) {
+            final List<TimeStampedDouble> generated = new ArrayList<>();
+
+            // Add next computed average until it brackets the latest date
+            AbsoluteDate latestNeighbourDate = getCurrentDay(earliest);
+            while (latestNeighbourDate.isBeforeOrEqualTo(latest)) {
+                generated.add(computeAverageFlux(latestNeighbourDate));
+                latestNeighbourDate = getNextDay(latestNeighbourDate);
+            }
+            return generated;
+        }
+
+        /**
+         * Get the current day at midnight.
+         *
+         * @param date date
+         *
+         * @return current day at midnight.
+         */
+        private AbsoluteDate getCurrentDay(final AbsoluteDate date) {
+            // Find previous day date time components
+            final TimeScale      utc            = getUTC();
+            final DateComponents dateComponents = date.getComponents(utc).getDate();
+
+            // Create absolute date for previous day
+            return new AbsoluteDate(new DateTimeComponents(dateComponents, TimeComponents.H00), utc);
+        }
+
+        /**
+         * Get the next day at midnight.
+         *
+         * @param date date
+         *
+         * @return next day at midnight.
+         */
+        private AbsoluteDate getNextDay(final AbsoluteDate date) {
+            // Find previous day date time components
+            final TimeScale      utc               = getUTC();
+            final DateComponents dateComponents    = date.getComponents(utc).getDate();
+            final DateComponents shiftedComponents = new DateComponents(dateComponents, 1);
+
+            // Create absolute date for previous day
+            return new AbsoluteDate(new DateTimeComponents(shiftedComponents, TimeComponents.H00), utc);
+        }
+
+        /**
+         * Compute the average flux for given absolute date.
+         *
+         * @param date date at which the average flux is desired
+         *
+         * @return average flux
+         */
+        private TimeStampedDouble computeAverageFlux(final AbsoluteDate date) {
+            // Extract list of neighbors to compute average
+            final TimeStampedGenerator<LineParameters> generator   = getCache().getGenerator();
+            final AbsoluteDate                         initialDate = date.shiftedBy(-40 * Constants.JULIAN_DAY);
+            final AbsoluteDate                         finalDate   = date.shiftedBy(40 * Constants.JULIAN_DAY);
+            final List<LineParameters>                 monthlyData = generator.generate(initialDate, finalDate);
+
+            // Create interpolator for given data
+            final LinearInterpolator interpolator = new LinearInterpolator();
+
+            final double[] x = monthlyData.stream().map(param -> param.getDate().durationFrom(initialDate))
+                                          .mapToDouble(Double::doubleValue).toArray();
+            final double[] y = monthlyData.stream().map(LineParameters::getF107).mapToDouble(Double::doubleValue).toArray();
+
+            final UnivariateFunction interpolatingFunction = interpolator.interpolate(x, y);
+
+            // Loops over the 81 days centered on the given date
+            double average = 0;
+            for (int i = -40; i < 41; i++) {
+                average += interpolatingFunction.value(date.shiftedBy(i * Constants.JULIAN_DAY).durationFrom(initialDate));
+            }
+
+            // Returns the 81 day average flux
+            return new TimeStampedDouble(average / 81, date);
+        }
+    }
+
+    /** Internal class used only for serialization. */
+    @DefaultDataContext
+    private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 6607862001953526475L;
+        private static final long serialVersionUID = -5212198874900835369L;
 
-        /** File date. */
-        private final DateComponents fileDate;
+        /** Regular expression that matches the names of the IONEX files. */
+        private final String supportedNames;
 
-        /** Entry date. */
-        private  final AbsoluteDate date;
+        /** Selected strength level of activity. */
+        private final StrengthLevel strengthLevel;
 
-        /** F10.7 flux at date. */
-        private final double f107;
-
-        /** Ap index at date. */
-        private final double ap;
-
-        /** Simple constructor.
-         * @param fileDate file date
-         * @param date entry date
-         * @param f107 F10.7 flux at date
-         * @param ap Ap index at date
+        /**
+         * Simple constructor.
+         *
+         * @param supportedNames regular expression for supported files names
+         * @param strengthLevel selected strength level of activity
          */
-        private LineParameters(final DateComponents fileDate, final AbsoluteDate date, final double f107, final double ap) {
-            this.fileDate = fileDate;
-            this.date     = date;
-            this.f107     = f107;
-            this.ap       = ap;
+        DataTransferObject(final String supportedNames,
+                           final StrengthLevel strengthLevel) {
+            this.supportedNames = supportedNames;
+            this.strengthLevel  = strengthLevel;
         }
 
-        /** Get the file date.
-         * @return file date
+        /**
+         * Replace the deserialized data transfer object with a {@link MarshallSolarActivityFutureEstimation}.
+         *
+         * @return replacement {@link MarshallSolarActivityFutureEstimation}
          */
-        public DateComponents getFileDate() {
-            return fileDate;
-        }
-
-        /** Get the current date.
-         * @return current date
-         */
-        public AbsoluteDate getDate() {
-            return date;
-        }
-
-        /** Get the F10.0 flux.
-         * @return f10.7 flux
-         */
-        public double getF107() {
-            return f107;
-        }
-
-        /** Get the Ap index.
-         * @return Ap index
-         */
-        public double getAp() {
-            return ap;
-        }
-
-    }
-
-    /** {@inheritDoc} */
-    public void loadData(final InputStream input, final String name)
-        throws IOException, ParseException, OrekitException {
-
-        // select the groups we want to store
-        final int f107Group;
-        final int apGroup;
-        switch (strengthLevel) {
-            case STRONG :
-                f107Group = 3;
-                apGroup   = 6;
-                break;
-            case AVERAGE :
-                f107Group = 4;
-                apGroup   = 7;
-                break;
-            default :
-                f107Group = 5;
-                apGroup   = 8;
-                break;
-        }
-
-        // read the data
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        boolean inData = false;
-        final TimeScale utc = TimeScalesFactory.getUTC();
-        DateComponents fileDate = null;
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            line = line.trim();
-            if (line.length() > 0) {
-                final Matcher matcher = dataPattern.matcher(line);
-                if (matcher.matches()) {
-
-                    // we are in the data section
-                    inData = true;
-
-                    // extract the data from the line
-                    final int year = Integer.parseInt(matcher.group(1));
-                    final Month month = Month.parseMonth(matcher.group(2));
-                    final AbsoluteDate date = new AbsoluteDate(year, month, 1, utc);
-                    if (fileDate == null) {
-                        // the first entry of each file correspond exactly to 6 months before file publication
-                        // so we compute the file date by adding 6 months to its first entry
-                        if (month.getNumber() > 6) {
-                            fileDate = new DateComponents(year + 1, month.getNumber() - 6, 1);
-                        } else {
-                            fileDate = new DateComponents(year, month.getNumber() + 6, 1);
-                        }
-                    }
-
-                    // check if there is already an entry for this date or not
-                    boolean addEntry = false;
-                    final Iterator<TimeStamped> iterator = data.tailSet(date).iterator();
-                    if (iterator.hasNext()) {
-                        final LineParameters existingEntry = (LineParameters) iterator.next();
-                        if (existingEntry.getDate().equals(date)) {
-                            // there is an entry for this date
-                            if (existingEntry.getFileDate().compareTo(fileDate) < 0) {
-                                // the entry was read from an earlier file
-                                // we replace it with the new entry as it is fresher
-                                iterator.remove();
-                                addEntry = true;
-                            }
-                        } else {
-                            // it is the first entry we get for this date
-                            addEntry = true;
-                        }
-                    } else {
-                        // it is the first entry we get for this date
-                        addEntry = true;
-                    }
-                    if (addEntry) {
-                        // we must add the new entry
-                        data.add(new LineParameters(fileDate, date,
-                                                    Double.parseDouble(matcher.group(f107Group)),
-                                                    Double.parseDouble(matcher.group(apGroup))));
-                    }
-
-                } else {
-                    if (inData) {
-                        // we have already read some data, so we are not in the header anymore
-                        // however, we don't recognize this non-empty line,
-                        // we consider the file is corrupted
-                        throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE,
-                                                  name);
-                    }
-                }
+        private Object readResolve() {
+            try {
+                return new MarshallSolarActivityFutureEstimation(supportedNames, strengthLevel);
+            }
+            catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
             }
         }
-
-        if (data.isEmpty()) {
-            throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE,
-                                      name);
-        }
-        firstDate = data.first().getDate();
-        lastDate  = data.last().getDate();
-
     }
-
-    /** {@inheritDoc} */
-    public boolean stillAcceptsData() {
-        return true;
-    }
-
 }

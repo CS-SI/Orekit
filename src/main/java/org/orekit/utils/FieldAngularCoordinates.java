@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,10 +17,14 @@
 package org.orekit.utils;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -34,9 +38,10 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.FieldTimeShiftable;
 
 /** Simple container for rotation / rotation rate pairs, using {@link
- * RealFieldElement}.
+ * CalculusFieldElement}.
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
  * a simple quadratic model. It is <em>not</em> intended as a replacement for
@@ -52,8 +57,8 @@ import org.orekit.errors.OrekitMessages;
  * @since 6.0
  * @see AngularCoordinates
  */
-public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
-
+public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
+        implements FieldTimeShiftable<FieldAngularCoordinates<T>, T> {
 
     /** rotation. */
     private final FieldRotation<T> rotation;
@@ -70,16 +75,13 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      */
     public FieldAngularCoordinates(final FieldRotation<T> rotation,
                                    final FieldVector3D<T> rotationRate) {
-        this(rotation, rotationRate,
-             new FieldVector3D<>(rotation.getQ0().getField().getZero(),
-                                 rotation.getQ0().getField().getZero(),
-                                 rotation.getQ0().getField().getZero()));
+        this(rotation, rotationRate, FieldVector3D.getZero(rotation.getQ0().getField()));
     }
 
     /** Builds a rotation / rotation rate / rotation acceleration triplet.
      * @param rotation i.e. the orientation of the vehicle
-     * @param rotationRate rotation rate rate Ω, i.e. the spin vector (rad/s)
-     * @param rotationAcceleration angular acceleration vector dΩ/dt (rad²/s²)
+     * @param rotationRate rotation rate Ω, i.e. the spin vector (rad/s)
+     * @param rotationAcceleration angular acceleration vector dΩ/dt (rad/s²)
      */
     public FieldAngularCoordinates(final FieldRotation<T> rotation,
                                    final FieldVector3D<T> rotationRate,
@@ -165,9 +167,10 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * have consistent derivation orders.
      * </p>
      * @param r rotation with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      * @since 9.2
      */
-    public FieldAngularCoordinates(final FieldRotation<FieldDerivativeStructure<T>> r) {
+    public <U extends FieldDerivative<T, U>> FieldAngularCoordinates(final FieldRotation<U> r) {
 
         final T q0       = r.getQ0().getValue();
         final T q1       = r.getQ1().getValue();
@@ -215,7 +218,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param <T> the type of the field elements
      * @return a new fixed orientation parallel with reference frame
      */
-    public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T> getIdentity(final Field<T> field) {
+    public static <T extends CalculusFieldElement<T>> FieldAngularCoordinates<T> getIdentity(final Field<T> field) {
         return new FieldAngularCoordinates<>(field, AngularCoordinates.IDENTITY);
     }
 
@@ -237,7 +240,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @exception MathIllegalArgumentException if vectors are inconsistent and
      * no solution can be found
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> inverseCrossProducts(final FieldVector3D<T> v1, final FieldVector3D<T> c1,
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> inverseCrossProducts(final FieldVector3D<T> v1, final FieldVector3D<T> c1,
                                                                                          final FieldVector3D<T> v2, final FieldVector3D<T> c2,
                                                                                          final double tolerance)
         throws MathIllegalArgumentException {
@@ -332,7 +335,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
     /** Transform the instance to a {@link FieldRotation}&lt;{@link FieldDerivativeStructure}&gt;.
      * <p>
-     * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
+     * The {@link FieldDerivativeStructure} coordinates correspond to time-derivatives up
      * to the user-specified order.
      * </p>
      * @param order derivation order for the vector components
@@ -361,21 +364,20 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
         final T oYDot = rotationAcceleration.getY();
         final T oZDot = rotationAcceleration.getZ();
         final T q0DotDot = q0.linearCombination(array6(q1, q2,  q3, q1Dot, q2Dot,  q3Dot),
-                                                array6(oXDot, oYDot, oZDot, oX, oY, oZ)).
-                           multiply(-0.5);
+                                                array6(oXDot, oYDot, oZDot, oX, oY, oZ)).multiply(-0.5);
         final T q1DotDot = q0.linearCombination(array6(q0, q2, q3.negate(), q0Dot, q2Dot, q3Dot.negate()),
                                                 array6(oXDot, oZDot, oYDot, oX, oZ, oY)).multiply(0.5);
-        final T q2DotDot =  q0.linearCombination(array6(q0, q3, q1.negate(), q0Dot, q3Dot, q1Dot.negate()),
-                                                 array6(oYDot, oXDot, oZDot, oY, oX, oZ)).multiply(0.5);
-        final T q3DotDot =  q0.linearCombination(array6(q0, q1, q2.negate(), q0Dot, q1Dot, q2Dot.negate()),
-                                                 array6(oZDot, oYDot, oXDot, oZ, oY, oX)).multiply(0.5);
+        final T q2DotDot = q0.linearCombination(array6(q0, q3, q1.negate(), q0Dot, q3Dot, q1Dot.negate()),
+                                                array6(oYDot, oXDot, oZDot, oY, oX, oZ)).multiply(0.5);
+        final T q3DotDot = q0.linearCombination(array6(q0, q1, q2.negate(), q0Dot, q1Dot, q2Dot.negate()),
+                                                array6(oZDot, oYDot, oXDot, oZ, oY, oX)).multiply(0.5);
 
         final FDSFactory<T> factory;
         final FieldDerivativeStructure<T> q0DS;
         final FieldDerivativeStructure<T> q1DS;
         final FieldDerivativeStructure<T> q2DS;
         final FieldDerivativeStructure<T> q3DS;
-        switch(order) {
+        switch (order) {
             case 0 :
                 factory = new FDSFactory<>(q0.getField(), 1, order);
                 q0DS = factory.build(q0);
@@ -402,6 +404,85 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
         }
 
         return new FieldRotation<>(q0DS, q1DS, q2DS, q3DS, false);
+
+    }
+
+    /** Transform the instance to a {@link FieldRotation}&lt;{@link UnivariateDerivative1}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative1} coordinates correspond to time-derivatives up
+     * to the order 1.
+     * </p>
+     * @return rotation with time-derivatives embedded within the coordinates
+     */
+    public FieldRotation<FieldUnivariateDerivative1<T>> toUnivariateDerivative1Rotation() {
+
+        // quaternion components
+        final T q0 = rotation.getQ0();
+        final T q1 = rotation.getQ1();
+        final T q2 = rotation.getQ2();
+        final T q3 = rotation.getQ3();
+
+        // first time-derivatives of the quaternion
+        final T oX    = rotationRate.getX();
+        final T oY    = rotationRate.getY();
+        final T oZ    = rotationRate.getZ();
+        final T q0Dot = q0.linearCombination(q1.negate(), oX, q2.negate(), oY, q3.negate(), oZ).multiply(0.5);
+        final T q1Dot = q0.linearCombination(q0,          oX, q3.negate(), oY, q2,          oZ).multiply(0.5);
+        final T q2Dot = q0.linearCombination(q3,          oX, q0,          oY, q1.negate(), oZ).multiply(0.5);
+        final T q3Dot = q0.linearCombination(q2.negate(), oX, q1,          oY, q0,          oZ).multiply(0.5);
+
+        final FieldUnivariateDerivative1<T> q0UD = new FieldUnivariateDerivative1<>(q0, q0Dot);
+        final FieldUnivariateDerivative1<T> q1UD = new FieldUnivariateDerivative1<>(q1, q1Dot);
+        final FieldUnivariateDerivative1<T> q2UD = new FieldUnivariateDerivative1<>(q2, q2Dot);
+        final FieldUnivariateDerivative1<T> q3UD = new FieldUnivariateDerivative1<>(q3, q3Dot);
+
+        return new FieldRotation<>(q0UD, q1UD, q2UD, q3UD, false);
+
+    }
+
+    /** Transform the instance to a {@link FieldRotation}&lt;{@link UnivariateDerivative2}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative2} coordinates correspond to time-derivatives up
+     * to the order 2.
+     * </p>
+     * @return rotation with time-derivatives embedded within the coordinates
+     */
+    public FieldRotation<FieldUnivariateDerivative2<T>> toUnivariateDerivative2Rotation() {
+
+        // quaternion components
+        final T q0 = rotation.getQ0();
+        final T q1 = rotation.getQ1();
+        final T q2 = rotation.getQ2();
+        final T q3 = rotation.getQ3();
+
+        // first time-derivatives of the quaternion
+        final T oX    = rotationRate.getX();
+        final T oY    = rotationRate.getY();
+        final T oZ    = rotationRate.getZ();
+        final T q0Dot = q0.linearCombination(q1.negate(), oX, q2.negate(), oY, q3.negate(), oZ).multiply(0.5);
+        final T q1Dot = q0.linearCombination(q0,          oX, q3.negate(), oY, q2,          oZ).multiply(0.5);
+        final T q2Dot = q0.linearCombination(q3,          oX, q0,          oY, q1.negate(), oZ).multiply(0.5);
+        final T q3Dot = q0.linearCombination(q2.negate(), oX, q1,          oY, q0,          oZ).multiply(0.5);
+
+        // second time-derivatives of the quaternion
+        final T oXDot = rotationAcceleration.getX();
+        final T oYDot = rotationAcceleration.getY();
+        final T oZDot = rotationAcceleration.getZ();
+        final T q0DotDot = q0.linearCombination(array6(q1, q2,  q3, q1Dot, q2Dot,  q3Dot),
+                                                array6(oXDot, oYDot, oZDot, oX, oY, oZ)).multiply(-0.5);
+        final T q1DotDot = q0.linearCombination(array6(q0, q2, q3.negate(), q0Dot, q2Dot, q3Dot.negate()),
+                                                array6(oXDot, oZDot, oYDot, oX, oZ, oY)).multiply(0.5);
+        final T q2DotDot = q0.linearCombination(array6(q0, q3, q1.negate(), q0Dot, q3Dot, q1Dot.negate()),
+                                                array6(oYDot, oXDot, oZDot, oY, oX, oZ)).multiply(0.5);
+        final T q3DotDot = q0.linearCombination(array6(q0, q1, q2.negate(), q0Dot, q1Dot, q2Dot.negate()),
+                                                array6(oZDot, oYDot, oXDot, oZ, oY, oX)).multiply(0.5);
+
+        final FieldUnivariateDerivative2<T> q0UD = new FieldUnivariateDerivative2<>(q0, q0Dot, q0DotDot);
+        final FieldUnivariateDerivative2<T> q1UD = new FieldUnivariateDerivative2<>(q1, q1Dot, q1DotDot);
+        final FieldUnivariateDerivative2<T> q2UD = new FieldUnivariateDerivative2<>(q2, q2Dot, q2DotDot);
+        final FieldUnivariateDerivative2<T> q3UD = new FieldUnivariateDerivative2<>(q3, q3Dot, q3DotDot);
+
+        return new FieldRotation<>(q0UD, q1UD, q2UD, q3UD, false);
 
     }
 
@@ -435,11 +516,11 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param <T> the type of the field elements
      * @return rotation rate allowing to go from start to end orientations
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         FieldVector3D<T> estimateRate(final FieldRotation<T> start,
                                       final FieldRotation<T> end,
                                       final double dt) {
-        return estimateRate(start, end, start.getQ0().getField().getZero().add(dt));
+        return estimateRate(start, end, start.getQ0().getField().getZero().newInstance(dt));
     }
 
     /** Estimate rotation rate between two orientations.
@@ -451,7 +532,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param <T> the type of the field elements
      * @return rotation rate allowing to go from start to end orientations
      */
-    public static <T extends RealFieldElement<T>>
+    public static <T extends CalculusFieldElement<T>>
         FieldVector3D<T> estimateRate(final FieldRotation<T> start,
                                       final FieldRotation<T> end,
                                       final T dt) {
@@ -474,18 +555,66 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
                                              rotation.applyInverseTo(rotationAcceleration.negate()));
     }
 
-    /** Get a time-shifted state.
+    /** Get a time-shifted rotation. Same as {@link #shiftedBy(double)} except
+     * only the shifted rotation is computed.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple quadratic model. It is <em>not</em> intended as a replacement for
-     * proper attitude propagation but should be sufficient for either small
-     * time shifts or coarse accuracy.
+     * an approximate solution of the fixed acceleration motion. It is <em>not</em>
+     * intended as a replacement for proper attitude propagation but should be
+     * sufficient for either small time shifts or coarse accuracy.
      * </p>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
+     * @see  #shiftedBy(CalculusFieldElement)
+     * @since 11.2
      */
-    public FieldAngularCoordinates<T> shiftedBy(final double dt) {
-        return shiftedBy(rotation.getQ0().getField().getZero().add(dt));
+    public FieldRotation<T> rotationShiftedBy(final T dt) {
+
+        // the shiftedBy method is based on a local approximation.
+        // It considers separately the contribution of the constant
+        // rotation, the linear contribution or the rate and the
+        // quadratic contribution of the acceleration. The rate
+        // and acceleration contributions are small rotations as long
+        // as the time shift is small, which is the crux of the algorithm.
+        // Small rotations are almost commutative, so we append these small
+        // contributions one after the other, as if they really occurred
+        // successively, despite this is not what really happens.
+
+        // compute the linear contribution first, ignoring acceleration
+        // BEWARE: there is really a minus sign here, because if
+        // the target frame rotates in one direction, the vectors in the origin
+        // frame seem to rotate in the opposite direction
+        final T rate = rotationRate.getNorm();
+        final FieldRotation<T> rateContribution = (rate.getReal() == 0.0) ?
+                FieldRotation.getIdentity(dt.getField()) :
+                new FieldRotation<>(rotationRate, rate.multiply(dt), RotationConvention.FRAME_TRANSFORM);
+
+        // append rotation and rate contribution
+        final FieldRotation<T> linearPart =
+                rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR);
+
+        final T acc  = rotationAcceleration.getNorm();
+        if (acc.getReal() == 0.0) {
+            // no acceleration, the linear part is sufficient
+            return linearPart;
+        }
+
+        // compute the quadratic contribution, ignoring initial rotation and rotation rate
+        // BEWARE: there is really a minus sign here, because if
+        // the target frame rotates in one direction, the vectors in the origin
+        // frame seem to rotate in the opposite direction
+        final FieldRotation<T> quadraticContribution =
+                new FieldRotation<>(rotationAcceleration,
+                        acc.multiply(dt.square()).multiply(0.5),
+                        RotationConvention.FRAME_TRANSFORM);
+
+        // the quadratic contribution is a small rotation:
+        // its initial angle and angular rate are both zero.
+        // small rotations are almost commutative, so we append the small
+        // quadratic part after the linear part as a simple offset
+        return quadraticContribution
+                .compose(linearPart, RotationConvention.VECTOR_OPERATOR);
+
     }
 
     /** Get a time-shifted state.
@@ -498,6 +627,22 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
+    public FieldAngularCoordinates<T> shiftedBy(final double dt) {
+        return shiftedBy(rotation.getQ0().getField().getZero().newInstance(dt));
+    }
+
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple quadratic model. It is <em>not</em> intended as a replacement for
+     * proper attitude propagation but should be sufficient for either small
+     * time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     */
+    @Override
     public FieldAngularCoordinates<T> shiftedBy(final T dt) {
 
         // the shiftedBy method is based on a local approximation.
@@ -540,7 +685,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
         // frame seem to rotate in the opposite direction
         final FieldAngularCoordinates<T> quadraticContribution =
                 new FieldAngularCoordinates<>(new FieldRotation<>(rotationAcceleration,
-                                                                  acc.multiply(dt.multiply(0.5).multiply(dt)),
+                                                                  acc.multiply(dt.square().multiply(0.5)),
                                                                   RotationConvention.FRAME_TRANSFORM),
                                               new FieldVector3D<>(dt, rotationAcceleration),
                                               rotationAcceleration);
@@ -568,7 +713,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
     }
 
     /** Get the rotation acceleration.
-     * @return the rotation acceleration vector dΩ/dt (rad²/s²).
+     * @return the rotation acceleration vector dΩ/dt (rad/s²).
      */
     public FieldVector3D<T> getRotationAcceleration() {
         return rotationAcceleration;
@@ -634,7 +779,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      */
     public FieldPVCoordinates<T> applyTo(final PVCoordinates pv) {
 
@@ -655,7 +800,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      */
     public TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedPVCoordinates pv) {
 
@@ -676,7 +821,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      * @since 9.0
      */
     public FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
@@ -698,7 +843,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      * @since 9.0
      */
     public TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
@@ -726,7 +871,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param sign multiplicative sign for quaternion components
      * @return modified Rodrigues vector and derivatives (vector on row 0, first derivative
      * on row 1, second derivative on row 2)
-     * @see #createFromModifiedRodrigues(RealFieldElement[][])
+     * @see #createFromModifiedRodrigues(CalculusFieldElement[][])
      * @since 9.0
      */
     public T[][] getModifiedRodrigues(final double sign) {
@@ -847,10 +992,10 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @see #getModifiedRodrigues(double)
      * @since 9.0
      */
-    public static <T extends RealFieldElement<T>>  FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r) {
+    public static <T extends CalculusFieldElement<T>>  FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r) {
 
         // rotation
-        final T rSquared = r[0][0].multiply(r[0][0]).add(r[0][1].multiply(r[0][1])).add(r[0][2].multiply(r[0][2]));
+        final T rSquared = r[0][0].square().add(r[0][1].square()).add(r[0][2].square());
         final T oPQ0     = rSquared.add(1).reciprocal().multiply(2);
         final T q0       = oPQ0.subtract(1);
         final T q1       = oPQ0.multiply(r[0][0]);
@@ -868,9 +1013,9 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
         final T oZ       = q0.linearCombination(q3.negate(), q0Dot,  q2, q1Dot, q1.negate(), q2Dot,  q0, q3Dot).multiply(2);
 
         // rotation acceleration
-        final T q0DotDot = q0.subtract(1).negate().divide(oPQ0).multiply(q0Dot).multiply(q0Dot).
+        final T q0DotDot = q0.subtract(1).negate().divide(oPQ0).multiply(q0Dot.square()).
                            subtract(oPQ02.multiply(q0.linearCombination(r[0][0], r[2][0], r[0][1], r[2][1], r[0][2], r[2][2]))).
-                           subtract(q1Dot.multiply(q1Dot).add(q2Dot.multiply(q2Dot)).add(q3Dot.multiply(q3Dot)));
+                           subtract(q1Dot.square().add(q2Dot.square()).add(q3Dot.square()));
         final T q1DotDot = q0.linearCombination(oPQ0, r[2][0], r[1][0].add(r[1][0]), q0Dot, r[0][0], q0DotDot);
         final T q2DotDot = q0.linearCombination(oPQ0, r[2][1], r[1][1].add(r[1][1]), q0Dot, r[0][1], q0DotDot);
         final T q3DotDot = q0.linearCombination(oPQ0, r[2][2], r[1][2].add(r[1][2]), q0Dot, r[0][2], q0DotDot);

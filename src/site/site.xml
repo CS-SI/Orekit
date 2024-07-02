@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2002-2019 CS Systèmes d'Information
+  Copyright 2002-2024 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -15,9 +15,9 @@
  -->
 <project name="Orekit">
   <bannerLeft>
-    <name>CS Syst&#232;mes d&#039;Information</name>
-    <src>/images/logo_cs_2008_ang.jpg</src>
-    <href>http://uk.c-s.fr/</href>
+    <name>CS GROUP</name>
+    <src>/images/logo_cs_group.png</src>
+    <href>https://www.csgroup.eu/en/</href>
   </bannerLeft>
   <bannerRight>
     <name>Orekit</name>
@@ -26,44 +26,46 @@
   </bannerRight>
   <body>
     <menu name="Orekit">
-      <item name="Overview"            href="/index.html"          />
-      <item name="Getting the sources" href="/sources.html"        />
-      <item name="Building"            href="/building.html"       />
-      <item name="Configuration"       href="/configuration.html"  />
-      <item name="FAQ"                 href="/faq.html"            />
-      <item name="License"             href="/licenses.html"       />
-      <item name="Downloads"           href="/downloads.html"      />
-      <item name="Changes"             href="/changes-report.html" />
-      <item name="Contact"             href="/contact.html"        />
+      <item name="Overview"                          href="/index.html"           />
+      <item name="Upgrading from a previous version" href="/upgrading.html"       />
+      <item name="Getting the sources"               href="/sources.html"         />
+      <item name="Building"                          href="/building.html"        />
+      <item name="FAQ"                               href="/faq.html"             />
+      <item name="License"                           href="/licenses.html"        />
+      <item name="Downloads"                         href="/downloads.html"       />
+      <item name="Changes"                           href="/changes-report.html"  />
+      <item name="Contact"                           href="/contact.html"         />
+    </menu>
+    <menu name="Data">
+      <item name="Contexts"               href="/data/contexts.html"              />
+      <item name="Default configuration"  href="/data/default-configuration.html" />
+      <item name="Application data"       href="/data/application-data.html"      />
+      <item name="Filtering"              href="/data/filtering.html"             />
+      <item name="Custom filters"         href="/data/custom-filters.html"        />
+      <item name="Supported data types"   href="/data/supported-data-types.html"  />
     </menu>
     <menu name="Architecture">
       <item name="Attitudes"     href="/architecture/attitudes.html"     />
       <item name="Bodies"        href="/architecture/bodies.html"        />
+      <item name="CCSDS"         href="/architecture/ccsds.html"         />
       <item name="Errors"        href="/architecture/errors.html"        />
       <item name="Estimation"    href="/architecture/estimation.html"    />
       <item name="Forces"        href="/architecture/forces.html"        />
       <item name="Frames"        href="/architecture/frames.html"        />
       <item name="GNSS"          href="/architecture/gnss.html"          />
       <item name="Orbits"        href="/architecture/orbits.html"        />
+      <item name="Maneuvers"     href="/architecture/maneuvers.html"     />
       <item name="Propagation"   href="/architecture/propagation.html"   />
       <item name="Time"          href="/architecture/time.html"          />
       <item name="Tessellation"  href="/architecture/tessellation.html"  />
       <item name="Tle"           href="/architecture/tle.html"           />
       <item name="Utils"         href="/architecture/utils.html"         />
     </menu>
-    <menu name="Tutorial">
-      <item name="Attitude"                           href="/tutorial/attitude.html"                          />
-      <item name="Frames"                             href="/tutorial/frames.html"                            />
-      <item name="Propagation"                        href="/tutorial/propagation.html"                       />
-      <item name="Propagation in non-inertial frame"  href="/tutorial/propagation-in-non-inertial-frame.html" />
-      <item name="Time"                               href="/tutorial/time.html"                              />
-      <item name="Geomagnetic field"                  href="/tutorial/geomagnetic-field.html"                 />
-      <item name="Integration in other languages"     href="/tutorial/integration-in-other-languages.html"    />
-      </menu>
     <menu name="Development">
       <item name="Contributing"  href="/contributing.html"      />
       <item name="Guidelines"    href="/guidelines.html"        />
       <item name="Javadoc"       href="/apidocs/index.html"     />
+      <item name="Release guide" href="/release-guide.html"     />
       </menu>
     <menu ref="reports"/>
   </body>

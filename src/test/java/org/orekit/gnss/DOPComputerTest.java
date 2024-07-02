@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,36 +16,40 @@
  */
 package org.orekit.gnss;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.gnss.GPSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ElevationMask;
 import org.orekit.utils.IERSConventions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class DOPComputerTest {
 
-    private static OneAxisEllipsoid earth;
-    private static GeodeticPoint location;
+    private OneAxisEllipsoid earth;
+    private GeodeticPoint location;
+    private TimeScale     utc;
 
-    @BeforeClass
-    public static void setUpBeforeClass() {
+    @BeforeEach
+    public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss");
         // Defines the Earth shape
@@ -54,6 +58,14 @@ public class DOPComputerTest {
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Defines the location where to compute the DOP
         location = new GeodeticPoint(FastMath.toRadians(43.6), FastMath.toRadians(1.45), 0.);
+        utc = TimeScalesFactory.getUTC();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        earth    = null;
+        location = null;
+        utc      = null;
     }
 
     @Test
@@ -61,25 +73,24 @@ public class DOPComputerTest {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location);
-        Assert.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
-        Assert.assertNull(computer.getElevationMask());
+        Assertions.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
+        Assertions.assertNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 2, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 2, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
-        Assert.assertEquals(11, dop.getGnssNb());
-        Assert.assertEquals(location, dop.getLocation());
-        Assert.assertEquals(date, dop.getDate());
-        Assert.assertEquals(1.53, dop.getGdop(), 0.01);
-        Assert.assertEquals(0.71, dop.getTdop(), 0.01);
-        Assert.assertEquals(1.35, dop.getPdop(), 0.01);
-        Assert.assertEquals(0.84, dop.getHdop(), 0.01);
-        Assert.assertEquals(1.06, dop.getVdop(), 0.01);
+        Assertions.assertEquals(11, dop.getGnssNb());
+        Assertions.assertEquals(location, dop.getLocation());
+        Assertions.assertEquals(date, dop.getDate());
+        Assertions.assertEquals(1.53, dop.getGdop(), 0.01);
+        Assertions.assertEquals(0.71, dop.getTdop(), 0.01);
+        Assertions.assertEquals(1.35, dop.getPdop(), 0.01);
+        Assertions.assertEquals(0.84, dop.getHdop(), 0.01);
+        Assertions.assertEquals(1.06, dop.getVdop(), 0.01);
     }
 
     @Test
@@ -88,25 +99,24 @@ public class DOPComputerTest {
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location)
                                      .withMinElevation(FastMath.toRadians(10.));
-        Assert.assertEquals(FastMath.toRadians(10.), computer.getMinElevation(), 0.);
-        Assert.assertNull(computer.getElevationMask());
+        Assertions.assertEquals(FastMath.toRadians(10.), computer.getMinElevation(), 0.);
+        Assertions.assertNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 13, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 13, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
-        Assert.assertEquals(10, dop.getGnssNb());
-        Assert.assertEquals(location, dop.getLocation());
-        Assert.assertEquals(date, dop.getDate());
-        Assert.assertEquals(1.94, dop.getGdop(), 0.01);
-        Assert.assertEquals(0.89, dop.getTdop(), 0.01);
-        Assert.assertEquals(1.72, dop.getPdop(), 0.01);
-        Assert.assertEquals(0.82, dop.getHdop(), 0.01);
-        Assert.assertEquals(1.51, dop.getVdop(), 0.01);
+        Assertions.assertEquals(10, dop.getGnssNb());
+        Assertions.assertEquals(location, dop.getLocation());
+        Assertions.assertEquals(date, dop.getDate());
+        Assertions.assertEquals(1.94, dop.getGdop(), 0.01);
+        Assertions.assertEquals(0.89, dop.getTdop(), 0.01);
+        Assertions.assertEquals(1.72, dop.getPdop(), 0.01);
+        Assertions.assertEquals(0.82, dop.getHdop(), 0.01);
+        Assertions.assertEquals(1.51, dop.getVdop(), 0.01);
     }
 
     @Test
@@ -114,25 +124,24 @@ public class DOPComputerTest {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location).withElevationMask(getMask());
-        Assert.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
-        Assert.assertNotNull(computer.getElevationMask());
+        Assertions.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
+        Assertions.assertNotNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 7, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 7, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
-        Assert.assertEquals(6, dop.getGnssNb());
-        Assert.assertEquals(location, dop.getLocation());
-        Assert.assertEquals(date, dop.getDate());
-        Assert.assertEquals(3.26, dop.getGdop(), 0.01);
-        Assert.assertEquals(1.79, dop.getTdop(), 0.01);
-        Assert.assertEquals(2.72, dop.getPdop(), 0.01);
-        Assert.assertEquals(1.29, dop.getHdop(), 0.01);
-        Assert.assertEquals(2.40, dop.getVdop(), 0.01);
+        Assertions.assertEquals(6, dop.getGnssNb());
+        Assertions.assertEquals(location, dop.getLocation());
+        Assertions.assertEquals(date, dop.getDate());
+        Assertions.assertEquals(3.26, dop.getGdop(), 0.01);
+        Assertions.assertEquals(1.79, dop.getTdop(), 0.01);
+        Assertions.assertEquals(2.72, dop.getPdop(), 0.01);
+        Assertions.assertEquals(1.29, dop.getHdop(), 0.01);
+        Assertions.assertEquals(2.40, dop.getVdop(), 0.01);
     }
 
     @Test
@@ -140,25 +149,24 @@ public class DOPComputerTest {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location).withElevationMask(getMask());
-        Assert.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
-        Assert.assertNotNull(computer.getElevationMask());
+        Assertions.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
+        Assertions.assertNotNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 10, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 10, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: comparison is made with results from Trimble Planning software
-        Assert.assertEquals(3, dop.getGnssNb());
-        Assert.assertEquals(location, dop.getLocation());
-        Assert.assertEquals(date, dop.getDate());
-        Assert.assertTrue(Double.isNaN(dop.getGdop()));
-        Assert.assertTrue(Double.isNaN(dop.getHdop()));
-        Assert.assertTrue(Double.isNaN(dop.getPdop()));
-        Assert.assertTrue(Double.isNaN(dop.getTdop()));
-        Assert.assertTrue(Double.isNaN(dop.getVdop()));
+        Assertions.assertEquals(3, dop.getGnssNb());
+        Assertions.assertEquals(location, dop.getLocation());
+        Assertions.assertEquals(date, dop.getDate());
+        Assertions.assertTrue(Double.isNaN(dop.getGdop()));
+        Assertions.assertTrue(Double.isNaN(dop.getHdop()));
+        Assertions.assertTrue(Double.isNaN(dop.getPdop()));
+        Assertions.assertTrue(Double.isNaN(dop.getTdop()));
+        Assertions.assertTrue(Double.isNaN(dop.getVdop()));
     }
 
     @Test
@@ -166,47 +174,47 @@ public class DOPComputerTest {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location);
-        Assert.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
-        Assert.assertNull(computer.getElevationMask());
+        Assertions.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
+        Assertions.assertNull(computer.getElevationMask());
 
         // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0., utc);
 
         // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getTlePropagators());
 
         // Checks
-        Assert.assertEquals(11, dop.getGnssNb());
-        Assert.assertEquals(location, dop.getLocation());
-        Assert.assertEquals(date, dop.getDate());
-        Assert.assertEquals(1.40, dop.getGdop(), 0.01);
-        Assert.assertEquals(0.81, dop.getHdop(), 0.01);
-        Assert.assertEquals(1.28, dop.getPdop(), 0.01);
-        Assert.assertEquals(0.56, dop.getTdop(), 0.01);
-        Assert.assertEquals(1.00, dop.getVdop(), 0.01);
+        Assertions.assertEquals(11, dop.getGnssNb());
+        Assertions.assertEquals(location, dop.getLocation());
+        Assertions.assertEquals(date, dop.getDate());
+        Assertions.assertEquals(1.40, dop.getGdop(), 0.01);
+        Assertions.assertEquals(0.81, dop.getHdop(), 0.01);
+        Assertions.assertEquals(1.28, dop.getPdop(), 0.01);
+        Assertions.assertEquals(0.56, dop.getTdop(), 0.01);
+        Assertions.assertEquals(1.00, dop.getVdop(), 0.01);
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNotEnoughSV() {
+        Assertions.assertThrows(OrekitException.class, () -> {
 
-        // Get the TLEs for 3 SV from the GPS constellation ...
-        List<Propagator> gps = new ArrayList<Propagator>();
-        gps.add(TLEPropagator.selectExtrapolator(new TLE("1 24876U 97035A   16084.84459975 -.00000010  00000-0  00000-0 0  9993",
-                                                         "2 24876  55.6874 244.8168 0043829 115.0986 245.3138  2.00562757137015")));
-        gps.add(TLEPropagator.selectExtrapolator(new TLE("1 25933U 99055A   16085.52437157 -.00000002  00000-0  00000+0 0  9996",
-                                                         "2 25933  51.3408  97.3364 0160004  86.4308 330.0871  2.00564826120645")));
-        gps.add(TLEPropagator.selectExtrapolator(new TLE("1 26360U 00025A   16085.38640501  .00000003  00000-0  00000+0 0  9993",
-                                                         "2 26360  53.0703 173.6078 0045232  76.6879 342.6592  2.00558759116334")));
+            // Get the TLEs for 3 SV from the GPS constellation ...
+            List<Propagator> gps = new ArrayList<Propagator>();
+            gps.add(TLEPropagator.selectExtrapolator(new TLE("1 24876U 97035A   16084.84459975 -.00000010  00000-0  00000-0 0  9993",
+                    "2 24876  55.6874 244.8168 0043829 115.0986 245.3138  2.00562757137015")));
+            gps.add(TLEPropagator.selectExtrapolator(new TLE("1 25933U 99055A   16085.52437157 -.00000002  00000-0  00000+0 0  9996",
+                    "2 25933  51.3408  97.3364 0160004  86.4308 330.0871  2.00564826120645")));
+            gps.add(TLEPropagator.selectExtrapolator(new TLE("1 26360U 00025A   16085.38640501  .00000003  00000-0  00000+0 0  9993",
+                    "2 26360  53.0703 173.6078 0045232  76.6879 342.6592  2.00558759116334")));
 
-        // Creates the computer
-        final DOPComputer computer = DOPComputer.create(earth, location);
+            // Creates the computer
+            final DOPComputer computer = DOPComputer.create(earth, location);
 
-        // Defines the computation date
-        final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0.,
-                                                   TimeScalesFactory.getUTC());
-        // Computes the DOP with all the SV from the GPS constellation
-        computer.compute(date, gps);
+            // Defines the computation date
+            final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0., utc);
+            // Computes the DOP with all the SV from the GPS constellation
+            computer.compute(date, gps);
+        });
     }
 
     private List<Propagator> getGpsPropagators() {
@@ -218,7 +226,7 @@ public class DOPComputerTest {
         // Creates the GPS propagators from the almanacs
         final List<Propagator> propagators = new ArrayList<Propagator>();
         for (GPSAlmanac almanac: almanacs) {
-            propagators.add(new GPSPropagator.Builder(almanac).build());
+            propagators.add(new GNSSPropagatorBuilder(almanac).build());
         }
         return propagators;
     }

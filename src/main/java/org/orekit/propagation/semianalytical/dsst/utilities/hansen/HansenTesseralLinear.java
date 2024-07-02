@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
@@ -48,34 +47,28 @@ public class HansenTesseralLinear {
     private PolynomialFunction[][] mpvecDeriv;
 
     /** The Hansen coefficients used as roots. */
-    private double[][] hansenRoot;
+    private final double[][] hansenRoot;
 
     /** The derivatives of the Hansen coefficients used as roots. */
-    private double[][] hansenDerivRoot;
+    private final double[][] hansenDerivRoot;
 
     /** The minimum value for the order. */
-    private int Nmin;
+    private final int Nmin;
 
     /** The index of the initial condition, Petre's paper. */
-    private int N0;
-
-    /** The s coefficient. */
-    private int s;
-
-    /** The j coefficient. */
-    private int j;
+    private final int N0;
 
     /** The number of slices needed to compute the coefficients. */
-    private int numSlices;
+    private final int numSlices;
 
     /**
      * The offset used to identify the polynomial that corresponds to a negative.
      * value of n in the internal array that starts at 0
      */
-    private int offset;
+    private final int offset;
 
     /** The objects used to calculate initial data by means of Newcomb operators. */
-    private HansenCoefficientsBySeries[] hansenInit;
+    private final HansenCoefficientsBySeries[] hansenInit;
 
     /**
      * Constructor.
@@ -91,8 +84,6 @@ public class HansenTesseralLinear {
         this.offset = nMax + 1;
         this.Nmin = -nMax - 1;
         this.N0 = -n0 - 4;
-        this.s = s;
-        this.j = j;
 
         //Ensure that only the needed terms are computed
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
@@ -111,203 +102,10 @@ public class HansenTesseralLinear {
             mpvecDeriv = new PolynomialFunction[size][];
 
             // Prepare the database of the associated polynomials
-            generatePolynomials();
+            HansenUtilities.generateTesseralPolynomials(N0, Nmin, offset, SLICE, j, s,
+                                                        mpvec, mpvecDeriv);
         }
 
-    }
-
-    /**
-     * Compute polynomial coefficient a.
-     *
-     *  <p>
-     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n, s</sup> when computing K<sub>j</sub><sup>-n-1, s</sup>
-     *  and the coefficient for dK<sub>j</sub><sup>-n, s</sup> / de² when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
-     *  </p>
-     *
-     *  <p>
-     *  See Danielson 2.7.3-(9) and Collins 4-236 and 4-240
-     *  </p>
-     *
-     * @param mnm1 -n-1
-     * @return the polynomial
-     */
-    private PolynomialFunction a(final int mnm1) {
-        // Collins 4-236, Danielson 2.7.3-(9)
-        final double r1 = (mnm1 + 2.) * (2. * mnm1 + 5.);
-        final double r2 = (2. + mnm1 + s) * (2. + mnm1 - s);
-        return new PolynomialFunction(new double[] {
-            0.0, 0.0, r1 / r2
-        });
-    }
-
-    /**
-     * Compute polynomial coefficient b.
-     *
-     *  <p>
-     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n+1, s</sup> when computing K<sub>j</sub><sup>-n-1, s</sup>
-     *  and the coefficient for dK<sub>j</sub><sup>-n+1, s</sup> / de² when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
-     *  </p>
-     *
-     *  <p>
-     *  See Danielson 2.7.3-(9) and Collins 4-236 and 4-240
-     *  </p>
-     *
-     * @param mnm1 -n-1
-     * @return the polynomial
-     */
-    private PolynomialFunction b(final int mnm1) {
-        // Collins 4-236, Danielson 2.7.3-(9)
-        final double r2 = (2. + mnm1 + s) * (2. + mnm1 - s);
-        final double d1 = (mnm1 + 3.) * 2. * j * s / (r2 * (mnm1 + 4.));
-        final double d2 = (mnm1 + 3.) * (mnm1 + 2.) / r2;
-        return new PolynomialFunction(new double[] {
-            0.0, -d1, -d2
-        });
-    }
-
-    /**
-     * Compute polynomial coefficient c.
-     *
-     *  <p>
-     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n+3, s</sup> when computing K<sub>j</sub><sup>-n-1, s</sup>
-     *  and the coefficient for dK<sub>j</sub><sup>-n+3, s</sup> / de² when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
-     *  </p>
-     *
-     *  <p>
-     *  See Danielson 2.7.3-(9) and Collins 4-236 and 4-240
-     *  </p>
-     *
-     * @param mnm1 -n-1
-     * @return the polynomial
-     */
-    private PolynomialFunction c(final int mnm1) {
-        // Collins 4-236, Danielson 2.7.3-(9)
-        final double r1 = j * j * (mnm1 + 2.);
-        final double r2 = (mnm1 + 4.) * (2. + mnm1 + s) * (2. + mnm1 - s);
-
-        return new PolynomialFunction(new double[] {
-            0.0, 0.0, r1 / r2
-        });
-    }
-
-    /**
-     * Compute polynomial coefficient d.
-     *
-     *  <p>
-     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n-1, s</sup> / dχ when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
-     *  </p>
-     *
-     *  <p>
-     *  See Danielson 2.7.3-(9) and Collins 4-236 and 4-240
-     *  </p>
-     *
-     * @param mnm1 -n-1
-     * @return the polynomial
-     */
-    private PolynomialFunction d(final int mnm1) {
-        // Collins 4-236, Danielson 2.7.3-(9)
-        return new PolynomialFunction(new double[] {
-            0.0, 0.0, 1.0
-        });
-    }
-
-    /**
-     * Compute polynomial coefficient f.
-     *
-     *  <p>
-     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n+1, s</sup> / dχ when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
-     *  </p>
-     *
-     *  <p>
-     *  See Danielson 2.7.3-(9) and Collins 4-236 and 4-240
-     *  </p>
-     *
-     * @param n index
-     * @return the polynomial
-     */
-    private PolynomialFunction f(final int n) {
-        // Collins 4-236, Danielson 2.7.3-(9)
-        final double r1 = (n + 3.0) * j * s;
-        final double r2 = (n + 4.0) * (2.0 + n + s) * (2.0 + n - s);
-        return new PolynomialFunction(new double[] {
-            0.0, 0.0, 0.0, r1 / r2
-        });
-    }
-
-    /**
-     * Generate the polynomials needed in the linear transformation.
-     *
-     * <p>
-     * See Petre's paper
-     * </p>
-     */
-    private void generatePolynomials() {
-
-
-        // Initialization of the matrices for linear transformations
-        // The final configuration of these matrices are obtained by composition
-        // of linear transformations
-
-        // The matrix of polynomials associated to Hansen coefficients, Petre's
-        // paper
-        PolynomialFunctionMatrix A = HansenUtilities.buildIdentityMatrix4();
-
-        // The matrix of polynomials associated to derivatives, Petre's paper
-        final PolynomialFunctionMatrix B = HansenUtilities.buildZeroMatrix4();
-        PolynomialFunctionMatrix D = HansenUtilities.buildZeroMatrix4();
-        final PolynomialFunctionMatrix a = HansenUtilities.buildZeroMatrix4();
-
-        // The matrix of the current linear transformation
-        a.setMatrixLine(0, new PolynomialFunction[] {
-            HansenUtilities.ZERO, HansenUtilities.ONE, HansenUtilities.ZERO, HansenUtilities.ZERO
-        });
-        a.setMatrixLine(1, new PolynomialFunction[] {
-            HansenUtilities.ZERO, HansenUtilities.ZERO, HansenUtilities.ONE, HansenUtilities.ZERO
-        });
-        a.setMatrixLine(2, new PolynomialFunction[] {
-            HansenUtilities.ZERO, HansenUtilities.ZERO, HansenUtilities.ZERO, HansenUtilities.ONE
-        });
-        // The generation process
-        int index;
-        int sliceCounter = 0;
-        for (int i = N0 - 1; i > Nmin - 1; i--) {
-            index = i + this.offset;
-            // The matrix of the current linear transformation is updated
-            // Petre's paper
-            a.setMatrixLine(3, new PolynomialFunction[] {
-                    c(i), HansenUtilities.ZERO, b(i), a(i)
-            });
-
-            // composition of the linear transformations to calculate
-            // the polynomials associated to Hansen coefficients
-            // Petre's paper
-            A = A.multiply(a);
-            // store the polynomials for Hansen coefficients
-            mpvec[index] = A.getMatrixLine(3);
-            // composition of the linear transformations to calculate
-            // the polynomials associated to derivatives
-            // Petre's paper
-            D = D.multiply(a);
-
-            //Update the B matrix
-            B.setMatrixLine(3, new PolynomialFunction[] {
-                HansenUtilities.ZERO, f(i),
-                HansenUtilities.ZERO, d(i)
-            });
-            D = D.add(A.multiply(B));
-
-            // store the polynomials for Hansen coefficients from the
-            // expressions of derivatives
-            mpvecDeriv[index] = D.getMatrixLine(3);
-
-            if (++sliceCounter % SLICE == 0) {
-                // Re-Initialisation of matrix for linear transformmations
-                // The final configuration of these matrix are obtained by composition
-                // of linear transformations
-                A = HansenUtilities.buildIdentityMatrix4();
-                D = HansenUtilities.buildZeroMatrix4();
-            }
-        }
     }
 
     /**
@@ -323,9 +121,9 @@ public class HansenTesseralLinear {
         //Ensure that only the needed terms are computed
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
         for (int i = 0; i < maxRoots; i++) {
-            final DerivativeStructure hansenKernel = hansenInit[i].getValue(e2, chi, chi2);
+            final Gradient hansenKernel = hansenInit[i].getValueGradient(e2, chi, chi2);
             this.hansenRoot[0][i] = hansenKernel.getValue();
-            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(1);
+            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(0);
         }
 
         for (int i = 1; i < numSlices; i++) {
@@ -455,10 +253,7 @@ public class HansenTesseralLinear {
         private final int maxNewcomb;
 
         /** Polynomial representing the serie. */
-        private PolynomialFunction polynomial;
-
-        /** Factory for the DerivativeStructure instances. */
-        private final DSFactory factory;
+        private final PolynomialFunction polynomial;
 
         /**
          * Class constructor.
@@ -475,7 +270,6 @@ public class HansenTesseralLinear {
             this.j = j;
             this.maxNewcomb = maxHansen;
             this.polynomial = generatePolynomial();
-            this.factory = new DSFactory(1, 1);
         }
 
         /** Computes the value of Hansen kernel and its derivative at e².
@@ -488,16 +282,16 @@ public class HansenTesseralLinear {
          * @param chi2 &Chi;²
          * @return the value of the Hansen coefficient and its derivative for e²
          */
-        public DerivativeStructure getValue(final double e2, final double chi, final double chi2) {
+        public Gradient getValueGradient(final double e2, final double chi, final double chi2) {
 
             //Estimation of the serie expansion at e2
-            final DerivativeStructure serie = polynomial.value(factory.variable(0, e2));
+            final Gradient serie = polynomial.value(Gradient.variable(1, 0, e2));
 
             final double value      =  FastMath.pow(chi2, -mnm1 - 1) * serie.getValue() / chi;
             final double coef       = -(mnm1 + 1.5);
             final double derivative = coef * chi2 * value +
-                                      FastMath.pow(chi2, -mnm1 - 1) * serie.getPartialDerivative(1) / chi;
-            return factory.build(value, derivative);
+                                      FastMath.pow(chi2, -mnm1 - 1) * serie.getPartialDerivative(0) / chi;
+            return new Gradient(value, derivative);
         }
 
         /** Generate the serie expansion in e².

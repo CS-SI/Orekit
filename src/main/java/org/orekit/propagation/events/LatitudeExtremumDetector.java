@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -52,34 +52,34 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      */
     public LatitudeExtremumDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LatitudeExtremumDetector>(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
      */
-    private LatitudeExtremumDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super LatitudeExtremumDetector> handler,
-                                     final OneAxisEllipsoid body) {
+    protected LatitudeExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
+                                       final int maxIter, final EventHandler handler,
+                                       final OneAxisEllipsoid body) {
         super(maxCheck, threshold, maxIter, handler);
         this.body = body;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected LatitudeExtremumDetector create(final double newMaxCheck, final double newThreshold,
+    protected LatitudeExtremumDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super LatitudeExtremumDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new LatitudeExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body);
     }
 

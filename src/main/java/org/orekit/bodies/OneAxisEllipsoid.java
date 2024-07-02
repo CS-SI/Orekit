@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,18 +17,25 @@
 package org.orekit.bodies;
 
 import java.io.Serializable;
+import java.util.function.DoubleFunction;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
-import org.orekit.frames.FieldTransform;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -44,6 +51,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * axis is the rotation or polar axis.</p>
 
  * @author Luc Maisonobe
+ * @author Guylaine Prat
  */
 public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
@@ -65,13 +73,16 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** Flattening. */
     private final double f;
 
-    /** Eccentricity power 2. */
+    /** Eccentricity. */
+    private final double e;
+
+    /** Eccentricity squared. */
     private final double e2;
 
     /** 1 minus flatness. */
     private final double g;
 
-    /** g * g. */
+    /** g squared. */
     private final double g2;
 
     /** Convergence limit. */
@@ -79,15 +90,24 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** Simple constructor.
      * <p>Standard values for Earth models can be found in the {@link org.orekit.utils.Constants Constants} class:</p>
-     * <table border="1" cellpadding="5" style="background-color:#f5f5dc;" summary="">
+     * <table border="1" style="background-color:#f5f5dc;">
      * <caption>Ellipsoid Models</caption>
      * <tr style="background-color:#c9d5c9;"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
-     * <tr><td style="background-color:#c9d5c9;">GRS 80</td>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">GRS 80</td>
      *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_EQUATORIAL_RADIUS Constants.GRS80_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_FLATTENING Constants.GRS80_EARTH_FLATTENING}</td></tr>
-     * <tr><td style="background-color:#c9d5c9;">WGS84</td>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">WGS84</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_EQUATORIAL_RADIUS Constants.WGS84_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_FLATTENING Constants.WGS84_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">IERS96</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS96_EARTH_EQUATORIAL_RADIUS Constants.IERS96_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS96_EARTH_FLATTENING Constants.IERS96_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">IERS2003</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2003_EARTH_EQUATORIAL_RADIUS Constants.IERS2003_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2003_EARTH_FLATTENING Constants.IERS2003_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">IERS2010</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2010_EARTH_EQUATORIAL_RADIUS Constants.IERS2010_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2010_EARTH_FLATTENING Constants.IERS2010_EARTH_FLATTENING}</td></tr>
      * </table>
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
@@ -100,6 +120,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         this.f    = f;
         this.ae2  = ae * ae;
         this.e2   = f * (2.0 - f);
+        this.e    = FastMath.sqrt(e2);
         this.g    = 1.0 - f;
         this.g2   = g * g;
         this.ap2  = ae2 * g2;
@@ -134,6 +155,20 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return f;
     }
 
+    /** Get the first eccentricity squared of the ellipsoid: e^2 = f * (2.0 - f).
+     * @return the eccentricity squared
+     */
+    public double getEccentricitySquared() {
+        return e2;
+    }
+
+    /** Get the first eccentricity of the ellipsoid: e = sqrt(f * (2.0 - f)).
+     * @return the eccentricity
+     */
+    public double getEccentricity() {
+        return e;
+    }
+
     /** {@inheritDoc} */
     public Frame getBodyFrame() {
         return bodyFrame;
@@ -157,7 +192,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                   final Frame frame, final AbsoluteDate date) {
 
         // transform line and close to body frame
-        final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
+        final StaticTransform frameToBodyFrame =
+                frame.getStaticTransformTo(bodyFrame, date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
 
         // compute some miscellaneous variables
@@ -230,35 +266,35 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * not intersect the surface
      * @since 9.3
      */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> getCartesianIntersectionPoint(final FieldLine<T> line,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getCartesianIntersectionPoint(final FieldLine<T> line,
                                                                                           final FieldVector3D<T> close,
                                                                                           final Frame frame,
                                                                                           final FieldAbsoluteDate<T> date) {
 
         // transform line and close to body frame
-        final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
-        final FieldLine<T>      lineInBodyFrame  = frameToBodyFrame.transformLine(line);
+        final FieldStaticTransform<T> frameToBodyFrame = frame.getStaticTransformTo(bodyFrame, date);
+        final FieldLine<T>            lineInBodyFrame  = frameToBodyFrame.transformLine(line);
 
         // compute some miscellaneous variables
         final FieldVector3D<T> point = lineInBodyFrame.getOrigin();
         final T x  = point.getX();
         final T y  = point.getY();
         final T z  = point.getZ();
-        final T z2 = z.multiply(z);
-        final T r2 = x.multiply(x).add(y.multiply(y));
+        final T z2 = z.square();
+        final T r2 = x.square().add(y.square());
 
         final FieldVector3D<T> direction = lineInBodyFrame.getDirection();
         final T dx  = direction.getX();
         final T dy  = direction.getY();
         final T dz  = direction.getZ();
-        final T cz2 = dx.multiply(dx).add(dy.multiply(dy));
+        final T cz2 = dx.square().add(dy.square());
 
         // abscissa of the intersection as a root of a 2nd degree polynomial :
         // a k^2 - 2 b k + c = 0
         final T a  = cz2.multiply(e2).subtract(1.0).negate();
         final T b  = x.multiply(dx).add(y.multiply(dy)).multiply(g2).add(z.multiply(dz)).negate();
         final T c  = r2.subtract(ae2).multiply(g2).add(z2);
-        final T b2 = b.multiply(b);
+        final T b2 = b.square();
         final T ac = a.multiply(c);
         if (b2.getReal() < ac.getReal()) {
             return null;
@@ -276,7 +312,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
                                                                                       final FieldVector3D<T> close,
                                                                                       final Frame frame,
                                                                                       final FieldAbsoluteDate<T> date) {
@@ -298,28 +334,28 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** {@inheritDoc} */
     public Vector3D transform(final GeodeticPoint point) {
         final double longitude = point.getLongitude();
-        final double cLambda   = FastMath.cos(longitude);
-        final double sLambda   = FastMath.sin(longitude);
+        final SinCos scLambda  = FastMath.sinCos(longitude);
         final double latitude  = point.getLatitude();
-        final double cPhi      = FastMath.cos(latitude);
-        final double sPhi      = FastMath.sin(latitude);
+        final SinCos scPhi     = FastMath.sinCos(latitude);
         final double h         = point.getAltitude();
-        final double n         = getA() / FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
-        final double r         = (n + h) * cPhi;
-        return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
+        final double n         = getA() / FastMath.sqrt(1.0 - e2 * scPhi.sin() * scPhi.sin());
+        final double r         = (n + h) * scPhi.cos();
+        return new Vector3D(r * scLambda.cos(), r * scLambda.sin(), (g2 * n + h) * scPhi.sin());
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
 
         final T latitude  = point.getLatitude();
         final T longitude = point.getLongitude();
         final T altitude  = point.getAltitude();
 
-        final T cLambda = longitude.cos();
-        final T sLambda = longitude.sin();
-        final T cPhi    = latitude.cos();
-        final T sPhi    = latitude.sin();
+        final FieldSinCos<T> scLambda = FastMath.sinCos(longitude);
+        final FieldSinCos<T> scPhi    = FastMath.sinCos(latitude);
+        final T cLambda = scLambda.cos();
+        final T sLambda = scLambda.sin();
+        final T cPhi    = scPhi.cos();
+        final T sPhi    = scPhi.sin();
         final T n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
         final T r       = n.add(altitude).multiply(cPhi);
 
@@ -332,14 +368,14 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame) {
 
         // transform point to body frame
-        final Transform  toBody    = frame.getTransformTo(bodyFrame, date);
+        final StaticTransform toBody = frame.getStaticTransformTo(bodyFrame, date);
         final Vector3D   p         = toBody.transformPosition(point);
         final double     z         = p.getZ();
         final double     r         = FastMath.hypot(p.getX(), p.getY());
 
         // set up the 2D meridian ellipse
         final Ellipse meridian = new Ellipse(Vector3D.ZERO,
-                                             new Vector3D(p.getX() / r, p.getY() / r, 0),
+                                             r == 0 ? Vector3D.PLUS_I : new Vector3D(p.getX() / r, p.getY() / r, 0),
                                              Vector3D.PLUS_K,
                                              getA(), getC(), bodyFrame);
 
@@ -361,7 +397,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double                   r             = FastMath.hypot(p.getX(), p.getY());
 
         // set up the 2D ellipse corresponding to first principal curvature along meridian
-        final Vector3D meridian = new Vector3D(p.getX() / r, p.getY() / r, 0);
+        final Vector3D meridian = r == 0 ? Vector3D.PLUS_I : new Vector3D(p.getX() / r, p.getY() / r, 0);
         final Ellipse firstPrincipalCurvature =
                 new Ellipse(Vector3D.ZERO, meridian, Vector3D.PLUS_K, getA(), getC(), bodyFrame);
 
@@ -402,16 +438,27 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * </p>
      * <p>
      * Some changes have been added to the original method:
+     * </p>
      * <ul>
      *   <li>in order to handle more accurately corner cases near the pole</li>
      *   <li>in order to handle properly corner cases near the equatorial plane, even far inside the ellipsoid</li>
      *   <li>in order to handle very flat ellipsoids</li>
      * </ul>
+     * <p>
+     * In some rare cases (for example very flat ellipsoid, or points close to ellipsoid center), the loop
+     * may fail to converge. As this seems to happen only in degenerate cases, a design choice was to return
+     * an approximate point corresponding to last iteration. This point may be incorrect and fail to give the
+     * initial point back if doing roundtrip by calling {@link #transform(GeodeticPoint)}. This design choice
+     * was made to avoid NaNs appearing for example in inter-satellites visibility checks when two satellites
+     * are almost on opposite sides of Earth. The intermediate points far within the Earth should not prevent
+     * the detection algorithm to find visibility start/end.
+     * </p>
      */
     public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
-        final Vector3D pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
+        final Vector3D pointInBodyFrame = frame.getStaticTransformTo(bodyFrame, date)
+                .transformPosition(point);
         final double   r2               = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
                                           pointInBodyFrame.getY() * pointInBodyFrame.getY();
         final double   r                = FastMath.sqrt(r2);
@@ -466,7 +513,11 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
             double bn  = 0;
             phi = Double.POSITIVE_INFINITY;
             h   = Double.POSITIVE_INFINITY;
-            for (int i = 0; i < 10; ++i) { // this usually converges in 2 iterations
+            for (int i = 0; i < 1000; ++i) {
+                // this usually converges in 2 iterations, but in rare cases it can take much more
+                // see https://gitlab.orekit.org/orekit/orekit/-/issues/1224 for examples
+                // with points near Earth center which need 137 iterations for the first example
+                // and 1150 iterations for the second example
                 final double oldSn  = sn;
                 final double oldCn  = cn;
                 final double oldPhi = phi;
@@ -506,6 +557,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                 }
 
             }
+
+            if (Double.isInfinite(phi)) {
+                // we did not converge, the point is probably within the ellipsoid
+                // we just compute the "best" phi we can to avoid NaN
+                phi = FastMath.copySign(FastMath.atan(sn / (g * cn)), z);
+            }
+
         }
 
         return new GeodeticPoint(phi, lambda, h);
@@ -526,15 +584,26 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      *   <li>in order to handle properly corner cases near the equatorial plane, even far inside the ellipsoid</li>
      *   <li>in order to handle very flat ellipsoids</li>
      * </ul>
+     * <p>
+     * In some rare cases (for example very flat ellipsoid, or points close to ellipsoid center), the loop
+     * may fail to converge. As this seems to happen only in degenerate cases, a design choice was to return
+     * an approximate point corresponding to last iteration. This point may be incorrect and fail to give the
+     * initial point back if doing roundtrip by calling {@link #transform(GeodeticPoint)}. This design choice
+     * was made to avoid NaNs appearing for example in inter-satellites visibility checks when two satellites
+     * are almost on opposite sides of Earth. The intermediate points far within the Earth should not prevent
+     * the detection algorithm to find visibility start/end.
+     * </p>
      */
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
                                                                            final Frame frame,
                                                                            final FieldAbsoluteDate<T> date) {
 
         // transform point to body frame
-        final FieldVector3D<T> pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
+        final FieldVector3D<T> pointInBodyFrame = (frame == bodyFrame) ?
+                                                  point :
+                                                  frame.getStaticTransformTo(bodyFrame, date).transformPosition(point);
         final T   r2                            = pointInBodyFrame.getX().multiply(pointInBodyFrame.getX()).
-                                              add(pointInBodyFrame.getY().multiply(pointInBodyFrame.getY()));
+                                                  add(pointInBodyFrame.getY().multiply(pointInBodyFrame.getY()));
         final T   r                             = r2.sqrt();
         final T   z                             = pointInBodyFrame.getZ();
 
@@ -549,7 +618,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
             final double evoluteCuspZ     = FastMath.copySign(getA() * e2 / g, -z.getReal());
             final T      deltaZ           = z.subtract(evoluteCuspZ);
             // we use π/2 - atan(r/Δz) instead of atan(Δz/r) for accuracy purposes, as r is much smaller than Δz
-            phi = r.divide(deltaZ.abs()).atan().negate().add(0.5 * FastMath.PI).copySign(deltaZ);
+            phi = r.divide(deltaZ.abs()).atan().negate().add(r.getPi().multiply(0.5)).copySign(deltaZ);
             h   = deltaZ.hypot(r).subtract(osculatingRadius);
         } else if (FastMath.abs(z.getReal()) <= ANGULAR_THRESHOLD * r.getReal()) {
             // the point is almost on the major axis
@@ -587,7 +656,11 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
             T            bn     = an.getField().getZero();
             phi = an.getField().getZero().add(Double.POSITIVE_INFINITY);
             h   = an.getField().getZero().add(Double.POSITIVE_INFINITY);
-            for (int i = 0; i < 10; ++i) { // this usually converges in 2 iterations
+            for (int i = 0; i < 1000; ++i) {
+                // this usually converges in 2 iterations, but in rare cases it can take much more
+                // see https://gitlab.orekit.org/orekit/orekit/-/issues/1224 for examples
+                // with points near Earth center which need 137 iterations for the first example
+                // and 1150 iterations for the second example
                 final T oldSn  = sn;
                 final T oldCn  = cn;
                 final T oldPhi = phi;
@@ -610,8 +683,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                     sn = sn.scalb(-exp);
                     cn = cn.scalb(-exp);
 
-                    sn2 = sn.multiply(sn);
-                    cn2 = cn.multiply(cn);
+                    sn2 = sn.square();
+                    cn2 = cn.square();
                     an2 = cn2.add(sn2);
                     an  = an2.sqrt();
 
@@ -627,6 +700,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                 }
 
             }
+
+            if (Double.isInfinite(phi.getReal())) {
+                // we did not converge, the point is probably within the ellipsoid
+                // we just compute the "best" phi we can to avoid NaN
+                phi = sn.divide(cn.multiply(g)).atan().copySign(z);
+            }
+
         }
 
         return new FieldGeodeticPoint<>(phi, lambda, h);
@@ -647,7 +727,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final Transform toBody = frame.getTransformTo(bodyFrame, date);
         final PVCoordinates pointInBodyFrame = toBody.transformPVCoordinates(point);
         final FieldVector3D<DerivativeStructure> p = pointInBodyFrame.toDerivativeStructureVector(2);
-        final DerivativeStructure   pr2 = p.getX().multiply(p.getX()).add(p.getY().multiply(p.getY()));
+        final DerivativeStructure   pr2 = p.getX().square().add(p.getY().square());
         final DerivativeStructure   pr  = pr2.sqrt();
         final DerivativeStructure   pz  = p.getZ();
 
@@ -655,7 +735,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final TimeStampedPVCoordinates groundPoint = projectToGround(new TimeStampedPVCoordinates(date, pointInBodyFrame),
                                                                      bodyFrame);
         final FieldVector3D<DerivativeStructure> gp = groundPoint.toDerivativeStructureVector(2);
-        final DerivativeStructure   gpr2 = gp.getX().multiply(gp.getX()).add(gp.getY().multiply(gp.getY()));
+        final DerivativeStructure   gpr2 = gp.getX().square().add(gp.getY().square());
         final DerivativeStructure   gpr  = gpr2.sqrt();
         final DerivativeStructure   gpz  = gp.getZ();
 
@@ -667,6 +747,187 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return new FieldGeodeticPoint<>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
                                                                   DerivativeStructure.atan2(p.getY(), p.getX()),
                                                                   DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
+    }
+
+    /** Compute the azimuth angle from local north between the two points.
+     *
+     * The angle is calculated clockwise from local north at the origin point
+     * and follows the rhumb line to the destination point.
+     *
+     * @param origin the origin point, at which the azimuth angle will be computed (non-{@code null})
+     * @param destination the destination point, to which the angle is defined (non-{@code null})
+     * @return the resulting azimuth angle (radians, {@code [0-2pi)})
+     * @since 11.3
+     */
+    public double azimuthBetweenPoints(final GeodeticPoint origin, final GeodeticPoint destination) {
+        final double dLon = MathUtils.normalizeAngle(destination.getLongitude(), origin.getLongitude()) - origin.getLongitude();
+        final double originIsoLat = geodeticToIsometricLatitude(origin.getLatitude());
+        final double destIsoLat = geodeticToIsometricLatitude(destination.getLatitude());
+
+        final double az = FastMath.atan2(dLon, destIsoLat - originIsoLat);
+        if (az < 0.) {
+            return az + MathUtils.TWO_PI;
+        }
+        return az;
+    }
+
+    /** Compute the azimuth angle from local north between the two points.
+     *
+     * The angle is calculated clockwise from local north at the origin point
+     * and follows the rhumb line to the destination point.
+     *
+     * @param origin the origin point, at which the azimuth angle will be computed (non-{@code null})
+     * @param destination the destination point, to which the angle is defined (non-{@code null})
+     * @param <T> the type of field elements
+     * @return the resulting azimuth angle (radians, {@code [0-2pi)})
+     * @since 11.3
+     */
+    public <T extends CalculusFieldElement<T>> T azimuthBetweenPoints(final FieldGeodeticPoint<T> origin, final FieldGeodeticPoint<T> destination) {
+        final T dLon = MathUtils.normalizeAngle(destination.getLongitude().subtract(origin.getLongitude()), origin.getLongitude().getField().getZero());
+        final T originIsoLat = geodeticToIsometricLatitude(origin.getLatitude());
+        final T destIsoLat = geodeticToIsometricLatitude(destination.getLatitude());
+
+        final T az = FastMath.atan2(dLon, destIsoLat.subtract(originIsoLat));
+        if (az.getReal() < 0.) {
+            return az.add(az.getPi().multiply(2));
+        }
+        return az;
+    }
+
+    /** Compute the <a href="https://mathworld.wolfram.com/IsometricLatitude.html">isometric latitude</a>
+     *  corresponding to the provided latitude.
+     *
+     * @param geodeticLatitude the latitude (radians, within interval {@code [-pi/2, +pi/2]})
+     * @return the isometric latitude (radians)
+     * @since 11.3
+     */
+    public double geodeticToIsometricLatitude(final double geodeticLatitude) {
+        if (FastMath.abs(geodeticLatitude) <= angularThreshold) {
+            return 0.;
+        }
+
+        final double eSinLat = e * FastMath.sin(geodeticLatitude);
+
+        // first term: ln(tan(pi/4 + lat/2))
+        final double a = FastMath.log(FastMath.tan(FastMath.PI / 4. + geodeticLatitude / 2.));
+        // second term: (ecc / 2) * ln((1 - ecc*sin(lat)) / (1 + ecc * sin(lat)))
+        final double b = (e / 2.) * FastMath.log((1. - eSinLat) / (1. + eSinLat));
+
+        return a + b;
+    }
+
+    /** Compute the <a href="https://mathworld.wolfram.com/IsometricLatitude.html">isometric latitude</a>
+     *  corresponding to the provided latitude.
+     *
+     * @param geodeticLatitude the latitude (radians, within interval {@code [-pi/2, +pi/2]})
+     * @param <T> the type of field elements
+     * @return the isometric latitude (radians)
+     * @since 11.3
+     */
+    public <T extends CalculusFieldElement<T>> T geodeticToIsometricLatitude(final T geodeticLatitude) {
+        if (geodeticLatitude.abs().getReal() <= angularThreshold) {
+            return geodeticLatitude.getField().getZero();
+        }
+        final Field<T> field = geodeticLatitude.getField();
+        final T ecc = geodeticLatitude.newInstance(e);
+        final T eSinLat = ecc.multiply(geodeticLatitude.sin());
+
+        // first term: ln(tan(pi/4 + lat/2))
+        final T a = FastMath.log(FastMath.tan(geodeticLatitude.getPi().divide(4.).add(geodeticLatitude.divide(2.))));
+        // second term: (ecc / 2) * ln((1 - ecc*sin(lat)) / (1 + ecc * sin(lat)))
+        final T b = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
+
+        return a.add(b);
+    }
+
+    /** Find intermediate point of lowest altitude along a line between two endpoints.
+     * @param endpoint1 first endpoint, in body frame
+     * @param endpoint2 second endpoint, in body frame
+     * @return point with lowest altitude between {@code endpoint1} and {@code endpoint2}.
+     * @since 12.0
+     */
+    public GeodeticPoint lowestAltitudeIntermediate(final Vector3D endpoint1, final Vector3D endpoint2) {
+
+        final Vector3D delta = endpoint2.subtract(endpoint1);
+
+        // function computing intermediate point above ellipsoid (lambda varying between 0 and 1)
+        final DoubleFunction<GeodeticPoint> intermediate =
+                        lambda -> transform(new Vector3D(1 - lambda, endpoint1, lambda, endpoint2),
+                                            bodyFrame, null);
+
+        // first endpoint
+        final GeodeticPoint gp1 = intermediate.apply(0.0);
+
+        if (Vector3D.dotProduct(delta, gp1.getZenith()) >= 0) {
+            // the line from first endpoint to second endpoint is going away from central body
+            // the minimum altitude is reached at first endpoint
+            return gp1;
+        } else {
+            // the line from first endpoint to second endpoint is closing the central body
+
+            // second endpoint
+            final GeodeticPoint gp2 = intermediate.apply(1.0);
+
+            if (Vector3D.dotProduct(delta, gp2.getZenith()) <= 0) {
+                // the line from first endpoint to second endpoint is still decreasing when reaching second endpoint,
+                // the minimum altitude is reached at second endpoint
+                return gp2;
+            } else {
+                // the line from first endpoint to second endpoint reaches a minimum between first and second endpoints
+                final double lambdaMin = new BracketingNthOrderBrentSolver(1.0e-14, 5).
+                                         solve(1000,
+                                               lambda -> Vector3D.dotProduct(delta, intermediate.apply(lambda).getZenith()),
+                                               0.0, 1.0);
+                return intermediate.apply(lambdaMin);
+            }
+        }
+
+    }
+
+    /** Find intermediate point of lowest altitude along a line between two endpoints.
+     * @param endpoint1 first endpoint, in body frame
+     * @param endpoint2 second endpoint, in body frame
+     * @param <T> type of the field elements
+     * @return point with lowest altitude between {@code endpoint1} and {@code endpoint2}.
+     * @since 12.0
+     */
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> lowestAltitudeIntermediate(final FieldVector3D<T> endpoint1,
+                                                                                                final FieldVector3D<T> endpoint2) {
+
+        final FieldVector3D<T> delta = endpoint2.subtract(endpoint1);
+
+        // function computing intermediate point above ellipsoid (lambda varying between 0 and 1)
+        final DoubleFunction<FieldGeodeticPoint<T>> intermediate =
+                        lambda -> transform(new FieldVector3D<>(1 - lambda, endpoint1, lambda, endpoint2),
+                                            bodyFrame, null);
+
+        // first endpoint
+        final FieldGeodeticPoint<T> gp1 = intermediate.apply(0.0);
+
+        if (FieldVector3D.dotProduct(delta, gp1.getZenith()).getReal() >= 0) {
+            // the line from first endpoint to second endpoint is going away from central body
+            // the minimum altitude is reached at first endpoint
+            return gp1;
+        } else {
+            // the line from first endpoint to second endpoint is closing the central body
+
+            // second endpoint
+            final FieldGeodeticPoint<T> gp2 = intermediate.apply(1.0);
+
+            if (FieldVector3D.dotProduct(delta, gp2.getZenith()).getReal() <= 0) {
+                // the line from first endpoint to second endpoint is still decreasing when reaching second endpoint,
+                // the minimum altitude is reached at second endpoint
+                return gp2;
+            } else {
+                // the line from first endpoint to second endpoint reaches a minimum between first and second endpoints
+                final double lambdaMin = new BracketingNthOrderBrentSolver(1.0e-14, 5).
+                                         solve(1000,
+                                               lambda -> FieldVector3D.dotProduct(delta, intermediate.apply(lambda).getZenith()).getReal(),
+                                               0.0, 1.0);
+                return intermediate.apply(lambdaMin);
+            }
+        }
+
     }
 
     /** Replace the instance with a data transfer object for serialization.

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,7 +23,7 @@ import org.orekit.time.AbsoluteDate;
  * <p>
  * Two interfaces are provided to distinguish between normalized and un-normalized
  * coefficients: {@link NormalizedSphericalHarmonicsProvider} and {@link
- * UnnormalizedSphericalHarmonicsProvider}. To account for gravity pertubations all
+ * UnnormalizedSphericalHarmonicsProvider}. To account for gravity perturbations all
  * providers are capable of providing the coefficients on specific dates, using the {@link
  * NormalizedSphericalHarmonicsProvider#onDate(AbsoluteDate) onDate(AbsoluteDate)}
  * methods.
@@ -31,12 +31,12 @@ import org.orekit.time.AbsoluteDate;
  * Typical usage when evaluating the geopotential:
  * <pre><code>
  *     NormalizedSphericalHarmonicsProvider provider = ...;
- *     NormalizedShpericalHarmonics coeffs = provider.onDate(date);
+ *     NormalizedSphericalHarmonics coeffs = provider.onDate(date);
  *     double c20 = coeffs.getNormalizedCnm(2, 0);
  * </code></pre>
  *
  * @author Luc Maisonobe
- * @see GravityFieldFactory
+ * @see GravityFields
  * @since 6.0
  */
 public interface SphericalHarmonicsProvider extends TideSystemProvider {
@@ -62,16 +62,11 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
     double getAe();
 
     /** Get the reference date for the harmonics.
-     * @return reference date for the harmonics
+     * <p>
+     * For piecewise models, the latest reference date is returned.
+     * </p>
+     * @return reference date for the harmonics (may be null if no reference date is defined)
      */
     AbsoluteDate getReferenceDate();
-
-    /** Get the offset from {@link #getReferenceDate reference date} for the harmonics.
-     * @param date current date
-     * @return offset between current date and reference date if there is a reference
-     * date, or 0.0 if there are no reference dates (i.e. if {@link #getReferenceDate}
-     * returns null)
-     */
-    double getOffset(AbsoluteDate date);
 
 }

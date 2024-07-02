@@ -1,0 +1,110 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                                true
+  skinparam NoteBackgroundColor                 #F3EFEB
+  skinparam NoteBorderColor                     #691616
+  skinparam NoteFontColor                       #691616
+  skinparam SequenceActorBorderColor            #6A584B
+  skinparam SequenceParticipantBackgroundColor  #F3EFEB/CCC9C5
+  skinparam SequenceParticipantBorderColor      #6A584B
+  skinparam SequenceLifeLineBackgroundColor     #CCC9C5/F3EFEB
+  skinparam SequenceLifeLineBorderColor         #6A584B
+  skinparam SequenceArrowColor                  #6A584B
+  skinparam SequenceBorderColor                 #6A584B
+  skinparam SequenceFontSize                    11
+
+  hide footbox
+
+  box "User application" #F3EDF7
+    actor "Main" as M
+    participant StationKeepingMonitorHandler
+  end box
+  participant Propagator
+  participant EphemerisGenerator
+  participant BoundedPropagator
+  participant AdapterPropagator
+  participant "Small maneuver"    as m
+  participant "J₂ due to maneuver" as j
+
+  activate M
+    M -> Propagator : getEphemerisGenerator
+    activate Propagator
+      create EphemerisGenerator
+      Propagator --> EphemerisGenerator : create
+    deactivate Propagator
+    M -> Propagator : propagate
+    activate Propagator
+      Propagator -> EphemerisGenerator : feed
+      activate EphemerisGenerator
+      deactivate EphemerisGenerator
+    deactivate Propagator
+    M -> EphemerisGenerator : getGeneratedEphemeris
+    activate EphemerisGenerator
+      create BoundedPropagator
+      EphemerisGenerator --> BoundedPropagator : create
+      EphemerisGenerator --> M : generated ephemeris
+    deactivate EphemerisGenerator
+    loop #CBDBC8 for p optimization attempts
+      create AdapterPropagator
+      M -> AdapterPropagator : create
+        activate AdapterPropagator
+          AdapterPropagator -> BoundedPropagator : grab
+          activate BoundedPropagator
+          deactivate BoundedPropagator
+        deactivate AdapterPropagator
+      loop #DDEBD8 for n maneuvers
+        create m
+        M -> m : create
+        M -> AdapterPropagator : addEffect(direct maneuver effect)
+        activate AdapterPropagator
+        deactivate AdapterPropagator
+        create j
+        M -> j : create
+         M -> AdapterPropagator : addEffect(indirect J₂ effect)
+        activate AdapterPropagator
+        deactivate AdapterPropagator
+      end
+      M -> AdapterPropagator : register SK monitor
+      M -> AdapterPropagator : propagate
+      activate AdapterPropagator
+        AdapterPropagator -> BoundedPropagator : propagate reference
+        activate BoundedPropagator
+        deactivate BoundedPropagator
+        loop #DDEBD8 for q steps
+          loop #ECEBD8 for n maneuvers
+            AdapterPropagator -> m : apply
+            activate m
+            deactivate m
+            AdapterPropagator -> j : apply
+            activate j
+            deactivate j
+          end
+          AdapterPropagator -> StationKeepingMonitorHandler : handleStep
+          activate StationKeepingMonitorHandler
+          deactivate StationKeepingMonitorHandler
+        end
+        AdapterPropagator --> M : final state
+      deactivate AdapterPropagator
+      M -> StationKeepingMonitorHandler : check Station Keeping goals
+      activate StationKeepingMonitorHandler
+      deactivate StationKeepingMonitorHandler
+    end
+  deactivate M
+
+@enduml

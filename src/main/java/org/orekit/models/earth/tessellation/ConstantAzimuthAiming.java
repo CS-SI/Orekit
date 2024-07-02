@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 
@@ -31,19 +32,15 @@ import org.orekit.bodies.OneAxisEllipsoid;
  */
 public class ConstantAzimuthAiming implements TileAiming {
 
-    /** Cosine of the azimuth. */
-    private final double cos;
-
-    /** Sine of the azimuth. */
-    private final double sin;
+    /** Sine and Cosine of the azimuth. */
+    private final SinCos sc;
 
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
      * @param azimuth geographic azimuth of the tiles
      */
     public ConstantAzimuthAiming(final OneAxisEllipsoid ellipsoid, final double azimuth) {
-        this.cos = FastMath.cos(azimuth);
-        this.sin = FastMath.sin(azimuth);
+        this.sc = FastMath.sinCos(azimuth);
     }
 
     /** {@inheritDoc} */
@@ -57,7 +54,7 @@ public class ConstantAzimuthAiming implements TileAiming {
     public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp) {
 
         // compute the horizontal direction at fixed azimuth
-        return new Vector3D(cos, gp.getNorth(), sin, gp.getEast());
+        return new Vector3D(sc.cos(), gp.getNorth(), sc.sin(), gp.getEast());
 
     }
 

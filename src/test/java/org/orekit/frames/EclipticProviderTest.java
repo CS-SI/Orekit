@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,17 +16,12 @@
  */
 package org.orekit.frames;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsInstanceOf;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -36,11 +31,17 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 /** Unit tests for {@link EclipticProvider}. */
 public class EclipticProviderTest {
 
     /** Set the orekit data to include ephemerides. */
-    @BeforeClass
+    @BeforeAll
     public static void setUpBefore() {
         Utils.setDataRoot("regular-data");
     }
@@ -94,7 +95,7 @@ public class EclipticProviderTest {
                     Vector3D.PLUS_K,
                     actual
             );
-            Assert.assertEquals("Agrees with ephemerides to within " + preciseTol, 0, angle, preciseTol);
+            Assertions.assertEquals(0, angle, preciseTol,"Agrees with ephemerides to within " + preciseTol);
 
         }
 
@@ -105,11 +106,11 @@ public class EclipticProviderTest {
      */
     @Test
     public void testGetName() {
-        Assert.assertEquals("Ecliptic/1996",
+        Assertions.assertEquals("Ecliptic/1996",
                             FramesFactory.getEcliptic(IERSConventions.IERS_1996).getName());
-        Assert.assertEquals("Ecliptic/2003",
+        Assertions.assertEquals("Ecliptic/2003",
                             FramesFactory.getEcliptic(IERSConventions.IERS_2003).getName());
-        Assert.assertEquals("Ecliptic/2010",
+        Assertions.assertEquals("Ecliptic/2010",
                             FramesFactory.getEcliptic(IERSConventions.IERS_2010).getName());
     }
 
@@ -122,7 +123,7 @@ public class EclipticProviderTest {
         Frame frame = FramesFactory.getEcliptic(IERSConventions.IERS_2003);
 
         //action + verify
-        Assert.assertThat(frame.getParent().getTransformProvider(),
+        MatcherAssert.assertThat(frame.getParent().getTransformProvider(),
                           IsInstanceOf.instanceOf(MODProvider.class));
     }
 
@@ -134,8 +135,8 @@ public class EclipticProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 200);
-        Assert.assertTrue(bos.size() < 250);
+        Assertions.assertTrue(bos.size() > 200);
+        Assertions.assertTrue(bos.size() < 250);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -145,8 +146,8 @@ public class EclipticProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }

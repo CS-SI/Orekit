@@ -1,0 +1,149 @@
+<!-- This file has been manually truncated for test purposes -->
+<!-- It contains only a subset of a real IERS data file -->
+<!-- It is not even continuous as it includes months-long holes -->
+
+<EOP xmlns="http://www.iers.org/2003/schema/eop">
+  <version>
+    <product>finals.daily (IAU1980)</product>
+    <date>2010-05-12</date>
+    <volume>IAU1980</volume>
+    <number>---</number>
+  </version>
+  <metaFileName />
+  <headerLine>
+    <headerLineDate>
+      <sYear>Year</sYear>
+      <sMonth>Month</sMonth>
+      <sDay>Day</sDay>
+      <sTime>Time</sTime>
+      <sMJD>MJD</sMJD>
+    </headerLineDate>
+    <headerLineEOP>
+      <product source="BulletinA">
+        <sX>X</sX>
+        <ssigma_X>sigma_X</ssigma_X>
+        <sY>Y</sY>
+        <ssigma_Y>sigma_Y</ssigma_Y>
+        <sUT1-UTC>UT1-UTC</sUT1-UTC>
+        <ssigma_UT1-UTC>sigma_UT1-UTC</ssigma_UT1-UTC>
+        <sLOD>LOD</sLOD>
+        <ssigma_LOD>sigma_LOD</ssigma_LOD>
+        <sdPsi>dPsi</sdPsi>
+        <ssigma_dPsi>sigma_dPsi</ssigma_dPsi>
+        <sdEpsilon>dEpsilon</sdEpsilon>
+        <ssigma_dEpsilon>sigma_dEpsilon</ssigma_dEpsilon>
+      </product>
+      <product source="BulletinB">
+        <sX>X</sX>
+        <sY>Y</sY>
+        <sUT1-UTC>UT1-UTC</sUT1-UTC>
+        <sdPsi>dPsi</sdPsi>
+        <sdEpsilon>dEpsilon</sdEpsilon>
+      </product>
+    </headerLineEOP>
+    <headerLineUnits>
+      <product source="BulletinA">
+        <X>arcsec</X>
+        <sigma_X>arcsec</sigma_X>
+        <Y>arcsec</Y>
+        <sigma_Y>arcsec</sigma_Y>
+        <UT1-UTC>sec</UT1-UTC>
+        <sigma_UT1-UTC>sec</sigma_UT1-UTC>
+        <LOD>msec</LOD>
+        <sigma_LOD>msec</sigma_LOD>
+        <dPsi>marcsec</dPsi>
+        <sigma_dPsi>marcsec</sigma_dPsi>
+        <dEpsilon>marcsec</dEpsilon>
+        <sigma_dEpsilon>marcsec</sigma_dEpsilon>
+      </product>
+      <product source="BulletinB">
+        <X>arcsec</X>
+        <Y>arcsec</Y>
+        <UT1-UTC>sec</UT1-UTC>
+        <dPsi>marcsec</dPsi>
+        <dEpsilon>marcsec</dEpsilon>
+      </product>
+    </headerLineUnits>
+  </headerLine>
+  <data product="finals.daily (IAU1980)"
+    source="BulletinA BulletinB">
+    <timeSeries>
+      <time>
+        <dateYear>2010</dateYear>
+        <dateMonth>07</dateMonth>
+        <dateDay>01</dateDay>
+        <MJD>55378</MJD>
+      </time>
+      <dataEOP>
+        <pole source="BulletinA" type="final">
+          <X>0.060729</X>
+          <sigma_X>0.000093</sigma_X>
+          <Y>0.483215</Y>
+          <sigma_Y>0.000042</sigma_Y>
+        </pole>
+        <UT source="BulletinA" type="final">
+          <UT1-UTC>-0.0568654</UT1-UTC>
+          <sigma_UT1-UTC>0.0000065</sigma_UT1-UTC>
+          <LOD>-0.0551</LOD>
+          <sigma_LOD>0.0045</sigma_LOD>
+        </UT>
+        <nutation source="BulletinA" type="final">
+          <dPsi>-67.373</dPsi>
+          <sigma_dPsi>0.204</sigma_dPsi>
+          <dEpsilon>-9.678</dEpsilon>
+          <sigma_dEpsilon>0.102</sigma_dEpsilon>
+        </nutation>
+        <pole source="BulletinB" type="final">
+          <X>0.060783</X>
+          <Y>0.483197</Y>
+        </pole>
+        <UT source="BulletinB" type="final">
+          <UT1-UTC>-0.0568663</UT1-UTC>
+        </UT>
+        <nutation source="BulletinB" type="final">
+          <dPsi>-67.364</dPsi>
+          <dEpsilon>-9.740</dEpsilon>
+        </nutation>
+      </dataEOP>
+    </timeSeries>
+    <timeSeries>
+      <time>
+        <dateYear>2010</dateYear>
+        <dateMonth>07</dateMonth>
+        <dateDay>02</dateDay>
+        <MJD>65379</MJD>
+      </time>
+      <dataEOP>
+        <pole source="BulletinA" type="final">
+          <X>0.064760</X>
+          <sigma_X>0.000092</sigma_X>
+          <Y>0.483590</Y>
+          <sigma_Y>0.000042</sigma_Y>
+        </pole>
+        <UT source="BulletinA" type="final">
+          <UT1-UTC>-0.0568341</UT1-UTC>
+          <sigma_UT1-UTC>0.0000063</sigma_UT1-UTC>
+          <LOD>0.0067</LOD>
+          <sigma_LOD>0.0051</sigma_LOD>
+        </UT>
+        <nutation source="BulletinA" type="final">
+          <dPsi>-67.654</dPsi>
+          <sigma_dPsi>0.204</sigma_dPsi>
+          <dEpsilon>-9.803</dEpsilon>
+          <sigma_dEpsilon>0.102</sigma_dEpsilon>
+        </nutation>
+        <pole source="BulletinB" type="final">
+          <X />
+          <Y />
+        </pole>
+        <UT source="BulletinB" type="final">
+          <UT1-UTC />
+        </UT>
+        <nutation source="BulletinB" type="final">
+          <dPsi />
+          <dEpsilon />
+        </nutation>
+      </dataEOP>
+    </timeSeries>
+  </data>
+</EOP>

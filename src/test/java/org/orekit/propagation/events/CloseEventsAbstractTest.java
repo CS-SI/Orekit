@@ -16,29 +16,32 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Check events are detected correctly when the event times are close.
@@ -52,10 +55,10 @@ public abstract class CloseEventsAbstractTest {
     public static final Frame eci = FramesFactory.getGCRF();
     public static final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, eci);
     public static final KeplerianOrbit initialOrbit = new KeplerianOrbit(
-            6378137 + 500e3, 0, 0, 0, 0, 0, PositionAngle.TRUE,
+            6378137 + 500e3, 0, 0, 0, 0, 0, PositionAngleType.TRUE,
             eci, epoch, mu);
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBefore() {
         Utils.setDataRoot("regular-data");
     }
@@ -82,15 +85,15 @@ public abstract class CloseEventsAbstractTest {
         // all three times. Then we get a non bracketing exception.
         Propagator propagator = getPropagator(10.0);
 
-        double t1 = 49, t2 = t1 + 1e-15, t3 = t1 + 4.9;
-        List<Event<EventDetector>> events = new ArrayList<>();
+        double t1 = 49, t2 = FastMath.nextUp(t1), t3 = t1 + 4.9;
+        List<Event> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(t1)
-                .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
+                .withHandler(new Handler(events, Action.RESET_DERIVATIVES))
                 .withMaxCheck(10)
                 .withThreshold(1e-9);
         propagator.addEventDetector(detector1);
         TimeDetector detector2 = new TimeDetector(t2, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(11)
                 .withThreshold(1e-9);
         propagator.addEventDetector(detector2);
@@ -99,9 +102,9 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(60));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(detector1, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(detector1, events.get(0).getDetector());
     }
 
     @Test
@@ -110,7 +113,7 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1;
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler = new RecordAndContinue<>();
+        RecordAndContinue handler = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(5)
                 .withHandler(handler)
                 .withMaxCheck(10)
@@ -126,12 +129,12 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(20));
 
         // verify
-        List<Event<EventDetector>> events = handler.getEvents();
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(detector1, events.get(0).getDetector());
-        Assert.assertEquals(5.5, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(detector2, events.get(1).getDetector());
+        List<Event> events = handler.getEvents();
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(detector1, events.get(0).getDetector());
+        Assertions.assertEquals(5.5, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(detector2, events.get(1).getDetector());
     }
 
     @Test
@@ -139,13 +142,13 @@ public abstract class CloseEventsAbstractTest {
         // setup
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
+        RecordAndContinue handler1 = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(5)
                 .withHandler(handler1)
                 .withMaxCheck(10)
                 .withThreshold(1);
         propagator.addEventDetector(detector1);
-        RecordAndContinue<EventDetector> handler2 = new RecordAndContinue<>();
+        RecordAndContinue handler2 = new RecordAndContinue();
         TimeDetector detector2 = new TimeDetector(5)
                 .withHandler(handler2)
                 .withMaxCheck(10)
@@ -156,12 +159,118 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(20));
 
         // verify
-        List<Event<EventDetector>> events1 = handler1.getEvents();
-        Assert.assertEquals(1, events1.size());
-        Assert.assertEquals(5, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        List<Event<EventDetector>> events2 = handler2.getEvents();
-        Assert.assertEquals(1, events2.size());
-        Assert.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        List<Event> events1 = handler1.getEvents();
+        Assertions.assertEquals(1, events1.size());
+        Assertions.assertEquals(5, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        List<Event> events2 = handler2.getEvents();
+        Assertions.assertEquals(1, events2.size());
+        Assertions.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+    }
+
+    /**
+     * Previously there were some branches when tryAdvance() returned false but did not
+     * set {@code t0 = t}. This allowed the order of events to not be chronological and to
+     * detect events that should not have occurred, both of which are problems.
+     */
+    @Test
+    public void testSimultaneousEventsReset() {
+        // setup
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        boolean[] firstEventOccurred = {false};
+        List<Event> events = new ArrayList<>();
+
+        TimeDetector detector1 = new TimeDetector(5)
+                .withMaxCheck(10)
+                .withThreshold(tol)
+                .withHandler(new Handler(events, Action.RESET_STATE) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                        firstEventOccurred[0] = true;
+                        return super.eventOccurred(s, detector, increasing);
+                    }
+
+                    @Override
+                    public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
+        propagator.addEventDetector(detector1);
+        // this detector changes it's g function definition when detector1 fires
+        FunctionalDetector detector2 = new FunctionalDetector()
+                .withMaxCheck(1)
+                .withThreshold(tol)
+                .withHandler(new RecordAndContinue(events))
+                .withFunction(state -> {
+                            if (firstEventOccurred[0]) {
+                                return new TimeDetector(1, 3, 5).g(state);
+                            }
+                            return new TimeDetector(5).g(state);
+                        }
+                );
+        propagator.addEventDetector(detector2);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(20));
+
+        // verify
+        // order is important to make sure the test checks what it is supposed to
+        Assertions.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.get(0).isIncreasing());
+        Assertions.assertEquals(detector1, events.get(0).getDetector());
+        Assertions.assertEquals(5, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.get(1).isIncreasing());
+        Assertions.assertEquals(detector2, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+    }
+
+    /**
+     * When two event detectors have a discontinuous event caused by a {@link
+     * Action#RESET_STATE} or {@link Action#RESET_DERIVATIVES}. The two event detectors
+     * would each say they had an event that had to be handled before the other one, but
+     * neither would actually back up at all. For #684.
+     */
+    @Test
+    public void testSimultaneousDiscontinuousEventsAfterReset() {
+        // setup
+        double t = FastMath.PI;
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        List<Event> events = new ArrayList<>();
+        SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
+                42e6, 0, 0, 0, 0, 0, PositionAngleType.TRUE, eci, epoch.shiftedBy(t), mu));
+
+        TimeDetector resetDetector = new TimeDetector(t)
+                .withHandler(new ResetHandler(events, newState))
+                .withMaxCheck(10)
+                .withThreshold(tol);
+        propagator.addEventDetector(resetDetector);
+        List<EventDetector> detectors = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            FunctionalDetector detector1 = new FunctionalDetector()
+                    .withFunction(s -> s.getA() - 10e6)
+                    .withThreshold(tol)
+                    .withMaxCheck(10)
+                    .withHandler(new RecordAndContinue(events));
+            propagator.addEventDetector(detector1);
+            detectors.add(detector1);
+        }
+
+        // action
+        propagator.propagate(epoch.shiftedBy(10));
+
+        // verify
+        Assertions.assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch), tol);
+        Assertions.assertTrue(events.get(0).isIncreasing());
+        Assertions.assertEquals(resetDetector, events.get(0).getDetector());
+        // next two events can occur in either order
+        Assertions.assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch), tol);
+        Assertions.assertTrue(events.get(1).isIncreasing());
+        Assertions.assertEquals(detectors.get(0), events.get(1).getDetector());
+        Assertions.assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch), tol);
+        Assertions.assertTrue(events.get(2).isIncreasing());
+        Assertions.assertEquals(detectors.get(1), events.get(2).getDetector());
+        Assertions.assertEquals(events.size(), 3);
     }
 
     /**
@@ -175,7 +284,7 @@ public abstract class CloseEventsAbstractTest {
         // step size of 10 to land in between two events we would otherwise miss
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler = new RecordAndContinue<>();
+        RecordAndContinue handler = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(9.9, 10.1, 12)
                 .withHandler(handler)
                 .withMaxCheck(10)
@@ -187,10 +296,10 @@ public abstract class CloseEventsAbstractTest {
 
         //verify
         // finds one or three events. Not 2.
-        List<Event<EventDetector>> events1 = handler.getEvents();
-        Assert.assertEquals(1, events1.size());
-        Assert.assertEquals(9.9, events1.get(0).getState().getDate().durationFrom(epoch), 0.1);
-        Assert.assertEquals(true, events1.get(0).isIncreasing());
+        List<Event> events1 = handler.getEvents();
+        Assertions.assertEquals(1, events1.size());
+        Assertions.assertEquals(9.9, events1.get(0).getState().getDate().durationFrom(epoch), 0.1);
+        Assertions.assertEquals(true, events1.get(0).isIncreasing());
     }
 
     /** "A Tricky Problem" from bug #239. */
@@ -201,17 +310,17 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 1.0, t2 = 15, t3 = 16, t4 = 17, t5 = 18;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(-10, t1, t2, t5)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorC = new TimeDetector(t4)
-                .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
+                .withHandler(new Handler(events, Action.RESET_DERIVATIVES))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
@@ -226,17 +335,17 @@ public abstract class CloseEventsAbstractTest {
         //verify
         // really we only care that the Rules of Event Handling are not violated,
         // but I only know one way to do that in this case.
-        Assert.assertEquals(5, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(0).isIncreasing());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(2).isIncreasing());
-        Assert.assertEquals(t4, events.get(3).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(3).isIncreasing());
-        Assert.assertEquals(t5, events.get(4).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(4).isIncreasing());
+        Assertions.assertEquals(5, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(0).isIncreasing());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(2).isIncreasing());
+        Assertions.assertEquals(t4, events.get(3).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(3).isIncreasing());
+        Assertions.assertEquals(t5, events.get(4).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(4).isIncreasing());
     }
 
     /**
@@ -249,13 +358,13 @@ public abstract class CloseEventsAbstractTest {
         //setup
         double maxCheck = 10;
         double t2 = 11, t3 = t2 + 1e-5;
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(1e-6);
         FlatDetector detectorB = new FlatDetector(t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(0.5);
         Propagator propagator = getPropagator(10);
@@ -268,17 +377,17 @@ public abstract class CloseEventsAbstractTest {
         // verify
         // if these fail the event finding did its job,
         // but this test isn't testing what it is supposed to be
-        Assert.assertSame(detectorB, events.get(0).getDetector());
-        Assert.assertSame(detectorA, events.get(1).getDetector());
-        Assert.assertTrue(events.get(0).getState().getDate().compareTo(
+        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertSame(detectorA, events.get(1).getDetector());
+        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
                 events.get(1).getState().getDate()) < 0);
 
         // check event detection worked
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch), 0.5);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 1e-6);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch), 0.5);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 1e-6);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
     }
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
@@ -290,13 +399,13 @@ public abstract class CloseEventsAbstractTest {
         final double toleranceB = 0.3;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(1e-6);
         TimeDetector detectorB = new TimeDetector(t1, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(toleranceB);
         Propagator propagator = getPropagator(10);
@@ -308,19 +417,19 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         // we only care that the rules are satisfied, there are other solutions
-        Assert.assertEquals(3, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), toleranceB);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorB, events.get(0).getDetector());
-        Assert.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), toleranceB);
-        Assert.assertEquals(false, events.get(1).isIncreasing());
-        Assert.assertSame(detectorB, events.get(1).getDetector());
-        Assert.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(2).isIncreasing());
-        Assert.assertSame(detectorA, events.get(2).getDetector());
+        Assertions.assertEquals(3, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), toleranceB);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), toleranceB);
+        Assertions.assertEquals(false, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorB, events.get(1).getDetector());
+        Assertions.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(2).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(2).getDetector());
         // chronological
         for (int i = 1; i < events.size(); i++) {
-            Assert.assertTrue(events.get(i).getState().getDate().compareTo(
+            Assertions.assertTrue(events.get(i).getState().getDate().compareTo(
                     events.get(i - 1).getState().getDate()) >= 0);
         }
     }
@@ -334,9 +443,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 0.5;
         double t1 = 11, t2 = 11.4, t3 = 12.0;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorB = new FlatDetector(t1, t2, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -347,10 +456,10 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         // allowed to find t1 or t3.
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorB, events.get(0).getDetector());
     }
 
     /**
@@ -364,13 +473,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(t1, t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -381,14 +490,14 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
         // detector worked correctly
-        Assert.assertTrue(detectorB.g(state(t1)) == 0.0);
-        Assert.assertTrue(detectorB.g(state(t1 - 1e-6)) < 0);
-        Assert.assertTrue(detectorB.g(state(t1 + 1e-6)) < 0);
+        Assertions.assertTrue(detectorB.g(state(t1)) == 0.0);
+        Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)) < 0);
+        Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)) < 0);
     }
 
     /**
@@ -402,13 +511,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorB = new ContinuousDetector(-20, t1, t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -419,14 +528,14 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
         // detector worked correctly
-        Assert.assertEquals(0.0, detectorB.g(state(t1)), 0.0);
-        Assert.assertTrue(detectorB.g(state(t1 - 1e-6)) > 0);
-        Assert.assertTrue(detectorB.g(state(t1 + 1e-6)) > 0);
+        Assertions.assertEquals(0.0, detectorB.g(state(t1)), 0.0);
+        Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)) > 0);
+        Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)) > 0);
     }
 
     /** check root finding when zero at both ends. */
@@ -437,9 +546,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 10, t2 = 20;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1, t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -448,13 +557,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(1).isIncreasing());
-        Assert.assertSame(detectorA, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(1).getDetector());
     }
 
     /** check root finding when zero at both ends. */
@@ -465,9 +574,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 10, t2 = 20;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(-10, t1, t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -477,13 +586,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorA, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(1).getDetector());
     }
 
     /** Test where an event detector has to back up multiple times. */
@@ -494,17 +603,17 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 1.0, t2 = 2, t3 = 3, t4 = 4, t5 = 5, t6 = 6.5, t7 = 7;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t6)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         FlatDetector detectorB = new FlatDetector(t1, t3, t4, t7)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorC = new ContinuousDetector(t2, t5)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
@@ -518,32 +627,32 @@ public abstract class CloseEventsAbstractTest {
 
         //verify
         // need at least 5 events to check that multiple backups occurred
-        Assert.assertEquals(5, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertEquals(detectorC, events.get(1).getDetector());
+        Assertions.assertEquals(5, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertEquals(detectorC, events.get(1).getDetector());
         // reporting t3 and t4 is optional, seeing them is not.
         // we know a root was found at t3 because events are reported at t2 and t5.
         /*
-        Assert.assertEquals(t3, events.get(2).getT(), tolerance);
-        Assert.assertEquals(false, events.get(2).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(2).getHandler());
-        Assert.assertEquals(t4, events.get(3).getT(), tolerance);
-        Assert.assertEquals(true, events.get(3).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(3).getHandler());
+        Assertions.assertEquals(t3, events.get(2).getT(), tolerance);
+        Assertions.assertEquals(false, events.get(2).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(2).getHandler());
+        Assertions.assertEquals(t4, events.get(3).getT(), tolerance);
+        Assertions.assertEquals(true, events.get(3).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(3).getHandler());
         */
-        Assert.assertEquals(t5, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(2).isIncreasing());
-        Assert.assertEquals(detectorC, events.get(2).getDetector());
-        Assert.assertEquals(t6, events.get(3).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(3).isIncreasing());
-        Assert.assertEquals(detectorA, events.get(3).getDetector());
-        Assert.assertEquals(t7, events.get(4).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(4).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(4).getDetector());
+        Assertions.assertEquals(t5, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(2).isIncreasing());
+        Assertions.assertEquals(detectorC, events.get(2).getDetector());
+        Assertions.assertEquals(t6, events.get(3).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(3).isIncreasing());
+        Assertions.assertEquals(detectorA, events.get(3).getDetector());
+        Assertions.assertEquals(t7, events.get(4).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(4).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(4).getDetector());
     }
 
     /** Test a reset event triggering another event at the same time. */
@@ -555,11 +664,11 @@ public abstract class CloseEventsAbstractTest {
         double t1 = 15.0;
         SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
                 6378137 + 500e3, 0, FastMath.PI / 2, 0, 0,
-                FastMath.PI / 2, PositionAngle.TRUE, eci, epoch.shiftedBy(t1), mu));
+                FastMath.PI / 2, PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), mu));
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                .withHandler(new Handler(events, Action.RESET_STATE) {
                     @Override
                     public SpacecraftState resetState(EventDetector detector,
                                                       SpacecraftState oldState) {
@@ -570,7 +679,7 @@ public abstract class CloseEventsAbstractTest {
                 .withThreshold(tolerance);
         LatitudeCrossingDetector detectorB =
                 new LatitudeCrossingDetector(earth, FastMath.toRadians(80))
-                        .withHandler(new RecordAndContinue<>(events))
+                        .withHandler(new RecordAndContinue(events))
                         .withMaxCheck(maxCheck)
                         .withThreshold(tolerance);
 
@@ -583,13 +692,13 @@ public abstract class CloseEventsAbstractTest {
 
         //verify
         // really we only care that the Rules of Event Handling are not violated,
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertEquals(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertEquals(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(1).getDetector());
     }
 
     /** check when t + tolerance == t. */
@@ -600,9 +709,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18;
         double t1 = 15;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -612,10 +721,10 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
     }
 
     /**
@@ -631,13 +740,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11, t2 = 19;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withThreshold(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState s,
                                                 EventDetector detector,
@@ -651,7 +760,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(s -> swap[0] ? detectorB.g(s) : -1);
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -661,13 +770,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorC, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorC, events.get(1).getDetector());
     }
 
     /**
@@ -682,13 +791,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -703,7 +812,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? -1 : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -713,10 +822,10 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
     }
 
     /**
@@ -731,13 +840,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -753,7 +862,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorD.g(state) : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -763,13 +872,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorC, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorC, events.get(1).getDetector());
     }
 
     /**
@@ -784,13 +893,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -806,7 +915,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorB.g(state) : detectorD.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -816,13 +925,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorC, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorC, events.get(1).getDetector());
     }
 
     /** check when root finding tolerance > event finding tolerance. */
@@ -833,9 +942,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18; // less than 1 ulp
         double t1 = 15.1;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
-                .withHandler(new Handler<>(events, Action.STOP))
+                .withHandler(new Handler(events, Action.STOP))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -845,18 +954,18 @@ public abstract class CloseEventsAbstractTest {
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(1, events.size());
+        Assertions.assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t1, finalState.getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, finalState.getDate().durationFrom(epoch), tolerance);
 
         // try to resume propagation
         finalState = propagator.propagate(epoch.shiftedBy(30));
 
         // verify it got to the end
-        Assert.assertEquals(30.0, finalState.getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(30.0, finalState.getDate().durationFrom(epoch), 0.0);
     }
 
     /**
@@ -871,13 +980,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         final double t1 = FastMath.nextUp(10.0), t2 = 10.5;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // never zero so there is no easy way out
         EventDetector detectorA = new FunctionalDetector()
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> {
                     final AbsoluteDate t = state.getDate();
                     if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
@@ -889,7 +998,7 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         TimeDetector detectorB = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -900,16 +1009,16 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30.0));
 
         // verify
-        Assert.assertEquals(3, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorB, events.get(1).getDetector());
-        Assert.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(2).isIncreasing());
-        Assert.assertSame(detectorA, events.get(2).getDetector());
+        Assertions.assertEquals(3, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorB, events.get(1).getDetector());
+        Assertions.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(2).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(2).getDetector());
     }
 
     /** check when root finding tolerance > event finding tolerance. */
@@ -920,9 +1029,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18; // less than 1 ulp
         AbsoluteDate t1 = epoch.shiftedBy(15).shiftedBy(FastMath.ulp(15.0) / 8);
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -932,13 +1041,78 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assert.assertEquals(1, events.size());
+        Assertions.assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assert.assertEquals(t1.durationFrom(epoch),
+        Assertions.assertEquals(t1.durationFrom(epoch),
                 events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
     }
+
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandler() {
+        // setup
+        double tolerance = 1e-18;
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(5)
+                .withHandler(new Handler(Action.CONTINUE))
+                .withThreshold(tolerance));
+        StepHandler stepHandler = new StepHandler();
+        propagator.setStepHandler(stepHandler);
+        AbsoluteDate target = epoch.shiftedBy(10);
+
+        // action
+        SpacecraftState finalState = propagator.propagate(target);
+
+        // verify
+        Assertions.assertEquals(10.0, finalState.getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch), tolerance);
+        Assertions.assertEquals(10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch), tolerance);
+        OrekitStepInterpolator interpolator = stepHandler.interpolators.get(0);
+        Assertions.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assertions.assertEquals(5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(2, stepHandler.interpolators.size());
+    }
+
+    /**
+     * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
+     * null}.
+     */
+    @Test
+    public void testEventCausedByDerivativesReset() {
+        // setup
+        TimeDetector detectorA = new TimeDetector(15.0)
+                .withHandler(new Handler(Action.RESET_STATE){
+                    @Override
+                    public SpacecraftState resetState(EventDetector d, SpacecraftState s) {
+                        return null;
+                    }
+                })
+                .withMaxCheck(10)
+                .withThreshold(1e-6);
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        try {
+            // action
+            propagator.propagate(epoch.shiftedBy(20.0));
+            Assertions.fail("Expected Exception");
+        } catch (NullPointerException e) {
+            // expected
+        }
+    }
+
 
     /* The following tests are copies of the above tests, except that they propagate in
      * the reverse direction and all the signs on the time values are negated.
@@ -961,13 +1135,13 @@ public abstract class CloseEventsAbstractTest {
 
         // switched for 9 to 1 to be close to the start of the step
         double t1 = -1;
-        Handler<EventDetector> handler1 = new Handler<>(Action.RESET_DERIVATIVES);
+        Handler handler1 = new Handler(Action.RESET_DERIVATIVES);
         TimeDetector detector1 = new TimeDetector(t1)
                 .withHandler(handler1)
                 .withMaxCheck(10)
                 .withThreshold(1e-9);
         propagator.addEventDetector(detector1);
-        RecordAndContinue<EventDetector> handler2 = new RecordAndContinue<>();
+        RecordAndContinue handler2 = new RecordAndContinue();
         TimeDetector detector2 = new TimeDetector(t1 - 1e-15, t1 - 4.9)
                 .withHandler(handler2)
                 .withMaxCheck(11)
@@ -978,11 +1152,11 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<EventDetector>> events1 = handler1.getEvents();
-        Assert.assertEquals(1, events1.size());
-        Assert.assertEquals(t1, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        List<Event<EventDetector>> events2 = handler2.getEvents();
-        Assert.assertEquals(0, events2.size());
+        List<Event> events1 = handler1.getEvents();
+        Assertions.assertEquals(1, events1.size());
+        Assertions.assertEquals(t1, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        List<Event> events2 = handler2.getEvents();
+        Assertions.assertEquals(0, events2.size());
     }
 
     @Test
@@ -991,13 +1165,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1;
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
+        RecordAndContinue handler1 = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(-5)
                 .withHandler(handler1)
                 .withMaxCheck(10)
                 .withThreshold(tolerance);
         propagator.addEventDetector(detector1);
-        RecordAndContinue<EventDetector> handler2 = new RecordAndContinue<>();
+        RecordAndContinue handler2 = new RecordAndContinue();
         TimeDetector detector2 = new TimeDetector(-5.5)
                 .withHandler(handler2)
                 .withMaxCheck(10)
@@ -1008,12 +1182,12 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<EventDetector>> events1 = handler1.getEvents();
-        Assert.assertEquals(1, events1.size());
-        Assert.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        List<Event<EventDetector>> events2 = handler2.getEvents();
-        Assert.assertEquals(1, events2.size());
-        Assert.assertEquals(-5.5, events2.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        List<Event> events1 = handler1.getEvents();
+        Assertions.assertEquals(1, events1.size());
+        Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        List<Event> events2 = handler2.getEvents();
+        Assertions.assertEquals(1, events2.size());
+        Assertions.assertEquals(-5.5, events2.get(0).getState().getDate().durationFrom(epoch), tolerance);
     }
 
     @Test
@@ -1021,13 +1195,13 @@ public abstract class CloseEventsAbstractTest {
         // setup
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
+        RecordAndContinue handler1 = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(-5)
                 .withHandler(handler1)
                 .withMaxCheck(10)
                 .withThreshold(1);
         propagator.addEventDetector(detector1);
-        RecordAndContinue<EventDetector> handler2 = new RecordAndContinue<>();
+        RecordAndContinue handler2 = new RecordAndContinue();
         TimeDetector detector2 = new TimeDetector(-5)
                 .withHandler(handler2)
                 .withMaxCheck(10)
@@ -1038,12 +1212,69 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<EventDetector>> events1 = handler1.getEvents();
-        Assert.assertEquals(1, events1.size());
-        Assert.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        List<Event<EventDetector>> events2 = handler2.getEvents();
-        Assert.assertEquals(1, events2.size());
-        Assert.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        List<Event> events1 = handler1.getEvents();
+        Assertions.assertEquals(1, events1.size());
+        Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        List<Event> events2 = handler2.getEvents();
+        Assertions.assertEquals(1, events2.size());
+        Assertions.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+    }
+
+    /**
+     * Previously there were some branches when tryAdvance() returned false but did not
+     * set {@code t0 = t}. This allowed the order of events to not be chronological and to
+     * detect events that should not have occurred, both of which are problems.
+     */
+    @Test
+    public void testSimultaneousEventsResetReverse() {
+        // setup
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        boolean[] firstEventOccurred = {false};
+        List<Event> events = new ArrayList<>();
+
+        TimeDetector detector1 = new TimeDetector(-5)
+                .withMaxCheck(10)
+                .withThreshold(tol)
+                .withHandler(new Handler(events, Action.RESET_STATE) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                        firstEventOccurred[0] = true;
+                        return super.eventOccurred(s, detector, increasing);
+                    }
+
+                    @Override
+                    public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
+        propagator.addEventDetector(detector1);
+        // this detector changes it's g function definition when detector1 fires
+        FunctionalDetector detector2 = new FunctionalDetector()
+                .withMaxCheck(1)
+                .withThreshold(tol)
+                .withHandler(new RecordAndContinue(events))
+                .withFunction(state -> {
+                            if (firstEventOccurred[0]) {
+                                return new TimeDetector(-1, -3, -5).g(state);
+                            }
+                            return new TimeDetector(-5).g(state);
+                        }
+                );
+        propagator.addEventDetector(detector2);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-20));
+
+        // verify
+        // order is important to make sure the test checks what it is supposed to
+        Assertions.assertEquals(-5, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.get(0).isIncreasing());
+        Assertions.assertEquals(detector1, events.get(0).getDetector());
+        Assertions.assertEquals(-5, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertTrue(events.get(1).isIncreasing());
+        Assertions.assertEquals(detector2, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
     }
 
     /**
@@ -1057,9 +1288,9 @@ public abstract class CloseEventsAbstractTest {
         // step size of 10 to land in between two events we would otherwise miss
         Propagator propagator = getPropagator(10);
 
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(-9.9, -10.1, -12)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(10)
                 .withThreshold(0.2);
         propagator.addEventDetector(detector1);
@@ -1069,9 +1300,9 @@ public abstract class CloseEventsAbstractTest {
 
         //verify
         // finds one or three events. Not 2.
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(-9.9, events.get(0).getState().getDate().durationFrom(epoch), 0.2);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(-9.9, events.get(0).getState().getDate().durationFrom(epoch), 0.2);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
     }
 
     /** "A Tricky Problem" from bug #239. */
@@ -1082,17 +1313,17 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -1.0, t2 = -15, t3 = -16, t4 = -17, t5 = -18;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(-50, t1, t2, t5)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorC = new TimeDetector(t4)
-                .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
+                .withHandler(new Handler(events, Action.RESET_DERIVATIVES))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
@@ -1107,17 +1338,17 @@ public abstract class CloseEventsAbstractTest {
         //verify
         // really we only care that the Rules of Event Handling are not violated,
         // but I only know one way to do that in this case.
-        Assert.assertEquals(5, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(0).isIncreasing());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(2).isIncreasing());
-        Assert.assertEquals(t4, events.get(3).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(3).isIncreasing());
-        Assert.assertEquals(t5, events.get(4).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(4).isIncreasing());
+        Assertions.assertEquals(5, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(0).isIncreasing());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(2).isIncreasing());
+        Assertions.assertEquals(t4, events.get(3).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(3).isIncreasing());
+        Assertions.assertEquals(t5, events.get(4).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(4).isIncreasing());
     }
 
     /**
@@ -1130,13 +1361,13 @@ public abstract class CloseEventsAbstractTest {
         //setup
         double maxCheck = 10;
         double t2 = -11, t3 = t2 - 1e-5;
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(1e-6);
         FlatDetector detectorB = new FlatDetector(t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(0.5);
         Propagator propagator = getPropagator(10);
@@ -1149,17 +1380,17 @@ public abstract class CloseEventsAbstractTest {
         // verify
         // if these fail the event finding did its job,
         // but this test isn't testing what it is supposed to be
-        Assert.assertSame(detectorB, events.get(0).getDetector());
-        Assert.assertSame(detectorA, events.get(1).getDetector());
-        Assert.assertTrue(events.get(0).getState().getDate().compareTo(
+        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertSame(detectorA, events.get(1).getDetector());
+        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
                 events.get(1).getState().getDate()) > 0);
 
         // check event detection worked
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch), 0.5);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 1e-6);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch), 0.5);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 1e-6);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
     }
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
@@ -1171,13 +1402,13 @@ public abstract class CloseEventsAbstractTest {
         final double toleranceB = 0.3;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(-50, t1, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(toleranceB);
         Propagator propagator = getPropagator(10);
@@ -1189,20 +1420,20 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         // we only care that the rules are satisfied. There are multiple solutions.
-        Assert.assertEquals(3, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), toleranceB);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorB, events.get(0).getDetector());
-        Assert.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), toleranceB);
-        Assert.assertEquals(false, events.get(1).isIncreasing());
-        Assert.assertSame(detectorB, events.get(1).getDetector());
-        Assert.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(2).isIncreasing());
-        Assert.assertSame(detectorA, events.get(2).getDetector());
+        Assertions.assertEquals(3, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), toleranceB);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), toleranceB);
+        Assertions.assertEquals(false, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorB, events.get(1).getDetector());
+        Assertions.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(2).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(2).getDetector());
         // ascending order
-        Assert.assertTrue(events.get(0).getState().getDate().compareTo(
+        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
                 events.get(1).getState().getDate()) >= 0);
-        Assert.assertTrue(events.get(1).getState().getDate().compareTo(
+        Assertions.assertTrue(events.get(1).getState().getDate().compareTo(
                 events.get(2).getState().getDate()) >= 0);
     }
 
@@ -1215,9 +1446,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 0.5;
         double t1 = -11, t2 = -11.4, t3 = -12.0;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorB = new FlatDetector(t1, t2, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1228,10 +1459,10 @@ public abstract class CloseEventsAbstractTest {
 
         // verify
         // allowed to report t1 or t3.
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorB, events.get(0).getDetector());
     }
 
     /**
@@ -1245,13 +1476,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(t1, t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1262,14 +1493,14 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
         // detector worked correctly
-        Assert.assertTrue(detectorB.g(state(t1)) == 0.0);
-        Assert.assertTrue(detectorB.g(state(t1 + 1e-6)) < 0);
-        Assert.assertTrue(detectorB.g(state(t1 - 1e-6)) < 0);
+        Assertions.assertTrue(detectorB.g(state(t1)) == 0.0);
+        Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)) < 0);
+        Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)) < 0);
     }
 
     /**
@@ -1283,13 +1514,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorB = new ContinuousDetector(-50, t1, t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         detectorB.g(state(t1));
@@ -1301,14 +1532,14 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
         // detector worked correctly
-        Assert.assertEquals(0.0, detectorB.g(state(t1)), 0.0);
-        Assert.assertTrue(detectorB.g(state(t1 + 1e-6)) > 0);
-        Assert.assertTrue(detectorB.g(state(t1 - 1e-6)) > 0);
+        Assertions.assertEquals(0.0, detectorB.g(state(t1)), 0.0);
+        Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)) > 0);
+        Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)) > 0);
     }
 
     /** check root finding when zero at both ends. */
@@ -1319,9 +1550,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -10, t2 = -20;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(-50, t1, t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1331,13 +1562,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(1).isIncreasing());
-        Assert.assertSame(detectorA, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(1).getDetector());
     }
 
     /** check root finding when zero at both ends. */
@@ -1348,9 +1579,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -10, t2 = -20;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1, t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1360,13 +1591,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(false, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorA, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(false, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(1).getDetector());
     }
 
     /** Test where an event detector has to back up multiple times. */
@@ -1377,17 +1608,17 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -1.0, t2 = -2, t3 = -3, t4 = -4, t5 = -5, t6 = -6.5, t7 = -7;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t6)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorB = new ContinuousDetector(-50, t1, t3, t4, t7)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorC = new ContinuousDetector(-50, t2, t5)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
@@ -1401,32 +1632,32 @@ public abstract class CloseEventsAbstractTest {
 
         //verify
         // really we only care that the Rules of Event Handling are not violated,
-        Assert.assertEquals(5, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertEquals(detectorC, events.get(1).getDetector());
+        Assertions.assertEquals(5, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertEquals(detectorC, events.get(1).getDetector());
         // reporting t3 and t4 is optional, seeing them is not.
         // we know a root was found at t3 because events are reported at t2 and t5.
         /*
-        Assert.assertEquals(t3, events.get(2).getT(), tolerance);
-        Assert.assertEquals(false, events.get(2).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(2).getHandler());
-        Assert.assertEquals(t4, events.get(3).getT(), tolerance);
-        Assert.assertEquals(true, events.get(3).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(3).getHandler());
+        Assertions.assertEquals(t3, events.get(2).getT(), tolerance);
+        Assertions.assertEquals(false, events.get(2).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(2).getHandler());
+        Assertions.assertEquals(t4, events.get(3).getT(), tolerance);
+        Assertions.assertEquals(true, events.get(3).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(3).getHandler());
         */
-        Assert.assertEquals(t5, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(2).isIncreasing());
-        Assert.assertEquals(detectorC, events.get(2).getDetector());
-        Assert.assertEquals(t6, events.get(3).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(3).isIncreasing());
-        Assert.assertEquals(detectorA, events.get(3).getDetector());
-        Assert.assertEquals(t7, events.get(4).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(4).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(4).getDetector());
+        Assertions.assertEquals(t5, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(2).isIncreasing());
+        Assertions.assertEquals(detectorC, events.get(2).getDetector());
+        Assertions.assertEquals(t6, events.get(3).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(3).isIncreasing());
+        Assertions.assertEquals(detectorA, events.get(3).getDetector());
+        Assertions.assertEquals(t7, events.get(4).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(4).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(4).getDetector());
     }
 
     /** Test a reset event triggering another event at the same time. */
@@ -1438,11 +1669,11 @@ public abstract class CloseEventsAbstractTest {
         double t1 = -15.0;
         SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
                 6378137 + 500e3, 0, FastMath.PI / 2, 0, 0,
-                FastMath.PI / 2, PositionAngle.TRUE, eci, epoch.shiftedBy(t1), mu));
+                FastMath.PI / 2, PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), mu));
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                .withHandler(new Handler(events, Action.RESET_STATE) {
                     @Override
                     public SpacecraftState resetState(EventDetector detector,
                                                       SpacecraftState oldState) {
@@ -1453,7 +1684,7 @@ public abstract class CloseEventsAbstractTest {
                 .withThreshold(tolerance);
         LatitudeCrossingDetector detectorB =
                 new LatitudeCrossingDetector(earth, FastMath.toRadians(80))
-                        .withHandler(new RecordAndContinue<>(events))
+                        .withHandler(new RecordAndContinue(events))
                         .withMaxCheck(maxCheck)
                         .withThreshold(tolerance);
 
@@ -1466,13 +1697,13 @@ public abstract class CloseEventsAbstractTest {
 
         //verify
         // really we only care that the Rules of Event Handling are not violated,
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertEquals(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(1).isIncreasing());
-        Assert.assertEquals(detectorB, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertEquals(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(1).isIncreasing());
+        Assertions.assertEquals(detectorB, events.get(1).getDetector());
     }
 
     /** check when t + tolerance == t. */
@@ -1483,9 +1714,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18;
         double t1 = -15;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1495,10 +1726,10 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
     }
 
     /**
@@ -1514,13 +1745,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11, t2 = -19;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState s,
                                                 EventDetector detector,
@@ -1534,7 +1765,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorB.g(state) : 1);
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1544,13 +1775,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorC, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorC, events.get(1).getDetector());
     }
 
     /**
@@ -1565,13 +1796,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -1586,7 +1817,7 @@ public abstract class CloseEventsAbstractTest {
         .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? 1 : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1596,10 +1827,10 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
     }
 
     /**
@@ -1614,13 +1845,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -1636,7 +1867,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorD.g(state) : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1646,13 +1877,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorC, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorC, events.get(1).getDetector());
     }
 
     /**
@@ -1667,13 +1898,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -1689,7 +1920,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorB.g(state) : detectorD.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1699,13 +1930,13 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assert.assertEquals(2, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorC, events.get(1).getDetector());
+        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorC, events.get(1).getDetector());
     }
 
     /** check when root finding tolerance > event finding tolerance. */
@@ -1716,9 +1947,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18; // less than 1 ulp
         double t1 = -15.1;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
-                .withHandler(new Handler<>(events, Action.STOP))
+                .withHandler(new Handler(events, Action.STOP))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1728,18 +1959,18 @@ public abstract class CloseEventsAbstractTest {
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assert.assertEquals(1, events.size());
+        Assertions.assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t1, finalState.getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, finalState.getDate().durationFrom(epoch), tolerance);
 
         // try to resume propagation
         finalState = propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify it got to the end
-        Assert.assertEquals(-30.0, finalState.getDate().durationFrom(epoch), 0.0);
+        Assertions.assertEquals(-30.0, finalState.getDate().durationFrom(epoch), 0.0);
     }
 
     /**
@@ -1754,13 +1985,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         final double t1 = FastMath.nextDown(-10.0), t2 = -10.5;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // never zero so there is no easy way out
         EventDetector detectorA = new FunctionalDetector()
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> {
                     final AbsoluteDate t = state.getDate();
                     if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
@@ -1772,7 +2003,7 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         TimeDetector detectorB = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1783,16 +2014,16 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assert.assertEquals(3, events.size());
-        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(false, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
-        Assert.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertSame(detectorB, events.get(1).getDetector());
-        Assert.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
-        Assert.assertEquals(true, events.get(2).isIncreasing());
-        Assert.assertSame(detectorA, events.get(2).getDetector());
+        Assertions.assertEquals(3, events.size());
+        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(false, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertSame(detectorB, events.get(1).getDetector());
+        Assertions.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(true, events.get(2).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(2).getDetector());
     }
 
     /** check when root finding tolerance > event finding tolerance. */
@@ -1803,9 +2034,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18; // less than 1 ulp
         AbsoluteDate t1 = epoch.shiftedBy(-15).shiftedBy(FastMath.ulp(-15.0) / 8);
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1815,16 +2046,92 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assert.assertEquals(1, events.size());
+        Assertions.assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assert.assertEquals(t1.durationFrom(epoch),
+        Assertions.assertEquals(t1.durationFrom(epoch),
                 events.get(0).getState().getDate().durationFrom(epoch),
                 FastMath.ulp(-15.0));
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertSame(detectorA, events.get(0).getDetector());
     }
 
+    /** Check that steps are restricted correctly with a continue event. */
+    @Test
+    public void testEventStepHandlerReverse() {
+        // setup
+        double tolerance = 1e-18;
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(new TimeDetector(-5)
+                .withHandler(new Handler(Action.CONTINUE))
+                .withThreshold(tolerance));
+        StepHandler stepHandler = new StepHandler();
+        propagator.setStepHandler(stepHandler);
 
+        // action
+        SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(-10));
+
+        // verify
+        Assertions.assertEquals(-10.0, finalState.getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(0.0,
+                stepHandler.initialState.getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch), tolerance);
+        Assertions.assertEquals(-10.0,
+                stepHandler.finalState.getDate().durationFrom(epoch), tolerance);
+        OrekitStepInterpolator interpolator = stepHandler.interpolators.get(0);
+        Assertions.assertEquals(0.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(-5.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        interpolator = stepHandler.interpolators.get(1);
+        Assertions.assertEquals(-5.0,
+                interpolator.getPreviousState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(-10.0,
+                interpolator.getCurrentState().getDate().durationFrom(epoch), tolerance);
+        Assertions.assertEquals(2, stepHandler.interpolators.size());
+    }
+
+    /**
+     * Test {@link EventHandler#resetState(EventDetector, SpacecraftState)} returns {@code
+     * null}.
+     */
+    @Test
+    public void testEventCausedByDerivativesResetReverse() {
+        // setup
+        TimeDetector detectorA = new TimeDetector(-15.0)
+                .withHandler(new Handler(Action.RESET_STATE){
+                    @Override
+                    public SpacecraftState resetState(EventDetector d, SpacecraftState s) {
+                        return null;
+                    }
+                })
+                .withMaxCheck(10)
+                .withThreshold(1e-6);
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        try {
+            // action
+            propagator.propagate(epoch.shiftedBy(-20.0));
+            Assertions.fail("Expected Exception");
+        } catch (NullPointerException e) {
+            // expected
+        }
+    }
+
+    @Test
+    public void testResetChangesSign() {
+        Propagator propagator = getPropagator(2.5);
+        AbsoluteDate t0 = propagator.getInitialState().getDate();
+        final double small = 1.25e-11;
+        ResetChangesSignGenerator eventsGenerator = new ResetChangesSignGenerator(t0, 0.75, 1.125, -0.5 * small).
+                                                    withMaxCheck(1).
+                                                    withThreshold(small).
+                                                    withMaxIter(1000);
+        propagator.addEventDetector(eventsGenerator);
+        final SpacecraftState end = propagator.propagate(propagator.getInitialState().getDate().shiftedBy(12.5));
+        Assertions.assertEquals(2,                 eventsGenerator.getCount());
+        Assertions.assertEquals(1.125 + 0.5 * small, end.getDate().durationFrom(t0), 1.0e-12);
+    }
 
     /* utility classes and methods */
 
@@ -1837,7 +2144,7 @@ public abstract class CloseEventsAbstractTest {
     private SpacecraftState state(double t) {
         return new SpacecraftState(
                 new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
-                        PositionAngle.TRUE, eci, epoch.shiftedBy(t),
+                        PositionAngleType.TRUE, eci, epoch.shiftedBy(t),
                         mu));
     }
 
@@ -1851,7 +2158,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     /** Trigger an event at a particular time. */
-    private static class TimeDetector extends AbstractDetector<TimeDetector> {
+    protected static class TimeDetector extends AbstractDetector<TimeDetector> {
 
         /** time of the event to trigger. */
         private final List<AbsoluteDate> eventTs;
@@ -1862,8 +2169,8 @@ public abstract class CloseEventsAbstractTest {
          * @param eventTs event times past epoch.
          */
         public TimeDetector(double... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), toDates(eventTs));
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), toDates(eventTs));
         }
 
         /**
@@ -1872,14 +2179,14 @@ public abstract class CloseEventsAbstractTest {
          * @param eventTs event times past epoch.
          */
         public TimeDetector(AbsoluteDate... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), Arrays.asList(eventTs));
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), Arrays.asList(eventTs));
         }
 
-        private TimeDetector(double newMaxCheck,
+        private TimeDetector(AdaptableInterval newMaxCheck,
                              double newThreshold,
                              int newMaxIter,
-                             EventHandler<? super TimeDetector> newHandler,
+                             EventHandler newHandler,
                              List<AbsoluteDate> dates) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.eventTs = dates;
@@ -1902,10 +2209,10 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        protected TimeDetector create(double newMaxCheck,
+        protected TimeDetector create(AdaptableInterval newMaxCheck,
                                       double newThreshold,
                                       int newMaxIter,
-                                      EventHandler<? super TimeDetector> newHandler) {
+                                      EventHandler newHandler) {
             return new TimeDetector(
                     newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
         }
@@ -1921,19 +2228,19 @@ public abstract class CloseEventsAbstractTest {
         private final EventDetector g;
 
         public FlatDetector(double... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), new TimeDetector(eventTs));
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), new TimeDetector(eventTs));
         }
 
         public FlatDetector(AbsoluteDate... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), new TimeDetector(eventTs));
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), new TimeDetector(eventTs));
         }
 
-        private FlatDetector(double newMaxCheck,
+        private FlatDetector(AdaptableInterval newMaxCheck,
                              double newThreshold,
                              int newMaxIter,
-                             EventHandler<? super FlatDetector> newHandler,
+                             EventHandler newHandler,
                              EventDetector g) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.g = g;
@@ -1945,10 +2252,10 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        protected FlatDetector create(double newMaxCheck,
+        protected FlatDetector create(AdaptableInterval newMaxCheck,
                                       double newThreshold,
                                       int newMaxIter,
-                                      EventHandler<? super FlatDetector> newHandler) {
+                                      EventHandler newHandler) {
             return new FlatDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, g);
         }
 
@@ -1961,14 +2268,14 @@ public abstract class CloseEventsAbstractTest {
         private final List<AbsoluteDate> eventTs;
 
         public ContinuousDetector(double... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), toDates(eventTs));
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), toDates(eventTs));
         }
 
-        private ContinuousDetector(double newMaxCheck,
+        private ContinuousDetector(AdaptableInterval newMaxCheck,
                                    double newThreshold,
                                    int newMaxIter,
-                                   EventHandler<? super ContinuousDetector> newHandler,
+                                   EventHandler newHandler,
                                    List<AbsoluteDate> eventDates) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.eventTs = eventDates;
@@ -1996,17 +2303,17 @@ public abstract class CloseEventsAbstractTest {
 
         @Override
         protected ContinuousDetector create(
-                double newMaxCheck,
+                AdaptableInterval newMaxCheck,
                 double newThreshold,
                 int newMaxIter,
-                EventHandler<? super ContinuousDetector> newHandler) {
+                EventHandler newHandler) {
             return new ContinuousDetector(
                     newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
         }
 
     }
 
-    private static class Handler<T extends EventDetector> extends RecordAndContinue<T> {
+    private static class Handler extends RecordAndContinue {
 
         private final Action action;
 
@@ -2014,15 +2321,128 @@ public abstract class CloseEventsAbstractTest {
             this.action = action;
         }
 
-        public Handler(List<Event<T>> events, Action action) {
+        public Handler(List<Event> events, Action action) {
             super(events);
             this.action = action;
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             super.eventOccurred(s, detector, increasing);
             return this.action;
+        }
+
+    }
+
+    private static class ResetHandler extends Handler {
+
+        private final SpacecraftState newState;
+        private final int times;
+        private long i = 0;
+
+        public ResetHandler(List<Event> events, SpacecraftState newState) {
+            this(events, newState, Integer.MAX_VALUE);
+        }
+
+        public ResetHandler(List<Event> events, SpacecraftState newState, int times) {
+            super(events, Action.RESET_STATE);
+            this.newState = newState;
+            this.times = times;
+        }
+
+        @Override
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+            super.eventOccurred(s, detector, increasing);
+            if (i++ < times) {
+                return Action.RESET_STATE;
+            }
+            return Action.CONTINUE;
+        }
+
+        @Override
+        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
+            Assertions.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()), 0);
+            return newState;
+        }
+    }
+
+    private static class StepHandler implements OrekitStepHandler {
+
+        private SpacecraftState initialState;
+        private AbsoluteDate targetDate;
+        private List<OrekitStepInterpolator> interpolators = new ArrayList<>();
+        private SpacecraftState finalState;
+
+        @Override
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            initialState = s0;
+            targetDate = t;
+        }
+
+        @Override
+        public void handleStep(OrekitStepInterpolator interpolator) {
+            interpolators.add(interpolator);
+        }
+
+        @Override
+        public void finish(SpacecraftState finalState) {
+            this.finalState = finalState;
+        }
+    }
+
+    private class ResetChangesSignGenerator extends AbstractDetector<ResetChangesSignGenerator> {
+
+        final AbsoluteDate t0;
+        final double y1;
+        final double y2;
+        final double change;
+        double delta;
+        int count;
+
+        public ResetChangesSignGenerator(final AbsoluteDate t0, final double y1, final double y2, final double change) {
+            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new ContinueOnEvent(), t0, y1, y2, change);
+        }
+
+        private ResetChangesSignGenerator(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
+                                          final EventHandler newHandler,
+                                          final AbsoluteDate t0, final double y1, final double y2, final double change ) {
+            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            this.t0     = t0;
+            this.y1     = y1;
+            this.y2     = y2;
+            this.change = change;
+            this.delta  = 0;
+            this.count  = 0;
+        }
+
+        protected ResetChangesSignGenerator create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                                   final int newMaxIter,
+                                                   final EventHandler newHandler) {
+            return new ResetChangesSignGenerator(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                                 t0, y1, y2, change);
+        }
+
+        public double g(SpacecraftState s) {
+            double dt = s.getDate().durationFrom(t0) + delta;
+            return (dt - y1) * (dt - y2);
+        }
+
+        public EventHandler getHandler() {
+            return new EventHandler() {
+                public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                    return ++count < 2 ? Action.RESET_STATE : Action.STOP;
+                }
+
+                public SpacecraftState resetState(EventDetector detector, SpacecraftState s) {
+                    delta = change;
+                    return s;
+                }
+            };
+        }
+
+        public int getCount() {
+            return count;
         }
 
     }

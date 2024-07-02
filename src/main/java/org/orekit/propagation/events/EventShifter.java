@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -34,13 +34,12 @@ import org.orekit.time.AbsoluteDate;
  * and a negative times shift for decreasing events (eclipse entry).</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see EventDetector
- * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class EventShifter<T extends EventDetector> extends AbstractDetector<EventShifter<T>> {
+public class EventShifter extends AbstractDetector<EventShifter> {
 
     /** Event detector for the raw unshifted event. */
-    private final T detector;
+    private final EventDetector detector;
 
     /** Indicator for using shifted or unshifted states at event occurrence. */
     private final boolean useShiftedStates;
@@ -55,48 +54,48 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
      * <p>The {@link #getMaxCheckInterval() max check interval}, the
      * {@link #getThreshold() convergence threshold} of the raw unshifted
      * events will be used for the shifted event. When an event occurs,
-     * the {@link #eventOccurred(SpacecraftState, boolean) eventOccurred}
+     * the {@link EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred}
      * method of the raw unshifted events will be called (with spacecraft
      * state at either the shifted or the unshifted event date depending
      * on the <code>useShiftedStates</code> parameter).</p>
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
-     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method of
-     * the <code>detector</code> will remain shifted, otherwise it will
+     * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred} method of
+     * the associated {@code handler} will remain shifted, otherwise it will
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
      */
-    public EventShifter(final T detector, final boolean useShiftedStates,
+    public EventShifter(final EventDetector detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
         this(detector.getMaxCheckInterval(), detector.getThreshold(),
-             detector.getMaxIterationCount(), new LocalHandler<T>(),
+             detector.getMaxIterationCount(), new LocalHandler(),
              detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
-     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method of
+     * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred} method of
      * the <code>detector</code> will remain shifted, otherwise it will
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
      * @since 6.1
      */
-    private EventShifter(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<? super EventShifter<T>> handler,
-                         final T detector, final boolean useShiftedStates,
-                         final double increasingTimeShift, final double decreasingTimeShift) {
+    protected EventShifter(final AdaptableInterval maxCheck, final double threshold,
+                           final int maxIter, final EventHandler handler,
+                           final EventDetector detector, final boolean useShiftedStates,
+                           final double increasingTimeShift, final double decreasingTimeShift) {
         super(maxCheck, threshold, maxIter, handler);
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
@@ -106,10 +105,19 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
 
     /** {@inheritDoc} */
     @Override
-    protected EventShifter<T> create(final double newMaxCheck, final double newThreshold,
-                                     final int newMaxIter, final EventHandler<? super EventShifter<T>> newHandler) {
-        return new EventShifter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                   detector, useShiftedStates, -increasingOffset, -decreasingOffset);
+    protected EventShifter create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                  final int newMaxIter, final EventHandler newHandler) {
+        return new EventShifter(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                detector, useShiftedStates, -increasingOffset, -decreasingOffset);
+    }
+
+    /**
+     * Get the detector for the raw unshifted event.
+     * @return the detector for the raw unshifted event
+     * @since 11.1
+     */
+    public EventDetector getDetector() {
+        return detector;
     }
 
     /** Get the increasing events time shift.
@@ -142,14 +150,15 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
     }
 
     /** Local class for handling events. */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventShifter<T>> {
+    private static class LocalHandler implements EventHandler {
 
         /** Shifted state at even occurrence. */
         private SpacecraftState shiftedState;
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
 
+            final EventShifter shifter = (EventShifter) detector;
             if (shifter.useShiftedStates) {
                 // the state provided by the caller already includes the time shift
                 shiftedState = s;
@@ -159,14 +168,15 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
                 shiftedState = s.shiftedBy(offset);
             }
 
-            return shifter.detector.eventOccurred(shiftedState, increasing);
+            return shifter.detector.getHandler().eventOccurred(shiftedState, shifter.detector, increasing);
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState) {
-            return shifter.detector.resetState(shiftedState);
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+            final EventShifter shifter = (EventShifter) detector;
+            return shifter.detector.getHandler().resetState(shifter.detector, shiftedState);
         }
 
     }

@@ -5,13 +5,13 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>10.1-SNAPSHOT</version>
-  <name>ORbit Extrapolation KIT</name>
+  <version>13.0-SNAPSHOT</version>
+  <name>OREKIT</name>
   <url>http://www.orekit.org/</url>
 
   <inceptionYear>2002</inceptionYear>
   <description>
-    OREKIT (ORbits Extrapolation KIT) is a low level space dynamics library.
+    OREKIT is a low level space dynamics library.
     It provides basic elements (orbits, dates, attitude, frames ...) and
     various algorithms to handle them (conversions, analytical and numerical
     propagation, pointing ...).
@@ -20,37 +20,48 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.spotbugs-maven-plugin.version>3.1.12</orekit.spotbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.8.4</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-assembly-plugin.version>3.1.1</orekit.maven-assembly-plugin.version>
-    <orekit.maven-bundle-plugin.version>4.2.0</orekit.maven-bundle-plugin.version>
+    <!-- Spotbugs version higher than 4.2.3 will trigger numerous EI_EXPOSE_REP errors not handled by Orekit yet -->
+    <orekit.spotbugs-maven-plugin.version>4.2.3</orekit.spotbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.12</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-bundle-plugin.version>5.1.9</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>3.1.0</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.18</orekit.checkstyle.version>
-    <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.8.1</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>3.1.0</orekit.maven-javadoc-plugin.version>
-    <orekit.maven-jar-plugin.version>3.1.1</orekit.maven-jar-plugin.version>
-    <orekit.maven-jxr-plugin.version>3.0.0</orekit.maven-jxr-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>3.4.0</orekit.maven-checkstyle-plugin.version>
+    <!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
+    <orekit.checkstyle.version>9.3</orekit.checkstyle.version>
+    <orekit.maven-clean-plugin.version>3.3.2</orekit.maven-clean-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.13.0</orekit.maven-compiler-plugin.version>
+    <orekit.maven-javadoc-plugin.version>3.7.0</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-jar-plugin.version>3.4.1</orekit.maven-jar-plugin.version>
+    <orekit.maven-jxr-plugin.version>3.4.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>1.2018.12</orekit.plantuml.version>
-    <orekit.maven-project-info-reports-plugin.version>3.0.0</orekit.maven-project-info-reports-plugin.version>
-    <orekit.maven-resources-plugin.version>3.1.0</orekit.maven-resources-plugin.version>
-    <orekit.maven-site-plugin.version>3.7.1</orekit.maven-site-plugin.version>
-    <orekit.maven-source-plugin.version>3.1.0</orekit.maven-source-plugin.version>
+    <orekit.plantuml.version>1.2024.5</orekit.plantuml.version>
+    <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
+    <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>3.6.0</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-wagon-ssh-external-plugin.version>3.5.3</orekit.maven-wagon-ssh-external-plugin.version>
+    <orekit.maven-source-plugin.version>3.3.1</orekit.maven-source-plugin.version>
+    <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
+         https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
     <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>2.22.2</orekit.maven-surefire-report-plugin.version>
-    <orekit.mockito-core.version>2.28.2</orekit.mockito-core.version>
-    <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
-    <orekit.build-helper-maven-plugin.version>3.0.0</orekit.build-helper-maven-plugin.version>
-    <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
-    <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
-    <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
-    <orekit.hipparchus.version>1.6-SNAPSHOT</orekit.hipparchus.version>
-    <orekit.junit.version>4.12</orekit.junit.version>
+    <orekit.maven-surefire-report-plugin.version>3.2.1</orekit.maven-surefire-report-plugin.version>
+    <!-- Mockito 4.11.0 is the last supported version with java 8
+         https://github.com/mockito/mockito/releases -->
+    <orekit.mockito-core.version>4.11.0</orekit.mockito-core.version>
+    <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
+    <orekit.build-helper-maven-plugin.version>3.6.0</orekit.build-helper-maven-plugin.version>
+    <orekit.nexus-staging-maven-plugin.version>1.7.0</orekit.nexus-staging-maven-plugin.version>
+    <orekit.maven-gpg-plugin.version>3.2.4</orekit.maven-gpg-plugin.version>
+    <orekit.maven-install-plugin.version>3.1.2</orekit.maven-install-plugin.version>
+    <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
+    <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
+    <orekit.hipparchus.version>3.1</orekit.hipparchus.version>
+    <orekit.junit.version>5.10.0</orekit.junit.version>
+    <orekit.hamcrest.version>2.2</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
+    <tools.jar.dir>${java.home}/../lib/</tools.jar.dir>
+    <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
 
   <developers>
@@ -72,6 +83,13 @@
     <developer>
       <name>Thierry Ceolin</name>
       <id>thierry</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Vincent Cucchietti</name>
+      <id>vincent</id>
       <roles>
         <role>developer</role>
       </roles>
@@ -152,8 +170,36 @@
       </roles>
     </developer>
     <developer>
+      <name>Romain Serra</name>
+      <id>serrof</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Evan Ward</name>
       <id>evan</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Yannick Jeandroz</name>
+      <id>yannick</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Cl&#233;ment Jonglez</name>
+      <id>clement</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Mark Rutten</name>
+      <id>markrutten</id>
       <roles>
         <role>developer</role>
       </roles>
@@ -171,7 +217,16 @@
       <name>Daniel Aguilar Taboada</name>
     </contributor>
     <contributor>
+      <name>Julien Asquier</name>
+    </contributor>
+    <contributor>
+      <name>Louis Aucouturier</name>
+    </contributor>
+    <contributor>
       <name>Lucian B&#259;rbulescu</name>
+    </contributor>
+    <contributor>
+      <name>Julie Bayard</name>
     </contributor>
     <contributor>
       <name>Petre Bazavan</name>
@@ -189,6 +244,9 @@
       <name>Paul Cefola</name>
     </contributor>
     <contributor>
+      <name>Elisabet Cid-Borobia</name>
+    </contributor>
+    <contributor>
       <name>Francesco Coccoluto</name>
     </contributor>
     <contributor>
@@ -198,28 +256,85 @@
       <name>&#201;douard Delente</name>
     </contributor>
     <contributor>
+      <name>Rapha&#235;l Ferm&#233;</name>
+    </contributor>
+    <contributor>
       <name>Christine Fernandez-Martin</name>
+    </contributor>
+    <contributor>
+      <name>Alberto Ferrero</name>
+    </contributor>
+    <contributor>
+      <name>Mikael Fillastre</name>
+    </contributor>
+    <contributor>
+      <name>Andrea Fiorentino</name>
+    </contributor>
+    <contributor>
+      <name>Alberto Foss&#224;</name>
+    </contributor>
+    <contributor>
+      <name>Lucas Girodet</name>
+    </contributor>
+    <contributor>
+      <name>Andrew Goetz</name>
+    </contributor>
+    <contributor>
+      <name>David Gondelach</name>
+    </contributor>
+    <contributor>
+      <name>Brad Hards</name>
     </contributor>
     <contributor>
       <name>Romaric Her</name>
     </contributor>
     <contributor>
+      <name>Jonathan Hood</name>
+    </contributor>
+    <contributor>
       <name>James Housden</name>
     </contributor>
     <contributor>
-      <name>Yannick Jeandroz</name>
+      <name>Shiva Iyer</name>
+    </contributor>
+    <contributor>
+      <name>Dimuthu Jayasingha</name>
     </contributor>
     <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
     </contributor>
     <contributor>
+      <name>Anne-Laure Lugan</name>
+    </contributor>
+    <contributor>
+      <name>Lukas Matt</name>
+    </contributor>
+    <contributor>
+      <name>Tanner Mills</name>
+    </contributor>
+    <contributor>
       <name>Vincent Mouraux</name>
+    </contributor>
+    <contributor>
+      <name>Theo Nguyen</name>
     </contributor>
     <contributor>
       <name>Lars N&#230;sbye Christensen</name>
     </contributor>
     <contributor>
+      <name>Emmanuel Papanagiotou</name>
+    </contributor>
+    <contributor>
+      <name>Thomas Paulet</name>
+    </contributor>
+    <contributor>
+      <name>Ga&#235;tan Pierre</name>
+    </contributor>
+    <contributor>
       <name>Steven Ports</name>
+    </contributor>
+    <contributor>
+      <name>Joseph Reed</name>
     </contributor>
     <contributor>
       <name>Silvia R&#237;os Berganti&#241;os</name>
@@ -231,7 +346,22 @@
       <name>Mathieu Rom&#233;ro</name>
     </contributor>
     <contributor>
+      <name>Li Rongwang</name>
+    </contributor>
+    <contributor>
+      <name>Chiara Rusconi</name>
+    </contributor>
+    <contributor>
       <name>Beatriz Salazar Garc&#237;a</name>
+    </contributor>
+    <contributor>
+      <name>Christopher Schank</name>
+    </contributor>
+    <contributor>
+      <name>Gabriele Serafini</name>
+    </contributor>
+    <contributor>
+      <name>David Soulard</name>
     </contributor>
     <contributor>
       <name>Ioanna Stypsanelli</name>
@@ -239,17 +369,26 @@
     <contributor>
       <name>Michael Turner</name>
     </contributor>
+    <contributor>
+      <name>Sofia Urbina</name>
+    </contributor>
+    <contributor>
+      <name>Jean-Baptiste Valet</name>
+    </contributor>
+    <contributor>
+      <name>M&#233;lina Vanel</name>
+    </contributor>
   </contributors>
 
   <organization>
-    <name>CS Syst&#232;mes d&#039;Information</name>
-    <url>http://www.c-s.fr/</url>
+    <name>CS GROUP</name>
+    <url>https://www.csgroup.eu/</url>
   </organization>
 
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -318,12 +457,31 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
       <version>${orekit.junit.version}</version>
-      <type>jar</type>
-      <scope>test</scope>
       <optional>false</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${orekit.junit.version}</version>
+      <optional>false</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>5.10.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>${orekit.hamcrest.version}</version>
+      <optional>false</optional>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -336,18 +494,64 @@
         <configuration>
           <source>${orekit.compiler.source}</source>
           <target>${orekit.compiler.target}</target>
-          <compilerArgument>-Xlint:deprecation</compilerArgument>
+          <showWarnings>true</showWarnings>
+          <compilerArgs>
+            <arg>-Xlint:deprecation</arg>
+            <arg>-Xlint:unchecked</arg>
+            <arg>-Xplugin:dataContextPlugin</arg>
+          </compilerArgs>
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>${orekit.maven-assembly-plugin.version}</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/assembly/source-jar-assembly.xml</descriptor>
-            <descriptor>src/main/assembly/source-distribution-assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <!-- don't recompile the compiler plugin. -->
+                <exclude>org/orekit/compiler/**</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default-testCompile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <compilerArgs>
+                <arg>-Xlint:deprecation</arg>
+                <arg>-Xlint:unchecked</arg>
+                <!-- don't activate the compiler plugin for Orekit own tests -->
+                <!-- thousands of tests use intentionally the default context -->
+              </compilerArgs>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- need to compile these two packages before the rest so that the compiler
+                 plugin will work. -->
+            <id>plugin-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <!-- the phase before compile. -->
+            <phase>process-resources</phase>
+            <configuration>
+              <includes>
+                <include>org/orekit/annotation/**</include>
+                <include>org/orekit/compiler/**</include>
+              </includes>
+              <compilerArgs>
+                <arg>-Xlint:deprecation</arg>
+                <!-- Add the Java compiler to the classpath. This avoids creating a system
+                     dependency which is inherited by projects using Orekit. -->
+                <arg>-classpath</arg>
+                <arg>${tools.jar.path}</arg>
+              </compilerArgs>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.felix</groupId>
@@ -385,10 +589,38 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
+              <!-- Ensure LICENSE and NOTICE are shipped with binary jar -->
               <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
               <resources>
                 <resource>
                   <directory>.</directory>
+                  <includes>
+                    <include>LICENSE.txt</include>
+                    <include>NOTICE.txt</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${orekit.build-helper-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>add-resource</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>add-resource</goal>
+            </goals>
+            <configuration>
+              <!-- Ensure LICENSE and NOTICE are shipped with sources jar -->
+              <resources>
+                <resource>
+                  <directory>.</directory>
+                  <targetPath>META-INF</targetPath>
                   <includes>
                     <include>LICENSE.txt</include>
                     <include>NOTICE.txt</include>
@@ -408,11 +640,24 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>${orekit.maven-site-plugin.version}</version>
+          <dependencies>
+            <dependency><!-- add support for ssh/scp -->
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-ssh-external</artifactId>
+              <version>${orekit.maven-wagon-ssh-external-plugin.version}</version>
+            </dependency>
+          </dependencies>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${orekit.maven-surefire-plugin.version}</version>
+        <configuration>
+          <argLine>@{argLine} -Xmx2048m</argLine>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${tools.jar.path}</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -426,11 +671,23 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>${orekit.maven-project-info-reports-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <additionalOptions>
+            <option>--allow-script-in-comments</option>
+            <option>-header</option>
+            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>-extdirs</option>
+            <option>${tools.jar.dir}</option>
+          </additionalOptions>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
@@ -561,6 +818,7 @@
             <manifestEntries>
               <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
               <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
+              <Automatic-Module-Name>org.orekit</Automatic-Module-Name>
             </manifestEntries>
           </archive>
         </configuration>
@@ -655,7 +913,7 @@
         <version>${orekit.maven-jxr-plugin.version}</version>
         <configuration>
           <linkJavadoc>false</linkJavadoc>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
         </configuration>
       </plugin>
       <plugin>
@@ -664,7 +922,14 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <additionalOptions>
+            <option>--allow-script-in-comments</option>
+            <option>-header</option>
+            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>-extdirs</option>
+            <option>${tools.jar.dir}</option>
+          </additionalOptions>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
@@ -699,7 +964,7 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>ru.concerteza.buildnumber</groupId>
+            <groupId>org.bidib.buildnumber</groupId>
             <artifactId>maven-jgit-buildnumber-plugin</artifactId>
             <version>${orekit.jgit.buildnumber.version}</version>
             <executions>
@@ -826,12 +1091,47 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-install-plugin</artifactId>
             <version>${orekit.maven-install-plugin.version}</version>
-            <configuration>
-              <createChecksum>true</createChecksum>
-            </configuration>
           </plugin>
         </plugins>
      </build>
+    </profile>
+    <profile>
+      <id>continuous-integration</id>
+      <activation>
+        <property>
+          <!-- Var Env set by GitLab-CI -->
+          <name>env.CI</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${orekit.maven-surefire-plugin.version}</version>
+            <configuration>
+              <!-- Orekit is mostly a computational library. -->
+              <!-- As there is not a lot of I/O it is better to not overide the number of CPU. -->
+              <forkCount>0.5C</forkCount>
+              <argLine>@{argLine} -Xmx2048m</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- A profile to configure staging deployment (for continuous integration process) -->
+      <id>ci-deploy</id>
+      <distributionManagement>
+        <repository>
+          <id>ci-releases</id>
+          <url>https://packages.orekit.org/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ci-snapshots</id>
+            <url>https://packages.orekit.org/repository/maven-snapshots/</url>
+        </snapshotRepository>
+      </distributionManagement>
     </profile>
     <profile>
       <id>eclipse</id>
@@ -861,7 +1161,7 @@
                         </goals>
                       </pluginExecutionFilter>
                       <action>
-                        <ignore></ignore>
+                        <ignore/>
                       </action>
                      </pluginExecution>
                   </pluginExecutions>

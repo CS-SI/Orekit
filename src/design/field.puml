@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.hipparchus #ECEBD8 {
 
@@ -39,7 +40,7 @@
       Field<T> getField()
     }
 
-    interface "RealFieldElement<T>" as RealFieldElement_T_ {
+    interface "CalculusFieldElement<T>" as CalculusFieldElement_T_ {
       T sin()
       T cos()
       ...
@@ -68,13 +69,13 @@
           +double taylor(double[] delta)
         }
 
-        FieldElement_T_     <..      RealFieldElement_T_
-        RealFieldElement_T_     <..      DerivativeStructure
+        FieldElement_T_     <..      CalculusFieldElement_T_
+        CalculusFieldElement_T_     <..      DerivativeStructure
         DSFactory           --> DerivativeStructure : creates
     }
 
     package util #DDEBD8  {
-       RealFieldElement_T_     <..      Tuple
+       CalculusFieldElement_T_     <..      Tuple
     }
 
   }
@@ -82,7 +83,7 @@
   package org.orekit.propagation #ECEBD8 {
       interface "FieldPropagator<T>" as FieldPropagator_T_ {
       }
-      RealFieldElement_T_ <-- FieldPropagator_T_
+      CalculusFieldElement_T_ <-- FieldPropagator_T_
   }
 
 @enduml

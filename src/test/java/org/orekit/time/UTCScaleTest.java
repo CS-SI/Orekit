@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,31 +16,32 @@
  */
 package org.orekit.time;
 
-
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.OrekitMatchers;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.Constants;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import org.hipparchus.random.RandomGenerator;
-import org.hipparchus.random.Well1024a;
-import org.hipparchus.util.Decimal64Field;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 
 public class UTCScaleTest {
 
@@ -49,86 +50,87 @@ public class UTCScaleTest {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(2020, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        Assert.assertEquals("2020-12-31T23:59:59.000", d1.toString());
+        Assertions.assertEquals("2020-12-31T23:59:59.000Z", d1.toString());
     }
 
     @Test
     public void testNoLeap() {
-        Assert.assertEquals("UTC", utc.toString());
+        Assertions.assertEquals("UTC", utc.toString());
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(1999, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        AbsoluteDate d2 = new AbsoluteDate(new DateComponents(2000, 01, 01),
-                                           new TimeComponents(00, 00, 01),
+        AbsoluteDate d2 = new AbsoluteDate(new DateComponents(2000, 1, 1),
+                                           new TimeComponents(0, 0, 1),
                                            utc);
-        Assert.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
+        Assertions.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
     }
 
     @Test
     public void testLeap2006() {
         AbsoluteDate leapDate =
-            new AbsoluteDate(new DateComponents(2006, 01, 01), TimeComponents.H00, utc);
+            new AbsoluteDate(new DateComponents(2006, 1, 1), TimeComponents.H00, utc);
         AbsoluteDate d1 = leapDate.shiftedBy(-1);
         AbsoluteDate d2 = leapDate.shiftedBy(+1);
-        Assert.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
+        Assertions.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
 
         AbsoluteDate d3 = new AbsoluteDate(new DateComponents(2005, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        AbsoluteDate d4 = new AbsoluteDate(new DateComponents(2006, 01, 01),
-                                           new TimeComponents(00, 00, 01),
+        AbsoluteDate d4 = new AbsoluteDate(new DateComponents(2006, 1, 1),
+                                           new TimeComponents(0, 0, 1),
                                            utc);
-        Assert.assertEquals(3.0, d4.durationFrom(d3), 1.0e-10);
+        Assertions.assertEquals(3.0, d4.durationFrom(d3), 1.0e-10);
     }
 
     @Test
     public void testDuringLeap() {
-        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                           new TimeComponents(23, 59, 59),
                                           utc);
-        Assert.assertEquals("1983-06-30T23:58:59.000", d.shiftedBy(-60).toString(utc));
-        Assert.assertEquals(60, utc.minuteDuration(d.shiftedBy(-60)));
-        Assert.assertFalse(utc.insideLeap(d.shiftedBy(-60)));
-        Assert.assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
-        Assert.assertEquals(61, utc.minuteDuration(d));
-        Assert.assertFalse(utc.insideLeap(d));
+        Assertions.assertEquals("1983-06-30T23:58:59.000", d.shiftedBy(-60).toString(utc));
+        Assertions.assertEquals(60, utc.minuteDuration(d.shiftedBy(-60)));
+        Assertions.assertFalse(utc.insideLeap(d.shiftedBy(-60)));
+        Assertions.assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
+        Assertions.assertEquals(61, utc.minuteDuration(d));
+        Assertions.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
-        Assert.assertEquals("1983-06-30T23:59:59.251", d.toString(utc));
-        Assert.assertEquals(61, utc.minuteDuration(d));
-        Assert.assertFalse(utc.insideLeap(d));
+        Assertions.assertEquals("1983-06-30T23:59:59.251", d.toString(utc));
+        Assertions.assertEquals(61, utc.minuteDuration(d));
+        Assertions.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
-        Assert.assertEquals("1983-06-30T23:59:59.502", d.toString(utc));
-        Assert.assertEquals(61, utc.minuteDuration(d));
-        Assert.assertFalse(utc.insideLeap(d));
+        Assertions.assertEquals("1983-06-30T23:59:59.502", d.toString(utc));
+        Assertions.assertEquals(61, utc.minuteDuration(d));
+        Assertions.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
-        Assert.assertEquals("1983-06-30T23:59:59.753", d.toString(utc));
-        Assert.assertEquals(61, utc.minuteDuration(d));
-        Assert.assertFalse(utc.insideLeap(d));
+        Assertions.assertEquals("1983-06-30T23:59:59.753", d.toString(utc));
+        Assertions.assertEquals(61, utc.minuteDuration(d));
+        Assertions.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy( 0.251);
-        Assert.assertEquals("1983-06-30T23:59:60.004", d.toString(utc));
-        Assert.assertEquals(61, utc.minuteDuration(d));
-        Assert.assertTrue(utc.insideLeap(d));
+        Assertions.assertEquals("1983-06-30T23:59:60.004", d.toString(utc));
+        Assertions.assertEquals(61, utc.minuteDuration(d));
+        Assertions.assertTrue(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
-        Assert.assertEquals("1983-06-30T23:59:60.255", d.toString(utc));
-        Assert.assertEquals(61, utc.minuteDuration(d));
-        Assert.assertTrue(utc.insideLeap(d));
+        Assertions.assertEquals("1983-06-30T23:59:60.255", d.toString(utc));
+        Assertions.assertEquals(61, utc.minuteDuration(d));
+        Assertions.assertTrue(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
-        Assert.assertEquals("1983-06-30T23:59:60.506", d.toString(utc));
-        Assert.assertEquals(61, utc.minuteDuration(d));
+        Assertions.assertEquals("1983-06-30T23:59:60.506", d.toString(utc));
+        Assertions.assertEquals(61, utc.minuteDuration(d));
         d = d.shiftedBy(0.251);
-        Assert.assertEquals("1983-06-30T23:59:60.757", d.toString(utc));
-        Assert.assertEquals(61, utc.minuteDuration(d));
-        Assert.assertTrue(utc.insideLeap(d));
+        Assertions.assertEquals("1983-06-30T23:59:60.757", d.toString(utc));
+        Assertions.assertEquals(61, utc.minuteDuration(d));
+        Assertions.assertTrue(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
-        Assert.assertEquals("1983-07-01T00:00:00.008", d.toString(utc));
-        Assert.assertEquals(60, utc.minuteDuration(d));
-        Assert.assertFalse(utc.insideLeap(d));
+        Assertions.assertEquals("1983-07-01T00:00:00.008", d.toString(utc));
+        Assertions.assertEquals(60, utc.minuteDuration(d));
+        Assertions.assertFalse(utc.insideLeap(d));
     }
 
     @Test
     public void testWrapBeforeLeap() {
         AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
-        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
+        Assertions.assertEquals("2015-06-30T23:59:60.000+00:00",
+                t.getComponents(utc).toString(utc.minuteDuration(t)));
     }
 
     @Test
@@ -137,14 +139,53 @@ public class UTCScaleTest {
         for (double dt = 0; dt < 63; dt += 0.3) {
             if (dt < 1.0) {
                 // before the minute of the leap
-                Assert.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));
+                Assertions.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));
             } else if (dt < 62.0) {
                 // during the minute of the leap
-                Assert.assertEquals(61, utc.minuteDuration(t0.shiftedBy(dt)));
+                Assertions.assertEquals(61, utc.minuteDuration(t0.shiftedBy(dt)));
             } else {
                 // after the minute of the leap
-                Assert.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));
+                Assertions.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));
             }
+        }
+    }
+
+    /**
+     * Check the consistency of minute duration with the other data in each offset. Checks
+     * table hard coded in UTCScale.
+     *
+     * @throws ReflectiveOperationException on error.
+     */
+    @Test
+    public void testMinuteDurationConsistentWithLeap() throws ReflectiveOperationException {
+        // setup
+        // get the offsets array, makes this test easier to write
+        Field field = UTCScale.class.getDeclaredField("offsets");
+        field.setAccessible(true);
+        UTCTAIOffset[] offsets = (UTCTAIOffset[]) field.get(utc);
+
+        // action
+        for (UTCTAIOffset offset : offsets) {
+            // average of start and end of leap second, definitely inside
+            final AbsoluteDate start = offset.getDate();
+            final AbsoluteDate end = offset.getValidityStart();
+            AbsoluteDate d = start.shiftedBy(end.durationFrom(start) / 2.0);
+            int excess = utc.minuteDuration(d) - 60;
+            double leap = offset.getLeap();
+            // verify
+            Assertions.assertTrue(leap <= excess, "at MJD" + offset.getMJD() + ": " + leap + " <= " + excess);
+            Assertions.assertTrue(leap > (excess - 1));
+            // before the leap starts but still in the same minute
+            d = start.shiftedBy(-30);
+            int newExcess = utc.minuteDuration(d) - 60;
+            double newLeap = offset.getLeap();
+            // verify
+            Assertions.assertTrue(newLeap <= newExcess, "at MJD" + offset.getMJD() + ": " + newLeap + " <= " + newExcess);
+            Assertions.assertTrue(leap > (excess - 1));
+            Assertions.assertEquals(excess, newExcess);
+            Assertions.assertEquals(leap, newLeap, 0.0);
+            MatcherAssert.assertThat("" + offset.getValidityStart(), leap,
+                    OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
         }
     }
 
@@ -156,7 +197,7 @@ public class UTCScaleTest {
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
-            Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+            Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 
@@ -205,7 +246,7 @@ public class UTCScaleTest {
 
     private void checkOffset(int year, int month, int day, double offset) {
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
     }
 
     @Test
@@ -215,16 +256,16 @@ public class UTCScaleTest {
         for (double seconds = 59.0; seconds < 61.0; seconds += step) {
             final AbsoluteDate date = new AbsoluteDate(2008, 12, 31, 23, 59, seconds, utc);
             if (previous != null) {
-                Assert.assertEquals(step, date.durationFrom(previous), 1.0e-12);
+                Assertions.assertEquals(step, date.durationFrom(previous), 1.0e-12);
             }
             previous = date;
         }
         AbsoluteDate ad0 = new AbsoluteDate("2008-12-31T23:59:60", utc);
-        Assert.assertTrue(ad0.toString(utc).startsWith("2008-12-31T23:59:"));
+        Assertions.assertTrue(ad0.toString(utc).startsWith("2008-12-31T23:59:"));
         AbsoluteDate ad1 = new AbsoluteDate("2008-12-31T23:59:59", utc).shiftedBy(1);
-        Assert.assertEquals(0, ad1.durationFrom(ad0), 1.0e-15);
-        Assert.assertEquals(1, new AbsoluteDate("2009-01-01T00:00:00", utc).durationFrom(ad0), 1.0e-15);
-        Assert.assertEquals(2, new AbsoluteDate("2009-01-01T00:00:01", utc).durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(0, ad1.durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(1, new AbsoluteDate("2009-01-01T00:00:00", utc).durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(2, new AbsoluteDate("2009-01-01T00:00:01", utc).durationFrom(ad0), 1.0e-15);
     }
 
     @Test
@@ -237,16 +278,16 @@ public class UTCScaleTest {
                                                        new TimeComponents(21, 59, seconds, -50 * 60),
                                                        utc);
             if (previous != null) {
-                Assert.assertEquals(step, date.durationFrom(previous), 1.0e-12);
+                Assertions.assertEquals(step, date.durationFrom(previous), 1.0e-12);
             }
             previous = date;
         }
         AbsoluteDate ad0 = new AbsoluteDate("2008-12-29T21:59:60-50:00", utc);
-        Assert.assertTrue(ad0.toString(utc).startsWith("2008-12-31T23:59:"));
+        Assertions.assertTrue(ad0.toString(utc).startsWith("2008-12-31T23:59:"));
         AbsoluteDate ad1 = new AbsoluteDate("2008-12-29T21:59:59-50:00", utc).shiftedBy(1);
-        Assert.assertEquals(0, ad1.durationFrom(ad0), 1.0e-15);
-        Assert.assertEquals(1, new AbsoluteDate("2008-12-29T22:00:00-50:00", utc).durationFrom(ad0), 1.0e-15);
-        Assert.assertEquals(2, new AbsoluteDate("2008-12-29T22:00:01-50:00", utc).durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(0, ad1.durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(1, new AbsoluteDate("2008-12-29T22:00:00-50:00", utc).durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(2, new AbsoluteDate("2008-12-29T22:00:01-50:00", utc).durationFrom(ad0), 1.0e-15);
     }
 
     @Test
@@ -259,16 +300,16 @@ public class UTCScaleTest {
                                                        new TimeComponents(1, 59, seconds, +50 * 60),
                                                        utc);
             if (previous != null) {
-                Assert.assertEquals(step, date.durationFrom(previous), 1.0e-12);
+                Assertions.assertEquals(step, date.durationFrom(previous), 1.0e-12);
             }
             previous = date;
         }
         AbsoluteDate ad0 = new AbsoluteDate("2009-01-03T01:59:60+50:00", utc);
-        Assert.assertTrue(ad0.toString(utc).startsWith("2008-12-31T23:59:"));
+        Assertions.assertTrue(ad0.toString(utc).startsWith("2008-12-31T23:59:"));
         AbsoluteDate ad1 = new AbsoluteDate("2009-01-03T01:59:59+50:00", utc).shiftedBy(1);
-        Assert.assertEquals(0, ad1.durationFrom(ad0), 1.0e-15);
-        Assert.assertEquals(1, new AbsoluteDate("2009-01-03T02:00:00+50:00", utc).durationFrom(ad0), 1.0e-15);
-        Assert.assertEquals(2, new AbsoluteDate("2009-01-03T02:00:01+50:00", utc).durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(0, ad1.durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(1, new AbsoluteDate("2009-01-03T02:00:00+50:00", utc).durationFrom(ad0), 1.0e-15);
+        Assertions.assertEquals(2, new AbsoluteDate("2009-01-03T02:00:01+50:00", utc).durationFrom(ad0), 1.0e-15);
     }
 
     @Test
@@ -278,9 +319,9 @@ public class UTCScaleTest {
             AbsoluteDate t = t0.shiftedBy(dt);
             double seconds = t.getComponents(utc).getTime().getSecond();
             if (dt < 2.0) {
-                Assert.assertEquals(dt + 59.0, seconds, 1.0e-12);
+                Assertions.assertEquals(dt + 59.0, seconds, 1.0e-12);
             } else {
-                Assert.assertEquals(dt - 2.0, seconds, 1.0e-12);
+                Assertions.assertEquals(dt - 2.0, seconds, 1.0e-12);
             }
         }
     }
@@ -289,9 +330,9 @@ public class UTCScaleTest {
     public void testMultithreading() {
 
         // generate reference offsets using a single thread
-        RandomGenerator random = new Well1024a(6392073424l);
-        List<AbsoluteDate> datesList = new ArrayList<AbsoluteDate>();
-        List<Double> offsetsList = new ArrayList<Double>();
+        RandomGenerator random = new Well1024a(6392073424L);
+        List<AbsoluteDate> datesList = new ArrayList<>();
+        List<Double> offsetsList = new ArrayList<>();
         AbsoluteDate reference = utc.getFirstKnownLeapSecond().shiftedBy(-Constants.JULIAN_YEAR);
         double testRange = utc.getLastKnownLeapSecond().durationFrom(reference) + Constants.JULIAN_YEAR;
         for (int i = 0; i < 10000; ++i) {
@@ -306,18 +347,14 @@ public class UTCScaleTest {
         for (int i = 0; i < datesList.size(); ++i) {
             final AbsoluteDate date = datesList.get(i);
             final double offset = offsetsList.get(i);
-            executorService.execute(new Runnable() {
-                public void run() {
-                    Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-12);
-                }
-            });
+            executorService.execute(() -> Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-12));
         }
 
         try {
             executorService.shutdown();
-            executorService.awaitTermination(3, TimeUnit.SECONDS);
+            Assertions.assertTrue(executorService.awaitTermination(3, TimeUnit.SECONDS));
         } catch (InterruptedException ie) {
-            Assert.fail(ie.getLocalizedMessage());
+            Assertions.fail(ie.getLocalizedMessage());
         }
 
     }
@@ -326,7 +363,7 @@ public class UTCScaleTest {
     public void testIssue89() {
         AbsoluteDate firstDayLastLeap = utc.getLastKnownLeapSecond().shiftedBy(10.0);
         AbsoluteDate rebuilt = new AbsoluteDate(firstDayLastLeap.toString(utc), utc);
-        Assert.assertEquals(0.0, rebuilt.durationFrom(firstDayLastLeap), 1.0e-12);
+        Assertions.assertEquals(0.0, rebuilt.durationFrom(firstDayLastLeap), 1.0e-12);
     }
 
     @Test
@@ -335,24 +372,20 @@ public class UTCScaleTest {
         // time before first leap second
         DateComponents dateComponents = new DateComponents(1950, 1, 1);
         double actual = scale.offsetToTAI(dateComponents, TimeComponents.H00);
-        Assert.assertEquals(0.0, actual, 1.0e-10);
+        Assertions.assertEquals(0.0, actual, 1.0e-10);
     }
 
     @Test
     public void testEmptyOffsets() {
         Utils.setDataRoot("no-data");
 
-        TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIOffsetsLoader() {
-            public List<OffsetModel> loadOffsets() {
-                return Collections.emptyList();
-            }
-        });
+        TimeScalesFactory.addUTCTAIOffsetsLoader(Collections::emptyList);
 
         try {
             TimeScalesFactory.getUTC();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED, oe.getSpecifier());
         }
 
     }
@@ -360,10 +393,10 @@ public class UTCScaleTest {
     @Test
     public void testInfinityRegularDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
-        Assert.assertEquals(-36.0,
+        Assertions.assertEquals(-37.0,
                             scale.offsetFromTAI(AbsoluteDate.FUTURE_INFINITY),
                             1.0e-15);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             scale.offsetFromTAI(AbsoluteDate.PAST_INFINITY),
                             1.0e-15);
     }
@@ -371,11 +404,11 @@ public class UTCScaleTest {
     @Test
     public void testInfinityFieldDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
-        Assert.assertEquals(-36.0,
-                            scale.offsetFromTAI(FieldAbsoluteDate.getFutureInfinity(Decimal64Field.getInstance())).getReal(),
+        Assertions.assertEquals(-37.0,
+                            scale.offsetFromTAI(FieldAbsoluteDate.getFutureInfinity(Binary64Field.getInstance())).getReal(),
                             1.0e-15);
-        Assert.assertEquals(0.0,
-                            scale.offsetFromTAI(FieldAbsoluteDate.getPastInfinity(Decimal64Field.getInstance())).getReal(),
+        Assertions.assertEquals(0.0,
+                            scale.offsetFromTAI(FieldAbsoluteDate.getPastInfinity(Binary64Field.getInstance())).getReal(),
                             1.0e-15);
     }
 
@@ -387,23 +420,45 @@ public class UTCScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(utc);
 
-        Assert.assertTrue(bos.size() > 50);
-        Assert.assertTrue(bos.size() < 100);
+        Assertions.assertTrue(bos.size() > 1700);
+        Assertions.assertTrue(bos.size() < 1800);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         UTCScale deserialized  = (UTCScale) ois.readObject();
-        Assert.assertTrue(utc == deserialized);
+        Assertions.assertEquals(utc.getBaseOffsets().size(), deserialized.getBaseOffsets().size());
 
     }
 
-    @Before
+    @Test
+    public void testFirstAndLast() {
+        // action
+        AbsoluteDate first = utc.getFirstKnownLeapSecond();
+        AbsoluteDate last = utc.getLastKnownLeapSecond();
+
+        // verify
+        //AbsoluteDate d = new AbsoluteDate(1961, 1, 1, utc);
+        Assertions.assertEquals(new AbsoluteDate(2016, 12, 31, 23, 59, 60, utc), last);
+        Assertions.assertEquals(new AbsoluteDate(1960, 12, 31, 23, 59, 60, utc), first);
+    }
+
+    @Test
+    public void testGetUTCTAIOffsets() {
+        final List<UTCTAIOffset> offsets = utc.getUTCTAIOffsets();
+        Assertions.assertEquals(41, offsets.size());
+        final UTCTAIOffset firstOffset = offsets.get(0);
+        final UTCTAIOffset lastOffset = offsets.get(offsets.size() - 1);
+        Assertions.assertEquals(37300, firstOffset.getMJD()); // 1961-01-01
+        Assertions.assertEquals(57754, lastOffset.getMJD()); // 2017-01-01
+    }
+
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         utc = null;
     }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,7 @@ package org.orekit.estimation.measurements.gnss;
  * @author Luc Maisonobe
  * @since 10.0
  */
-public class IntegerLeastSquareSolution implements Comparable<IntegerLeastSquareSolution> {
+public class IntegerLeastSquareSolution {
 
     /** Solution array. */
     private final long[] solution;
@@ -49,12 +49,6 @@ public class IntegerLeastSquareSolution implements Comparable<IntegerLeastSquare
      */
     public double getSquaredDistance() {
         return d2;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int compareTo(final IntegerLeastSquareSolution other) {
-        return Double.compare(getSquaredDistance(), other.getSquaredDistance());
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
 /** Interface used to provide normalized spherical harmonics coefficients.
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Luc Maisonobe
  * @since 6.0
  */
@@ -58,5 +58,16 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
      * @since 6.1
      */
     NormalizedSphericalHarmonics onDate(AbsoluteDate date);
+
+    /**
+     * Get the normalized coefficient of degree 2 and order 0 at a specific instance in time.
+     *
+     * @param date of evaluation (may be null if model is not time-dependent)
+     * @return normalized C20 on {@code date}.
+     * @since 12.1
+     */
+    default double getNormalizedC20(final AbsoluteDate date) {
+        return onDate(date).getNormalizedCnm(2, 0);
+    }
 
 }

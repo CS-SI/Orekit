@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 
@@ -80,8 +80,9 @@ public class OsculatingToMeanElementsConverter {
         propagator.resetInitialState(state);
         final FiniteDifferencePropagatorConverter converter =
                 new FiniteDifferencePropagatorConverter(new KeplerianPropagatorBuilder(state.getOrbit(),
-                                                                                       PositionAngle.MEAN,
-                                                                                       positionScale),
+                                                                                       PositionAngleType.MEAN,
+                                                                                       positionScale,
+                                                                                       propagator.getAttitudeProvider()),
                                                         1.e-6, MAX_EVALUATION);
         final Propagator prop = converter.convert(propagator, timeSpan, satelliteRevolution * 36);
         return prop.getInitialState();

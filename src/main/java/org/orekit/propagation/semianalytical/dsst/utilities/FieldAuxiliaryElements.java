@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -29,11 +28,13 @@ import org.orekit.time.FieldAbsoluteDate;
  *  <p>
  *  Most of them are defined in Danielson paper at § 2.1.
  *  </p>
+ *  @author Bryan Cazabonne
+ * @param <T> type of the field elements
  */
-public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
+public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
 
-    /** \(2\pi\) . */
-    public static final double TWO_PI = 2 * FastMath.PI;
+    /** Orbit. */
+    private final FieldOrbit<T> orbit;
 
     /** Orbit date. */
     private final FieldAbsoluteDate<T> date;
@@ -119,9 +120,10 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      */
     public FieldAuxiliaryElements(final FieldOrbit<T> orbit, final int retrogradeFactor) {
 
-        final Field<T> field = orbit.getDate().getField();
-        final T zero = field.getZero();
-        final T pi = zero.add(FastMath.PI);
+        final T pi = orbit.getDate().getField().getZero().getPi();
+
+        // Orbit
+        this.orbit = orbit;
 
         // Date of the orbit
         date = orbit.getDate();
@@ -175,28 +177,11 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         gamma = (T) w.getZ();
     }
 
-    /**
-     * Normalize an angle in a 2&pi; wide interval around a center value.
-     * <p>This method has three main uses:</p>
-     * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br>
-     *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br>
-     *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
-     *   <li>compute the angle between two defining angular positions:<br>
-     *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
-     * </ul>
-     * <p>Note that due to numerical accuracy and since &pi; cannot be represented
-     * exactly, the result interval is <em>closed</em>, it cannot be half-closed
-     * as would be more satisfactory in a purely mathematical view.</p>
-     * @param a angle to normalize
-     * @param center center of the desired 2&pi; interval for the result
-     * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
+    /** Get the orbit.
+     * @return the orbit
      */
-    @Deprecated
-    public T normalizeAngle(final T a, final T center) {
-        return a.subtract(FastMath.floor((a.add(FastMath.PI).subtract(center)).divide(TWO_PI)).multiply(TWO_PI));
+    public FieldOrbit<T> getOrbit() {
+        return orbit;
     }
 
     /** Get the date of the orbit.
@@ -369,4 +354,11 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         return gamma;
     }
 
+    /** Transforms the FieldAuxiliaryElements instance into an AuxiliaryElements instance.
+     * @return the AuxiliaryElements instance
+     * @since 11.3.3
+     */
+    public AuxiliaryElements toAuxiliaryElements() {
+        return new AuxiliaryElements(orbit.toOrbit(), getRetrogradeFactor());
+    }
 }

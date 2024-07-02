@@ -1,5 +1,5 @@
 /* Copyright 2013 Applied Defense Solutions, Inc.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.utils;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Hank Grabowski
@@ -32,7 +32,7 @@ public class OrekitConfigurationTest {
     public void testGetSetCacheSlotsNumber() {
         int defaultSlots = OrekitConfiguration.getCacheSlotsNumber();
 
-        Assert.assertNotEquals(defaultSlots, 0);
+        Assertions.assertNotEquals(defaultSlots, 0);
 
         int setSlots = 105;
 
@@ -40,7 +40,7 @@ public class OrekitConfigurationTest {
 
         int getSlots = OrekitConfiguration.getCacheSlotsNumber();
 
-        Assert.assertEquals(getSlots, setSlots);
+        Assertions.assertEquals(getSlots, setSlots);
 
     }
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,9 @@
  */
 package org.orekit.time;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.IERSConventions;
@@ -29,15 +29,15 @@ public class TDBScaleTest {
     @Test
     public void testReference() {
         TimeScale scale = TimeScalesFactory.getTDB();
-        Assert.assertEquals("TDB", scale.toString());
-        Assert.assertEquals(32.183927340791372839, scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-15);
+        Assertions.assertEquals("TDB", scale.toString());
+        Assertions.assertEquals(32.183927340791372839, scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-15);
     }
 
     @Test
     public void testDate5000000() {
         TimeScale scale = TimeScalesFactory.getTDB();
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(5000000);
-        Assert.assertEquals(32.185364155950634549, scale.offsetFromTAI(date), 1.0e-13);
+        Assertions.assertEquals(32.185364155950634549, scale.offsetFromTAI(date), 1.0e-13);
     }
 
     @Test
@@ -45,7 +45,7 @@ public class TDBScaleTest {
         TimeScale scale = TimeScalesFactory.getTDB();
         AbsoluteDate date = new AbsoluteDate(2000, 2, 28, 8, 53, 20.001364155950634549, scale);
         double dt = AbsoluteDate.J2000_EPOCH.shiftedBy(5000000).durationFrom(date);
-        Assert.assertEquals(0.0, dt, 1.0e-13);
+        Assertions.assertEquals(0.0, dt, 1.0e-13);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class TDBScaleTest {
         TimeScale scale = TimeScalesFactory.getTDB();
         AbsoluteDate date = new AbsoluteDate(2000, 01, 01, 11, 59, 59.999927340791372839, scale);
         double dt = AbsoluteDate.J2000_EPOCH.durationFrom(date);
-        Assert.assertEquals(0.0, dt, 1.0e-13);
+        Assertions.assertEquals(0.0, dt, 1.0e-13);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class TDBScaleTest {
                                              TimeScalesFactory.getTAI());
         double delta = TimeScalesFactory.getTDB().offsetFromTAI(date) -
                        TimeScalesFactory.getTT().offsetFromTAI(date);
-        Assert.assertEquals(-0.001279984433218163669, delta, 1.0e-5);
+        Assertions.assertEquals(-0.001279984433218163669, delta, 1.0e-5);
 
     }
 
@@ -107,17 +107,17 @@ public class TDBScaleTest {
         AbsoluteDate date =
                 new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009, TimeScalesFactory.getUTC());
         DateTimeComponents components = date.getComponents(TimeScalesFactory.getTDB());
-        Assert.assertEquals(2004,            components.getDate().getYear());
-        Assert.assertEquals(   4,            components.getDate().getMonth());
-        Assert.assertEquals(   6,            components.getDate().getDay());
-        Assert.assertEquals(   7,            components.getTime().getHour());
-        Assert.assertEquals(  52,            components.getTime().getMinute());
+        Assertions.assertEquals(2004,            components.getDate().getYear());
+        Assertions.assertEquals(   4,            components.getDate().getMonth());
+        Assertions.assertEquals(   6,            components.getDate().getDay());
+        Assertions.assertEquals(   7,            components.getTime().getHour());
+        Assertions.assertEquals(  52,            components.getTime().getMinute());
 
         // the "large" threshold in this test is due to the fact TDB model is
         // approximated both in Orekit and in the reference paper. the difference
         // is however small as the model in the paper is announced as being accurate
         // to 50 micro seconds, and the test here is far below this value
-        Assert.assertEquals(  32.5716651154, components.getTime().getSecond(), 1.4e-8);
+        Assertions.assertEquals(  32.5716651154, components.getTime().getSecond(), 1.4e-8);
 
     }
 
@@ -129,13 +129,13 @@ public class TDBScaleTest {
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
-        Assert.assertEquals(61, utc.minuteDuration(during));
-        Assert.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
-        Assert.assertEquals(60, scale.minuteDuration(during));
-        Assert.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(61, utc.minuteDuration(during));
+        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(60, scale.minuteDuration(during));
+        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

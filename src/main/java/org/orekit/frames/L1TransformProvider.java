@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,8 +17,8 @@
 package org.orekit.frames;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -91,7 +91,20 @@ public class L1TransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        final PVCoordinates pv21        = secondaryBody.getPVCoordinates(date, frame);
+        final Vector3D      translation = getL1(pv21.getPosition()).negate();
+        final Rotation      rotation    = new Rotation(pv21.getPosition(), pv21.getVelocity(),
+                Vector3D.PLUS_I, Vector3D.PLUS_J);
+        return StaticTransform.compose(
+                date,
+                StaticTransform.of(date, translation),
+                StaticTransform.of(date, rotation));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
         final FieldVector3D<T>      translation = getL1(pv21.getPosition()).negate();
         final Field<T>              field       = pv21.getPosition().getX().getField();
@@ -101,6 +114,19 @@ public class L1TransformProvider implements TransformProvider {
         return new FieldTransform<>(date,
                                     new FieldTransform<>(date, translation),
                                     new FieldTransform<>(date, rotation));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
+        final FieldVector3D<T>      translation = getL1(pv21.getPosition()).negate();
+        final FieldRotation<T>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getVelocity(),
+                FieldVector3D.getPlusI(date.getField()), FieldVector3D.getPlusJ(date.getField()));
+        return FieldStaticTransform.compose(
+                date,
+                FieldStaticTransform.of(date, translation),
+                FieldStaticTransform.of(date, rotation));
     }
 
     /** Compute the coordinates of the L1 point.
@@ -147,7 +173,7 @@ public class L1TransformProvider implements TransformProvider {
      * @param primaryToSecondary relative position of secondary body with respect to primary body
      * @return coordinates of the L1 point given in frame: primaryBody.getInertiallyOrientedFrame()
      */
-    private <T extends RealFieldElement<T>> FieldVector3D<T>
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T>
         getL1(final FieldVector3D<T> primaryToSecondary) {
 
         // mass ratio
@@ -158,7 +184,7 @@ public class L1TransformProvider implements TransformProvider {
         final T baseR = bigR.multiply(1 - FastMath.cbrt(massRatio / 3));
 
         // Accurate position of L1 point, by solving the L1 equilibrium equation
-        final RealFieldUnivariateFunction<T> l1Equation = r -> {
+        final CalculusFieldUnivariateFunction<T> l1Equation = r -> {
             final T bigrminusR = bigR.subtract(r);
             final T lhs        = r.multiply(r).reciprocal();
             final T rhs1       = bigrminusR.multiply(bigrminusR).reciprocal().multiply(massRatio);
@@ -169,13 +195,13 @@ public class L1TransformProvider implements TransformProvider {
         final T zero             = primaryToSecondary.getX().getField().getZero();
         final T[] searchInterval = UnivariateSolverUtils.bracket(l1Equation,
                                                                  baseR, zero, bigR.multiply(2),
-                                                                 bigR.multiply(0.01), zero.add(1),
+                                                                 bigR.multiply(0.01), zero.newInstance(1),
                                                                  MAX_EVALUATIONS);
 
 
-        final T relativeAccuracy = zero.add(RELATIVE_ACCURACY);
-        final T absoluteAccuracy = zero.add(ABSOLUTE_ACCURACY);
-        final T functionAccuracy = zero.add(FUNCTION_ACCURACY);
+        final T relativeAccuracy = zero.newInstance(RELATIVE_ACCURACY);
+        final T absoluteAccuracy = zero.newInstance(ABSOLUTE_ACCURACY);
+        final T functionAccuracy = zero.newInstance(FUNCTION_ACCURACY);
 
         final FieldBracketingNthOrderBrentSolver<T> solver =
                         new FieldBracketingNthOrderBrentSolver<>(relativeAccuracy,

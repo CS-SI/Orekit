@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -163,13 +163,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getReferenceDate() {
-        return AbsoluteDate.J2000_EPOCH;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getOffset(final AbsoluteDate date) {
-        return date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        return AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     /** {@inheritDoc} */
@@ -196,7 +190,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
         for (final CelestialBody body : bodies) {
 
             // compute tide generating body state
-            final Vector3D position = body.getPVCoordinates(date, centralBodyFrame).getPosition();
+            final Vector3D position = body.getPosition(date, centralBodyFrame);
 
             // compute polar coordinates
             final double x    = position.getX();

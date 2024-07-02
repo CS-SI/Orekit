@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,16 +16,17 @@
  */
 package org.orekit.utils;
 
-import java.util.Collection;
-import java.util.stream.Stream;
-
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
-import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitInternalError;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link FieldPVCoordinates}.
@@ -34,8 +35,8 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 7.0
  */
-public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
-    extends FieldPVCoordinates<T> {
+public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
+    extends FieldPVCoordinates<T> implements FieldTimeStamped<T> {
 
     /** The date. */
     private final FieldAbsoluteDate<T> date;
@@ -89,6 +90,15 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
               pv.getVelocity(),
               pv.getAcceleration());
         this.date = date;
+    }
+
+    /** Constructor from Field and TimeStampedPVCoordinates.
+     * <p>Build a TimeStampedFieldPVCoordinates from non-Field one.</p>
+     * @param field CalculusField to base object on
+     * @param pv non-field, time-stamped Position-Velocity coordinates
+     */
+    public TimeStampedFieldPVCoordinates(final Field<T> field, final TimeStampedPVCoordinates pv) {
+        this(pv.getDate(), new FieldPVCoordinates<T>(field, pv));
     }
 
     /** Multiplicative constructor
@@ -574,17 +584,17 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * have consistent derivation orders.
      * </p>
      * @param date date of the built coordinates
+     * @param <U> type of the derivative
      * @param p vector with time-derivatives embedded within the coordinates
      */
-    public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
-                                         final FieldVector3D<FieldDerivativeStructure<T>> p) {
+    public <U extends FieldDerivative<T, U>> TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
+                                                                           final FieldVector3D<U> p) {
         super(p);
         this.date = date;
     }
 
-    /** Get the date.
-     * @return date
-     */
+    /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
         return date;
     }
@@ -621,107 +631,6 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                                    spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
     }
 
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @param <T> the type of the field elements
-     * @return a new position-velocity, interpolated at specified date
-     */
-    public static <T extends RealFieldElement<T>>
-        TimeStampedFieldPVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
-                                                     final CartesianDerivativesFilter filter,
-                                                     final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
-        return interpolate(date, filter, sample.stream());
-    }
-
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @param <T> the type of the field elements
-     * @return a new position-velocity, interpolated at specified date
-     */
-    public static <T extends RealFieldElement<T>>
-        TimeStampedFieldPVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
-                                                     final CartesianDerivativesFilter filter,
-                                                     final Stream<TimeStampedFieldPVCoordinates<T>> sample) {
-
-        // set up an interpolator taking derivatives into account
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
-
-        // add sample points
-        switch (filter) {
-            case USE_P :
-                // populate sample with position data, ignoring velocity
-                sample.forEach(pv -> {
-                    final FieldVector3D<T> position = pv.getPosition();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray());
-                });
-                break;
-            case USE_PV :
-                // populate sample with position and velocity data
-                sample.forEach(pv -> {
-                    final FieldVector3D<T> position = pv.getPosition();
-                    final FieldVector3D<T> velocity = pv.getVelocity();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray());
-                });
-                break;
-            case USE_PVA :
-                // populate sample with position, velocity and acceleration data
-                sample.forEach(pv -> {
-                    final FieldVector3D<T> position     = pv.getPosition();
-                    final FieldVector3D<T> velocity     = pv.getVelocity();
-                    final FieldVector3D<T> acceleration = pv.getAcceleration();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray(), acceleration.toArray());
-                });
-                break;
-            default :
-                // this should never happen
-                throw new OrekitInternalError(null);
-        }
-
-        // interpolate
-        final T[][] p = interpolator.derivatives(date.getField().getZero(), 2);
-
-        // build a new interpolated instance
-
-        return new TimeStampedFieldPVCoordinates<>(date,
-                                                   new FieldVector3D<>(p[0]),
-                                                   new FieldVector3D<>(p[1]),
-                                                   new FieldVector3D<>(p[2]));
-
-    }
-
     /** Convert to a constant position-velocity.
      * @return a constant position-velocity
      * @since 9.0
@@ -733,21 +642,26 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                             getAcceleration().toVector3D());
     }
 
-    /** Return a string representation of this position/velocity pair.
-     * @return string representation of this position/velocity pair
+    /** Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @return string representation of this.
      */
+    @Override
+    @DefaultDataContext
     public String toString() {
-        final String comma = ", ";
-        return new StringBuffer().append('{').append(date).append(", P(").
-                                  append(getPosition().getX().getReal()).append(comma).
-                                  append(getPosition().getY().getReal()).append(comma).
-                                  append(getPosition().getZ().getReal()).append("), V(").
-                                  append(getVelocity().getX().getReal()).append(comma).
-                                  append(getVelocity().getY().getReal()).append(comma).
-                                  append(getVelocity().getZ().getReal()).append("), A(").
-                                  append(getAcceleration().getX().getReal()).append(comma).
-                                  append(getAcceleration().getY().getReal()).append(comma).
-                                  append(getAcceleration().getZ().getReal()).append(")}").toString();
+        return toTimeStampedPVCoordinates().toString();
+    }
+
+    /**
+     * Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * @param utc time scale used to print the date.
+     * @return string representation of this.
+     */
+    public String toString(final TimeScale utc) {
+        return toTimeStampedPVCoordinates().toString(utc);
     }
 
 }

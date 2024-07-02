@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -57,6 +58,19 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Placeholder for solutions found. */
     private SortedSet<IntegerLeastSquareSolution> solutions;
 
+    /** Comparator for integer least square solutions. */
+    private Comparator<IntegerLeastSquareSolution> comparator;
+
+    /** Constructor.
+     * <p>
+     * By default a {@link IntegerLeastSquareComparator} is used
+     * to compare integer least square solutions
+     * </p>
+     */
+    protected AbstractLambdaMethod() {
+        this.comparator = new IntegerLeastSquareComparator();
+    }
+
     /** {@inheritDoc} */
     @Override
     public IntegerLeastSquareSolution[] solveILS(final int nbSol, final double[] floatAmbiguities,
@@ -82,6 +96,18 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     }
 
+    /** Set a custom comparator for integer least square solutions comparison.
+     * <p>
+     * Calling this method overrides any comparator that could have been set
+     * beforehand. It also overrides the default {@link IntegerLeastSquareComparator}.
+     * </p>
+     * @param newCompartor new comparator to use
+     * @since 11.0
+     */
+    public void setComparator(final Comparator<IntegerLeastSquareSolution> newCompartor) {
+        this.comparator = newCompartor;
+    }
+
     /** Initialize ILS problem.
      * @param floatAmbiguities float estimates of ambiguities
      * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
@@ -97,7 +123,7 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         this.diag                   = new double[n];
         this.zInverseTransformation = new int[n * n];
         this.maxSolutions           = nbSol;
-        this.solutions              = new TreeSet<>();
+        this.solutions              = new TreeSet<>(comparator);
 
         // initialize decomposition matrices
         for (int i = 0; i < n; ++i) {
@@ -167,6 +193,38 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
      */
     protected int getSolutionsSize() {
         return solutions.size();
+    }
+
+    /**Get the maximum of distance among the solutions found.
+     * getting last of solutions as they are sorted in SortesSet
+     * @return greatest distance of the solutions
+     * @since 10.2
+     */
+    protected double getMaxDistance() {
+        return solutions.last().getSquaredDistance();
+    }
+
+    /** Get a reference to the Z  inverse transformation matrix.
+     * <p>
+     * BEWARE: the returned value is a reference to an internal array,
+     * it is <em>only</em> intended for subclasses use (hence the
+     * method is protected and not public).
+     * BEWARE: for the MODIFIED LAMBDA METHOD, the returned matrix Z is such that
+     * Q = Z'L'DLZ where Q is the covariance matrix and ' refers to the transposition operation
+     * @return array of integer corresponding to Z matrix
+     * @since 10.2
+     */
+    protected int[] getZInverseTransformationReference() {
+        return zInverseTransformation;
+    }
+
+    /** Get the size of the problem. In the ILS problem, the integer returned
+     * is the size of the covariance matrix.
+     * @return the size of the ILS problem
+     * @since 10.2
+     */
+    protected int getSize() {
+        return n;
     }
 
     /** Perform Lᵀ.D.L = Q decomposition of the covariance matrix.
@@ -277,7 +335,7 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Recover ambiguities prior to the Z-transformation.
      * @return recovered ambiguities
      */
-    private IntegerLeastSquareSolution[] recoverAmbiguities() {
+    protected IntegerLeastSquareSolution[] recoverAmbiguities() {
 
         final IntegerLeastSquareSolution[] recovered = new IntegerLeastSquareSolution[solutions.size()];
 

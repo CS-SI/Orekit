@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,16 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.Predicate;
+
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
 
@@ -34,14 +43,24 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
     /** Selector for dates. */
     private final DatesSelector selector;
 
+    /** Predicate for a posteriori filtering of generated measurements.
+     * @since 13.0
+     */
+    private final Predicate<EstimatedMeasurementBase<T>> filter;
+
     /** Simple constructor.
      * @param builder builder for individual measurements
      * @param selector selector for dates
+     * @param filter predicate for a posteriori filtering of generated measurements
+     *               (measurements are accepted if the predicates evaluates to {@code true})
+     * @since 13.0
      */
     protected AbstractScheduler(final MeasurementBuilder<T> builder,
-                                final DatesSelector selector) {
+                                final DatesSelector selector,
+                                final Predicate<EstimatedMeasurementBase<T>> filter) {
         this.builder  = builder;
         this.selector = selector;
+        this.filter   = filter;
     }
 
     /** {@inheritDoc}
@@ -54,9 +73,8 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
         builder.init(start, end);
     }
 
-    /** Get the measurements builder.
-     * @return measurements builder
-     */
+    /** {@inheritDoc} */
+    @Override
     public MeasurementBuilder<T> getBuilder() {
         return builder;
     }
@@ -67,5 +85,39 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
     public DatesSelector getSelector() {
         return selector;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public SortedSet<EstimatedMeasurementBase<T>> generate(final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+
+        // select dates in the current step, using arbitrarily first interpolator
+        // as all interpolators cover the same range
+        final Map.Entry<ObservableSatellite, OrekitStepInterpolator> first = interpolators.entrySet().iterator().next();
+        final List<AbsoluteDate> dates = getSelector().selectDates(first.getValue().getPreviousState().getDate(),
+                                                                   first.getValue().getCurrentState().getDate());
+
+        // generate measurements when feasible
+        final SortedSet<EstimatedMeasurementBase<T>> measurements = new TreeSet<>();
+        for (final AbsoluteDate date : dates) {
+            if (measurementIsFeasible(date)) {
+                // a measurement is feasible at this date
+                final EstimatedMeasurementBase<T> built = getBuilder().build(date, interpolators);
+                if (filter.test(built)) {
+                    // add the generated measurement is the filters accepts it
+                    measurements.add(built);
+                }
+            }
+        }
+
+        return measurements;
+
+    }
+
+    /** Check if a measurement is feasible at some date.
+     * @param date date to check
+     * @return true if measurement if feasible
+     * @since 12.0
+     */
+    protected abstract boolean measurementIsFeasible(AbsoluteDate date);
 
 }

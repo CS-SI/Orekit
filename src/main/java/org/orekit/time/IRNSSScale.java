@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,55 +16,22 @@
  */
 package org.orekit.time;
 
-import org.hipparchus.RealFieldElement;
-
-
 /** IRNSS time scale (also called IRNWT for IRNSS NetWork Time).
  * <p>By convention, TIRNSS = TAI - 19 s.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public class IRNSSScale implements TimeScale {
+public class IRNSSScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20180323L;
-
-    /** Offset from TAI. */
-    private static final double OFFSET = -19;
+    private static final long serialVersionUID = 20240321L;
 
     /** Package private constructor for the factory.
      */
     IRNSSScale() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(OFFSET);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return -OFFSET;
-    }
-
-    /** {@inheritDoc} */
-    public String getName() {
-        return "IRNSS";
-    }
-
-    /** {@inheritDoc} */
-    public String toString() {
-        return getName();
+        super("IRNSS", -19);
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,17 +20,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.FieldShiftingPVCoordinatesProvider;
+import org.orekit.utils.ShiftingPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -39,8 +43,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
-    implements ObservedMeasurement<T> {
+public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> implements ObservedMeasurement<T> {
 
     /** List of the supported parameters. */
     private final List<ParameterDriver> supportedParameters;
@@ -54,7 +57,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     private final AbsoluteDate date;
 
     /** Observed value. */
-    private final double[] observed;
+    private double[] observed;
 
     /** Theoretical standard deviation. */
     private final double[] sigma;
@@ -83,10 +86,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
                                   final double sigma, final double baseWeight,
                                   final List<ObservableSatellite> satellites) {
 
-        this.supportedParameters = new ArrayList<ParameterDriver>();
-        for (final ParameterDriver parameterDriver : supportedParameters) {
-            this.supportedParameters.add(parameterDriver);
-        }
+        this.supportedParameters = new ArrayList<>();
 
         this.date       = date;
         this.observed   = new double[] {
@@ -101,7 +101,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
         this.satellites = satellites;
 
-        this.modifiers = new ArrayList<EstimationModifier<T>>();
+        this.modifiers = new ArrayList<>();
         setEnabled(true);
 
     }
@@ -120,7 +120,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
                                   final List<ObservableSatellite> satellites) {
-        this.supportedParameters = new ArrayList<ParameterDriver>();
+        this.supportedParameters = new ArrayList<>();
 
         this.date       = date;
         this.observed   = observed.clone();
@@ -129,9 +129,15 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
         this.satellites = satellites;
 
-        this.modifiers = new ArrayList<EstimationModifier<T>>();
+        this.modifiers = new ArrayList<>();
         setEnabled(true);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setObservedValue(final double[] newObserved) {
+        this.observed = newObserved.clone();
     }
 
     /** Add a parameter driver.
@@ -184,6 +190,20 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         return satellites;
     }
 
+    /** Estimate the theoretical value without derivatives.
+     * <p>
+     * The theoretical value does not have <em>any</em> modifiers applied.
+     * </p>
+     * @param iteration iteration number
+     * @param evaluation evaluation number
+     * @param states orbital states at measurement date
+     * @return theoretical value
+     * @see #estimate(int, int, SpacecraftState[])
+     * @since 12.0
+     */
+    protected abstract EstimatedMeasurementBase<T> theoreticalEvaluationWithoutDerivatives(int iteration, int evaluation,
+                                                                                           SpacecraftState[] states);
+
     /** Estimate the theoretical value.
      * <p>
      * The theoretical value does not have <em>any</em> modifiers applied.
@@ -195,6 +215,22 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @see #estimate(int, int, SpacecraftState[])
      */
     protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states);
+
+    /** {@inheritDoc} */
+    @Override
+    public EstimatedMeasurementBase<T> estimateWithoutDerivatives(final int iteration, final int evaluation, final SpacecraftState[] states) {
+
+        // compute the theoretical value
+        final EstimatedMeasurementBase<T> estimation = theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states);
+
+        // apply the modifiers
+        for (final EstimationModifier<T> modifier : modifiers) {
+            modifier.modifyWithoutDerivatives(estimation);
+        }
+
+        return estimation;
+
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -243,19 +279,43 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
     /** Compute propagation delay on a link leg (typically downlink or uplink).
      * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
-     * in the same frame as {@code adjustableEmitterPV}
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate}
+     * @param receiverFrame frame in which both {@code adjustableEmitterPV} and
+     *                      {@code receiver receiverPosition} are defined
      * @param signalArrivalDate date at which the signal arrives to receiver
      * @return <em>positive</em> delay between signal emission and signal reception dates
+     * @since 12.1
      */
     public static double signalTimeOfFlight(final TimeStampedPVCoordinates adjustableEmitterPV,
                                             final Vector3D receiverPosition,
-                                            final AbsoluteDate signalArrivalDate) {
+                                            final AbsoluteDate signalArrivalDate,
+                                            final Frame receiverFrame) {
+        return signalTimeOfFlight(new ShiftingPVCoordinatesProvider(adjustableEmitterPV,
+                                                                    receiverFrame),
+                                  adjustableEmitterPV.getDate(),
+                                  receiverPosition, signalArrivalDate,
+                                  receiverFrame);
+    }
+
+    /** Compute propagation delay on a link leg (typically downlink or uplink).
+     * @param adjustableEmitter position/velocity provider of emitter
+     * @param approxEmissionDate approximate emission date
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate}
+     * @param signalArrivalDate date at which the signal arrives to receiver
+     * @param receiverFrame frame in which receiver is defined
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     * @since 12.1
+     */
+    public static double signalTimeOfFlight(final PVCoordinatesProvider adjustableEmitter,
+                                            final AbsoluteDate approxEmissionDate,
+                                            final Vector3D receiverPosition,
+                                            final AbsoluteDate signalArrivalDate,
+                                            final Frame receiverFrame) {
 
         // initialize emission date search loop assuming the state is already correct
         // this will be true for all but the first orbit determination iteration,
         // and even for the first iteration the loop will converge very fast
-        final double offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
+        final double offset = signalArrivalDate.durationFrom(approxEmissionDate);
         double delay = offset;
 
         // search signal transit date, computing the signal travel in inertial frame
@@ -264,7 +324,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         int count = 0;
         do {
             final double previous   = delay;
-            final Vector3D transitP = adjustableEmitterPV.shiftedBy(offset - delay).getPosition();
+            final Vector3D transitP = adjustableEmitter.getPosition(approxEmissionDate.shiftedBy(offset - delay),
+                                                                    receiverFrame);
             delay                   = receiverPosition.distance(transitP) * cReciprocal;
             delta                   = FastMath.abs(delay - previous);
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
@@ -279,16 +340,42 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * in the same frame as {@code adjustableEmitterPV}
      * @param signalArrivalDate date at which the signal arrives to receiver
      * @return <em>positive</em> delay between signal emission and signal reception dates
+     * @param receiverFrame frame in which receiver is defined
      * @param <T> the type of the components
+     * @since 12.1
      */
-    public static <T extends RealFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
-                                                                       final FieldVector3D<T> receiverPosition,
-                                                                       final FieldAbsoluteDate<T> signalArrivalDate) {
+    public static <T extends CalculusFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
+                                                                           final FieldVector3D<T> receiverPosition,
+                                                                           final FieldAbsoluteDate<T> signalArrivalDate,
+                                                                           final Frame receiverFrame) {
+        return signalTimeOfFlight(new FieldShiftingPVCoordinatesProvider<>(adjustableEmitterPV,
+                                                                           receiverFrame),
+                                  adjustableEmitterPV.getDate(),
+                                  receiverPosition, signalArrivalDate,
+                                  receiverFrame);
+    }
+
+    /** Compute propagation delay on a link leg (typically downlink or uplink).
+     * @param adjustableEmitter position/velocity provider of emitter
+     * @param approxEmissionDate approximate emission date
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableEmitterPV}
+     * @param signalArrivalDate date at which the signal arrives to receiver
+     * @param receiverFrame frame in which receiver is defined
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     * @param <T> the type of the components
+     * @since 12.1
+     */
+    public static <T extends CalculusFieldElement<T>> T signalTimeOfFlight(final FieldPVCoordinatesProvider<T> adjustableEmitter,
+                                                                           final FieldAbsoluteDate<T> approxEmissionDate,
+                                                                           final FieldVector3D<T> receiverPosition,
+                                                                           final FieldAbsoluteDate<T> signalArrivalDate,
+                                                                           final Frame receiverFrame) {
 
         // Initialize emission date search loop assuming the emitter PV is almost correct
         // this will be true for all but the first orbit determination iteration,
         // and even for the first iteration the loop will converge extremely fast
-        final T offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
+        final T offset = signalArrivalDate.durationFrom(approxEmissionDate);
         T delay = offset;
 
         // search signal transit date, computing the signal travel in the frame shared by emitter and receiver
@@ -297,7 +384,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         int count = 0;
         do {
             final double previous           = delay.getReal();
-            final FieldVector3D<T> transitP = adjustableEmitterPV.shiftedBy(delay.negate().add(offset)).getPosition();
+            final FieldVector3D<T> transitP = adjustableEmitter.getPosition(approxEmissionDate.shiftedBy(offset.subtract(delay)),
+                                                                            receiverFrame);
             delay                           = receiverPosition.distance(transitP).multiply(cReciprocal);
             delta                           = FastMath.abs(delay.getReal() - previous);
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getReal()));
@@ -316,36 +404,37 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * </p>
      * @param state state of the satellite considered
      * @param firstDerivative index of the first derivative
-     * @param factory factory for building the derivatives
+     * @param freeParameters total number of free parameters in the gradient
      * @return Cartesian coordinates as derivatives
+     * @since 10.2
      */
-    public static TimeStampedFieldPVCoordinates<DerivativeStructure> getCoordinates(final SpacecraftState state,
-                                                                                    final int firstDerivative,
-                                                                                    final DSFactory factory) {
+    public static TimeStampedFieldPVCoordinates<Gradient> getCoordinates(final SpacecraftState state,
+                                                                         final int firstDerivative,
+                                                                         final int freeParameters) {
 
-        // Position of the satellite expressed as a derivative structure
+        // Position of the satellite expressed as a gradient
         // The components of the position are the 3 first derivative parameters
-        final Vector3D p = state.getPVCoordinates().getPosition();
-        final FieldVector3D<DerivativeStructure> pDS =
-                        new FieldVector3D<>(factory.variable(firstDerivative + 0, p.getX()),
-                                            factory.variable(firstDerivative + 1, p.getY()),
-                                            factory.variable(firstDerivative + 2, p.getZ()));
+        final Vector3D p = state.getPosition();
+        final FieldVector3D<Gradient> pDS =
+                        new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative,     p.getX()),
+                                            Gradient.variable(freeParameters, firstDerivative + 1, p.getY()),
+                                            Gradient.variable(freeParameters, firstDerivative + 2, p.getZ()));
 
-        // Velocity of the satellite expressed as a derivative structure
+        // Velocity of the satellite expressed as a gradient
         // The components of the velocity are the 3 second derivative parameters
         final Vector3D v = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<DerivativeStructure> vDS =
-                        new FieldVector3D<>(factory.variable(firstDerivative + 3, v.getX()),
-                                            factory.variable(firstDerivative + 4, v.getY()),
-                                            factory.variable(firstDerivative + 5, v.getZ()));
+        final FieldVector3D<Gradient> vDS =
+                        new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative + 3, v.getX()),
+                                            Gradient.variable(freeParameters, firstDerivative + 4, v.getY()),
+                                            Gradient.variable(freeParameters, firstDerivative + 5, v.getZ()));
 
         // Acceleration of the satellite
         // The components of the acceleration are not derivative parameters
         final Vector3D a = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<DerivativeStructure> aDS =
-                        new FieldVector3D<>(factory.constant(a.getX()),
-                                            factory.constant(a.getY()),
-                                            factory.constant(a.getZ()));
+        final FieldVector3D<Gradient> aDS =
+                        new FieldVector3D<>(Gradient.constant(freeParameters, a.getX()),
+                                            Gradient.constant(freeParameters, a.getY()),
+                                            Gradient.constant(freeParameters, a.getZ()));
 
         return new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
 

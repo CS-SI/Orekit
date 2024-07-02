@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.Arrays;
-
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.FastMath;
+
+import java.util.Arrays;
 
 /** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13).
  *
@@ -135,15 +135,13 @@ public class GammaMnsFunction {
      * @return d&Gamma;<sup>m</sup><sub>n,s</sub>(γ)/dγ
      */
     public double getDerivative(final int m, final int n, final int s) {
-        double res = 0.;
         if (s <= -m) {
-            res = -m * I * getValue(m, n, s) / opIg;
+            return -m * I * getValue(m, n, s) / opIg;
         } else if (s >= m) {
-            res =  m * I * getValue(m, n, s) / opIg;
+            return m * I * getValue(m, n, s) / opIg;
         } else {
-            res =  s * I * getValue(m, n, s) / opIg;
+            return s * I * getValue(m, n, s) / opIg;
         }
-        return res;
     }
 
 }

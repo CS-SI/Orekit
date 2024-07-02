@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,12 +23,13 @@ import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /** This class logs events detectors events during propagation.
  *
  * <p>As {@link EventDetector events detectors} are triggered during
  * orbit propagation, an event specific {@link
- * EventDetector#eventOccurred(SpacecraftState, boolean) eventOccurred}
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred}
  * method is called. This class can be used to add a global logging
  * feature registering all events with their corresponding states in
  * a chronological sequence (or reverse-chronological if propagation
@@ -36,7 +37,7 @@ import org.orekit.time.AbsoluteDate;
  * <p>This class works by wrapping user-provided {@link EventDetector
  * events detectors} before they are registered to the propagator. The
  * wrapper monitor the calls to {@link
- * EventDetector#eventOccurred(SpacecraftState, boolean) eventOccurred}
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred}
  * and store the corresponding events as {@link LoggedEvent} instances.
  * After propagation is complete, the user can retrieve all the events
  * that have occurred at once by calling method {@link #getLoggedEvents()}.</p>
@@ -80,7 +81,7 @@ public class EventsLogger {
      * @param <T> class type for the generic version
      */
     public <T extends EventDetector> EventDetector monitorDetector(final T monitoredDetector) {
-        return new LoggingWrapper<T>(monitoredDetector);
+        return new LoggingWrapper(monitoredDetector);
     }
 
     /** Clear the logged events.
@@ -102,7 +103,7 @@ public class EventsLogger {
     }
 
     /** Class for logged events entries. */
-    public static class LoggedEvent {
+    public static class LoggedEvent implements TimeStamped {
 
         /** Event detector triggered. */
         private final EventDetector detector;
@@ -132,9 +133,15 @@ public class EventsLogger {
             return detector;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getDate() {
+            return state.getDate();
+        }
+
         /** Get the triggering state.
          * @return triggering state
-         * @see EventDetector#eventOccurred(SpacecraftState, boolean)
+         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public SpacecraftState getState() {
             return state;
@@ -142,7 +149,7 @@ public class EventsLogger {
 
         /** Get the Increasing/decreasing status of the event.
          * @return increasing/decreasing status of the event
-         * @see EventDetector#eventOccurred(SpacecraftState, boolean)
+         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public boolean isIncreasing() {
             return increasing;
@@ -150,20 +157,18 @@ public class EventsLogger {
 
     }
 
-    /** Internal wrapper for events detectors.
-     * @param <T> class type for the generic version
-     */
-    private class LoggingWrapper<T extends EventDetector> extends AbstractDetector<LoggingWrapper<T>> {
+    /** Internal wrapper for events detectors. */
+    private class LoggingWrapper extends AbstractDetector<LoggingWrapper> {
 
         /** Wrapped events detector. */
-        private final T detector;
+        private final EventDetector detector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
-        LoggingWrapper(final T detector) {
+        LoggingWrapper(final EventDetector detector) {
             this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), new LocalHandler<T>(),
+                 detector.getMaxIterationCount(), null,
                  detector);
         }
 
@@ -173,25 +178,25 @@ public class EventsLogger {
          * API with the various {@code withXxx()} methods to set up the instance
          * in a readable manner without using a huge amount of parameters.
          * </p>
-         * @param maxCheck maximum checking interval (s)
+         * @param maxCheck maximum checking interval
          * @param threshold convergence threshold (s)
          * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          * @param detector events detector to wrap
          * @since 6.1
          */
-        private LoggingWrapper(final double maxCheck, final double threshold,
-                               final int maxIter, final EventHandler<? super LoggingWrapper<T>> handler,
-                               final T detector) {
+        private LoggingWrapper(final AdaptableInterval maxCheck, final double threshold,
+                               final int maxIter, final EventHandler handler,
+                               final EventDetector detector) {
             super(maxCheck, threshold, maxIter, handler);
             this.detector = detector;
         }
 
         /** {@inheritDoc} */
         @Override
-        protected LoggingWrapper<T> create(final double newMaxCheck, final double newThreshold,
-                                           final int newMaxIter, final EventHandler<? super LoggingWrapper<T>> newHandler) {
-            return new LoggingWrapper<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
+        protected LoggingWrapper create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                        final int newMaxIter, final EventHandler newHandler) {
+            return new LoggingWrapper(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
         }
 
         /** Log an event.
@@ -214,23 +219,26 @@ public class EventsLogger {
             return detector.g(s);
         }
 
-    }
-
-    /** Local class for handling events.
-     * @param <T> class type for the generic version
-     */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<LoggingWrapper<T>> {
-
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing) {
-            wrapper.logEvent(s, increasing);
-            return wrapper.detector.eventOccurred(s, increasing);
-        }
+        public EventHandler getHandler() {
 
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState) {
-            return wrapper.detector.resetState(oldState);
+            final EventHandler handler = detector.getHandler();
+
+            return new EventHandler() {
+
+                /** {@inheritDoc} */
+                public Action eventOccurred(final SpacecraftState s, final EventDetector d, final boolean increasing) {
+                    logEvent(s, increasing);
+                    return handler.eventOccurred(s, detector, increasing);
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState resetState(final EventDetector d, final SpacecraftState oldState) {
+                    return handler.resetState(detector, oldState);
+                }
+
+            };
         }
 
     }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -36,6 +36,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class Position extends AbstractMeasurement<Position> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "Position";
+
     /** Identity matrix, for states derivatives. */
     private static final double[][] IDENTITY = new double[][] {
         {
@@ -47,7 +50,7 @@ public class Position extends AbstractMeasurement<Position> {
         }
     };
 
-    /** Covariance matrix of the PV measurement (size 3x3). */
+    /** Covariance matrix of the position only measurement (size 3x3). */
     private final double[][] covarianceMatrix;
 
     /** Constructor with one double for the standard deviation.
@@ -93,7 +96,7 @@ public class Position extends AbstractMeasurement<Position> {
      * <p>The measurement must be in the orbit propagation frame.</p>
      * @param date date of the measurement
      * @param position position
-     * @param covarianceMatrix 6x6 covariance matrix of the PV measurement
+     * @param covarianceMatrix 3x3 covariance matrix of the position only measurement
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @since 9.3
@@ -107,7 +110,7 @@ public class Position extends AbstractMeasurement<Position> {
               }, extractSigmas(covarianceMatrix),
               new double[] {
                   baseWeight, baseWeight, baseWeight
-              }, Arrays.asList(satellite));
+              }, Collections.singletonList(satellite));
         this.covarianceMatrix = covarianceMatrix.clone();
     }
 
@@ -155,13 +158,34 @@ public class Position extends AbstractMeasurement<Position> {
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<Position> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
+                                                                                         final SpacecraftState[] states) {
+
+        // PV value
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<Position> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
+                                                       new TimeStampedPVCoordinates[] {
+                                                           pv
+                                                       });
+
+        estimated.setEstimatedValue(new double[] {
+            pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ()
+        });
+
+        return estimated;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<Position> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                    final SpacecraftState[] states) {
 
         // PV value
-        final ObservableSatellite      satellite = getSatellites().get(0);
-        final SpacecraftState          state     = states[satellite.getPropagatorIndex()];
-        final TimeStampedPVCoordinates pv        = state.getPVCoordinates();
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
 
         // prepare the evaluation
         final EstimatedMeasurement<Position> estimated =
@@ -182,7 +206,7 @@ public class Position extends AbstractMeasurement<Position> {
 
     /** Extract standard deviations from a 3x3 position covariance matrix.
      * Check the size of the position covariance matrix first.
-     * @param pCovarianceMatrix the 3x" possition covariance matrix
+     * @param pCovarianceMatrix the 3x" position covariance matrix
      * @return the standard deviations (3-sized vector), they are
      * the square roots of the diagonal elements of the covariance matrix in input.
      */

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,14 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.ode.events.Action;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Common parts shared by several orbital events finders.
+ * @param <T> type of the detector
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
@@ -33,11 +35,11 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     /** Default convergence threshold (s). */
     public static final double DEFAULT_THRESHOLD = 1.e-6;
 
-    /** Default cmaximum number of iterations in the event time search. */
+    /** Default maximum number of iterations in the event time search. */
     public static final int DEFAULT_MAX_ITER = 100;
 
     /** Max check interval. */
-    private final double maxCheck;
+    private final AdaptableInterval maxCheck;
 
     /** Convergence threshold. */
     private final double threshold;
@@ -46,24 +48,48 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     private final int maxIter;
 
     /** Default handler for event overrides. */
-    private final EventHandler<? super T> handler;
+    private final EventHandler handler;
 
     /** Propagation direction. */
     private boolean forward;
 
     /** Build a new instance.
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval, must be strictly positive (s)
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
     protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter,
-                               final EventHandler<? super T> handler) {
+                               final EventHandler handler) {
+        this(AdaptableInterval.of(maxCheck), threshold, maxIter, handler);
+    }
+
+    /** Build a new instance.
+     * @param maxCheck maximum checking interval
+     * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
+     * @param handler event handler to call at event occurrences
+     * @since 12.0
+     */
+    protected AbstractDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+                               final EventHandler handler) {
+        checkStrictlyPositive(threshold);
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
         this.maxIter   = maxIter;
         this.handler   = handler;
         this.forward   = true;
+    }
+
+    /** Check value is strictly positive.
+     * @param value value to check
+     * @exception OrekitException if value is not strictly positive
+     * @since 11.2
+     */
+    private void checkStrictlyPositive(final double value) throws OrekitException {
+        if (value <= 0.0) {
+            throw new OrekitException(OrekitMessages.NOT_STRICTLY_POSITIVE, value);
+        }
     }
 
     /**
@@ -76,14 +102,14 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {
         forward = t.durationFrom(s0.getDate()) >= 0.0;
-        getHandler().init(s0, t);
+        getHandler().init(s0, t, this);
     }
 
     /** {@inheritDoc} */
     public abstract double g(SpacecraftState s);
 
     /** {@inheritDoc} */
-    public double getMaxCheckInterval() {
+    public AdaptableInterval getMaxCheckInterval() {
         return maxCheck;
     }
 
@@ -107,6 +133,19 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 6.1
      */
     public T withMaxCheck(final double newMaxCheck) {
+        return withMaxCheck(AdaptableInterval.of(newMaxCheck));
+    }
+
+    /**
+     * Setup the maximum checking interval.
+     * <p>
+     * This will override a maximum checking interval if it has been configured previously.
+     * </p>
+     * @param newMaxCheck maximum checking interval (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
+     */
+    public T withMaxCheck(final AdaptableInterval newMaxCheck) {
         return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
     }
 
@@ -145,29 +184,14 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
      */
-    public T withHandler(final EventHandler<? super T> newHandler) {
+    public T withHandler(final EventHandler newHandler) {
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
-    /** Get the handler.
-     * @return event handler to call at event occurrences
-     */
-    public EventHandler<? super T> getHandler() {
+    /** {@inheritDoc} */
+    @Override
+    public EventHandler getHandler() {
         return handler;
-    }
-
-    /** {@inheritDoc} */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-        @SuppressWarnings("unchecked")
-        final Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
-        return whatNext;
-    }
-
-    /** {@inheritDoc} */
-    public SpacecraftState resetState(final SpacecraftState oldState) {
-        @SuppressWarnings("unchecked")
-        final SpacecraftState newState = getHandler().resetState((T) this, oldState);
-        return newState;
     }
 
     /** Build a new instance.
@@ -177,8 +201,8 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      */
-    protected abstract T create(double newMaxCheck, double newThreshold,
-                                int newMaxIter, EventHandler<? super T> newHandler);
+    protected abstract T create(AdaptableInterval newMaxCheck, double newThreshold,
+                                int newMaxIter, EventHandler newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

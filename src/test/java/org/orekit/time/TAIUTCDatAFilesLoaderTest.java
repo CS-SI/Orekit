@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,8 @@
  */
 package org.orekit.time;
 
-
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -148,7 +146,7 @@ public class TAIUTCDatAFilesLoaderTest {
     private void checkOffset(int year, int month, int day, double offset) {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
     }
 
     private void checkException(String name, OrekitMessages message) {
@@ -156,9 +154,9 @@ public class TAIUTCDatAFilesLoaderTest {
         TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(name));
         try {
             TimeScalesFactory.getUTC();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(message, oe.getSpecifier());
+            Assertions.assertEquals(message, oe.getSpecifier());
         }
     }
 

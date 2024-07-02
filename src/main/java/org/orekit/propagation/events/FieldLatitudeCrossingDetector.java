@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -30,8 +30,9 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
  * @author Luc Maisonobe
  * @author Evan Ward
  * @since 9.3
+ * @param <T> type of the field elements
  */
-public class FieldLatitudeCrossingDetector <T extends RealFieldElement<T>>
+public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldLatitudeCrossingDetector<T>, T> {
 
     /** Body on which the latitude is defined. */
@@ -51,8 +52,8 @@ public class FieldLatitudeCrossingDetector <T extends RealFieldElement<T>>
     public FieldLatitudeCrossingDetector(final Field<T> field,
                                          final OneAxisEllipsoid body,
                                          final double latitude) {
-        this(field.getZero().add(DEFAULT_MAXCHECK),
-                field.getZero().add(DEFAULT_THRESHOLD),
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
+                field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
                 body,
                 latitude);
     }
@@ -67,28 +68,28 @@ public class FieldLatitudeCrossingDetector <T extends RealFieldElement<T>>
                                          final T threshold,
                                          final OneAxisEllipsoid body,
                                          final double latitude) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
+        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              body, latitude);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
      * @param latitude latitude to be crossed
      */
-    private FieldLatitudeCrossingDetector(
-            final T maxCheck,
+    protected FieldLatitudeCrossingDetector(
+            final FieldAdaptableInterval<T> maxCheck,
             final T threshold,
             final int maxIter,
-            final FieldEventHandler<? super FieldLatitudeCrossingDetector<T>, T> handler,
+            final FieldEventHandler<T> handler,
             final OneAxisEllipsoid body,
             final double latitude) {
         super(maxCheck, threshold, maxIter, handler);
@@ -99,10 +100,10 @@ public class FieldLatitudeCrossingDetector <T extends RealFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     protected FieldLatitudeCrossingDetector<T> create(
-            final T newMaxCheck,
+            final FieldAdaptableInterval<T> newMaxCheck,
             final T newThreshold,
             final int newMaxIter,
-            final FieldEventHandler<? super FieldLatitudeCrossingDetector<T>, T> newHandler) {
+            final FieldEventHandler<T> newHandler) {
         return new FieldLatitudeCrossingDetector<>(
                 newMaxCheck, newThreshold, newMaxIter, newHandler, body, latitude);
     }
@@ -134,7 +135,7 @@ public class FieldLatitudeCrossingDetector <T extends RealFieldElement<T>>
 
         // convert state to geodetic coordinates
         final FieldGeodeticPoint<T> gp = body.transform(
-                s.getPVCoordinates().getPosition(),
+                s.getPosition(),
                 s.getFrame(),
                 s.getDate());
 

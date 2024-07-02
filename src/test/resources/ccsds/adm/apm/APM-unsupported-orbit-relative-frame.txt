@@ -1,0 +1,18 @@
+CCSDS_APM_VERS = 1.0
+CREATION_DATE  = 2021-02-24T18:59:43.000
+ORIGINATOR     = CS GROUP
+
+OBJECT_NAME    = DUMMY 
+OBJECT_ID      = 9999-111Z
+CENTER_NAME    = JUPITER
+TIME_SYSTEM    = TDB
+
+EPOCH          = 2021-01-01T00:00:00
+Q_FRAME_A      = SC_BODY_1
+Q_FRAME_B      = SEZ_INERTIAL
+Q_DIR          = A2B
+
+Q1             = 1.0
+Q2             = 0.0
+Q3             = 0.0
+QC             = 0.0

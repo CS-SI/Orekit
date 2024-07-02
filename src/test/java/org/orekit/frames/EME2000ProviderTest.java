@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,11 @@
  */
 package org.orekit.frames;
 
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -149,7 +148,7 @@ public class EME2000ProviderTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }
@@ -160,15 +159,15 @@ public class EME2000ProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assertions.assertEquals(0, dP.getNorm(), positionThreshold);
+        Assertions.assertEquals(0, dV.getNorm(), velocityThreshold);
     }
 
     private void checkRotation(double[][] reference, Transform t, double epsilon) {
         double[][] mat = t.getRotation().getMatrix();
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                Assert.assertEquals(reference[i][j], mat[i][j], epsilon * FastMath.abs(reference[i][j]));
+                Assertions.assertEquals(reference[i][j], mat[i][j], epsilon * FastMath.abs(reference[i][j]));
 
             }
         }

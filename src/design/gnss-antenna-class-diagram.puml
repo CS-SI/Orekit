@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit.gnss #ECEBD8 {
 
@@ -39,7 +40,7 @@
       +MIXED
     }
 
-    enum Frequency {
+    enum PredefinedGnssSignal {
       +G01
       +G02
       +...
@@ -49,7 +50,7 @@
       +S05
     }
 
-    SatelliteSystem "1" <--* Frequency
+    SatelliteSystem "1" <--* PredefinedGnssSignal
 
     package antenna #DDEBD8 {
 
@@ -67,8 +68,8 @@
       }
 
       class Antenna {
-        +Vector3D getEccentricities(frequency)
-        +double   getPhaseCenterVariation(frequency, direction)
+        +Vector3D getEccentricities(radioWave)
+        +double   getPhaseCenterVariation(radioWave, direction)
       }
 
       class ReceiverAntenna {
@@ -93,7 +94,7 @@
       }
 
       FrequencyPattern "1" <--* PhaseCenterVariationFunction
-      Frequency        "*" <-left-* Antenna
+      PredefinedGnssSignal  "*" <-left-* Antenna
       Antenna *-right-> "*" FrequencyPattern
       SatelliteAntenna     ..|> Antenna
       ReceiverAntenna     ..|> Antenna

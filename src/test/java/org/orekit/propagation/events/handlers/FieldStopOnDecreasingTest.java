@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,17 +16,16 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Test;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -34,20 +33,20 @@ public class FieldStopOnDecreasingTest {
 
     @Test
     public void testNoReset() {
-        doTestNoReset(Decimal64Field.getInstance());
+        doTestNoReset(Binary64Field.getInstance());
     }
 
     @Test
     public void testIncreasing() {
-        doTestIncreasing(Decimal64Field.getInstance());
+        doTestIncreasing(Binary64Field.getInstance());
     }
 
     @Test
     public void testDecreasing() {
-        doTestDecreasing(Decimal64Field.getInstance());
+        doTestDecreasing(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNoReset(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0),
@@ -56,14 +55,14 @@ public class FieldStopOnDecreasingTest {
                                                                                          zero.add(3.10686),
                                                                                          zero.add(1.00681),
                                                                                          zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
-        Assert.assertSame(s, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().resetState(null, s));
+        Assertions.assertSame(s, new FieldStopOnDecreasing<T>().resetState(null, s));
     }
 
-    private <T extends RealFieldElement<T>> void doTestIncreasing(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestIncreasing(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0),
@@ -72,15 +71,15 @@ public class FieldStopOnDecreasingTest {
                                                                                          zero.add(3.10686),
                                                                                          zero.add(1.00681),
                                                                                          zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
 
-        Assert.assertSame(Action.CONTINUE, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
+        Assertions.assertSame(Action.CONTINUE, new FieldStopOnDecreasing<T>().eventOccurred(s, null, true));
     }
 
-    private <T extends RealFieldElement<T>> void doTestDecreasing(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDecreasing(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0),
@@ -89,12 +88,12 @@ public class FieldStopOnDecreasingTest {
                                                                                          zero.add(3.10686),
                                                                                          zero.add(1.00681),
                                                                                          zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
 
-        Assert.assertSame(Action.STOP, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, false));
+        Assertions.assertSame(Action.STOP, new FieldStopOnDecreasing<T>().eventOccurred(s, null, false));
     }
 
 }

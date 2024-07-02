@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,48 +16,48 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
-public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
+class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-GLONASS.txt", 5.8e-15, 5.2e-16, false);
+    void testPatchedLargeNegativeBeta() {
+        doTestAxes("patched-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-GLONASS.txt", 7.8e-11, 9.3e-16, false);
+    void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-GLONASS.txt", 7.8e-11, 9.8e-16, false);
     }
 
     @Test
-    public void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-GLONASS.txt", 5.2e-6, 6.7e-16, false);
+    void testPatchedCrossingBeta() {
+        doTestAxes("patched-eclips/beta-crossing-GLONASS.txt", 5.2e-6, 1.1e-15, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-GLONASS.txt", 2.4e-12, 5.1e-16, false);
+    void testPatchedSmallPositiveBeta() {
+        doTestAxes("patched-eclips/beta-small-positive-GLONASS.txt", 2.4e-12, 7.4e-16, false);
     }
 
     @Test
-    public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-GLONASS.txt", 6.5e-15, 8.8e-16, false);
+    void testPatchedLargePositiveBeta() {
+        doTestAxes("patched-eclips/beta-large-positive-GLONASS.txt", 6.8e-15, 9.2e-16, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-GLONASS.txt", 5.8e-15, 5.2e-16, false);
+    void testOriginalLargeNegativeBeta() {
+        doTestAxes("original-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-GLONASS.txt", 1.6e-4, 9.3e-16, false);
+    void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-GLONASS.txt", 1.6e-4, 9.8e-16, false);
     }
 
     @Test
-    public void testOriginalCrossingBeta() {
+    void testOriginalCrossingBeta() {
         // the very high threshold (0.54 radians) is due to a probable bug in original eclips
         // the output of the routine is limited to the x-sat vector, the yaw angle itself
         // is not output. However, in some cases the x-sat vector is not normalized at all.
@@ -75,17 +75,17 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
         // As a conclusion, we consider here that the reference output is wrong and that
         // Orekit behavior is correct, so we increased the threshold so the test pass,
         // and wrote this big comment to explain the situation
-        doTestAxes("original-eclips/beta-crossing-GLONASS.txt", 0.54, 8.5e-16, false);
+        doTestAxes("original-eclips/beta-crossing-GLONASS.txt", 0.54, 1.1e-15, false);
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-GLONASS.txt", 1.6e-4, 5.1e-16, false);
+    void testOriginalSmallPositiveBeta() {
+        doTestAxes("original-eclips/beta-small-positive-GLONASS.txt", 1.6e-4, 7.4e-16, false);
     }
 
     @Test
-    public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-GLONASS.txt", 6.5e-15, 8.8e-16, false);
+    void testOriginalLargePositiveBeta() {
+        doTestAxes("original-eclips/beta-large-positive-GLONASS.txt", 6.8e-15, 9.2e-16, false);
     }
 
 }

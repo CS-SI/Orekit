@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events.handlers;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -29,10 +29,20 @@ import org.orekit.propagation.events.FieldEventDetector;
  *
  * @author Hank Grabowski
  *
- * @param <KK> class type for the generic version
+ * @param <T> type of the field element
  */
-public class FieldStopOnIncreasing <KK extends FieldEventDetector<T>,
-                    T extends RealFieldElement<T>> implements FieldEventHandler<KK, T> {
+public class FieldStopOnIncreasing <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public FieldStopOnIncreasing() {
+        // nothing to do
+    }
 
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link
@@ -45,7 +55,7 @@ public class FieldStopOnIncreasing <KK extends FieldEventDetector<T>,
      * @return {@link Action#STOP} or {@link Action#CONTINUE}
      */
     @Override
-    public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing) {
+    public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
         return increasing ? Action.STOP : Action.CONTINUE;
     }
 

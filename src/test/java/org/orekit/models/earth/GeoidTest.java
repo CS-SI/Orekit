@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,25 +16,14 @@
  */
 package org.orekit.models.earth;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.orekit.OrekitMatchers.closeTo;
-import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
-import static org.orekit.OrekitMatchers.vectorCloseTo;
-
-import java.util.Arrays;
-
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.forces.gravity.potential.EGMFormatReader;
@@ -42,8 +31,19 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.Arrays;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
+import static org.orekit.OrekitMatchers.vectorCloseTo;
 
 /**
  * Unit tests for {@link Geoid}.
@@ -73,22 +73,22 @@ public class GeoidTest {
      *
      * @throws Exception on error.
      */
-    @BeforeClass
+    @BeforeAll
     public static void setUpBefore() throws Exception {
         Utils.setDataRoot("geoid:regular-data");
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.addPotentialCoefficientsReader(
                 new EGMFormatReader("egm96", false));
-        potential = GravityFieldFactory.getConstantNormalizedProvider(
+        potential = GravityFieldFactory.getNormalizedProvider(
                 maxDegree, maxOrder);
-        date = potential.getReferenceDate();
+        date = null;
     }
 
     /** {lat, lon, expectedValue} points to evaluate the undulation */
     private double[][] reference;
 
     /** create the array of reference points */
-    @Before
+    @BeforeEach
     public void setUp() {
         reference = new double[][]{
                 {0, 75, -100.3168},
@@ -122,21 +122,25 @@ public class GeoidTest {
     public void testGeoid() {
         Geoid geoid = getComponent();
         // reference ellipse is the same
-        assertEquals(WGS84, geoid.getEllipsoid());
+        Assertions.assertEquals(WGS84, geoid.getEllipsoid());
         // geoid and reference ellipse are in the same frame
-        assertEquals(WGS84.getBodyFrame(), geoid.getBodyFrame());
+        Assertions.assertEquals(WGS84.getBodyFrame(), geoid.getBodyFrame());
     }
 
     /** throws on null */
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testGeoidNullPotential() {
-        new Geoid(null, WGS84);
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            new Geoid(null, WGS84);
+        });
     }
 
     /** throws on null */
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testGeoidNullEllipsoid() {
-        new Geoid(potential, null);
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            new Geoid(potential, null);
+        });
     }
 
     /**
@@ -166,8 +170,7 @@ public class GeoidTest {
             double expected = row[2];
             // System.out.format("%10g %10g %10g %10g%n", lat, lon, expected,
             // undulation - expected);
-            Assert.assertEquals(String.format("lat: %5g, lon: %5g", lat, lon),
-                    undulation, expected, maxError);
+            Assertions.assertEquals(undulation, expected, maxError, String.format("lat: %5g, lon: %5g", lat, lon));
         }
     }
 
@@ -239,7 +242,7 @@ public class GeoidTest {
                 .add(gp.getNorth().scalarMultiply(0.9));
         Vector3D close = expected.add(slope.scalarMultiply(100));
         Line line = new Line(expected.add(slope), close, 0);
-        Transform xform = geoid.getBodyFrame().getTransformTo(frame, date);
+        StaticTransform xform = geoid.getBodyFrame().getStaticTransformTo(frame, date);
         // transform to test frame
         close = xform.transformPosition(close);
         line = xform.transformLine(line);

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@ import org.hipparchus.analysis.interpolation.SplineInterpolator;
 import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.BodiesElements;
@@ -491,13 +492,18 @@ public class OceanLoading implements StationDisplacement {
          * @param absAmplitude absolute value of the Cartwright-Edden amplitude of the tide
          */
         MainTideData(final OceanLoadingCoefficients coefficients, final int i, final int j, final double absAmplitude) {
+            // Sine and Cosine of difference angles
+            final SinCos scZenith = FastMath.sinCos(coefficients.getZenithPhase(i, j));
+            final SinCos scWest   = FastMath.sinCos(coefficients.getWestPhase(i, j));
+            final SinCos scSouth  = FastMath.sinCos(coefficients.getSouthPhase(i, j));
+            // Initialize attributes
             tide       = coefficients.getTide(i, j);
-            realZ      = coefficients.getZenithAmplitude(i, j) * FastMath.cos(coefficients.getZenithPhase(i, j)) / absAmplitude;
-            imaginaryZ = coefficients.getZenithAmplitude(i, j) * FastMath.sin(coefficients.getZenithPhase(i, j)) / absAmplitude;
-            realW      = coefficients.getWestAmplitude(i, j)   * FastMath.cos(coefficients.getWestPhase(i, j))   / absAmplitude;
-            imaginaryW = coefficients.getWestAmplitude(i, j)   * FastMath.sin(coefficients.getWestPhase(i, j))   / absAmplitude;
-            realS      = coefficients.getSouthAmplitude(i, j)  * FastMath.cos(coefficients.getSouthPhase(i, j))  / absAmplitude;
-            imaginaryS = coefficients.getSouthAmplitude(i, j)  * FastMath.sin(coefficients.getSouthPhase(i, j))  / absAmplitude;
+            realZ      = coefficients.getZenithAmplitude(i, j) * scZenith.cos() / absAmplitude;
+            imaginaryZ = coefficients.getZenithAmplitude(i, j) * scZenith.sin() / absAmplitude;
+            realW      = coefficients.getWestAmplitude(i, j)   * scWest.cos()   / absAmplitude;
+            imaginaryW = coefficients.getWestAmplitude(i, j)   * scWest.sin()   / absAmplitude;
+            realS      = coefficients.getSouthAmplitude(i, j)  * scSouth.cos()  / absAmplitude;
+            imaginaryS = coefficients.getSouthAmplitude(i, j)  * scSouth.sin()  / absAmplitude;
         }
 
     }

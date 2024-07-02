@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -134,13 +134,13 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
+    protected <T extends CalculusFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
         final Field<T> field = context.getDate().getField();
 
         // noon beta angle limit from yaw rate
         final T      aNoon  = FastMath.atan(context.getMuRate().divide(yawRate));
-        final T      aNight = field.getZero().add(NIGHT_TURN_LIMIT);
+        final T      aNight = field.getZero().newInstance(NIGHT_TURN_LIMIT);
         final double cNoon  = FastMath.cos(aNoon.getReal());
         final double cNight = FastMath.cos(aNight.getReal());
 
@@ -149,7 +149,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
             final T absBeta = FastMath.abs(context.beta(context.getDate()));
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))) :
-                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
+                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(aNoon.getPi())),
                                 END_MARGIN);
             if (context.inTurnTimeRange()) {
 
@@ -164,11 +164,11 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                     if (beta.getReal() > yawBias && beta.getReal() < 0) {
                         // noon turn problem for small negative beta in block IIF
                         // rotation is in the wrong direction for these spacecrafts
-                        phiDot    = field.getZero().add(FastMath.copySign(yawRate, beta.getReal()));
+                        phiDot    = field.getZero().newInstance(FastMath.copySign(yawRate, beta.getReal()));
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     } else {
                         // regular noon turn
-                        phiDot    = field.getZero().add(-FastMath.copySign(yawRate, beta.getReal()));
+                        phiDot    = field.getZero().newInstance(-FastMath.copySign(yawRate, beta.getReal()));
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     }
                 } else {

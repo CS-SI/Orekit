@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,14 +20,14 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -42,7 +42,7 @@ public class OsculatingToMeanElementsConverterTest {
         final AbsoluteDate date = new AbsoluteDate("2011-12-12T11:57:20.000", TimeScalesFactory.getUTC());
         final Orbit orbit1 = new CircularOrbit(7204535.848109436, -4.484755873986251E-4, 0.0011562979012178316,
                                                FastMath.toRadians(98.74341600466741), FastMath.toRadians(43.32990110790338),
-                                               FastMath.toRadians(180.0), PositionAngle.MEAN, FramesFactory.getGCRF(),
+                                               FastMath.toRadians(180.0), PositionAngleType.MEAN, FramesFactory.getGCRF(),
                                                date, Constants.WGS84_EARTH_MU);
         final SpacecraftState initialState = new SpacecraftState(orbit1);
         // Set up the numerical propagator
@@ -59,16 +59,16 @@ public class OsculatingToMeanElementsConverterTest {
 
         final double eps  = 1.e-15;
 
-        Assert.assertEquals(orbit1.getA(), meanOrbit.getA(), eps * orbit1.getA());
-        Assert.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getEquinoctialEx(), eps);
-        Assert.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getEquinoctialEy(), eps);
-        Assert.assertEquals(orbit1.getHx(), meanOrbit.getHx(), eps);
-        Assert.assertEquals(orbit1.getHy(), meanOrbit.getHy(), eps);
-        Assert.assertEquals(MathUtils.normalizeAngle(orbit1.getLM(), FastMath.PI),
+        Assertions.assertEquals(orbit1.getA(), meanOrbit.getA(), eps * orbit1.getA());
+        Assertions.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getEquinoctialEx(), eps);
+        Assertions.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getEquinoctialEy(), eps);
+        Assertions.assertEquals(orbit1.getHx(), meanOrbit.getHx(), eps);
+        Assertions.assertEquals(orbit1.getHy(), meanOrbit.getHy(), eps);
+        Assertions.assertEquals(MathUtils.normalizeAngle(orbit1.getLM(), FastMath.PI),
                             MathUtils.normalizeAngle(meanOrbit.getLM(), FastMath.PI), eps);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,36 +16,35 @@
  */
 package org.orekit.utils;
 
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AngularDerivativesFilterTest {
 
     @Test
     public void testList() {
-        Assert.assertEquals(3, AngularDerivativesFilter.values().length);
+        Assertions.assertEquals(3, AngularDerivativesFilter.values().length);
     }
 
     @Test
     public void testOrder() {
-        Assert.assertEquals(0, AngularDerivativesFilter.USE_R.getMaxOrder(), 0);
-        Assert.assertEquals(1, AngularDerivativesFilter.USE_RR.getMaxOrder(), 0);
-        Assert.assertEquals(2, AngularDerivativesFilter.USE_RRA.getMaxOrder(), 0);
+        Assertions.assertEquals(0, AngularDerivativesFilter.USE_R.getMaxOrder(), 0);
+        Assertions.assertEquals(1, AngularDerivativesFilter.USE_RR.getMaxOrder(), 0);
+        Assertions.assertEquals(2, AngularDerivativesFilter.USE_RRA.getMaxOrder(), 0);
     }
 
     @Test
     public void testBuildFromOrder() {
-        Assert.assertEquals(AngularDerivativesFilter.USE_R,   AngularDerivativesFilter.getFilter(0));
-        Assert.assertEquals(AngularDerivativesFilter.USE_RR,  AngularDerivativesFilter.getFilter(1));
-        Assert.assertEquals(AngularDerivativesFilter.USE_RRA, AngularDerivativesFilter.getFilter(2));
+        Assertions.assertEquals(AngularDerivativesFilter.USE_R,   AngularDerivativesFilter.getFilter(0));
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RR,  AngularDerivativesFilter.getFilter(1));
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RRA, AngularDerivativesFilter.getFilter(2));
     }
 
     @Test
     public void testNoNegativeOrder() {
         try {
             AngularDerivativesFilter.getFilter(-1);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected
         }
@@ -55,7 +54,7 @@ public class AngularDerivativesFilterTest {
     public void testNoOrder3() {
         try {
             AngularDerivativesFilter.getFilter(3);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected
         }

@@ -1,0 +1,72 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit #ECEBD8 {
+
+    package propagation.events #DDEBD8 {
+      interface EventDetector
+      interface FieldEventDetector
+    }
+
+    package forces.maneuvers.propulsion.triggers #DDEBD8 {
+
+      interface ManeuverTriggers {
+        +getName()
+        +init()
+        +getEventsDetectors()
+        +getFieldEventsDetectors()
+        +isFiring()
+        +getParametersDrivers()
+      }
+
+      abstract class AbstractManeuverTriggers
+      abstract class "IntervalEventTrigger<T>" as IntervalEventTrigger_T {
+        -firingIntervalDetector
+        #convertIntervalDetector()
+      }
+      abstract class "StartStopEventsTrigger<A, O>" as StartStopEventsTrigger_A_O {
+        -startDetector
+        -stopDetector
+        #convertStartDetector()
+        #convertStopDetector()
+      }
+      class DateBasedManeuverTriggers
+
+      EventDetector <--o ManeuverTriggers
+      FieldEventDetector <--o ManeuverTriggers
+      AbstractManeuverTriggers ..|> ManeuverTriggers
+      AbstractManeuverTriggers <|-- IntervalEventTrigger_T
+      AbstractManeuverTriggers <|-- StartStopEventsTrigger_A_O
+      IntervalEventTrigger_T <|-- DateBasedManeuverTriggers
+
+    }
+
+ }
+
+@enduml

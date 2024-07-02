@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,11 +18,13 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.time.AbsoluteDate;
 
 /** Detector for geographic longitude crossing.
  * <p>This detector identifies when a spacecraft crosses a fixed
@@ -38,11 +40,8 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
     /** Fixed longitude to be crossed. */
     private final double longitude;
 
-    /** Sign to apply for longitude difference. */
-    private double sign;
-
-    /** Previous longitude difference. */
-    private double previousDelta;
+    /** Filtering detector. */
+    private final EventEnablingPredicateFilter filtering;
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -63,40 +62,47 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      */
     public LongitudeCrossingDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body, final double longitude) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LongitudeCrossingDetector>(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, longitude);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body body on which the longitude is defined
      * @param longitude longitude to be crossed
      */
-    private LongitudeCrossingDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super LongitudeCrossingDetector> handler,
-                                     final OneAxisEllipsoid body, final double longitude) {
+    protected LongitudeCrossingDetector(final AdaptableInterval maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler handler,
+                                        final OneAxisEllipsoid body, final double longitude) {
+
         super(maxCheck, threshold, maxIter, handler);
-        this.body          = body;
-        this.longitude     = longitude;
-        this.sign          = +1.0;
-        this.previousDelta = Double.NaN;
+
+        this.body      = body;
+        this.longitude = longitude;
+
+        // we filter out spurious longitude crossings occurring at the antimeridian
+        final RawLongitudeCrossingDetector raw = new RawLongitudeCrossingDetector(maxCheck, threshold, maxIter,
+                                                                                  new ContinueOnEvent());
+        final EnablingPredicate predicate =
+            (state, detector, g) -> FastMath.abs(g) < 0.5 * FastMath.PI;
+        this.filtering = new EventEnablingPredicateFilter(raw, predicate);
+
     }
 
     /** {@inheritDoc} */
     @Override
-    protected LongitudeCrossingDetector create(final double newMaxCheck, final double newThreshold,
-                                              final int newMaxIter,
-                                              final EventHandler<? super LongitudeCrossingDetector> newHandler) {
+    protected LongitudeCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
+                                               final EventHandler newHandler) {
         return new LongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                          body, longitude);
+                                             body, longitude);
     }
 
     /** Get the body on which the geographic zone is defined.
@@ -111,6 +117,11 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      */
     public double getLongitude() {
         return longitude;
+    }
+
+    /**  {@inheritDoc} */
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        filtering.init(s0, t);
     }
 
     /** Compute the value of the detection function.
@@ -130,22 +141,57 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * longitude, with some sign tweaks to ensure continuity
      */
     public double g(final SpacecraftState s) {
+        return filtering.g(s);
+    }
 
-        // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
-                                                s.getFrame(), s.getDate());
+    private class RawLongitudeCrossingDetector extends AbstractDetector<RawLongitudeCrossingDetector> {
 
-        // longitude difference
-        double delta = MathUtils.normalizeAngle(sign * (gp.getLongitude() - longitude), 0.0);
-
-        // ensure continuity
-        if (FastMath.abs(delta - previousDelta) > FastMath.PI) {
-            sign  = -sign;
-            delta = MathUtils.normalizeAngle(sign * (gp.getLongitude() - longitude), 0.0);
+        /** Protected constructor with full parameters.
+         * <p>
+         * This constructor is not public as users are expected to use the builder
+         * API with the various {@code withXxx()} methods to set up the instance
+         * in a readable manner without using a huge amount of parameters.
+         * </p>
+         * @param maxCheck maximum checking interval
+         * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
+         * @param handler event handler to call at event occurrences
+         */
+        protected RawLongitudeCrossingDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+                                               final EventHandler handler) {
+            super(maxCheck, threshold, maxIter, handler);
         }
-        previousDelta = delta;
 
-        return delta;
+        /** {@inheritDoc} */
+        @Override
+        protected RawLongitudeCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                                      final int newMaxIter,
+                                                      final EventHandler newHandler) {
+            return new RawLongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        }
+
+        /** Compute the value of the detection function.
+         * <p>
+         * The value is the longitude difference between the spacecraft and the fixed
+         * longitude to be crossed, and it <em>does</em> change sign twice around
+         * the central body: once at expected longitude and once at antimeridian.
+         * The second sign change is a spurious one and is filtered out by the
+         * outer class.
+         * </p>
+         * @param s the current state information: date, kinematics, attitude
+         * @return longitude difference between the spacecraft and the fixed
+         * longitude
+         */
+        public double g(final SpacecraftState s) {
+
+            // convert state to geodetic coordinates
+            final GeodeticPoint gp = body.transform(s.getPosition(),
+                                                    s.getFrame(), s.getDate());
+
+            // longitude difference
+            return MathUtils.normalizeAngle(gp.getLongitude() - longitude, 0.0);
+
+        }
 
     }
 

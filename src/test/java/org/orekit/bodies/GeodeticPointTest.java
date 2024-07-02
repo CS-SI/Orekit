@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,10 @@
  */
 package org.orekit.bodies;
 
-import org.junit.Assert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link GeodeticPoint}.
@@ -40,15 +40,15 @@ public class GeodeticPointTest {
                 FastMath.toRadians(90 - 360), 0);
 
         // verify
-        Assert.assertEquals(FastMath.toRadians(45), point.getLatitude(), 0);
-        Assert.assertEquals(FastMath.toRadians(-90), point.getLongitude(), 0);
+        Assertions.assertEquals(FastMath.toRadians(45), point.getLatitude(), 0);
+        Assertions.assertEquals(FastMath.toRadians(-90), point.getLongitude(), 0);
 
-        Assert.assertEquals(0, Vector3D.distance(point.getEast(),   Vector3D.PLUS_I), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getNorth(),  new Vector3D( 0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getWest(),   Vector3D.MINUS_I), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getSouth(),  new Vector3D(-0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getZenith(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getNadir(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getEast(),   Vector3D.PLUS_I), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getNorth(),  new Vector3D( 0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getWest(),   Vector3D.MINUS_I), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getSouth(),  new Vector3D(-0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getZenith(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getNadir(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
 
     }
 
@@ -77,16 +77,16 @@ public class GeodeticPointTest {
         for (double[] point : points) {
             // action
             GeodeticPoint gp = new GeodeticPoint(point[0], point[1], 0);
-            Assert.assertEquals(0, gp.getEast().crossProduct(gp.getNorth()).distance(gp.getZenith()), 1.0e-15);
-            Assert.assertEquals(0, gp.getNorth().crossProduct(gp.getWest()).distance(gp.getZenith()), 1.0e-15);
-            Assert.assertEquals(0, gp.getSouth().crossProduct(gp.getWest()).distance(gp.getNadir()), 1.0e-15);
-            Assert.assertEquals(0, gp.getEast().crossProduct(gp.getSouth()).distance(gp.getNadir()), 1.0e-15);
-            Assert.assertEquals(0, gp.getZenith().crossProduct(gp.getSouth()).distance(gp.getEast()), 1.0e-15);
-            Assert.assertEquals(0, gp.getNadir().crossProduct(gp.getWest()).distance(gp.getNorth()), 1.0e-15);
+            Assertions.assertEquals(0, gp.getEast().crossProduct(gp.getNorth()).distance(gp.getZenith()), 1.0e-15);
+            Assertions.assertEquals(0, gp.getNorth().crossProduct(gp.getWest()).distance(gp.getZenith()), 1.0e-15);
+            Assertions.assertEquals(0, gp.getSouth().crossProduct(gp.getWest()).distance(gp.getNadir()), 1.0e-15);
+            Assertions.assertEquals(0, gp.getEast().crossProduct(gp.getSouth()).distance(gp.getNadir()), 1.0e-15);
+            Assertions.assertEquals(0, gp.getZenith().crossProduct(gp.getSouth()).distance(gp.getEast()), 1.0e-15);
+            Assertions.assertEquals(0, gp.getNadir().crossProduct(gp.getWest()).distance(gp.getNorth()), 1.0e-15);
 
             // verify to within 5 ulps
-            Assert.assertEquals(point[2], gp.getLatitude(), 5 * FastMath.ulp(point[2]));
-            Assert.assertEquals(point[3], gp.getLongitude(), 5 * FastMath.ulp(point[3]));
+            Assertions.assertEquals(point[2], gp.getLatitude(), 5 * FastMath.ulp(point[2]));
+            Assertions.assertEquals(point[3], gp.getLongitude(), 5 * FastMath.ulp(point[3]));
         }
     }
 
@@ -99,13 +99,13 @@ public class GeodeticPointTest {
         GeodeticPoint point = new GeodeticPoint(1, 2, 3);
 
         // actions + verify
-        Assert.assertEquals(point, new GeodeticPoint(1, 2, 3));
-        Assert.assertFalse(point.equals(new GeodeticPoint(0, 2, 3)));
-        Assert.assertFalse(point.equals(new GeodeticPoint(1, 0, 3)));
-        Assert.assertFalse(point.equals(new GeodeticPoint(1, 2, 0)));
-        Assert.assertFalse(point.equals(new Object()));
-        Assert.assertEquals(point.hashCode(), new GeodeticPoint(1, 2, 3).hashCode());
-        Assert.assertNotEquals(point.hashCode(), new GeodeticPoint(1, FastMath.nextUp(2), 3).hashCode());
+        Assertions.assertEquals(point, new GeodeticPoint(1, 2, 3));
+        Assertions.assertFalse(point.equals(new GeodeticPoint(0, 2, 3)));
+        Assertions.assertFalse(point.equals(new GeodeticPoint(1, 0, 3)));
+        Assertions.assertFalse(point.equals(new GeodeticPoint(1, 2, 0)));
+        Assertions.assertFalse(point.equals(new Object()));
+        Assertions.assertEquals(point.hashCode(), new GeodeticPoint(1, 2, 3).hashCode());
+        Assertions.assertNotEquals(point.hashCode(), new GeodeticPoint(1, FastMath.nextUp(2), 3).hashCode());
     }
 
     /**
@@ -121,6 +121,6 @@ public class GeodeticPointTest {
         String actual = point.toString();
 
         // verify
-        Assert.assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
+        Assertions.assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
     }
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,13 +16,8 @@
  */
 package org.orekit.bodies;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 
 /** Factory class for bodies of the solar system.
  * <p>The {@link #getSun() Sun}, the {@link #getMoon() Moon} and the planets
@@ -113,20 +108,23 @@ public class CelestialBodyFactory {
      */
     public static final String PLUTO = "Pluto";
 
-    /** Celestial body loaders map. */
-    private static final Map<String, List<CelestialBodyLoader>> LOADERS_MAP =
-        new HashMap<String, List<CelestialBodyLoader>>();
-
-    /** Celestial body map. */
-    private static final Map<String, CelestialBody> CELESTIAL_BODIES_MAP =
-        new HashMap<String, CelestialBody>();
-
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
      * nor a default constructor. This private constructor prevents
      * the compiler from generating one automatically.</p>
      */
     private CelestialBodyFactory() {
+    }
+
+    /**
+     * Get the instance of {@link CelestialBodies} that is called by the static methods in
+     * this class.
+     *
+     * @return the reference frames used by this factory.
+     */
+    @DefaultDataContext
+    public static LazyLoadedCelestialBodies getCelestialBodies() {
+        return DataContext.getDefault().getCelestialBodies();
     }
 
     /** Add a loader for celestial bodies.
@@ -136,15 +134,10 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
-    public static void addCelestialBodyLoader(final String name, final CelestialBodyLoader loader) {
-        synchronized (LOADERS_MAP) {
-            List<CelestialBodyLoader> loaders = LOADERS_MAP.get(name);
-            if (loaders == null) {
-                loaders = new ArrayList<CelestialBodyLoader>();
-                LOADERS_MAP.put(name, loaders);
-            }
-            loaders.add(loader);
-        }
+    @DefaultDataContext
+    public static void addCelestialBodyLoader(final String name,
+                                              final CelestialBodyLoader loader) {
+        getCelestialBodies().addCelestialBodyLoader(name, loader);
     }
 
     /** Add the default loaders for all predefined celestial bodies.
@@ -160,20 +153,9 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
+    @DefaultDataContext
     public static void addDefaultCelestialBodyLoader(final String supportedNames) {
-        addDefaultCelestialBodyLoader(SOLAR_SYSTEM_BARYCENTER, supportedNames);
-        addDefaultCelestialBodyLoader(SUN,                     supportedNames);
-        addDefaultCelestialBodyLoader(MERCURY,                 supportedNames);
-        addDefaultCelestialBodyLoader(VENUS,                   supportedNames);
-        addDefaultCelestialBodyLoader(EARTH_MOON,              supportedNames);
-        addDefaultCelestialBodyLoader(EARTH,                   supportedNames);
-        addDefaultCelestialBodyLoader(MOON,                    supportedNames);
-        addDefaultCelestialBodyLoader(MARS,                    supportedNames);
-        addDefaultCelestialBodyLoader(JUPITER,                 supportedNames);
-        addDefaultCelestialBodyLoader(SATURN,                  supportedNames);
-        addDefaultCelestialBodyLoader(URANUS,                  supportedNames);
-        addDefaultCelestialBodyLoader(NEPTUNE,                 supportedNames);
-        addDefaultCelestialBodyLoader(PLUTO,                   supportedNames);
+        getCelestialBodies().addDefaultCelestialBodyLoader(supportedNames);
     }
 
     /** Add the default loaders for celestial bodies.
@@ -190,54 +172,10 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
-    public static void addDefaultCelestialBodyLoader(final String name, final String supportedNames) {
-
-        CelestialBodyLoader loader = null;
-        if (name.equalsIgnoreCase(SOLAR_SYSTEM_BARYCENTER)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER);
-        } else if (name.equalsIgnoreCase(SUN)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SUN);
-        } else if (name.equalsIgnoreCase(MERCURY)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY);
-        } else if (name.equalsIgnoreCase(VENUS)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.VENUS);
-        } else if (name.equalsIgnoreCase(EARTH_MOON)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH_MOON);
-        } else if (name.equalsIgnoreCase(EARTH)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH);
-        } else if (name.equalsIgnoreCase(MOON)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MOON);
-        } else if (name.equalsIgnoreCase(MARS)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MARS);
-        } else if (name.equalsIgnoreCase(JUPITER)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.JUPITER);
-        } else if (name.equalsIgnoreCase(SATURN)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SATURN);
-        } else if (name.equalsIgnoreCase(URANUS)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.URANUS);
-        } else if (name.equalsIgnoreCase(NEPTUNE)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.NEPTUNE);
-        } else if (name.equalsIgnoreCase(PLUTO)) {
-            loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.PLUTO);
-        }
-
-        if (loader != null) {
-            addCelestialBodyLoader(name, loader);
-        }
-
+    @DefaultDataContext
+    public static void addDefaultCelestialBodyLoader(final String name,
+                                                     final String supportedNames) {
+        getCelestialBodies().addDefaultCelestialBodyLoader(name, supportedNames);
     }
 
     /** Clear loaders for one celestial body.
@@ -250,17 +188,9 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders()
      * @see #clearCelestialBodyCache(String)
      */
+    @DefaultDataContext
     public static void clearCelestialBodyLoaders(final String name) {
-        // use same synchronization order as in getBody to prevent deadlocks
-        synchronized (CELESTIAL_BODIES_MAP) {
-            // take advantage of reentrent synchronization as
-            // clearCelestialBodyCache uses the same lock inside
-            clearCelestialBodyCache(name);
-
-            synchronized (LOADERS_MAP) {
-                LOADERS_MAP.remove(name);
-            }
-        }
+        getCelestialBodies().clearCelestialBodyLoaders(name);
     }
 
     /** Clear loaders for all celestial bodies.
@@ -271,23 +201,17 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyCache()
      */
+    @DefaultDataContext
     public static void clearCelestialBodyLoaders() {
-        synchronized (CELESTIAL_BODIES_MAP) {
-            clearCelestialBodyCache();
-
-            synchronized (LOADERS_MAP) {
-                LOADERS_MAP.clear();
-            }
-        }
+        getCelestialBodies().clearCelestialBodyLoaders();
     }
 
     /** Clear the specified celestial body from the internal cache.
      * @param name name of the body
      */
+    @DefaultDataContext
     public static void clearCelestialBodyCache(final String name) {
-        synchronized (CELESTIAL_BODIES_MAP) {
-            CELESTIAL_BODIES_MAP.remove(name);
-        }
+        getCelestialBodies().clearCelestialBodyCache(name);
     }
 
     /** Clear all loaded celestial bodies.
@@ -297,10 +221,9 @@ public class CelestialBodyFactory {
      * will result in a reload of the requested body from the configured loader(s).
      * </p>
      */
+    @DefaultDataContext
     public static void clearCelestialBodyCache() {
-        synchronized (CELESTIAL_BODIES_MAP) {
-            CELESTIAL_BODIES_MAP.clear();
-        }
+        getCelestialBodies().clearCelestialBodyCache();
     }
 
     /** Get the solar system barycenter aggregated body.
@@ -313,29 +236,33 @@ public class CelestialBodyFactory {
      * </p>
      * @return solar system barycenter aggregated body
      */
+    @DefaultDataContext
     public static CelestialBody getSolarSystemBarycenter() {
-        return getBody(SOLAR_SYSTEM_BARYCENTER);
+        return getCelestialBodies().getSolarSystemBarycenter();
     }
 
     /** Get the Sun singleton body.
      * @return Sun body
      */
+    @DefaultDataContext
     public static CelestialBody getSun() {
-        return getBody(SUN);
+        return getCelestialBodies().getSun();
     }
 
     /** Get the Mercury singleton body.
      * @return Sun body
      */
+    @DefaultDataContext
     public static CelestialBody getMercury() {
-        return getBody(MERCURY);
+        return getCelestialBodies().getMercury();
     }
 
     /** Get the Venus singleton body.
      * @return Venus body
      */
+    @DefaultDataContext
     public static CelestialBody getVenus() {
-        return getBody(VENUS);
+        return getCelestialBodies().getVenus();
     }
 
     /** Get the Earth-Moon barycenter singleton bodies pair.
@@ -348,64 +275,73 @@ public class CelestialBodyFactory {
      * </p>
      * @return Earth-Moon barycenter bodies pair
      */
+    @DefaultDataContext
     public static CelestialBody getEarthMoonBarycenter() {
-        return getBody(EARTH_MOON);
+        return getCelestialBodies().getEarthMoonBarycenter();
     }
 
     /** Get the Earth singleton body.
      * @return Earth body
      */
+    @DefaultDataContext
     public static CelestialBody getEarth() {
-        return getBody(EARTH);
+        return getCelestialBodies().getEarth();
     }
 
     /** Get the Moon singleton body.
      * @return Moon body
      */
+    @DefaultDataContext
     public static CelestialBody getMoon() {
-        return getBody(MOON);
+        return getCelestialBodies().getMoon();
     }
 
     /** Get the Mars singleton body.
      * @return Mars body
      */
+    @DefaultDataContext
     public static CelestialBody getMars() {
-        return getBody(MARS);
+        return getCelestialBodies().getMars();
     }
 
     /** Get the Jupiter singleton body.
      * @return Jupiter body
      */
+    @DefaultDataContext
     public static CelestialBody getJupiter() {
-        return getBody(JUPITER);
+        return getCelestialBodies().getJupiter();
     }
 
     /** Get the Saturn singleton body.
      * @return Saturn body
      */
+    @DefaultDataContext
     public static CelestialBody getSaturn() {
-        return getBody(SATURN);
+        return getCelestialBodies().getSaturn();
     }
 
     /** Get the Uranus singleton body.
      * @return Uranus body
      */
+    @DefaultDataContext
     public static CelestialBody getUranus() {
-        return getBody(URANUS);
+        return getCelestialBodies().getUranus();
     }
 
     /** Get the Neptune singleton body.
      * @return Neptune body
      */
+    @DefaultDataContext
     public static CelestialBody getNeptune() {
-        return getBody(NEPTUNE);
+        return getCelestialBodies().getNeptune();
     }
 
     /** Get the Pluto singleton body.
      * @return Pluto body
      */
+    @DefaultDataContext
     public static CelestialBody getPluto() {
-        return getBody(PLUTO);
+        return getCelestialBodies().getPluto();
     }
 
     /** Get a celestial body.
@@ -422,44 +358,9 @@ public class CelestialBodyFactory {
      * @param name name of the celestial body
      * @return celestial body
      */
+    @DefaultDataContext
     public static CelestialBody getBody(final String name) {
-        synchronized (CELESTIAL_BODIES_MAP) {
-            CelestialBody body = CELESTIAL_BODIES_MAP.get(name);
-            if (body == null) {
-                synchronized (LOADERS_MAP) {
-                    List<CelestialBodyLoader> loaders = LOADERS_MAP.get(name);
-                    if ((loaders == null) || loaders.isEmpty()) {
-                        addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES);
-                        addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES);
-                        loaders = LOADERS_MAP.get(name);
-                    }
-                    OrekitException delayedException = null;
-                    for (CelestialBodyLoader loader : loaders) {
-                        try {
-                            body = loader.loadCelestialBody(name);
-                            if (body != null) {
-                                break;
-                            }
-                        } catch (OrekitException oe) {
-                            delayedException = oe;
-                        }
-                    }
-                    if (body == null) {
-                        throw (delayedException != null) ?
-                              delayedException :
-                              new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, name);
-                    }
-
-                }
-
-                // save the body
-                CELESTIAL_BODIES_MAP.put(name, body);
-
-            }
-
-            return body;
-
-        }
+        return getCelestialBodies().getBody(name);
     }
 
 }

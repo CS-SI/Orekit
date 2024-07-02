@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,16 +16,11 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.io.Serializable;
-import java.util.List;
-
-import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.util.MathArrays;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Defines a ionospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -38,7 +33,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 7.1
  */
-public interface IonosphericModel extends Serializable {
+public interface IonosphericModel extends ParameterDriversProvider {
 
     /**
      * Calculates the ionospheric path delay for the signal path from a ground
@@ -53,7 +48,7 @@ public interface IonosphericModel extends Serializable {
      * @param state       spacecraft state
      * @param baseFrame   base frame associated with the station
      * @param frequency   frequency of the signal in Hz
-     * @param parameters  ionospheric model parameters
+     * @param parameters  ionospheric model parameters at state date
      * @return the path delay due to the ionosphere in m
      */
     double pathDelay(SpacecraftState state, TopocentricFrame baseFrame, double frequency, double[] parameters);
@@ -72,40 +67,9 @@ public interface IonosphericModel extends Serializable {
      * @param state       spacecraft state
      * @param baseFrame   base frame associated with the station
      * @param frequency   frequency of the signal in Hz
-     * @param parameters  ionospheric model parameters
+     * @param parameters  ionospheric model parameters at state date
      * @return the path delay due to the ionosphere in m
      */
-    <T extends RealFieldElement<T>> T pathDelay(FieldSpacecraftState<T> state, TopocentricFrame baseFrame, double frequency, T[] parameters);
-
-    /** Get the drivers for ionospheric model parameters.
-     * @return drivers for ionospheric model parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
-
-    /** Get ionospheric model parameters.
-     * @return ionospheric model parameters
-     */
-    default double[] getParameters() {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
-        }
-        return parameters;
-    }
-
-    /** Get ionospheric model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return ionospheric model parameters
-     */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
-        }
-        return parameters;
-    }
-
+    <T extends CalculusFieldElement<T>> T pathDelay(FieldSpacecraftState<T> state, TopocentricFrame baseFrame,
+                                                    double frequency, T[] parameters);
 }

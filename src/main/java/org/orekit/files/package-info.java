@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,7 +19,8 @@
  *
  * <p>The interfaces for ephemeris file parsers and writers are in the {@link org.orekit.files.general}
  * package. Specifically, see {@link org.orekit.files.general.EphemerisFile
- * EphemerisFile}. Each format is handled by a separate sub-package: {@link org.orekit.files.ccsds}, {@link
- * org.orekit.files.sp3}.</p>
+ * EphemerisFile} and {@link org.orekit.files.general.AttitudeEphemerisFile
+ * AttitudeEphemerisFile}. Each format is handled by a separate sub-package: {@link org.orekit.files.ccsds},
+ * {@link org.orekit.files.sp3}, {@link org.orekit.files.ilrs}, {@link org.orekit.files.sinex}.</p>
  */
 package org.orekit.files;

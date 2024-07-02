@@ -1,0 +1,22 @@
+CCSDS_ACM_VERS = 2.0
+CREATION_DATE  = 2023-03-07T12:00:00
+ORIGINATOR  = GSFC
+MESSAGE_ID  = A000006
+
+META_START
+COMMENT          Inertia and Wet Mass
+OBJECT_NAME    = LRO
+CENTER_NAME    = MOON
+TIME_SYSTEM    = UTC
+EPOCH_TZERO    = 2023-01-01T00:00:00.0000
+META_STOP
+
+PHYS_START
+WET_MASS  = 1900.0 [kg]
+IXX  =   770.8 [kg*m**2]
+IYY  =  1277.4 [kg*m**2]
+IZZ  =  1497.5 [kg*m**2]
+IXY  =   -74.5 [kg*m**2]
+IXZ  =   -80.2 [kg*m**2]
+IYZ  =   -25.4 [kg*m**2]
+PHYS_STOP

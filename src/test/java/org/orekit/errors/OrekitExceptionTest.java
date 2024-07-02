@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,13 +17,14 @@
 
 package org.orekit.errors;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.exception.DummyLocalizable;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import org.hamcrest.CoreMatchers;
-import org.hipparchus.exception.DummyLocalizable;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Unit tests for {@link OrekitException}.
@@ -39,7 +40,7 @@ public class OrekitExceptionTest {
         OrekitException exception = new OrekitException(new DummyLocalizable(null));
 
         // verify
-        Assert.assertEquals(exception.getMessage(), "");
+        Assertions.assertEquals(exception.getMessage(), "");
     }
 
     /**
@@ -64,9 +65,9 @@ public class OrekitExceptionTest {
 
         // verify
         String actual = writer.toString();
-        Assert.assertThat(actual,
+        MatcherAssert.assertThat(actual,
                 CoreMatchers.containsString(message.getSourceString()));
-        Assert.assertThat(actual,
+        MatcherAssert.assertThat(actual,
                 CoreMatchers.containsString("IllegalStateException: bad message"));
     }
 

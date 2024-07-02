@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,15 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AmbiguitySolverTest {
 
@@ -39,7 +40,7 @@ public class AmbiguitySolverTest {
         });
 
         // acceptance ratio not met
-        Assert.assertTrue(new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
+        Assertions.assertTrue(new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
                                               new SimpleRatioAmbiguityAcceptance(0.5)).
                           fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance).
                           isEmpty());
@@ -47,18 +48,18 @@ public class AmbiguitySolverTest {
         List<ParameterDriver> fixed = new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
                                                           new SimpleRatioAmbiguityAcceptance(0.8)).
                                       fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance);
-        Assert.assertEquals(3, fixed.size());
-        Assert.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
-        Assert.assertEquals(3, fixed.get(1).getValue(), 1.0e-15);
-        Assert.assertEquals(4, fixed.get(2).getValue(), 1.0e-15);
+        Assertions.assertEquals(3, fixed.size());
+        Assertions.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(3, fixed.get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(4, fixed.get(2).getValue(), 1.0e-15);
     }
 
     private List<ParameterDriver> createAmbiguities(double...floatValues) {
+        final AmbiguityCache cache = new AmbiguityCache();
         final List<ParameterDriver> ambiguitiesDrivers = new ArrayList<>(floatValues.length);
         for (int i = 0; i < floatValues.length; ++i) {
-            final ParameterDriver driver = new ParameterDriver(Phase.AMBIGUITY_NAME + i, 0.0, 1.0,
-                                                               Double.NEGATIVE_INFINITY,
-                                                               Double.POSITIVE_INFINITY);
+            final ParameterDriver driver = cache.getAmbiguity("emitter-" + i, "receiver",
+                                                              PredefinedGnssSignal.E01.getWavelength());
             driver.setValue(floatValues[i]);
             driver.setSelected(true);
             ambiguitiesDrivers.add(driver);

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,15 +16,15 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import org.hipparchus.util.CombinatoricsUtils;
-import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class GammaMnsFunctionTest {
 
@@ -42,7 +42,7 @@ public class GammaMnsFunctionTest {
         for (int n = 0; n <= nMax; ++n) {
             for (int m = 0; m <= n; ++m) {
                 for (int s = -n; s <= n; ++s) {
-                    Assert.assertEquals(i++, indexM.invoke(null, m, n, s));
+                    Assertions.assertEquals(i++, indexM.invoke(null, m, n, s));
                 }
             }
         }
@@ -61,7 +61,7 @@ public class GammaMnsFunctionTest {
                 for (int s = -n; s <= n; ++s) {
                     // compare against naive implementation
                     double r = naiveRatio(m, n, s);
-                    Assert.assertEquals(r, precomputed[i++], 2.0e-14 * r);
+                    Assertions.assertEquals(r, precomputed[i++], 2.0e-14 * r);
                 }
             }
         }
@@ -75,12 +75,12 @@ public class GammaMnsFunctionTest {
         precomputedF.set(null, new double[0]);
         new GammaMnsFunction(nMax, 0.5, +1);
         double[] orginalPrecomputed = (double[]) precomputedF.get(null);
-        Assert.assertEquals((nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6, orginalPrecomputed.length);
+        Assertions.assertEquals((nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6, orginalPrecomputed.length);
         new GammaMnsFunction(nMax + 3, 0.5, +1);
         double[] reallocatedPrecomputed = (double[]) precomputedF.get(null);
-        Assert.assertEquals((nMax + 4) * (nMax + 5) * (4 * nMax + 15) / 6, reallocatedPrecomputed.length);
+        Assertions.assertEquals((nMax + 4) * (nMax + 5) * (4 * nMax + 15) / 6, reallocatedPrecomputed.length);
         for (int i = 0; i < orginalPrecomputed.length; ++i) {
-            Assert.assertEquals(orginalPrecomputed[i], reallocatedPrecomputed[i],
+            Assertions.assertEquals(orginalPrecomputed[i], reallocatedPrecomputed[i],
                                 1.0e-15 * orginalPrecomputed[i]);
         }
     }
@@ -97,10 +97,10 @@ public class GammaMnsFunctionTest {
                             final double v = naiveValue(bigI, gamma, m, n, s);
                             final double g = gammaMNS.getValue(m, n, s);
                             if (Double.isInfinite(v)) {
-                                Assert.assertTrue(Double.isInfinite(g));
-                                Assert.assertTrue(v * g > 0);
+                                Assertions.assertTrue(Double.isInfinite(g));
+                                Assertions.assertTrue(v * g > 0);
                             } else {
-                                Assert.assertEquals(v, g, 2.0e-14 * FastMath.abs(v));
+                                Assertions.assertEquals(v, g, 2.0e-14 * FastMath.abs(v));
                             }
                         }
                     }
@@ -126,7 +126,7 @@ public class GammaMnsFunctionTest {
                (CombinatoricsUtils.factorialDouble(n + s) * CombinatoricsUtils.factorialDouble(n - s));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         nMax = 12;
         fact = new double[2 * nMax + 1];

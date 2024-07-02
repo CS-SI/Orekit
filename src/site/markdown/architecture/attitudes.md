@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2024 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -17,7 +17,7 @@
 The `org.orekit.attitudes` package provides classes to represent simple attitudes.
 
 ## Attitudes Presentation
- 
+
 Some force models, such as the atmospheric drag for maneuvers, need to
 know the spacecraft orientation in an inertial frame. Orekit uses a simple
 container for Attitude which includes both the geometric part (i.e. rotation) 
@@ -39,8 +39,8 @@ base attitude law a complementary rotation in order to fulfill specific mission 
 
 ### Basic attitude laws
 
-* InertialProvider, which represents an inertial attitude law, perfectly 
-  aligned with the EME2000 frame.
+* FrameAlignedProvider, which represents an attitude law aligned
+  with a given frame or a fixed offset to it.
   
 * FixedRate, which represents a rotation around a fixed axis at
   constant rate.
@@ -81,9 +81,6 @@ Several pointing laws are modelized :
 * TargetPointing, where satellite pointing axis is directed towards given 
   point on reference body shape.
 
-* GroundPointingWrapper, which is an abstract class used for complex pointing 
-  laws described herebelow.
-
   All these ground pointing laws are relative to corresponding body frame,
   which is used for their construction. Depending on their nature, each ground pointing 
   law also have its own specific construction arguments.
@@ -94,7 +91,7 @@ Several pointing laws are modelized :
 
 Several classes have been implemented in order to represent attitude laws in which a
 _base_ attitude law is used, and a _complementary_ rotation is added in order to fulfill specific 
-mission constraints. They are gathered under abstract class `GroundPointingWrapper`.
+mission constraints.
 At this point, implemented laws of this kind are:
   
 * YawCompensation: this law is used to fulfill ground observation constraints

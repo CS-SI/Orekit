@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,14 +17,13 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.TurnAroundRange;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
+import java.util.Map;
 
 /** Builder for {@link TurnAroundRange} measurements.
  * @author Luc Maisonobe
@@ -32,71 +31,37 @@ import org.orekit.utils.ParameterDriver;
  */
 public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroundRange> {
 
-    /** Master ground station from which measurement is performed. */
-    private final GroundStation masterStation;
+    /** Primary ground station from which measurement is performed. */
+    private final GroundStation primaryStation;
 
-    /** Slave ground station reflecting the signal. */
-    private final GroundStation slaveStation;
+    /** Secondary ground station reflecting the signal. */
+    private final GroundStation secondaryStation;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param masterStation ground station from which measurement is performed
-     * @param slaveStation ground station reflecting the signal
+     * @param primaryStation ground station from which measurement is performed
+     * @param secondaryStation ground station reflecting the signal
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
     public TurnAroundRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                  final GroundStation masterStation, final GroundStation slaveStation,
+                                  final GroundStation primaryStation, final GroundStation secondaryStation,
                                   final double sigma, final double baseWeight,
                                   final ObservableSatellite satellite) {
         super(noiseSource, sigma, baseWeight, satellite);
-        this.masterStation = masterStation;
-        this.slaveStation  = slaveStation;
+        this.primaryStation   = primaryStation;
+        this.secondaryStation = secondaryStation;
     }
 
     /** {@inheritDoc} */
     @Override
-    public TurnAroundRange build(final SpacecraftState[] states) {
-
-        final ObservableSatellite satellite = getSatellites()[0];
-        final double sigma                  = getTheoreticalStandardDeviation()[0];
-        final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
-
-        // create a dummy measurement
-        final TurnAroundRange dummy = new TurnAroundRange(masterStation, slaveStation, state.getDate(),
-                                                          Double.NaN, sigma, baseWeight, satellite);
-        for (final EstimationModifier<TurnAroundRange> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        double range = dummy.estimate(0, 0, states).getEstimatedValue()[0];
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            range += noise[0];
-        }
-
-        // generate measurement
-        final TurnAroundRange measurement = new TurnAroundRange(masterStation, slaveStation, state.getDate(),
-                                                                range, sigma, baseWeight, satellite);
-        for (final EstimationModifier<TurnAroundRange> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected TurnAroundRange buildObserved(final AbsoluteDate date,
+                                            final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new TurnAroundRange(primaryStation, secondaryStation,
+                                   date, Double.NaN,
+                                   getTheoreticalStandardDeviation()[0],
+                                   getBaseWeight()[0], getSatellites()[0]);
     }
 
 }

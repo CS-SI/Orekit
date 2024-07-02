@@ -1,0 +1,51 @@
+%=BIA 1.00 DLR 2022:011:58414 DLR 2021:274:00000 2022:001:00000 R 00246696
+*-------------------------------------------------------------------------------
++FILE/REFERENCE
+*INFO_TYPE_________ INFO________________________________________________________
+ DESCRIPTION        German Space Operations Center (DLR/GSOC)
+ INPUT              Daily DCB solutions in bias SINEX format
+ OUTPUT             Daily IGS MGEX DCB solution for satelites and receivers
+ HARDWARE           localhost.localdomain Linux x86_64 5.3.18-59.37-preempt
+ SOFTWARE           IONDCB/BSXmerge
+-FILE/REFERENCE
+*-------------------------------------------------------------------------------
++FILE/COMMENT
+- Multi-GNSS differential code biases (DCBs) in this product have been derived
+  from observations of the IGS MGEX network. Details of the DCB estimation
+  process are described in
+    Montenbruck O., Hauschild A., Steigenberger P., "Differential Code Bias
+    Estimation using Multi-GNSS Observations and Global Ionosphere Maps";
+    Navigation - Journal of the ION 61(3):191-201 (2014).
+    DOI 10.1002/navi.64
+- A zero-mean constellation condition is applied to separate satellite and
+  receiver biases on a daily basis.
+- Standard deviations reflect the uncertainty of individual satellite and
+  station biases adjusted from the observed set of satellite+station biases.
+- This file provides the following DCBs
+    GPS     C1C-C1W,C1C-C2W,C2W-C2S,C2W-C2L,C2W-C2X,C1C-C5Q,C1C-C5X,C1C-C1L,
+            C1C-C1X
+    GLONASS C1C-C1P,C1C-C2C,C1C-C2P
+    GALILEO C1C-C5Q,C1X-C5X,C1C-C7Q,C1X-C7X,C1C-C8Q,C1X-C8X,C1C-C6C
+    BEIDOU  C2I-C7I,C2I-C6I,C2I-C1X,C2I-C2P,C2I-C5X,C2I-C5P,C2I-C7D,C2I-C7Z,
+            C2I-C8X
+    QZSS    C1C-C1X,C1C-C2L,C1C-C5Q,C1X-C2X,C1X-C5X
+-FILE/COMMENT
+*-------------------------------------------------------------------------------
++INPUT/ACKNOWLEDGMENTS
+*AGY DESCRIPTION________________________________________________________________
+ DLR Deutsches Zentrum fuer Luft- und Raumfahrt, Oberpfaffenhofen, Germany
+ IGS International GNSS Service
+-INPUT/ACKNOWLEDGMENTS
+*-------------------------------------------------------------------------------
++BIAS/DESCRIPTION
+*KEYWORD________________________________ VALUE (S) _____________________________
+ OBSERVATION_SAMPLING                              30
+ PARAMETER_SPACING                              86400
+ DETERMINATION_METHOD                    INTER-FREQUENCY_BIAS_ESTIMATION
+ BIAS_MODE                               RELATIVE
+ TIME_SYSTEM                             UTC
+ test test
+-BIAS/DESCRIPTION
+*
+*------------------------------------------------------------------------------------------------------
+%=ENDBIA

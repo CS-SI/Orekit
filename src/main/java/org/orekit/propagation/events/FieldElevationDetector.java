@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,12 +17,12 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.frames.Transform;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -40,8 +40,9 @@ import org.orekit.utils.ElevationMask;
  * at setting. This can be changed by calling
  * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * @author Hank Grabowski
+ * @param <T> type of the field elements
  */
-public class FieldElevationDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
+public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
 
     /** Elevation mask used for calculations, if defined. */
     private final ElevationMask elevationMask;
@@ -68,9 +69,10 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public FieldElevationDetector(final Field<T> field, final TopocentricFrame topo) {
-        this(field.getZero().add(DEFAULT_MAXCHECK),
-             field.getZero().add(DEFAULT_THRESHOLD),
-             topo);
+        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
+             field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+             new FieldStopOnDecreasing<>(),
+             0.0, null, null, topo);
     }
 
     /**
@@ -84,18 +86,18 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public FieldElevationDetector(final T maxCheck, final T threshold, final TopocentricFrame topo) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER,
-             new FieldStopOnDecreasing<FieldElevationDetector<T>, T>(),
+        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER,
+             new FieldStopOnDecreasing<>(),
              0.0, null, null, topo);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -104,10 +106,10 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
      * @param refractionModel reference to refraction model
      * @param topo reference to a topocentric model
      */
-    private FieldElevationDetector(final T maxCheck, final T threshold,
-                                   final int maxIter, final FieldEventHandler<? super FieldElevationDetector<T>, T> handler,
-                                   final double minElevation, final ElevationMask mask,
-                                   final AtmosphericRefractionModel refractionModel,
+    protected FieldElevationDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
+                                     final int maxIter, final FieldEventHandler<T> handler,
+                                     final double minElevation, final ElevationMask mask,
+                                     final AtmosphericRefractionModel refractionModel,
                                    final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.minElevation    = minElevation;
@@ -118,8 +120,8 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
 
     /** {@inheritDoc} */
     @Override
-    protected FieldElevationDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                               final int newMaxIter, final FieldEventHandler<? super FieldElevationDetector<T>, T> newHandler) {
+    protected FieldElevationDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
+                                               final int newMaxIter, final FieldEventHandler<T> newHandler) {
         return new FieldElevationDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                             minElevation, elevationMask, refractionModel, topo);
     }
@@ -170,8 +172,8 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
     @Override
     public T g(final FieldSpacecraftState<T> s) {
 
-        final Transform t = s.getFrame().getTransformTo(topo, s.getDate().toAbsoluteDate());
-        final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPVCoordinates().getPosition());
+        final FieldStaticTransform<T> t = s.getFrame().getStaticTransformTo(topo, s.getDate());
+        final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPosition());
         final T trueElevation = extPointTopo.getDelta();
 
         final T calculatedElevation;

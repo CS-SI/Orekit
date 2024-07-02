@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,6 +17,7 @@
 package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.data.BodiesElements;
 
 /** Container for ocen tides coefficients for one tide wave.
@@ -155,14 +156,13 @@ public class OceanTidesWave {
         final double thetaF = cGamma * elements.getGamma() +
                               cL * elements.getL() + cLPrime * elements.getLPrime() + cF * elements.getF() +
                               cD * elements.getD() + cOmega * elements.getOmega();
-        final double cos    = FastMath.cos(thetaF);
-        final double sin    = FastMath.sin(thetaF);
+        final SinCos sc = FastMath.sinCos(thetaF);
 
         for (int i = START_DEGREE; i <= degree; ++i) {
             for (int j = 0; j <= FastMath.min(i, order); ++j) {
                 // from IERS conventions 2010, section 6.3, equation 6.15
-                cnm[i][j] += (cPlus[i][j] + cMinus[i][j]) * cos + (sPlus[i][j] + sMinus[i][j]) * sin;
-                snm[i][j] += (sPlus[i][j] - sMinus[i][j]) * cos - (cPlus[i][j] - cMinus[i][j]) * sin;
+                cnm[i][j] += (cPlus[i][j] + cMinus[i][j]) * sc.cos() + (sPlus[i][j] + sMinus[i][j]) * sc.sin();
+                snm[i][j] += (sPlus[i][j] - sMinus[i][j]) * sc.cos() - (cPlus[i][j] - cMinus[i][j]) * sc.sin();
             }
         }
 

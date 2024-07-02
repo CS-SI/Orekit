@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -111,7 +111,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
+    protected <T extends CalculusFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
         final Field<T> field = context.getDate().getField();
 
@@ -135,11 +135,11 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
                 if (context.inSunSide()) {
                     // noon turn
-                    phiDot    = field.getZero().add(-FastMath.copySign(yawRate, beta.getReal()));
+                    phiDot    = field.getZero().newInstance(-FastMath.copySign(yawRate, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 } else {
                     // midnight turn
-                    phiDot    = field.getZero().add(FastMath.copySign(yawRate, beta.getReal()));
+                    phiDot    = field.getZero().newInstance(FastMath.copySign(yawRate, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 }
 

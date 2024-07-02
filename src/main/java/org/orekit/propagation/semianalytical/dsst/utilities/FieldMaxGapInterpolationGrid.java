@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 
@@ -29,8 +29,9 @@ import org.hipparchus.util.MathArrays;
  *
  * @author Luc Maisonobe
  * @since 7.1
+ * @param <T> type of the field elements
  */
-public class FieldMaxGapInterpolationGrid <T extends RealFieldElement<T>> implements FieldInterpolationGrid<T> {
+public class FieldMaxGapInterpolationGrid <T extends CalculusFieldElement<T>> implements FieldInterpolationGrid<T> {
 
     /** Maximum time gap. */
     private final T maxGap;

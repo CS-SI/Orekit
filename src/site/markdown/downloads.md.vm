@@ -1,0 +1,110 @@
+<!--- Copyright 2002-2024 CS GROUP
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+# Downloads
+
+<h2>Development Library version</h2>
+
+The development version of the Orekit library is always available to
+download from our version control system. We use [ Git](http://git-scm.com/)
+as our SCM. The anonymous read access to our Git repository  allows users who
+need the latest features and the latest bug fixes to get them even before an
+official release.
+
+The Git repository can be cloned using the following command, which can
+be easily adapted if you are using one of the numerous Git graphical
+user interface available or if Git is supported by you integrated
+development environment:
+
+    git clone -b develop https://gitlab.orekit.org/orekit/orekit.git
+
+<h2>Released Library versions</h2>
+
+Orekit is provided both in several packaging systems. You can pick up
+the one that better suits your needs. Source packages are the most complete
+ones since the other packages (binary jars, javadoc jars and even the bulk
+of this site) are created from these sources.
+
+Orekit source code can be also downloaded from our 
+[version control system](https://gitlab.orekit.org/orekit/orekit/-/releases)
+in .zip, .tar.gz, .tar.bz2, and .tar extensions.
+
+Orekit is also available in maven central repository,
+with groupID org.orekit and artifactId orekit so maven
+internal mechanism will download automatically all artifacts and dependencies
+as required.
+
+#set ( $versions = {"12.1.1": "2024-06-25", "12.1": "2024-06-24", "12.0.2": "2024-03-15", "12.0.1": "2023-12-31", "12.0": "2023-11-08", "11.3.3": "2023-06-30", "11.3.2": "2023-02-17", "11.3.1": "2022-12-24", "11.3": "2022-10-25", "11.2.1": "2022-08-01", "11.2": "2022-06-20", "11.1.2": "2022-04-27", "11.1.1": "2022-03-17", "11.1": "2022-02-14", "11.0.2": "2021-11-24", "11.0.1": "2021-10-22", "11.0": "2021-09-20", "10.3.1": "2021-06-16", "10.3": "2020-12-21", "10.2": "2020-07-14", "10.1": "2020-02-19", "10.0": "2019-06-24", "9.3.1": "2019-03-16", "9.3": "2019-01-25", "9.2": "2018-05-26","9.1": "2017-11-26","9.0.1": "2017-11-03","9.0": "2017-07-26","8.0.1": "2017-11-03","8.0": "2016-06-30","7.2.1": "2017-11-03","7.2": "2016-04-05","7.1": "2016-02-07","7.0": "2015-01-11","6.1": "2013-12-13","6.0": "2013-04-23","5.0.3": "2011-07-13","5.0.2": "2011-07-11","5.0.1": "2011-04-18"} )
+#foreach( $version in $versions.entrySet() )
+
+|  package |                                              link                                                                                     |
+|----------|---------------------------------------------------------------------------------------------------------------------------------------|
+|  source  | [orekit-${version.key}-sources.jar](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}-sources.jar) |
+|  binary  | [orekit-${version.key}.jar](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}.jar)                 |
+|  javadoc | [orekit-${version.key}-javadoc.jar](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}-javadoc.jar) |
+version ${version.key} downloads (release date: ${version.value})
+
+#end
+
+#set ( $versions = {"5.0": "2010-05-06","4.1": "2009-08-18","4.0": "2008-10-13","3.1": "2008-07-16"} )
+#foreach( $version in $versions.entrySet() )
+
+|  package |                                              link                                                                                     |
+|----------|---------------------------------------------------------------------------------------------------------------------------------------|
+|  source  | [orekit-${version.key}-src.zip](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}-src.zip) |
+|  binary  | [orekit-${version.key}.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}.jar)                 |
+|  javadoc | [orekit-${version.key}-doc.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}-doc.jar) |
+version ${version.key} downloads (release date: ${version.value})
+
+#end
+
+<h2>Data</h2>
+
+For convenience, a zip archive containing some configuration data is available
+for download. Similar files can be custom made by users with updated data.
+Configuring data loading is explained in the configuration page. For a start,
+the simplest configuration is to download the
+[orekit-data-master.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)
+file from the forge, to unzip it anywhere you want, rename the `orekit-data-master` folder that will be created
+into `orekit-data` and add the following lines at the start of your program:
+
+    File orekitData = new File("/path/to/the/folder/orekit-data");
+    DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+    manager.addProvider(new DirectoryCrawler(orekitData));
+
+This file contains the following data sets. Note that the data is updated only
+from time to time, so users must check by themselves they cover the time range
+needed for their computation.
+
+  * leap seconds data,
+
+  * IERS Earth orientation parameters from 1973 (both IAU-1980 and IAU-2000),
+
+  * Marshall Solar Activity Future Estimation from 1999,
+
+  * JPL DE 430 planetary ephemerides from 1990 to 2069,
+
+  * Eigen 06S gravity field,
+ 
+  * CSSI space weather file,
+
+  * FES 2004 ocean tides model.
+
+There are no guarantees that this file will be available indefinitely or that its
+content will be updated. It should be considered as a simple configuration example.
+Users are encouraged to set up their own configuration data.
+
+The file is available by following the
+[download](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)
+link in the project dedicated to Orekit Data in the forge.

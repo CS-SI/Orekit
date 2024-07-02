@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.attitudes;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -34,8 +34,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -62,7 +60,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @see     GroundPointing
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class YawCompensation extends GroundPointing implements AttitudeProviderModifier {
+public class YawCompensation extends GroundPointingAttitudeModifier implements AttitudeProviderModifier {
 
     /** J axis. */
     private static final PVCoordinates PLUS_J =
@@ -72,61 +70,13 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     private static final PVCoordinates PLUS_K =
             new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
 
-    /** Underlying ground pointing attitude provider.  */
-    private final GroundPointing groundPointingLaw;
-
     /** Creates a new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
      * @since 7.1
      */
     public YawCompensation(final Frame inertialFrame, final GroundPointing groundPointingLaw) {
-        super(inertialFrame, groundPointingLaw.getBodyFrame());
-        this.groundPointingLaw = groundPointingLaw;
-    }
-
-    /** Get the underlying (ground pointing) attitude provider.
-     * @return underlying attitude provider, which in this case is a {@link GroundPointing} instance
-     */
-    public AttitudeProvider getUnderlyingAttitudeProvider() {
-        return groundPointingLaw;
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame) {
-        return groundPointingLaw.getTargetPV(pvProv, date, frame);
-    }
-
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame) {
-        return groundPointingLaw.getTargetPV(pvProv, date, frame);
-    }
-
-    /** Compute the base system state at given date, without compensation.
-     * @param pvProv provider for PV coordinates
-     * @param date date at which state is requested
-     * @param frame reference frame from which attitude is computed
-     * @return satellite base attitude state, i.e without compensation.
-     */
-    public Attitude getBaseState(final PVCoordinatesProvider pvProv,
-                                 final AbsoluteDate date, final Frame frame) {
-        return groundPointingLaw.getAttitude(pvProv, date, frame);
-    }
-
-    /** Compute the base system state at given date, without compensation.
-     * @param pvProv provider for PV coordinates
-     * @param date date at which state is requested
-     * @param frame reference frame from which attitude is computed
-     * @param <T> type of the field elements
-     * @return satellite base attitude state, i.e without compensation.
-     * @since 9.0
-     */
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
-        return groundPointingLaw.getAttitude(pvProv, date, frame);
+        super(inertialFrame, groundPointingLaw.getBodyFrame(), groundPointingLaw);
     }
 
     /** {@inheritDoc} */
@@ -186,7 +136,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
 
         final Field<T>              field = date.getField();
@@ -266,7 +216,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @return yaw compensation angle for orbit.
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getYawAngle(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> T getYawAngle(final FieldPVCoordinatesProvider<T> pvProv,
                                                          final FieldAbsoluteDate<T> date,
                                                          final Frame frame) {
         final FieldRotation<T> rBase        = getBaseState(pvProv, date, frame).getRotation();

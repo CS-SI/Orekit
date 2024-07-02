@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -55,26 +55,26 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      */
     public LatitudeCrossingDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body, final double latitude) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LatitudeCrossingDetector>(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, latitude);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
      * @param latitude latitude to be crossed
      */
-    private LatitudeCrossingDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super LatitudeCrossingDetector> handler,
-                                     final OneAxisEllipsoid body, final double latitude) {
+    protected LatitudeCrossingDetector(final AdaptableInterval maxCheck, final double threshold,
+                                       final int maxIter, final EventHandler handler,
+                                       final OneAxisEllipsoid body, final double latitude) {
         super(maxCheck, threshold, maxIter, handler);
         this.body     = body;
         this.latitude = latitude;
@@ -82,9 +82,9 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
 
     /** {@inheritDoc} */
     @Override
-    protected LatitudeCrossingDetector create(final double newMaxCheck, final double newThreshold,
+    protected LatitudeCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super LatitudeCrossingDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new LatitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                           body, latitude);
     }
@@ -115,7 +115,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
+        final GeodeticPoint gp = body.transform(s.getPosition(),
                                                 s.getFrame(), s.getDate());
 
         // latitude difference

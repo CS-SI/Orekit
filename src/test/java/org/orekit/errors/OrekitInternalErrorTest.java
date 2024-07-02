@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,23 +16,22 @@
  */
 package org.orekit.errors;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class OrekitInternalErrorTest {
 
     @Test
     public void testMessage() {
         OrekitInternalError e = new OrekitInternalError(null);
-        Assert.assertEquals(OrekitMessages.INTERNAL_ERROR, e.getSpecifier());
-        Assert.assertEquals(1, e.getParts().length);
-        Assert.assertEquals("https://gitlab.orekit.org/orekit/orekit/issues", e.getParts()[0]);
-        Assert.assertTrue(e.getMessage().contains("https://gitlab.orekit.org/orekit/orekit/issues"));
-        Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("erreur interne, merci de signaler le problème en ouvrant une fiche d'anomalie sur https://gitlab.orekit.org/orekit/orekit/issues",
+        Assertions.assertEquals(OrekitMessages.INTERNAL_ERROR, e.getSpecifier());
+        Assertions.assertEquals(1, e.getParts().length);
+        Assertions.assertEquals("https://forum.orekit.org", e.getParts()[0]);
+        Assertions.assertTrue(e.getMessage().contains("https://forum.orekit.org"));
+        Assertions.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
+        Assertions.assertEquals("erreur interne, merci de signaler le problème en ouvrant une nouvelle discussion sur https://forum.orekit.org",
                             e.getMessage(Locale.FRENCH));
     }
 

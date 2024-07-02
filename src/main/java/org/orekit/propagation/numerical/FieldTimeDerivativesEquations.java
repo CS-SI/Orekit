@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 
 /** Interface summing up the contribution of several forces into orbit and mass derivatives.
@@ -34,8 +34,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @param <T> type of the field elements
  */
-public interface FieldTimeDerivativesEquations<T extends RealFieldElement<T>> {
+public interface FieldTimeDerivativesEquations<T extends CalculusFieldElement<T>> {
 
     /** Add the contribution of the Kepler evolution.
      * <p>Since the Kepler evolution is the most important, it should

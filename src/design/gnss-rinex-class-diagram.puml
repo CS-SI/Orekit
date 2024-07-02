@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,43 +25,11 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit.gnss #ECEBD8 {
-
-    class RinexLoader {
-      +List<ObservationDataSet> getObservationDataSets()
-    }
-
-    enum SatelliteSystem {
-      +GPS
-      +GLONASS
-      +GALILEO
-      +BEIDOU
-      +QZSS
-      +IRNSS
-      +SBAS
-      +MIXED
-    }
-
-    enum ObservationType {
-      +C1
-      +C5
-      +C6
-      ...
-      +L1C
-      ...
-      +S8X
-      +getMeasurementType()
-      +getFrequency(SatelliteSystem)
-    }
-
-    enum MeasurementType {
-      +PSEUDO_RANGE
-      +CARRIER_PHASE
-      +DOPPLER
-      +SIGNAL_STRENGTH
-    }
-
+    class SatInSystem
+    
     enum Frequency {
       +G01
       +...
@@ -73,29 +41,64 @@
       +double getRatio()
       +double getMHzFrequency()
     }
+  }
 
-    class ObservationData {
-      +ObservationType getObservationType()
-      +double getValue()
+  package org.orekit.files.rinex #ECEBD8 {
+  
+    class "RinexFile<T extends RinexBaseHeader>" as RinexFile {
+      +T getHeader()
+      +List<RinexComment> getComments()
     }
 
-    class ObservationDataSet {
-      +RinexHeader getHeader()
-      +AbsoluteDate getDate()
-      +SatelliteSystem getSatelliteSystem()
-      +int getPrnNumber()
-      +double getRcvrClkOffset()
-      +List<ObservationData> getObservationData()
+    package observation #DDEBD8 {
+
+      class RinexObservationParser
+
+      enum ObservationType {
+        +C1
+        +C5
+        +C6
+        ...
+        +L1C
+        ...
+        +S8X
+        +getMeasurementType()
+        +getFrequency(SatelliteSystem)
+      }
+      
+      enum MeasurementType {
+        +PSEUDO_RANGE
+        +CARRIER_PHASE
+        +DOPPLER
+        +SIGNAL_STRENGTH
+        +COMBINED_RANGE_PHASE
+      }
+
+      class ObservationData {
+        +ObservationType getObservationType()
+        +double getValue()
+      }
+      
+      class ObservationDataSet {
+        +AbsoluteDate getDate()
+        +SatInSystem getSatellite()
+        +int getEventFlag()
+        +double getRcvrClkOffset()
+        +List<ObservationData> getObservationData()
+      }
+
+      ObservationDataSet         *-left-> "1" SatInSystem
+      RinexObservationHeader     *-->     "1" SatInSystem
+      RinexObservationHeader "*" <--*         ObservationDataSet
+      RinexObservation           *-->     "*" ObservationDataSet
+      ObservationDataSet         *-->     "*" ObservationData
+      ObservationType        "1" <-left-*     ObservationData
+      ObservationType            *-->     "1" MeasurementType
+      ObservationType            *-->     "*" Frequency
+      RinexObservation           --|>         RinexFile
+
     }
 
-    ObservationDataSet *-left-> "1" SatelliteSystem
-    RinexHeader        *--> "1" SatelliteSystem
-    RinexHeader        "*" <--* ObservationDataSet
-    RinexLoader        *--> "*" ObservationDataSet
-    ObservationDataSet *--> "*" ObservationData
-    ObservationType  "1" <-left-* ObservationData
-    ObservationType    *--> "1" MeasurementType
-    ObservationType    *--> "*" Frequency
   }
 
 @enduml

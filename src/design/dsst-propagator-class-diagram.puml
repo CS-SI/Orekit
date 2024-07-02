@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,18 +25,19 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
-  package org.hipparchus.ode #DDEBD8 {
+  package org.hipparchus.ode #ECEBD8 {
 
     interface ODEIntegrator
 
   }
 
-  package org.orekit.forces #DDEBD8 {
+  package org.orekit.forces #ECEBD8 {
     class ForceModel
   }
 
-  package org.orekit.propagation.semianalytical.dsst #DDEBD8 {
+  package org.orekit.propagation.semianalytical.dsst #ECEBD8 {
 
     class DSSTPropagator {
       +void setInitialState(SpacecraftState state)
@@ -48,12 +49,12 @@
 
     ODEIntegrator <--* "1" DSSTPropagator
 
-    package forces #ECEBD8 {
+    package forces #DDEBD8 {
 
       class AuxiliaryElements
 
       interface DSSTForceModel {
-        +void initialize(AuxiliaryElements auxiliary, PropagationType type, double[] parameters)
+        +void initializeShortPeriodTerms(AuxiliaryElements auxiliary, PropagationType type, double[] parameters)
         +double[] getMeanElementRate(SpacecraftState state, AuxiliaryElements auxiliary, double[] parameters)
         +void updateShortPeriodTerms(double[] parameters, SpacecraftState ... meanStates)
         +EventDetector[] getEventsDetectors()
@@ -61,6 +62,7 @@
 
       DSSTForceModel -right->  AuxiliaryElements
       DSSTForceModel <|-- DSSTZonal
+      DSSTForceModel <|-- DSSTJ2SquaredClosedForm
       DSSTForceModel <|-- DSSTTesseral
       DSSTForceModel <|-- DSSTThirdBody
       DSSTForceModel <|-- AbstractGaussianContribution

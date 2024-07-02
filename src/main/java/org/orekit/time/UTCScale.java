@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,9 +17,14 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.Constants;
@@ -36,7 +41,7 @@ import org.orekit.utils.Constants;
  * one second leap was introduced at the end of 2005, the UTC time sequence was
  * 2005-12-31T23:59:59 UTC, followed by 2005-12-31T23:59:60 UTC, followed by
  * 2006-01-01T00:00:00 UTC.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
@@ -44,19 +49,32 @@ import org.orekit.utils.Constants;
 public class UTCScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20150402L;
+    private static final long serialVersionUID = 20230302L;
+
+    /** International Atomic Scale. */
+    private final TimeScale tai;
+
+    /** base UTC-TAI offsets (may lack the pre-1975 offsets). */
+    private final Collection<? extends OffsetModel> baseOffsets;
 
     /** UTC-TAI offsets. */
-    private UTCTAIOffset[] offsets;
+    private final UTCTAIOffset[] offsets;
 
     /** Package private constructor for the factory.
      * Used to create the prototype instance of this class that is used to
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
-     * @param offsetModels UTC-TAI offsets
+     * @param tai TAI time scale this UTC time scale references.
+     * @param baseOffsets UTC-TAI base offsets (may lack the pre-1975 offsets)
      */
-    UTCScale(final List<OffsetModel> offsetModels) {
+    UTCScale(final TimeScale tai, final Collection<? extends OffsetModel> baseOffsets) {
 
+        this.tai         = tai;
+        this.baseOffsets = baseOffsets;
+
+        // copy input so the original list is unmodified
+        final List<OffsetModel> offsetModels = new ArrayList<>(baseOffsets);
+        offsetModels.sort(Comparator.comparing(OffsetModel::getStart));
         if (offsetModels.get(0).getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually
             // excerpt from UTC-TAI.history file:
@@ -89,12 +107,11 @@ public class UTCScale implements TimeScale {
         }
 
         // create cache
-        offsets = new UTCTAIOffset[offsetModels.size()];
+        this.offsets = new UTCTAIOffset[offsetModels.size()];
 
         UTCTAIOffset previous = null;
 
         // link the offsets together
-        final TimeScale tai = TimeScalesFactory.getTAI();
         for (int i = 0; i < offsetModels.size(); ++i) {
 
             final OffsetModel    o      = offsetModels.get(i);
@@ -115,11 +132,37 @@ public class UTCScale implements TimeScale {
             final double normalizedSlope   = slope / Constants.JULIAN_DAY;
             final double leap              = leapEnd.durationFrom(leapStart) / (1 + normalizedSlope);
 
-            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, normalizedSlope);
-            offsets[i] = previous;
+            final AbsoluteDate reference = AbsoluteDate.createMJDDate(mjdRef, 0, tai)
+                    .shiftedBy(offset);
+            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef,
+                    normalizedSlope, reference);
+            this.offsets[i] = previous;
 
         }
 
+    }
+
+    /** Get the base offsets.
+     * @return base offsets (may lack the pre-1975 offsets)
+     * @since 12.0
+     */
+    public Collection<? extends OffsetModel> getBaseOffsets() {
+        return baseOffsets;
+    }
+
+    /**
+     * Returns the UTC-TAI offsets underlying this UTC scale.
+     * <p>
+     * Modifications to the returned list will not affect this UTC scale instance.
+     * @return new non-null modifiable list of UTC-TAI offsets time-sorted from
+     *         earliest to latest
+     */
+    public List<UTCTAIOffset> getUTCTAIOffsets() {
+        final List<UTCTAIOffset> offsetList = new ArrayList<>(offsets.length);
+        for (int i = 0; i < offsets.length; ++i) {
+            offsetList.add(offsets[i]);
+        }
+        return offsetList;
     }
 
     /** {@inheritDoc} */
@@ -136,7 +179,7 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
         final int offsetIndex = findOffsetIndex(date.toAbsoluteDate());
         if (offsetIndex < 0) {
             // the date is before the first known leap
@@ -207,7 +250,7 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
         return insideLeap(date.toAbsoluteDate());
     }
 
@@ -215,30 +258,31 @@ public class UTCScale implements TimeScale {
     @Override
     public int minuteDuration(final AbsoluteDate date) {
         final int offsetIndex = findOffsetIndex(date);
-        if (offsetIndex < 0) {
-            // the date is before the first known leap
-            return 60;
+        final UTCTAIOffset offset;
+        if (offsetIndex >= 0 &&
+                date.compareTo(offsets[offsetIndex].getValidityStart()) < 0) {
+            // the date is during the leap itself
+            offset = offsets[offsetIndex];
+        } else if (offsetIndex + 1 < offsets.length &&
+            offsets[offsetIndex + 1].getDate().durationFrom(date) <= 60.0) {
+            // the date is after a leap, but it may be just before the next one
+            // the next leap will start in one minute, it will extend the current minute
+            offset = offsets[offsetIndex + 1];
         } else {
-            if (date.compareTo(offsets[offsetIndex].getValidityStart()) < 0) {
-                // the date is during the leap itself
-                return 61;
-            } else {
-                // the date is after a leap, but it may be just before the next one
-                if (offsetIndex + 1 < offsets.length &&
-                    offsets[offsetIndex + 1].getDate().durationFrom(date) <= 60.0) {
-                    // the next leap will start in one minute, it will extend the current minute
-                    return 61;
-                } else {
-                    // no leap is expected within the next minute
-                    return 60;
-                }
-            }
+            offset = null;
         }
+        if (offset != null) {
+            // since this method returns an int we can't return the precise duration in
+            // all cases, but we can bound it. Some leaps are more than 1s. See #694
+            return 60 + (int) FastMath.ceil(offset.getLeap());
+        }
+        // no leap is expected within the next minute
+        return 60;
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
         return minuteDuration(date.toAbsoluteDate());
     }
 
@@ -256,8 +300,8 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(getLeap(date.toAbsoluteDate()));
+    public <T extends CalculusFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
+        return date.getField().getZero().newInstance(getLeap(date.toAbsoluteDate()));
     }
 
     /** Find the index of the offset valid at some date.
@@ -315,22 +359,39 @@ public class UTCScale implements TimeScale {
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
-        return new DataTransferObject();
+        return new DataTransferObject(tai, baseOffsets);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20131209L;
+        private static final long serialVersionUID = 20230302L;
+
+        /** International Atomic Scale. */
+        private final TimeScale tai;
+
+        /** base UTC-TAI offsets (may lack the pre-1975 offsets). */
+        private final Collection<? extends OffsetModel> baseOffsets;
+
+        /** Simple constructor.
+         * @param tai TAI time scale this UTC time scale references.
+         * @param baseOffsets UTC-TAI base offsets (may lack the pre-1975 offsets)
+         */
+        DataTransferObject(final TimeScale tai, final Collection<? extends OffsetModel> baseOffsets) {
+            this.tai         = tai;
+            this.baseOffsets = baseOffsets;
+        }
 
         /** Replace the deserialized data transfer object with a {@link UTCScale}.
          * @return replacement {@link UTCScale}
          */
         private Object readResolve() {
             try {
-                return TimeScalesFactory.getUTC();
+                return new UTCScale(tai, baseOffsets);
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

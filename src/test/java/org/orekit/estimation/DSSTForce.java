@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -32,13 +32,13 @@ public enum DSSTForce {
             return new DSSTZonal(context.gravity, 4, 3, 9);
         }
     },
-    
+
     TESSERAL() {
         public DSSTForceModel getForceModel(DSSTContext context) {
             return new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, context.gravity, 4, 4, 4, 8, 4, 4, 2);
         }
     },
-    
+
     THIRD_BODY_SUN() {
         public DSSTForceModel getForceModel(DSSTContext context) {
             return new DSSTThirdBody(context.sun, context.gravity.getMu());
@@ -59,7 +59,7 @@ public enum DSSTForce {
 
     SOLAR_RADIATION_PRESSURE() {
         public DSSTForceModel getForceModel(DSSTContext context) {
-            return new DSSTSolarRadiationPressure(context.sun, context.earth.getEquatorialRadius(),
+            return new DSSTSolarRadiationPressure(context.sun, context.earth,
                                                   context.radiationSensitive, context.gravity.getMu());
         }
     };

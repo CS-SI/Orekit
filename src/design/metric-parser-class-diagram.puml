@@ -1,0 +1,180 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+
+  package org.orekit.gnss.metric #ECEBD8 {
+
+    package messages #DDEBD8 {
+      
+      package ssr #F3EFEB {
+      
+        package igm #DDEBD8 {
+          class SsrIgm01
+          class SsrIgm02
+          class SsrIgmXX
+          class SsrIgmMessage {
+            + SatelliteSystem getSatelliteSystem()
+          }
+        }
+        
+        package subtype #DDEBD8 {
+          class SsrIm201
+        }
+        
+        class SsrMessage {
+          + SsrHeader getHeader()
+          + List<SsrData> getData()
+        }
+
+      }
+      
+      package rtcm #F3EFEB {
+      
+        package ephemeris #DDEBD8 {
+          class Rtcm1019
+          class Rtcm1020
+          class RtcmXXXX
+          class RtcmEphemerisMessage
+        }
+
+        package correction #DDEBD8 {
+          class Rtcm1060
+          class Rtcm1066
+          class RtcmYYYY
+          class RtcmCorrectionMessage
+        }
+
+        class RtcmMessage {
+          + List<RtcmData> getData()
+        }
+        
+      }
+
+      abstract class ParsedMessage {
+        +int getMessageNumber()
+      }
+
+      SsrMessage --|> ParsedMessage
+      SsrIgmMessage --|> SsrMessage
+      SsrIgm01 --|> SsrIgmMessage
+      SsrIgm02 --|> SsrIgmMessage
+      SsrIgmXX --|> SsrIgmMessage
+      SsrIm201 --|> SsrMessage
+      RtcmMessage --|> ParsedMessage
+      RtcmEphemerisMessage --|> RtcmMessage
+      RtcmCorrectionMessage --|> RtcmMessage
+      Rtcm1019 --|> RtcmEphemerisMessage
+      Rtcm1020 --|> RtcmEphemerisMessage
+      RtcmXXXX --|> RtcmEphemerisMessage
+      Rtcm1060 --|> RtcmCorrectionMessage
+      Rtcm1066 --|> RtcmCorrectionMessage
+      RtcmYYYY --|> RtcmCorrectionMessage
+
+    }
+
+    package parser #DDEBD8 {
+    
+      interface MessageType {
+        + ParsedMessage parse(encodedMessage, messageNumber);
+      }
+      
+      enum IgsSsrMessageType {
+        +IGM_01
+        +IGM_02
+        +...
+        +IGM_XX
+        +IM_201
+        {static} +MessageType getMessageType(String messageNumber)
+      }
+
+      enum RtcmMessageType {
+        +RTCM_1019
+        +RTCM_1020
+        +RTCM_1042
+        +RTCM_1044
+        +RTCM_1045
+        +...
+        +RTCM_1243
+        {static} +MessageType getMessageType(String messageNumber)
+      }
+
+      enum DataType {
+        +BIT_1
+        +..
+        +BIT_12
+        +INT_14
+        +INT_16
+        +...
+        +INT_38
+        +U_INT_3
+        +U_INT_4
+        +...
+        +U_INT_32
+        +INT_S_5
+        +INT_S_11
+        +...
+        +INT_S_32
+        +Long decode(encodedMessage)
+      }
+      note bottom
+      the decode methods returns null
+      if data is not available
+      end note
+
+      interface EncodedMessages {
+        +long extractBits(n, endIsOK)
+      }
+
+      abstract class AbstractEncodedMessages {
+        {abstract} #int fetchByte()
+      }
+
+      abstract MessagesParser {
+        +List<ParsedMessage> parse(encodedMessages)
+        {abstract} #String parseMessageNumber(message)
+        {abstract} #MessageType getMessageType(messageNumber)
+      }
+      
+      class IgsSsrMessagesParser
+      class RtcmMessagesParser
+
+      MessageType           -right-> DataType
+      ParsedMessage           <--   MessageType
+      DataType                -->   EncodedMessages 
+      MessageType             <|..  IgsSsrMessageType
+      MessageType             <|..  RtcmMessageType
+      EncodedMessages         <|..  AbstractEncodedMessages 
+      AbstractEncodedMessages <|--  ByteArrayEncodedMessages
+      AbstractEncodedMessages <|--  InputStreamEncodedMessages
+      MessagesParser <|--  IgsSsrMessagesParser
+      MessagesParser <|--  RtcmMessagesParser
+      MessagesParser           -->  EncodedMessages
+      MessageType             <--   MessagesParser
+    }
+
+  }
+
+@enduml

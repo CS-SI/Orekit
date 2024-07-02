@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,19 +18,21 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UT1Scale;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -62,12 +64,33 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** Simple constructor.
      * @param conventions IERS conventions to use
      * @param eopHistory EOP history (may be null)
+     * @param timeScales  set of time scales to use.
+     * @since 10.1
      */
-    protected GTODProvider(final IERSConventions conventions, final EOPHistory eopHistory) {
-        final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
+    protected GTODProvider(final IERSConventions conventions,
+                           final EOPHistory eopHistory,
+                           final TimeScales timeScales) {
+        final TimeScale ut1 = eopHistory == null ?
+                timeScales.getUTC() : // UT1 wihthout EOP is UTC
+                timeScales.getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
         this.conventions   = conventions;
         this.eopHistory    = eopHistory;
-        this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory);
+        this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory, timeScales);
+    }
+
+    /**
+     * Private constructor.
+     *
+     * @param conventions  IERS conventions to use
+     * @param eopHistory   EOP history (may be null)
+     * @param gastFunction GAST function
+     */
+    private GTODProvider(final IERSConventions conventions,
+                         final EOPHistory eopHistory,
+                         final TimeScalarFunction gastFunction) {
+        this.conventions = conventions;
+        this.eopHistory = eopHistory;
+        this.gastFunction = gastFunction;
     }
 
     /** {@inheritDoc} */
@@ -79,46 +102,98 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public GTODProvider getNonInterpolatingProvider() {
-        return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
+        return new GTODProvider(conventions, eopHistory.getEOPHistoryWithoutCachedTidalCorrection(),
+                gastFunction);
     }
 
     /** {@inheritDoc} */
     @Override
     public Transform getTransform(final AbsoluteDate date) {
-
-        // compute Greenwich apparent sidereal time, in radians
-        final double gast = gastFunction.value(date);
-
-        // compute true angular rotation of Earth, in rad/s
-        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
-        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
-        final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
-
-        // set up the transform from parent TOD
-        return new Transform(date, new Rotation(Vector3D.PLUS_K, gast, RotationConvention.FRAME_TRANSFORM), rotationRate);
-
+        return new Transform(date, getRotation(date), getRotationRate(date));
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+        return KinematicTransform.of(date, getRotation(date), getRotationRate(date));
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        return StaticTransform.of(date, getRotation(date));
+    }
+
+    /** Form rotation to parent TOD.
+     * @param date transform date
+     * @return rotation to parent at date
+     * @since 12.1
+     */
+    private Rotation getRotation(final AbsoluteDate date) {
+        // compute Greenwich apparent sidereal time, in radians
+        final double gast = gastFunction.value(date);
+
+        // set up the transform from parent TOD
+        return new Rotation(Vector3D.PLUS_K, gast, RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /** Form rotation rate w.r.t. parent TOD.
+     * @param date transform date
+     * @return rotation rate at date
+     * @since 12.1
+     */
+    private Vector3D getRotationRate(final AbsoluteDate date) {
+        // compute true angular rotation of Earth, in rad/s
+        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
+        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
+        return new Vector3D(omp, Vector3D.PLUS_K);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        return new FieldTransform<>(date, getRotation(date), getRotationRate(date));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+        return FieldKinematicTransform.of(date, getRotation(date), getRotationRate(date));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        return FieldStaticTransform.of(date, getRotation(date));
+    }
+
+    /** Form rotation to parent TOD.
+     * @param <T> type of the elements
+     * @param date transform date
+     * @return rotation to parent at date
+     * @since 12.1
+     */
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
         // compute Greenwich apparent sidereal time, in radians
         final T gast = gastFunction.value(date);
 
+        // set up the transform from parent TOD
+        return new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), gast, RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /** Form rotation rate w.r.t. parent TOD.
+     * @param <T> type of the elements
+     * @param date transform date
+     * @return rotation rate at date
+     * @since 12.1
+     */
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> getRotationRate(final FieldAbsoluteDate<T> date) {
         // compute true angular rotation of Earth, in rad/s
         final T lod = (eopHistory == null) ? date.getField().getZero() : eopHistory.getLOD(date);
         final T omp = lod.multiply(-1.0 / Constants.JULIAN_DAY).add(1).multiply(AVE);
-        final FieldVector3D<T> rotationRate = new FieldVector3D<>(date.getField().getZero(),
-                                                                  date.getField().getZero(),
-                                                                  date.getField().getZero().add(omp));
-
-        // set up the transform from parent TOD
-        return new FieldTransform<>(date,
-                                    new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
-                                                        gast, RotationConvention.FRAME_TRANSFORM),
-                                    rotationRate);
-
+        return new FieldVector3D<>(date.getField().getZero(),
+                date.getField().getZero(),
+                date.getField().getZero().add(omp));
     }
 
     /** Replace the instance with a data transfer object for serialization.
@@ -127,11 +202,13 @@ public class GTODProvider implements EOPBasedTransformProvider {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(conventions, eopHistory);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -158,7 +235,8 @@ public class GTODProvider implements EOPBasedTransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new GTODProvider(conventions, eopHistory);
+                return new GTODProvider(conventions, eopHistory,
+                        DataContext.getDefault().getTimeScales());
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

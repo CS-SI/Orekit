@@ -1,0 +1,27 @@
+     1.4            M                                       ANTEX VERSION / SYST
+A                                                           PCV TYPE / REFANT   
+########################################################### COMMENT             
+  This file is NOT an original ANTEX file                   COMMENT             
+  It has been stripped down for tests purposes              COMMENT             
+  Many records have been removed, truncated or even edited  COMMENT             
+  Do NOT use this file except for test purposes             COMMENT             
+########################################################### COMMENT             
+                                                            END OF HEADER       
+                                                            START OF ANTENNA    
+BLOCK IIA           G01                 G032      1992-079A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  1992    11    22     0     0    0.0000000                 VALID FROM          
+  2008    10    16    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    279.00      0.00   2319.50                              NORTH / EAST / UP   
+   NOAZI   -0.80   corrupted   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    279.00      0.00   2319.50                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      

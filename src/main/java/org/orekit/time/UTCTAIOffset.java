@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.utils.Constants;
 
 /** Offset between {@link UTCScale UTC} and  {@link TAIScale TAI} time scales.
@@ -35,7 +35,7 @@ import org.orekit.utils.Constants;
  * @see UTCScale
  * @see UTCTAIHistoryFilesLoader
  */
-class UTCTAIOffset implements TimeStamped, Serializable {
+public class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 4742190573136348054L;
@@ -67,17 +67,6 @@ class UTCTAIOffset implements TimeStamped, Serializable {
     /** Offset slope in seconds per TAI second (TAI minus UTC / dTAI). */
     private final double slopeTAI;
 
-    /** Simple constructor for a constant model.
-     * @param leapDate leap date
-     * @param leapDateMJD leap date in Modified Julian Day
-     * @param leap value of the leap at offset validity start (in seconds)
-     * @param offset offset in seconds (TAI minus UTC)
-     */
-    UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
-                        final double leap, final double offset) {
-        this(leapDate, leapDateMJD, leap, offset, 0, 0);
-    }
-
     /** Simple constructor for a linear model.
      * @param leapDate leap date
      * @param leapDateMJD leap date in Modified Julian Day
@@ -85,16 +74,16 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @param offset offset in seconds (TAI minus UTC)
      * @param mjdRef reference date for the slope multiplication as Modified Julian Day
      * @param slope offset slope in seconds per UTC second (TAI minus UTC / dUTC)
+     * @param reference date for slope computations.
      */
     UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
-                        final double leap, final double offset,
-                        final int mjdRef, final double slope) {
+                 final double leap, final double offset,
+                 final int mjdRef, final double slope, final AbsoluteDate reference) {
         this.leapDate      = leapDate;
         this.leapDateMJD   = leapDateMJD;
         this.validityStart = leapDate.shiftedBy(leap);
         this.mjdRef        = mjdRef;
-        this.reference     = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjdRef),
-                                              TimeScalesFactory.getTAI()).shiftedBy(offset);
+        this.reference     = reference;
         this.leap          = leap;
         this.offset        = offset;
         this.slopeUTC      = slope;
@@ -155,13 +144,13 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @return TAI - UTC offset in seconds.
      * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
         if (slopeTAI == 0) {
             // we use an if statement here so the offset computation returns
             // a finite value when date is FieldAbsoluteDate.getFutureInfinity(field)
             // without this if statement, the multiplication between an
             // infinite duration and a zero slope would induce a NaN offset
-            return date.getField().getZero().add(offset);
+            return date.getField().getZero().newInstance(offset);
         } else {
             return date.durationFrom(reference).multiply(slopeTAI).add(offset);
         }

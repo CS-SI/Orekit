@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,9 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.util.FastMath;
+
 /** Enumerate for triggering visibility of spherical bodies.
- * @see CircularFieldOfViewDetector
  * @see FieldOfViewDetector
  * @author Luc Maisonobe
  * @since 10.0
@@ -40,11 +41,13 @@ public enum VisibilityTrigger {
         this.sign = sign;
     }
 
-    /** Get sign of the radius correction.
-     * @return sign of the radius correction
+    /** Apply radius correction.
+     * @param angularRadius target body angular radius
+     * @return corrected radius
+     * @since 10.1
      */
-    double getSign() {
-        return sign;
+    public double radiusCorrection(final double angularRadius) {
+        return FastMath.copySign(angularRadius, sign);
     }
 
 }

@@ -1,0 +1,5 @@
+CCSDS_NDM_VERS = 1.0
+CREATION_DATE  = 2020-04-20T15:44:00
+ORIGINATOR     = CS GROUP
+
+COMMENT  this file cannot be parsed, NDM cannot be represented in KVN format

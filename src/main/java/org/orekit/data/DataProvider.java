@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * providers manager singleton}, or to let this manager use its default
  * configuration. Once registered, they will be used automatically whenever
  * some data needs to be loaded. This allow high level applications developers
- * to customize Orekit data loading mechanism and get a tighter intergation of
+ * to customize Orekit data loading mechanism and get a tighter integration of
  * the library within their application.
  * </p>
  * @see DataLoader
@@ -61,10 +61,12 @@ public interface DataProvider {
      * the next configured providers, in case another one can feed the
      * {@link DataLoader data loader}.
      * </p>
+     *
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
+     * @param manager with the filters to apply to the resources.
      * @return true if some data has been loaded
      */
-    boolean feed(Pattern supported, DataLoader visitor);
+    boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager);
 
 }

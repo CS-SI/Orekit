@@ -1,0 +1,75 @@
+%=SNX 2.01 COD 19:356:05790 IGS 19:351:00000 19:352:00000 P 00815 1 S E A      
+*-------------------------------------------------------------------------------
+*CODE'S FINAL 3-DAY SOLUTION FOR (MIDDLE) DAY 351, 2019          22-DEC-19 01:36
+*-------------------------------------------------------------------------------
++FILE/REFERENCE                                                                 
+*INFO_TYPE_________ INFO________________________________________________________
+ DESCRIPTION        CODE, Astronomical Institute, University of Bern            
+ OUTPUT             CODE IGS 3-day solution                                     
+ CONTACT            code@aiub.unibe.ch                                          
+ SOFTWARE           Bernese GNSS Software Version 5.3                           
+ HARDWARE           UBELIX: Linux, x86_64                                       
+ INPUT              CODE IGS 1-day solutions                                    
+-FILE/REFERENCE                                                                 
+*-------------------------------------------------------------------------------
++INPUT/ACKNOWLEDGMENTS                                                          
+*AGY DESCRIPTION________________________________________________________________
+ COD Center for Orbit Determination in Europe, AIUB, Switzerland                
+ IGS International GNSS Service                                                 
+-INPUT/ACKNOWLEDGMENTS                                                          
+*-------------------------------------------------------------------------------
++SOLUTION/STATISTICS
+*_STATISTICAL PARAMETER________ __VALUE(S)____________
+ NUMBER OF OBSERVATIONS                        5029555
+ NUMBER OF UNKNOWNS                              49843
+ NUMBER OF DEGREES OF FREEDOM                  4979712
+ PHASE MEASUREMENTS SIGMA                      0.00100
+ SAMPLING INTERVAL (SECONDS)                       180
+ WEIGHTED SQUARE SUM OF O-C         11.270804735010838
+-SOLUTION/STATISTICS
+*-------------------------------------------------------------------------------
++SITE/ID
+*CODE PT __DOMES__ T _STATION DESCRIPTION__ APPROX_LON_ APPROX_LAT_ _APP_H_
+ ABMF  A 97103M001 P Les Abymes, FR         298 28 20.9  16 15 44.3   -25.6
+ ABPO  A 33302M001 P Antananarivo, MG        47 13 45.2 -19  1  5.9  1553.0
+-SITE/ID
+*-------------------------------------------------------------------------------
++SITE/RECEIVER
+*SITE PT SOLN T DATA_START__ DATA_END____ DESCRIPTION_________ S/N__ FIRMWARE___
+ ABMF  A    1 P 19:350:00000 19:352:86370 SEPT POLARX5         ----- -----------
+ ABPO  A    1 P 19:350:00000 19:352:86370 SEPT POLARX5         ----- -----------
+-SITE/RECEIVER
+*-------------------------------------------------------------------------------
++SITE/ANTENNA
+*SITE PT SOLN T DATA_START__ DATA_END____ DESCRIPTION_________ S/N__
+ ABMF  A    1 P 19:350:00000 19:352:86370 TRM57971.00     NONE -----
+ ABPO  A    1 P 19:350:00000 19:352:86370 ASH701945G_M    SCIT -----
+-SITE/ANTENNA
+*-------------------------------------------------------------------------------
++SOLUTION/EPOCHS
+*CODE PT SOLN T _DATA_START_ __DATA_END__ _MEAN_EPOCH_
+ ABMF  A    1 P 19:350:00000 19:352:86370 19:351:43185
+ ABPO  A    1 P 19:350:00000 19:352:86370 19:351:43185
+-SOLUTION/EPOCHS
+*-------------------------------------------------------------------------------
++SOLUTION/ESTIMATE
+*INDEX TYPE__ CODE PT SOLN _REF_EPOCH__ UNIT S __ESTIMATED VALUE____ _STD_DEV___
+     1 STAX   ABMF  A    1 19:351:45000 m    1 0.291978579235962E+07 .295860E-03
+     2 STAY   ABMF  A    1 19:351:45000 m    1 -.538374495897593E+07 .461969E-03
+     3 STAZ   ABMF  A    1 19:351:45000 m    1 0.177460486102077E+07 .254465E-03
+     4 STAX   ABPO  A    1 19:351:45000 m    2 0.409721654480569E+07 .430939E-03
+     5 STAY   ABPO  A    1 19:351:45000 m    2 0.442911920899428E+07 .479096E-03
+     6 STAZ   ABPO  A    1 19:351:45000 m    2 -.206577118054971E+07 .286977E-03
+    19 XGC    ---- -- ---- 19:351:45000 m    2 0.109487238945747E-07 .137339E-05
+    20 YGC    ---- -- ---- 19:351:45000 m    2 0.558076062470718E-07 .137339E-05
+    21 ZGC    ---- -- ---- 19:351:45000 m    2 0.716981699620224E-07 .137340E-05
+    75 XPO    ----  -    1 19:351:45000 mas  2  7.68783442726072E+01 3.68745E-01
+    76 XPOR   ----  -    1 19:351:45000 masD 2  4.14301124273507D-01 7.63146D-01
+    77 YPO    ----  -    1 19:351:45000 mas  2  3.47286203337827E+02 3.83707E-01
+    78 YPOR   ----  -    1 19:351:45000 masD 2  1.67420405719112D+00 6.11160D-01
+    79 UT     ----  -    1 19:351:45000 ms   2 -3.17284190690589E+04 2.17275E-02
+    80 LOD    ----  -    1 19:351:45000 ms   2  1.32354538674901E+00 2.53530E-02
+    81 NUT_X  ----  -    1 19:351:45000 mas  2 -1.10122731910265E+03 3.90039E-01
+    82 NUT_Y  ----  -    1 19:351:45000 mas  2 -4.00387630903350E+03 2.70372E-01
+-SOLUTION/ESTIMATE
+%ENDSNX

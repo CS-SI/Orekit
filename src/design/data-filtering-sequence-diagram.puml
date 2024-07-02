@@ -1,0 +1,105 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                                true
+  skinparam NoteBackgroundColor                 #F3EFEB
+  skinparam NoteBorderColor                     #691616
+  skinparam NoteFontColor                       #691616
+  skinparam SequenceActorBorderColor            #6A584B
+  skinparam SequenceParticipantBackgroundColor  #F3EFEB/CCC9C5
+  skinparam SequenceParticipantBorderColor      #6A584B
+  skinparam SequenceLifeLineBackgroundColor     #CCC9C5/F3EFEB
+  skinparam SequenceLifeLineBorderColor         #6A584B
+  skinparam SequenceArrowColor                  #6A584B
+  skinparam SequenceBorderColor                 #6A584B
+  skinparam SequenceFontSize                    11
+
+  hide footbox
+
+  participant DataProvidersManager
+  participant FiltersManager
+  participant GzipFilter
+  participant "DataProvider\nDirectoryCrawler" as DirectoryCrawler
+  participant MSAFEPattern
+  participant "DataLoader\nMSAFELoader" as MSAFELoader
+  participant "DataSource\nutc-tai.dat" as DataSource1
+  participant "DataSource\nmay2019f10_prd.txt.gz" as DataSource2
+  participant "DataSource\nmay2019f10_prd.txt" as DataSource3
+
+  activate DataProvidersManager
+    DataProvidersManager -> DirectoryCrawler : feed
+    activate DirectoryCrawler
+      create DataSource1
+      DirectoryCrawler                    ->         DataSource1 : create
+      DirectoryCrawler                    ->         DataProvidersManager : getFiltersManager
+      DirectoryCrawler                    ->         FiltersManager : applyRelevantFilters
+      activate FiltersManager
+        FiltersManager  -> GzipFilter : filter
+        activate GzipFilter
+          GzipFilter -> DataSource1 : getName
+          return no filtering
+        deactivate GzipFilter
+        FiltersManager                    -->         DirectoryCrawler
+      deactivate FiltersManager
+      DirectoryCrawler -> MSAFEPattern : check name
+      activate MSAFEPattern
+        MSAFEPattern --> DirectoryCrawler : no match
+      deactivate MSAFEPattern
+      DirectoryCrawler -> DirectoryCrawler : drop utc-tai.dat
+      create DataSource2
+      DirectoryCrawler                    ->         DataSource2 : create
+      DirectoryCrawler                    ->         DataProvidersManager : getFiltersManager
+      DirectoryCrawler                    ->         FiltersManager : applyRelevantFilters
+      activate FiltersManager
+        FiltersManager  -> GzipFilter : filter
+        activate GzipFilter
+          GzipFilter -> DataSource2 : getName
+          create DataSource3
+           GzipFilter -> DataSource3 : create
+          return filtered DataSource
+        deactivate GzipFilter
+        FiltersManager -> FiltersManager : restart loop on filters
+        FiltersManager  -> GzipFilter : filter
+        activate GzipFilter
+          GzipFilter -> DataSource3 : getName
+          return no filtering
+        deactivate GzipFilter
+        FiltersManager                    -->         DirectoryCrawler
+      deactivate FiltersManager
+      DirectoryCrawler -> MSAFEPattern : check name
+      activate MSAFEPattern
+        MSAFEPattern --> DirectoryCrawler : match found
+      deactivate MSAFEPattern
+      DirectoryCrawler -> DataSource3 : openStreamOnce
+      activate DataSource3
+        DataSource3 -> DataSource2 : openStreamOnce
+        activate DataSource2
+          DataSource2 --> DataSource3 : compressed stream
+        deactivate DataSource2
+          DataSource3 --> DirectoryCrawler : uncompressed stream
+      deactivate DataSource3
+      DirectoryCrawler -> MSAFELoader : feed
+      activate MSAFELoader
+        MSAFELoader -> MSAFELoader : parse data
+        MSAFELoader --> DirectoryCrawler
+      deactivate MSAFELoader
+      DirectoryCrawler --> DataProvidersManager
+    deactivate DirectoryCrawler
+  deactivate DataProvidersManager
+
+@enduml

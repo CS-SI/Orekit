@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,24 +16,24 @@
  */
 package org.orekit.models.earth;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hipparchus.util.FastMath.PI;
-import static org.hipparchus.util.FastMath.abs;
-import static org.junit.Assert.assertEquals;
-import static org.orekit.OrekitMatchers.relativelyCloseTo;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.Constants;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hipparchus.util.FastMath.PI;
+import static org.hipparchus.util.FastMath.abs;
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
 /**
  * Unit tests for {@link ReferenceEllipsoid}.
  *
  * @author E. Ward
+ * @author G. Prat
  */
 public class ReferenceEllipsoidTest {
 
@@ -82,7 +82,7 @@ public class ReferenceEllipsoidTest {
                 9.8064684244573317502963, 9.833276738917813685281};
 
         // run tests
-        assertEquals(lat.length, expected.length);
+        Assertions.assertEquals(lat.length, expected.length);
         for (int i = 0; i < expected.length; i++) {
             assertThat(ellipsoid.getNormalGravity(lat[i] * PI / 180.),
                     relativelyCloseTo(expected[i], 1));
@@ -100,8 +100,8 @@ public class ReferenceEllipsoidTest {
         double expected = -0.484166774985e-3;
 
         // value good to ~ 1e-9
-        Assert.assertEquals(
-                "J2 term\n", ellipsoid.getC2n0(1), expected, 1.31e-9);
+        Assertions.assertEquals(
+                ellipsoid.getC2n0(1), expected, 1.31e-9,"J2 term\n");
 
         /*
          * Values from '84, See chapter 3 of DMA TR 8350.2 Table 3.8
@@ -111,15 +111,16 @@ public class ReferenceEllipsoidTest {
             double C2n = ellipsoid.getC2n0(2 + i);
             expected = expecteds[i];
             // expect 4 correct digits
-            Assert.assertEquals("C" + (4 + 2 * i) + ",0" + "\n",
-                    C2n, expected, abs(2e-4 * expected));
+            Assertions.assertEquals(C2n, expected, abs(2e-4 * expected), "C" + (4 + 2 * i) + ",0" + "\n");
         }
     }
 
     /** check throws when n=0 */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetC2n0Bad() {
-        getComponent().getC2n0(0);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            getComponent().getC2n0(0);
+        });
     }
 
     /** check {@link ReferenceEllipsoid#getPolarRadius()} */
@@ -138,13 +139,84 @@ public class ReferenceEllipsoidTest {
         Frame frame = FramesFactory.getGCRF();
 
         // action
-
         ReferenceEllipsoid wgs84 = ReferenceEllipsoid.getWgs84(frame);
 
         // verify
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 wgs84.getC2n0(1), Constants.WGS84_EARTH_C20 / c20factor, 3e-9);
         assertThat(wgs84.getBodyFrame(), is(frame));
+    }
+
+    /**
+     * check {@link ReferenceEllipsoid#getGrs80(Frame)}
+     */
+    @Test
+    public void testGetGrs80() {
+        // setup
+        double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
+        Frame frame = FramesFactory.getGCRF();
+
+        // action
+        ReferenceEllipsoid grs80 = ReferenceEllipsoid.getGrs80(frame);
+
+        // verify
+        Assertions.assertEquals(
+                grs80.getC2n0(1), Constants.GRS80_EARTH_C20 / c20factor, 3e-9);
+        assertThat(grs80.getBodyFrame(), is(frame));
+    }
+
+    /**
+     * check {@link ReferenceEllipsoid#getIers96(Frame)}
+     */
+    @Test
+    public void testGetIers96() {
+        // setup
+        double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
+        Frame frame = FramesFactory.getGCRF();
+
+        // action
+        ReferenceEllipsoid iers96 = ReferenceEllipsoid.getIers96(frame);
+
+        // verify
+        Assertions.assertEquals(
+                iers96.getC2n0(1), Constants.IERS96_EARTH_C20 / c20factor, 3e-9);
+        assertThat(iers96.getBodyFrame(), is(frame));
+    }
+
+    /**
+     * check {@link ReferenceEllipsoid#getIers2003(Frame)}
+     */
+    @Test
+    public void testGetIers2003() {
+        // setup
+        double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
+        Frame frame = FramesFactory.getGCRF();
+
+        // action
+        ReferenceEllipsoid iers2003 = ReferenceEllipsoid.getIers2003(frame);
+
+        // verify
+        Assertions.assertEquals(
+                iers2003.getC2n0(1), Constants.IERS2003_EARTH_C20 / c20factor, 3e-9);
+        assertThat(iers2003.getBodyFrame(), is(frame));
+    }
+
+    /**
+     * check {@link ReferenceEllipsoid#getIers2010(Frame)}
+     */
+    @Test
+    public void testGetIers2010() {
+        // setup
+        double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
+        Frame frame = FramesFactory.getGCRF();
+
+        // action
+        ReferenceEllipsoid iers2010 = ReferenceEllipsoid.getIers2010(frame);
+
+        // verify
+        Assertions.assertEquals(
+                iers2010.getC2n0(1), Constants.IERS2010_EARTH_C20 / c20factor, 3e-9);
+        assertThat(iers2010.getBodyFrame(), is(frame));
     }
 
     /** check {@link ReferenceEllipsoid#getEllipsoid()} */

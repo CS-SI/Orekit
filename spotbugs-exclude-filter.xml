@@ -11,8 +11,9 @@
     <Or>
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper\$DataTransferObject$" />
       <Class name="~.*\.IntegratedEphemeris\$DataTransferObject$" />
-     <Class name="~.*\.KeplerianPropagator\$DataTransferObject$" />
-     <Class name="~.*\.EcksteinHechlerPropagator\$DataTransferObject$" />
+      <Class name="~.*\.KeplerianPropagator\$DataTransferObject$" />
+      <Class name="~.*\.EcksteinHechlerPropagator\$DataTransferObject$" />
+	  <Class name="~.*\.SigmaEigenvectorsCovarianceKey$" />
     </Or>
     <Bug pattern="SE_BAD_FIELD" />
   </Match>
@@ -25,6 +26,9 @@
       <Class name="~.*\.KeplerianPropagator$" />
       <Class name="~.*\.EcksteinHechlerPropagator$" />
       <Class name="~.*\.Ephemeris$" />
+      <Class name="~.*\.GlobalIonosphereMapModel$" />
+      <Class name="~.*\.MarshallSolarActivityFutureEstimation$" />
+      <Class name="~.*\.CssiSpaceWeatherData$" />
       <Class name="~.*\.IntegratedEphemeris$" />
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
       <Class name="~.*\.NumericalPropagator\$OsculatingMapper$" />
@@ -136,8 +140,8 @@
     <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$"/>
     <Method name="modify" />
     <Or>
-      <Local name="masterDjac" />
-      <Local name="slaveDjac" />
+      <Local name="primaryDjac" />
+      <Local name="secondaryDjac" />
     </Or>
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
@@ -189,6 +193,10 @@
     <Class name="~.*\.SEMParser$"/>
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
+  <Match>
+    <Class name="~.*\.Units$"/>
+    <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
+  </Match>
   
   <!-- The following is a false positive from SpotBugs -->
   <Match>
@@ -221,24 +229,6 @@
        They are used to pass data back and forth between classes
     -->
   <Match>
-    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
-    <Method name ="getAdditionalState" params="" returns="double[]" />
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
-    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
-    <Method name ="getAdditionalStateDot" params="" returns="double[]" />
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
-    <Class name="org.orekit.estimation.measurements.gnss.AbstractLambdaReducer"/>
-    <Or>  
-      <Method name ="getDiagReference" params="" returns="double[]" />
-      <Method name ="getLowReference" params="" returns="double[]" />
-    </Or>
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
     <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
     <Or>  
       <Method name="getGradient" params="" returns="double[]" />
@@ -250,12 +240,6 @@
     <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
     <Method name="&lt;init>"  params="double[],double[][]" returns="void" />
     <Bug pattern="EI_EXPOSE_REP2" />
-  </Match>
-
-  <!-- The following is a false positive from SpotBugs -->
-  <Match>
-  	<Class name="org.orekit.estimation.measurements.gnss.IntegerLeastSquareSolution" />
-    <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
   </Match>
 
   <!-- the following is an intended switch fall-through in the SP3Parser -->
@@ -297,4 +281,15 @@
     <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
   </Match>
 
+  <!-- The following is intentional.
+       At the construction, the mapper is not set yet However, if the attitude provider is
+       changed afterwards, it must be changed in the mapper too
+    -->
+  <Match>
+    <Class name="~.*\.IntegratedEphemeris$"/>
+    <Method name="setAttitudeProvider" />
+    <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR" />
+  </Match>
+
 </FindBugsFilter>
+

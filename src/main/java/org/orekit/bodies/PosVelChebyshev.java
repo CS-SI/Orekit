@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
@@ -58,6 +58,11 @@ class PosVelChebyshev implements TimeStamped, Serializable {
     /** Chebyshev polynomials coefficients for the Z component. */
     private final double[] zCoeffs;
 
+    /** Velocity scale for internal use. */
+    private final double vScale;
+    /** Acceleration scale for internal use. */
+    private final double aScale;
+
     /** Simple constructor.
      * @param start start of the validity range of the instance
      * @param timeScale time scale in which the ephemeris is defined
@@ -77,11 +82,30 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         this.xCoeffs   = xCoeffs;
         this.yCoeffs   = yCoeffs;
         this.zCoeffs   = zCoeffs;
+        this.vScale = 2 / duration;
+        this.aScale = this.vScale * this.vScale;
     }
 
     /** {@inheritDoc} */
     public AbsoluteDate getDate() {
         return start;
+    }
+
+    /** Compute value of Chebyshev's polynomial independent variable.
+     * @param date date
+     * @return double independent variable value
+     */
+    private double computeValueIndependentVariable(final AbsoluteDate date) {
+        return (2 * date.offsetFrom(start, timeScale) - duration) / duration;
+    }
+
+    /** Compute value of Chebyshev's polynomial independent variable.
+     * @param date date
+     * @param <T> type of the field elements
+     * @return <T> independent variable value
+     */
+    private <T extends CalculusFieldElement<T>> T computeValueIndependentVariable(final FieldAbsoluteDate<T> date) {
+        return date.offsetFrom(new FieldAbsoluteDate<>(date.getField(), start), timeScale).multiply(2).subtract(duration).divide(duration);
     }
 
     /** Check if a date is in validity range.
@@ -90,17 +114,92 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      */
     public boolean inRange(final AbsoluteDate date) {
         final double dt = date.offsetFrom(start, timeScale);
-        return (dt >= -0.001) && (dt <= duration + 0.001);
+        return dt >= -0.001 && dt <= duration + 0.001;
+    }
+
+    /** Get the position at a specified date.
+     * @param date date at which position is requested
+     * @return position at specified date
+     */
+    Vector3D getPosition(final AbsoluteDate date) {
+
+        // normalize date
+        final double t = computeValueIndependentVariable(date);
+        final double twoT = 2 * t;
+
+        // initialize Chebyshev polynomials recursion
+        double pKm1 = 1;
+        double pK   = t;
+        double xP   = xCoeffs[0];
+        double yP   = yCoeffs[0];
+        double zP   = zCoeffs[0];
+
+        // combine polynomials by applying coefficients
+        for (int k = 1; k < xCoeffs.length; ++k) {
+
+            // consider last computed polynomials on position
+            xP += xCoeffs[k] * pK;
+            yP += yCoeffs[k] * pK;
+            zP += zCoeffs[k] * pK;
+
+            // compute next Chebyshev polynomial value
+            final double pKm2 = pKm1;
+            pKm1 = pK;
+            pK   = twoT * pKm1 - pKm2;
+
+        }
+
+        return new Vector3D(xP, yP, zP);
+    }
+
+    /** Get the position at a specified date.
+     * @param date date at which position is requested
+     * @param <T> type of the field elements
+     * @return position at specified date
+     */
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date) {
+
+        final T zero = date.getField().getZero();
+        final T one  = date.getField().getOne();
+
+        // normalize date
+        final T t = computeValueIndependentVariable(date);
+        final T twoT = t.add(t);
+
+        // initialize Chebyshev polynomials recursion
+        T pKm1 = one;
+        T pK   = t;
+        T xP   = zero.newInstance(xCoeffs[0]);
+        T yP   = zero.newInstance(yCoeffs[0]);
+        T zP   = zero.newInstance(zCoeffs[0]);
+
+        // combine polynomials by applying coefficients
+        for (int k = 1; k < xCoeffs.length; ++k) {
+
+            // consider last computed polynomials on position
+            xP = xP.add(pK.multiply(xCoeffs[k]));
+            yP = yP.add(pK.multiply(yCoeffs[k]));
+            zP = zP.add(pK.multiply(zCoeffs[k]));
+
+            // compute next Chebyshev polynomial value
+            final T pKm2 = pKm1;
+            pKm1 = pK;
+            pK   = twoT.multiply(pKm1).subtract(pKm2);
+
+        }
+
+        return new FieldVector3D<>(xP, yP, zP);
+
     }
 
     /** Get the position-velocity-acceleration at a specified date.
      * @param date date at which position-velocity-acceleration is requested
      * @return position-velocity-acceleration at specified date
      */
-    public PVCoordinates getPositionVelocityAcceleration(final AbsoluteDate date) {
+    PVCoordinates getPositionVelocityAcceleration(final AbsoluteDate date) {
 
         // normalize date
-        final double t = (2 * date.offsetFrom(start, timeScale) - duration) / duration;
+        final double t = computeValueIndependentVariable(date);
         final double twoT = 2 * t;
 
         // initialize Chebyshev polynomials recursion
@@ -159,8 +258,6 @@ class PosVelChebyshev implements TimeStamped, Serializable {
 
         }
 
-        final double vScale = 2 / duration;
-        final double aScale = vScale * vScale;
         return new PVCoordinates(new Vector3D(xP, yP, zP),
                                  new Vector3D(xV * vScale, yV * vScale, zV * vScale),
                                  new Vector3D(xA * aScale, yA * aScale, zA * aScale));
@@ -169,24 +266,24 @@ class PosVelChebyshev implements TimeStamped, Serializable {
 
     /** Get the position-velocity-acceleration at a specified date.
      * @param date date at which position-velocity-acceleration is requested
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return position-velocity-acceleration at specified date
      */
-    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getPositionVelocityAcceleration(final FieldAbsoluteDate<T> date) {
+    <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getPositionVelocityAcceleration(final FieldAbsoluteDate<T> date) {
 
         final T zero = date.getField().getZero();
         final T one  = date.getField().getOne();
 
         // normalize date
-        final T t = date.offsetFrom(new FieldAbsoluteDate<>(date.getField(), start), timeScale).multiply(2).subtract(duration).divide(duration);
+        final T t = computeValueIndependentVariable(date);
         final T twoT = t.add(t);
 
         // initialize Chebyshev polynomials recursion
         T pKm1 = one;
         T pK   = t;
-        T xP   = zero.add(xCoeffs[0]);
-        T yP   = zero.add(yCoeffs[0]);
-        T zP   = zero.add(zCoeffs[0]);
+        T xP   = zero.newInstance(xCoeffs[0]);
+        T yP   = zero.newInstance(yCoeffs[0]);
+        T zP   = zero.newInstance(zCoeffs[0]);
 
         // initialize Chebyshev polynomials derivatives recursion
         T qKm1 = zero;
@@ -237,8 +334,6 @@ class PosVelChebyshev implements TimeStamped, Serializable {
 
         }
 
-        final double vScale = 2 / duration;
-        final double aScale = vScale * vScale;
         return new FieldPVCoordinates<>(new FieldVector3D<>(xP, yP, zP),
                                         new FieldVector3D<>(xV.multiply(vScale), yV.multiply(vScale), zV.multiply(vScale)),
                                         new FieldVector3D<>(xA.multiply(aScale), yA.multiply(aScale), zA.multiply(aScale)));

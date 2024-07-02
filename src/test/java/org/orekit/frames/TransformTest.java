@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,7 @@
  */
 package org.orekit.frames;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -30,35 +27,42 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TransformTest {
 
     @Test
     public void testIdentityTranslation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(0, 0, 0)),
-                         new Well19937a(0xfd118eac6b5ec136l));
+                new Well19937a(0xfd118eac6b5ec136l));
     }
 
     @Test
     public void testIdentityRotation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Rotation(1, 0, 0, 0, false)),
-                         new Well19937a(0xfd118eac6b5ec136l));
+                new Well19937a(0xfd118eac6b5ec136l));
     }
 
     @Test
@@ -68,7 +72,7 @@ public class TransformTest {
         Vector3D p2 = randomVector(100.0, random);
         Line line = new Line(p1, p2, 1.0e-6);
         Line transformed = Transform.IDENTITY.transformLine(line);
-        Assert.assertSame(line, transformed);
+        Assertions.assertSame(line, transformed);
     }
 
     @Test
@@ -76,25 +80,25 @@ public class TransformTest {
         Utils.setDataRoot("regular-data");
         TimeScale utc = TimeScalesFactory.getUTC();
         Frame tod = FramesFactory.getTOD(false);
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        FieldTransform<Decimal64> t1 =
-                        tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16, 21, 0, 0, utc)));
-        FieldTransform<Decimal64> t2 =
-                        tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16,  9, 0, 0, utc)));
-        Assert.assertEquals(-43200.0, t2.getDate().durationFrom(t1.getDate()), 1.0e-15);
+        Field<Binary64> field = Binary64Field.getInstance();
+        FieldTransform<Binary64> t1 =
+                tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16, 21, 0, 0, utc)));
+        FieldTransform<Binary64> t2 =
+                tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16,  9, 0, 0, utc)));
+        Assertions.assertEquals(-43200.0, t2.getDate().durationFrom(t1.getDate()), 1.0e-15);
     }
 
     @Test
     public void testSimpleComposition() {
         Transform transform =
-            new Transform(AbsoluteDate.J2000_EPOCH,
-                          new Transform(AbsoluteDate.J2000_EPOCH,
-                                        new Rotation(Vector3D.PLUS_K, 0.5 * FastMath.PI,
-                                                     RotationConvention.VECTOR_OPERATOR)),
-                          new Transform(AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I));
+                new Transform(AbsoluteDate.J2000_EPOCH,
+                        new Transform(AbsoluteDate.J2000_EPOCH,
+                                new Rotation(Vector3D.PLUS_K, 0.5 * FastMath.PI,
+                                        RotationConvention.VECTOR_OPERATOR)),
+                        new Transform(AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I));
         Vector3D u = transform.transformPosition(new Vector3D(1.0, 1.0, 1.0));
         Vector3D v = new Vector3D(0.0, 1.0, 1.0);
-        Assert.assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
+        Assertions.assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
     }
 
     @Test
@@ -113,9 +117,12 @@ public class TransformTest {
                 PVCoordinates pv = t.transformPVCoordinates(initPV.shiftedBy(dt + i * h));
                 sample.add(new TimeStampedPVCoordinates(t.getDate(), pv.getPosition(), pv.getVelocity(), Vector3D.ZERO));
             }
-            PVCoordinates rebuiltPV = TimeStampedPVCoordinates.interpolate(AbsoluteDate.J2000_EPOCH.shiftedBy(dt),
-                                                                           CartesianDerivativesFilter.USE_PV,
-                                                                           sample);
+
+            // create interpolator
+            final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                    new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_PV);
+
+            PVCoordinates rebuiltPV = interpolator.interpolate(AbsoluteDate.J2000_EPOCH.shiftedBy(dt), sample);
 
             checkVector(rebuiltPV.getPosition(),     transformedPV.getPosition(),     4.0e-16);
             checkVector(rebuiltPV.getVelocity(),     transformedPV.getVelocity(),     2.0e-16);
@@ -142,11 +149,11 @@ public class TransformTest {
         Vector3D  o2 = randomVector(0.1, random);
 
         Transform t1  = new Transform(AbsoluteDate.J2000_EPOCH,
-                                      new Transform(AbsoluteDate.J2000_EPOCH, p1, v1, a1),
-                                      new Transform(AbsoluteDate.J2000_EPOCH, r1, o1));
+                new Transform(AbsoluteDate.J2000_EPOCH, p1, v1, a1),
+                new Transform(AbsoluteDate.J2000_EPOCH, r1, o1));
         Transform t2  = new Transform(AbsoluteDate.J2000_EPOCH,
-                                      new Transform(AbsoluteDate.J2000_EPOCH, p2, v2, a2),
-                                      new Transform(AbsoluteDate.J2000_EPOCH, r2, o2));
+                new Transform(AbsoluteDate.J2000_EPOCH, p2, v2, a2),
+                new Transform(AbsoluteDate.J2000_EPOCH, r2, o2));
         Transform t12 = new Transform(AbsoluteDate.J2000_EPOCH, t1, t2);
 
         Vector3D q       = randomVector(1.0e3,  random);
@@ -165,14 +172,14 @@ public class TransformTest {
         // despite neither raw transforms have angular acceleration,
         // the combination does have an angular acceleration,
         // it is due to the cross product Ω₁ ⨯ Ω₂
-        Assert.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
-        Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 0.01);
+        Assertions.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
+        Assertions.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 0.01);
 
-        Assert.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
 
     }
 
@@ -188,19 +195,19 @@ public class TransformTest {
             Transform combined = Transform.IDENTITY;
             for (int k = 0; k < n; ++k) {
                 transforms[k] = random.nextBoolean()
-                ? new Transform(AbsoluteDate.J2000_EPOCH, randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random))
-                : new Transform(AbsoluteDate.J2000_EPOCH, randomRotation(random), randomVector(0.01, random), randomVector(1.0e-4, random));
+                        ? new Transform(AbsoluteDate.J2000_EPOCH, randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random))
+                        : new Transform(AbsoluteDate.J2000_EPOCH, randomRotation(random), randomVector(0.01, random), randomVector(1.0e-4, random));
                 combined = new Transform(AbsoluteDate.J2000_EPOCH, combined, transforms[k]);
             }
 
             // check the composition
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = randomVector(1.0, random);
-                FieldVector3D<Decimal64> aF = new FieldVector3D<>(Decimal64Field.getInstance(), a);
+                FieldVector3D<Binary64> aF = new FieldVector3D<>(Binary64Field.getInstance(), a);
                 Vector3D b = randomVector(1.0e3, random);
                 PVCoordinates c = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
                 Vector3D                 aRef  = a;
-                FieldVector3D<Decimal64> aFRef = aF;
+                FieldVector3D<Binary64> aFRef = aF;
                 Vector3D                 bRef  = b;
                 PVCoordinates            cRef  = c;
                 for (int k = 0; k < n; ++k) {
@@ -211,7 +218,7 @@ public class TransformTest {
                 }
 
                 Vector3D aCombined = combined.transformVector(a);
-                FieldVector3D<Decimal64> aFCombined = combined.transformVector(aF);
+                FieldVector3D<Binary64> aFCombined = combined.transformVector(aF);
                 Vector3D bCombined = combined.transformPosition(b);
                 PVCoordinates cCombined = combined.transformPVCoordinates(c);
                 checkVector(aRef, aCombined, 3.0e-15);
@@ -258,7 +265,7 @@ public class TransformTest {
         Transform.IDENTITY.getJacobian(filter, jacobian);
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
-                Assert.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j], 1.0e-15);
+                Assertions.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j], 1.0e-15);
             }
         }
     }
@@ -269,10 +276,10 @@ public class TransformTest {
         for (int i = 0; i < 20; ++i) {
             Transform combined = randomTransform(random);
             Transform rebuilt  = new Transform(combined.getDate(),
-                                               new Transform(combined.getDate(), combined.getTranslation(),
-                                                             combined.getVelocity(), combined.getAcceleration()),
-                                               new Transform(combined.getDate(), combined.getRotation(),
-                                                             combined.getRotationRate(), combined.getRotationAcceleration()));
+                    new Transform(combined.getDate(), combined.getTranslation(),
+                            combined.getVelocity(), combined.getAcceleration()),
+                    new Transform(combined.getDate(), combined.getRotation(),
+                            combined.getRotationRate(), combined.getRotationAcceleration()));
 
             checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, combined, rebuilt.getInverse()), random);
 
@@ -289,11 +296,11 @@ public class TransformTest {
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
                 Vector3D b = transform.transformVector(a);
-                Assert.assertEquals(0, b.subtract(a).getNorm(), 1.0e-15);
+                Assertions.assertEquals(0, b.subtract(a).getNorm(), 1.0e-15);
                 Vector3D c = transform.transformPosition(a);
-                Assert.assertEquals(0,
-                             c.subtract(a).subtract(delta).getNorm(),
-                             1.0e-14);
+                Assertions.assertEquals(0,
+                        c.subtract(a).subtract(delta).getNorm(),
+                        1.0e-14);
             }
         }
     }
@@ -459,28 +466,28 @@ public class TransformTest {
             Vector3D result  = pvTwo.getPosition().add(new Vector3D(dt, pvTwo.getVelocity()));
             checkVector(good, result, 1.0e-15);
 
-            FieldPVCoordinates<Decimal64> fieldPVOne =
-                            new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getPosition()),
-                                                              new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getVelocity()),
-                                                              new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getAcceleration()));
-            FieldPVCoordinates<Decimal64> fieldPVTwo = tr.transformPVCoordinates(fieldPVOne);
-            FieldVector3D<Decimal64> fieldResult  =
-                            fieldPVTwo.getPosition().add(new FieldVector3D<Decimal64>(dt, fieldPVTwo.getVelocity()));
+            FieldPVCoordinates<Binary64> fieldPVOne =
+                    new FieldPVCoordinates<Binary64>(new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getPosition()),
+                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getVelocity()),
+                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getAcceleration()));
+            FieldPVCoordinates<Binary64> fieldPVTwo = tr.transformPVCoordinates(fieldPVOne);
+            FieldVector3D<Binary64> fieldResult  =
+                    fieldPVTwo.getPosition().add(new FieldVector3D<Binary64>(dt, fieldPVTwo.getVelocity()));
             checkVector(good, fieldResult.toVector3D(), 1.0e-15);
 
-            TimeStampedFieldPVCoordinates<Decimal64> fieldTPVOne =
-                            new TimeStampedFieldPVCoordinates<Decimal64>(tr.getDate(),
-                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getPosition()),
-                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getVelocity()),
-                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getAcceleration()));
-            TimeStampedFieldPVCoordinates<Decimal64> fieldTPVTwo = tr.transformPVCoordinates(fieldTPVOne);
-            FieldVector3D<Decimal64> fieldTResult  =
-                            fieldTPVTwo.getPosition().add(new FieldVector3D<Decimal64>(dt, fieldTPVTwo.getVelocity()));
+            TimeStampedFieldPVCoordinates<Binary64> fieldTPVOne =
+                    new TimeStampedFieldPVCoordinates<Binary64>(tr.getDate(),
+                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getPosition()),
+                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getVelocity()),
+                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getAcceleration()));
+            TimeStampedFieldPVCoordinates<Binary64> fieldTPVTwo = tr.transformPVCoordinates(fieldTPVOne);
+            FieldVector3D<Binary64> fieldTResult  =
+                    fieldTPVTwo.getPosition().add(new FieldVector3D<Binary64>(dt, fieldTPVTwo.getVelocity()));
             checkVector(good, fieldTResult.toVector3D(), 1.0e-15);
 
             // test inverse
             Vector3D resultvel = tr.getInverse().
-            transformPVCoordinates(pvTwo).getVelocity();
+                    transformPVCoordinates(pvTwo).getVelocity();
             checkVector(resultvel, vel, 1.0e-15);
 
         }
@@ -500,12 +507,12 @@ public class TransformTest {
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
                 Vector3D b = transform.transformVector(a);
-                Assert.assertEquals(Vector3D.angle(axis, a), Vector3D.angle(axis, b), 1.0e-14);
+                Assertions.assertEquals(Vector3D.angle(axis, a), Vector3D.angle(axis, b), 1.0e-14);
                 Vector3D aOrtho = Vector3D.crossProduct(axis, a);
                 Vector3D bOrtho = Vector3D.crossProduct(axis, b);
-                Assert.assertEquals(angle, Vector3D.angle(aOrtho, bOrtho), 1.0e-14);
+                Assertions.assertEquals(angle, Vector3D.angle(aOrtho, bOrtho), 1.0e-14);
                 Vector3D c = transform.transformPosition(a);
-                Assert.assertEquals(0, c.subtract(b).getNorm(), 1.0e-14);
+                Assertions.assertEquals(0, c.subtract(b).getNorm(), 1.0e-14);
             }
 
         }
@@ -516,9 +523,9 @@ public class TransformTest {
 
         // base directions for finite differences
         PVCoordinates[] directions = new PVCoordinates[] {
-            new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO, Vector3D.ZERO),
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO),
-            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO),
         };
         double h = 0.01;
 
@@ -561,13 +568,13 @@ public class TransformTest {
                     PVCoordinates estimatedColumn = new PVCoordinates(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][c], epsilonP);
 
                     // check the rest of the matrix remains untouched
                     for (int l = 3; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
                     }
 
                 }
@@ -575,7 +582,7 @@ public class TransformTest {
                 // check the rest of the matrix remains untouched
                 for (int c = directions.length; c < jacobian[0].length; ++c) {
                     for (int l = 0; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
                     }
                 }
 
@@ -589,12 +596,12 @@ public class TransformTest {
 
         // base directions for finite differences
         PVCoordinates[] directions = new PVCoordinates[] {
-            new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.ZERO),
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO,   Vector3D.ZERO),
-            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.ZERO),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_I, Vector3D.ZERO),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_J, Vector3D.ZERO),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_K, Vector3D.ZERO)
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.ZERO),
+                new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO,   Vector3D.ZERO),
+                new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.ZERO),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_I, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_J, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_K, Vector3D.ZERO)
         };
         double h = 0.01;
 
@@ -638,16 +645,16 @@ public class TransformTest {
                     PVCoordinates estimatedColumn = new PVCoordinates(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getX(), jacobian[3][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getY(), jacobian[4][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getZ(), jacobian[5][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getX(), jacobian[3][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getY(), jacobian[4][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getZ(), jacobian[5][c], epsilonV);
 
                     // check the rest of the matrix remains untouched
                     for (int l = 6; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
                     }
 
                 }
@@ -655,7 +662,7 @@ public class TransformTest {
                 // check the rest of the matrix remains untouched
                 for (int c = directions.length; c < jacobian[0].length; ++c) {
                     for (int l = 0; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
                     }
                 }
 
@@ -669,15 +676,15 @@ public class TransformTest {
 
         // base directions for finite differences
         PVCoordinates[] directions = new PVCoordinates[] {
-            new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.ZERO),
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO,   Vector3D.ZERO),
-            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.ZERO),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_I, Vector3D.ZERO),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_J, Vector3D.ZERO),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_K, Vector3D.ZERO),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_I),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_J),
-            new PVCoordinates(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_K)
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.ZERO),
+                new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO,   Vector3D.ZERO),
+                new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.ZERO),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_I, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_J, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_K, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_I),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_J),
+                new PVCoordinates(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_K)
         };
         double h = 0.01;
 
@@ -722,15 +729,15 @@ public class TransformTest {
                     PVCoordinates estimatedColumn = new PVCoordinates(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX(),     jacobian[0][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY(),     jacobian[1][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ(),     jacobian[2][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getX(),     jacobian[3][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getY(),     jacobian[4][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getZ(),     jacobian[5][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getX(), jacobian[6][c], epsilonA);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getY(), jacobian[7][c], epsilonA);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getZ(), jacobian[8][c], epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX(),     jacobian[0][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY(),     jacobian[1][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ(),     jacobian[2][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getX(),     jacobian[3][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getY(),     jacobian[4][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getZ(),     jacobian[5][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getX(), jacobian[6][c], epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getY(), jacobian[7][c], epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getZ(), jacobian[8][c], epsilonA);
 
                 }
 
@@ -751,7 +758,7 @@ public class TransformTest {
                 Line transformed = transform.transformLine(l);
                 for (int k = 0; k < 10; ++k) {
                     Vector3D p = l.pointAt(random.nextDouble() * 1.0e6);
-                    Assert.assertEquals(0.0, transformed.distance(transform.transformPosition(p)), 1.0e-9);
+                    Assertions.assertEquals(0.0, transformed.distance(transform.transformPosition(p)), 1.0e-9);
                 }
             }
         }
@@ -784,22 +791,22 @@ public class TransformTest {
             linearB.setColumn(3, new double[] { p0.getX(), p0.getY(), p0.getZ() });
 
             // both linear transforms should be equal
-            Assert.assertEquals(0.0, linearB.subtract(linearA).getNorm(),
-                                1.0e-15 * linearA.getNorm());
+            Assertions.assertEquals(0.0, linearB.subtract(linearA).getNorm1(),
+                    1.0e-15 * linearA.getNorm1());
 
             for (int i = 0; i < 100; ++i) {
                 Vector3D p  = randomVector(1.0e3, random);
                 Vector3D q  = t.transformPosition(p);
 
                 double[] qA = linearA.operate(new double[] { p.getX(), p.getY(), p.getZ(), 1.0 });
-                Assert.assertEquals(q.getX(), qA[0], 1.0e-13 * p.getNorm());
-                Assert.assertEquals(q.getY(), qA[1], 1.0e-13 * p.getNorm());
-                Assert.assertEquals(q.getZ(), qA[2], 1.0e-13 * p.getNorm());
+                Assertions.assertEquals(q.getX(), qA[0], 1.0e-13 * p.getNorm());
+                Assertions.assertEquals(q.getY(), qA[1], 1.0e-13 * p.getNorm());
+                Assertions.assertEquals(q.getZ(), qA[2], 1.0e-13 * p.getNorm());
 
                 double[] qB = linearB.operate(new double[] { p.getX(), p.getY(), p.getZ(), 1.0 });
-                Assert.assertEquals(q.getX(), qB[0], 1.0e-10 * p.getNorm());
-                Assert.assertEquals(q.getY(), qB[1], 1.0e-10 * p.getNorm());
-                Assert.assertEquals(q.getZ(), qB[2], 1.0e-10 * p.getNorm());
+                Assertions.assertEquals(q.getX(), qB[0], 1.0e-10 * p.getNorm());
+                Assertions.assertEquals(q.getY(), qB[1], 1.0e-10 * p.getNorm());
+                Assertions.assertEquals(q.getZ(), qB[2], 1.0e-10 * p.getNorm());
 
             }
 
@@ -819,11 +826,11 @@ public class TransformTest {
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
         Transform t   = new Transform(date,
-                                      new Transform(date, Vector3D.MINUS_I, Vector3D.MINUS_J, Vector3D.ZERO),
-                                      new Transform(date,
-                                                    new Rotation(Vector3D.PLUS_K, alpha0,
-                                                                 RotationConvention.VECTOR_OPERATOR),
-                                                    new Vector3D(omega, Vector3D.MINUS_K)));
+                new Transform(date, Vector3D.MINUS_I, Vector3D.MINUS_J, Vector3D.ZERO),
+                new Transform(date,
+                        new Rotation(Vector3D.PLUS_K, alpha0,
+                                RotationConvention.VECTOR_OPERATOR),
+                        new Vector3D(omega, Vector3D.MINUS_K)));
 
         for (double dt = -10.0; dt < 10.0; dt += 0.125) {
 
@@ -841,18 +848,26 @@ public class TransformTest {
             double c = FastMath.cos(alpha0 + omega * dt);
             double s = FastMath.sin(alpha0 + omega * dt);
             Vector3D referencePosition = new Vector3D(-c + dt * s,
-                                                      -s - dt * c,
-                                                      0);
+                    -s - dt * c,
+                    0);
             Vector3D referenceVelocity = new Vector3D( (1 + omega) * s + dt * omega * c,
-                                                      -(1 + omega) * c + dt * omega * s,
-                                                      0);
+                    -(1 + omega) * c + dt * omega * s,
+                    0);
             Vector3D referenceAcceleration = new Vector3D(omega * (2 + omega) * c - dt * omega * omega * s,
-                                                          omega * (2 + omega) * s + dt * omega * omega * c,
-                                                          0);
+                    omega * (2 + omega) * s + dt * omega * omega * c,
+                    0);
             checkVector(expectedApparentMotion.getPosition(),     referencePosition,     1.0e-14);
             checkVector(expectedApparentMotion.getVelocity(),     referenceVelocity,     1.0e-14);
             checkVector(expectedApparentMotion.getAcceleration(), referenceAcceleration, 1.0e-14);
 
+            MatcherAssert.assertThat("At dt=" + dt,
+                    t.staticShiftedBy(dt).transformPosition(Vector3D.ZERO),
+                    OrekitMatchers.vectorCloseTo(expectedApparentMotion.getPosition(), 1e-16));
+            MatcherAssert.assertThat("At dt=" + dt,
+                    t.staticShiftedBy(dt).transformPosition(Vector3D.ZERO),
+                    OrekitMatchers.vectorCloseTo(
+                            referencePosition,
+                            1e-14 * (1 + referencePosition.getNorm())));
         }
 
     }
@@ -883,70 +898,70 @@ public class TransformTest {
                 Transform tp3h = t.shiftedBy(dt + 3 * h);
                 Transform tp4h = t.shiftedBy(dt + 4 * h);
                 double numXDot = derivative(h,
-                                            tm4h.getTranslation().getX(), tm3h.getTranslation().getX(),
-                                            tm2h.getTranslation().getX(), tm1h.getTranslation().getX(),
-                                            tp1h.getTranslation().getX(), tp2h.getTranslation().getX(),
-                                            tp3h.getTranslation().getX(), tp4h.getTranslation().getX());
+                        tm4h.getTranslation().getX(), tm3h.getTranslation().getX(),
+                        tm2h.getTranslation().getX(), tm1h.getTranslation().getX(),
+                        tp1h.getTranslation().getX(), tp2h.getTranslation().getX(),
+                        tp3h.getTranslation().getX(), tp4h.getTranslation().getX());
                 double numYDot = derivative(h,
-                                            tm4h.getTranslation().getY(), tm3h.getTranslation().getY(),
-                                            tm2h.getTranslation().getY(), tm1h.getTranslation().getY(),
-                                            tp1h.getTranslation().getY(), tp2h.getTranslation().getY(),
-                                            tp3h.getTranslation().getY(), tp4h.getTranslation().getY());
+                        tm4h.getTranslation().getY(), tm3h.getTranslation().getY(),
+                        tm2h.getTranslation().getY(), tm1h.getTranslation().getY(),
+                        tp1h.getTranslation().getY(), tp2h.getTranslation().getY(),
+                        tp3h.getTranslation().getY(), tp4h.getTranslation().getY());
                 double numZDot = derivative(h,
-                                            tm4h.getTranslation().getZ(), tm3h.getTranslation().getZ(),
-                                            tm2h.getTranslation().getZ(), tm1h.getTranslation().getZ(),
-                                            tp1h.getTranslation().getZ(), tp2h.getTranslation().getZ(),
-                                            tp3h.getTranslation().getZ(), tp4h.getTranslation().getZ());
+                        tm4h.getTranslation().getZ(), tm3h.getTranslation().getZ(),
+                        tm2h.getTranslation().getZ(), tm1h.getTranslation().getZ(),
+                        tp1h.getTranslation().getZ(), tp2h.getTranslation().getZ(),
+                        tp3h.getTranslation().getZ(), tp4h.getTranslation().getZ());
                 double numXDot2 = derivative(h,
-                                            tm4h.getVelocity().getX(), tm3h.getVelocity().getX(),
-                                            tm2h.getVelocity().getX(), tm1h.getVelocity().getX(),
-                                            tp1h.getVelocity().getX(), tp2h.getVelocity().getX(),
-                                            tp3h.getVelocity().getX(), tp4h.getVelocity().getX());
+                        tm4h.getVelocity().getX(), tm3h.getVelocity().getX(),
+                        tm2h.getVelocity().getX(), tm1h.getVelocity().getX(),
+                        tp1h.getVelocity().getX(), tp2h.getVelocity().getX(),
+                        tp3h.getVelocity().getX(), tp4h.getVelocity().getX());
                 double numYDot2 = derivative(h,
-                                            tm4h.getVelocity().getY(), tm3h.getVelocity().getY(),
-                                            tm2h.getVelocity().getY(), tm1h.getVelocity().getY(),
-                                            tp1h.getVelocity().getY(), tp2h.getVelocity().getY(),
-                                            tp3h.getVelocity().getY(), tp4h.getVelocity().getY());
+                        tm4h.getVelocity().getY(), tm3h.getVelocity().getY(),
+                        tm2h.getVelocity().getY(), tm1h.getVelocity().getY(),
+                        tp1h.getVelocity().getY(), tp2h.getVelocity().getY(),
+                        tp3h.getVelocity().getY(), tp4h.getVelocity().getY());
                 double numZDot2 = derivative(h,
-                                            tm4h.getVelocity().getZ(), tm3h.getVelocity().getZ(),
-                                            tm2h.getVelocity().getZ(), tm1h.getVelocity().getZ(),
-                                            tp1h.getVelocity().getZ(), tp2h.getVelocity().getZ(),
-                                            tp3h.getVelocity().getZ(), tp4h.getVelocity().getZ());
+                        tm4h.getVelocity().getZ(), tm3h.getVelocity().getZ(),
+                        tm2h.getVelocity().getZ(), tm1h.getVelocity().getZ(),
+                        tp1h.getVelocity().getZ(), tp2h.getVelocity().getZ(),
+                        tp3h.getVelocity().getZ(), tp4h.getVelocity().getZ());
                 double numQ0Dot = derivative(h,
-                                             tm4h.getRotation().getQ0(), tm3h.getRotation().getQ0(),
-                                             tm2h.getRotation().getQ0(), tm1h.getRotation().getQ0(),
-                                             tp1h.getRotation().getQ0(), tp2h.getRotation().getQ0(),
-                                             tp3h.getRotation().getQ0(), tp4h.getRotation().getQ0());
+                        tm4h.getRotation().getQ0(), tm3h.getRotation().getQ0(),
+                        tm2h.getRotation().getQ0(), tm1h.getRotation().getQ0(),
+                        tp1h.getRotation().getQ0(), tp2h.getRotation().getQ0(),
+                        tp3h.getRotation().getQ0(), tp4h.getRotation().getQ0());
                 double numQ1Dot = derivative(h,
-                                             tm4h.getRotation().getQ1(), tm3h.getRotation().getQ1(),
-                                             tm2h.getRotation().getQ1(), tm1h.getRotation().getQ1(),
-                                             tp1h.getRotation().getQ1(), tp2h.getRotation().getQ1(),
-                                             tp3h.getRotation().getQ1(), tp4h.getRotation().getQ1());
+                        tm4h.getRotation().getQ1(), tm3h.getRotation().getQ1(),
+                        tm2h.getRotation().getQ1(), tm1h.getRotation().getQ1(),
+                        tp1h.getRotation().getQ1(), tp2h.getRotation().getQ1(),
+                        tp3h.getRotation().getQ1(), tp4h.getRotation().getQ1());
                 double numQ2Dot = derivative(h,
-                                             tm4h.getRotation().getQ2(), tm3h.getRotation().getQ2(),
-                                             tm2h.getRotation().getQ2(), tm1h.getRotation().getQ2(),
-                                             tp1h.getRotation().getQ2(), tp2h.getRotation().getQ2(),
-                                             tp3h.getRotation().getQ2(), tp4h.getRotation().getQ2());
+                        tm4h.getRotation().getQ2(), tm3h.getRotation().getQ2(),
+                        tm2h.getRotation().getQ2(), tm1h.getRotation().getQ2(),
+                        tp1h.getRotation().getQ2(), tp2h.getRotation().getQ2(),
+                        tp3h.getRotation().getQ2(), tp4h.getRotation().getQ2());
                 double numQ3Dot = derivative(h,
-                                             tm4h.getRotation().getQ3(), tm3h.getRotation().getQ3(),
-                                             tm2h.getRotation().getQ3(), tm1h.getRotation().getQ3(),
-                                             tp1h.getRotation().getQ3(), tp2h.getRotation().getQ3(),
-                                             tp3h.getRotation().getQ3(), tp4h.getRotation().getQ3());
+                        tm4h.getRotation().getQ3(), tm3h.getRotation().getQ3(),
+                        tm2h.getRotation().getQ3(), tm1h.getRotation().getQ3(),
+                        tp1h.getRotation().getQ3(), tp2h.getRotation().getQ3(),
+                        tp3h.getRotation().getQ3(), tp4h.getRotation().getQ3());
                 double numOxDot = derivative(h,
-                                            tm4h.getRotationRate().getX(), tm3h.getRotationRate().getX(),
-                                            tm2h.getRotationRate().getX(), tm1h.getRotationRate().getX(),
-                                            tp1h.getRotationRate().getX(), tp2h.getRotationRate().getX(),
-                                            tp3h.getRotationRate().getX(), tp4h.getRotationRate().getX());
+                        tm4h.getRotationRate().getX(), tm3h.getRotationRate().getX(),
+                        tm2h.getRotationRate().getX(), tm1h.getRotationRate().getX(),
+                        tp1h.getRotationRate().getX(), tp2h.getRotationRate().getX(),
+                        tp3h.getRotationRate().getX(), tp4h.getRotationRate().getX());
                 double numOyDot = derivative(h,
-                                            tm4h.getRotationRate().getY(), tm3h.getRotationRate().getY(),
-                                            tm2h.getRotationRate().getY(), tm1h.getRotationRate().getY(),
-                                            tp1h.getRotationRate().getY(), tp2h.getRotationRate().getY(),
-                                            tp3h.getRotationRate().getY(), tp4h.getRotationRate().getY());
+                        tm4h.getRotationRate().getY(), tm3h.getRotationRate().getY(),
+                        tm2h.getRotationRate().getY(), tm1h.getRotationRate().getY(),
+                        tp1h.getRotationRate().getY(), tp2h.getRotationRate().getY(),
+                        tp3h.getRotationRate().getY(), tp4h.getRotationRate().getY());
                 double numOzDot = derivative(h,
-                                            tm4h.getRotationRate().getZ(), tm3h.getRotationRate().getZ(),
-                                            tm2h.getRotationRate().getZ(), tm1h.getRotationRate().getZ(),
-                                            tp1h.getRotationRate().getZ(), tp2h.getRotationRate().getZ(),
-                                            tp3h.getRotationRate().getZ(), tp4h.getRotationRate().getZ());
+                        tm4h.getRotationRate().getZ(), tm3h.getRotationRate().getZ(),
+                        tm2h.getRotationRate().getZ(), tm1h.getRotationRate().getZ(),
+                        tp1h.getRotationRate().getZ(), tp2h.getRotationRate().getZ(),
+                        tp3h.getRotationRate().getZ(), tp4h.getRotationRate().getZ());
 
                 // theoretical derivatives
                 double theXDot  = t0.getVelocity().getX();
@@ -968,26 +983,42 @@ public class TransformTest {
                 double theOzDot2 = t0.getRotationAcceleration().getZ();
 
                 // check consistency
-                Assert.assertEquals(theXDot, numXDot, 1.0e-13 * v);
-                Assert.assertEquals(theYDot, numYDot, 1.0e-13 * v);
-                Assert.assertEquals(theZDot, numZDot, 1.0e-13 * v);
+                Assertions.assertEquals(theXDot, numXDot, 1.0e-13 * v);
+                Assertions.assertEquals(theYDot, numYDot, 1.0e-13 * v);
+                Assertions.assertEquals(theZDot, numZDot, 1.0e-13 * v);
 
-                Assert.assertEquals(theXDot2, numXDot2, 1.0e-13 * a);
-                Assert.assertEquals(theYDot2, numYDot2, 1.0e-13 * a);
-                Assert.assertEquals(theZDot2, numZDot2, 1.0e-13 * a);
+                Assertions.assertEquals(theXDot2, numXDot2, 1.0e-13 * a);
+                Assertions.assertEquals(theYDot2, numYDot2, 1.0e-13 * a);
+                Assertions.assertEquals(theZDot2, numZDot2, 1.0e-13 * a);
 
-                Assert.assertEquals(theQ0Dot, numQ0Dot, 1.0e-13 * omega);
-                Assert.assertEquals(theQ1Dot, numQ1Dot, 1.0e-13 * omega);
-                Assert.assertEquals(theQ2Dot, numQ2Dot, 1.0e-13 * omega);
-                Assert.assertEquals(theQ3Dot, numQ3Dot, 1.0e-13 * omega);
+                Assertions.assertEquals(theQ0Dot, numQ0Dot, 1.0e-13 * omega);
+                Assertions.assertEquals(theQ1Dot, numQ1Dot, 1.0e-13 * omega);
+                Assertions.assertEquals(theQ2Dot, numQ2Dot, 1.0e-13 * omega);
+                Assertions.assertEquals(theQ3Dot, numQ3Dot, 1.0e-13 * omega);
 
 
-                Assert.assertEquals(theOxDot2, numOxDot, 1.0e-12 * omegaDot);
-                Assert.assertEquals(theOyDot2, numOyDot, 1.0e-12 * omegaDot);
-                Assert.assertEquals(theOzDot2, numOzDot, 1.0e-12 * omegaDot);
+                Assertions.assertEquals(theOxDot2, numOxDot, 1.0e-12 * omegaDot);
+                Assertions.assertEquals(theOyDot2, numOyDot, 1.0e-12 * omegaDot);
+                Assertions.assertEquals(theOzDot2, numOzDot, 1.0e-12 * omegaDot);
 
             }
         }
+    }
+
+    @Test
+    void testToStaticTransform() {
+        // GIVEN
+        final PVCoordinates pvCoordinates = new PVCoordinates();
+        final AngularCoordinates angularCoordinates = new AngularCoordinates();
+        final Transform transform = new Transform(AbsoluteDate.ARBITRARY_EPOCH, pvCoordinates, angularCoordinates);
+        // WHEN
+        final StaticTransform actualStaticTransform = transform.toStaticTransform();
+        // THEN
+        final StaticTransform expectedStaticTransform = transform.staticShiftedBy(0.);
+        Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
+        Assertions.assertEquals(expectedStaticTransform.getTranslation(), actualStaticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation(),
+                actualStaticTransform.getRotation()));
     }
 
     @Test
@@ -1001,14 +1032,14 @@ public class TransformTest {
 
         for (double dt = 0.1; dt <= 3.1; dt += 0.01) {
             Transform reference = evolvingTransform(t0, dt);
-            Transform interpolated = sample.get(0).interpolate(reference.getDate(), sample);
+            Transform interpolated = sample.get(0).interpolate(reference.getDate(), sample.stream());
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           2.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           6.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       4.0e-14);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            2.0e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         6.0e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 4.0e-14);
+            Assertions.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           2.0e-15);
+            Assertions.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           6.0e-15);
+            Assertions.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       4.0e-14);
+            Assertions.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            2.0e-15);
+            Assertions.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         6.0e-15);
+            Assertions.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 4.0e-14);
 
         }
 
@@ -1022,21 +1053,21 @@ public class TransformTest {
         final double cos = FastMath.cos(omega * dt);
         final double sin = FastMath.sin(omega * dt);
         return new Transform(date,
-                             new Transform(date,
-                                           new Vector3D(-cos, -sin, 0),
-                                           new Vector3D(omega * sin, -omega * cos, 0),
-                                           new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
-                             new Transform(date,
-                                           new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt,
-                                                        RotationConvention.VECTOR_OPERATOR),
-                                           new Vector3D(omega, Vector3D.PLUS_K)));
+                new Transform(date,
+                        new Vector3D(-cos, -sin, 0),
+                        new Vector3D(omega * sin, -omega * cos, 0),
+                        new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
+                new Transform(date,
+                        new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt,
+                                RotationConvention.VECTOR_OPERATOR),
+                        new Vector3D(omega, Vector3D.PLUS_K)));
     }
 
     private double derivative(double h,
                               double ym4h, double ym3h, double ym2h, double ym1h,
                               double yp1h, double yp2h, double yp3h, double yp4h) {
         return (-3 * (yp4h - ym4h) + 32 * (yp3h - ym3h) - 168 * (yp2h - ym2h) + 672 * (yp1h - ym1h)) /
-               (840 * h);
+                (840 * h);
     }
 
     private Transform randomTransform(RandomGenerator random) {
@@ -1044,8 +1075,8 @@ public class TransformTest {
         Transform combined = Transform.IDENTITY;
         for (int k = 0; k < 20; ++k) {
             Transform t = random.nextBoolean() ?
-                          new Transform(AbsoluteDate.J2000_EPOCH, randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random)) :
-                          new Transform(AbsoluteDate.J2000_EPOCH, randomRotation(random), randomVector(0.01, random), randomVector(1.0e-4, random));
+                    new Transform(AbsoluteDate.J2000_EPOCH, randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random)) :
+                    new Transform(AbsoluteDate.J2000_EPOCH, randomRotation(random), randomVector(0.01, random), randomVector(1.0e-4, random));
             combined = new Transform(AbsoluteDate.J2000_EPOCH, combined, t);
         }
         return combined;
@@ -1053,8 +1084,8 @@ public class TransformTest {
 
     private Vector3D randomVector(double scale, RandomGenerator random) {
         return new Vector3D(random.nextDouble() * scale,
-                            random.nextDouble() * scale,
-                            random.nextDouble() * scale);
+                random.nextDouble() * scale,
+                random.nextDouble() * scale);
     }
 
     private Rotation randomRotation(RandomGenerator random) {
@@ -1070,10 +1101,10 @@ public class TransformTest {
         for (int i = 0; i < 100; ++i) {
             Vector3D a = randomVector(1.0e3, random);
             Vector3D tA = transform.transformVector(a);
-            Assert.assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
+            Assertions.assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
             Vector3D b = randomVector(1.0e3, random);
             Vector3D tB = transform.transformPosition(b);
-            Assert.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
+            Assertions.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
             PVCoordinates pv  = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
             PVCoordinates tPv = transform.transformPVCoordinates(pv);
             checkVector(pv.getPosition(),     tPv.getPosition(), 1.0e-10);
@@ -1086,9 +1117,8 @@ public class TransformTest {
         double refNorm = reference.getNorm();
         double resNorm = result.getNorm();
         double tolerance = relativeTolerance * (1 + FastMath.max(refNorm, resNorm));
-        Assert.assertEquals("ref = " + reference + ", res = " + result + " -> " +
-                            (Vector3D.distance(reference, result) / (1 + FastMath.max(refNorm, resNorm))),
-                            0, Vector3D.distance(reference, result), tolerance);
+        Assertions.assertEquals(0, Vector3D.distance(reference, result), tolerance, "ref = " + reference + ", res = " + result + " -> " +
+                (Vector3D.distance(reference, result) / (1 + FastMath.max(refNorm, resNorm))));
     }
 
 }

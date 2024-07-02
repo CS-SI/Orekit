@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import org.hipparchus.complex.Complex;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.hipparchus.complex.Complex;
 
 /** Compute the S<sub>j</sub>(k, h) and the C<sub>j</sub>(k, h) series
  *  and their partial derivatives with respect to k and h.
@@ -50,7 +50,7 @@ public class CjSjCoefficient {
      */
     public CjSjCoefficient(final double k, final double h) {
         kih  = new Complex(k, h);
-        cjsj = new ArrayList<Complex>();
+        cjsj = new ArrayList<>();
         cjsj.add(new Complex(1, 0));
         cjsj.add(kih);
         jLast = 1;

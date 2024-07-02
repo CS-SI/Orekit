@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,8 +17,8 @@
 
 package org.orekit.utils;
 
-import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -27,15 +27,17 @@ import org.orekit.time.FieldAbsoluteDate;
  * @since 9.2
  * @author Luc Maisonobe
  */
-public interface ExtendedPVCoordinatesProvider extends PVCoordinatesProvider {
+public interface ExtendedPVCoordinatesProvider extends ExtendedPositionProvider {
 
-    /** Convert to a {@link FieldPVCoordinatesProvider} with a specific type.
-     * @param <T> the type of the field elements
-     * @param field field for the argument and value
-     * @return converted function
+    /** Get the position of the body in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the position
+     * @param <T> type for the field elements
+     * @return position of the body (m and)
+     * @since 12.0
      */
-    default <T extends RealFieldElement<T>> FieldPVCoordinatesProvider<T> toFieldPVCoordinatesProvider(Field<T> field) {
-        return this::getPVCoordinates;
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return getPVCoordinates(date, frame).getPosition();
     }
 
     /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
@@ -44,7 +46,8 @@ public interface ExtendedPVCoordinatesProvider extends PVCoordinatesProvider {
      * @param <T> type for the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
      */
-    <T extends RealFieldElement<T>>TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date,
-                                                                                     Frame frame);
+    @Override
+    <T extends CalculusFieldElement<T>>TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date,
+                                                                                         Frame frame);
 
 }

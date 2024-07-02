@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -48,17 +48,40 @@ public interface TimeStampedCache<T extends TimeStamped> {
      *
      * @param central central date
      * @return list of cached entries surrounding the specified date. The size
-     *         of the list is guaranteed to be {@link #getNeighborsSize()}.
+     *         of the list is guaranteed to be {@link #getMaxNeighborsSize()}.
+     * @see #getNeighbors(AbsoluteDate, int)
      */
-    Stream<T> getNeighbors(AbsoluteDate central);
+    default Stream<T> getNeighbors(AbsoluteDate central) {
+        return getNeighbors(central, getMaxNeighborsSize());
+    }
 
     /**
-     * Get the fixed size of the lists returned by
-     * {@link #getNeighbors(AbsoluteDate)}.
+     * Get the entries surrounding a central date.
+     * <p>
+     * If the central date is well within covered range, the returned array will
+     * be balanced with half the points before central date and half the points
+     * after it (depending on n parity, of course). If the central date is near
+     * the boundary, then the returned array will be unbalanced and will contain
+     * only the n earliest (or latest) entries. A typical example of the later
+     * case is leap seconds cache, since the number of leap seconds cannot be
+     * arbitrarily increased.
+     * <p>
+     * This method is safe for multiple threads to execute concurrently.
+     *
+     * @param central central date
+     * @param n number of neighbors (cannot exceed {@link #getMaxNeighborsSize()})
+     * @return stream of cached entries surrounding the specified date.
+     * @since 12.0
+     */
+    Stream<T> getNeighbors(AbsoluteDate central, int n);
+
+    /**
+     * Get the maximum size of the lists returned by
+     * {@link #getNeighbors(AbsoluteDate, int)}.
      *
      * @return size of the list
      */
-    int getNeighborsSize();
+    int getMaxNeighborsSize();
 
     /**
      * Get the earliest entry in this cache.

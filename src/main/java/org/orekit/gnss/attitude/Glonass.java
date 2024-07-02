@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,8 +17,8 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -145,27 +145,27 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
+    protected <T extends CalculusFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
         final Field<T> field = context.getDate().getField();
 
         // noon beta angle limit from yaw rate
         final T realBeta = context.beta(context.getDate());
         final T muRate   = context.getMuRate();
-        final T aNight   = field.getZero().add(NIGHT_TURN_LIMIT);
+        final T aNight   = field.getZero().newInstance(NIGHT_TURN_LIMIT);
         T       aNoon    = FastMath.atan(muRate.divide(yawRate));
         if (FastMath.abs(realBeta).getReal() < aNoon.getReal()) {
-            final RealFieldUnivariateFunction<T> f = yawEnd -> {
+            final CalculusFieldUnivariateFunction<T> f = yawEnd -> {
                 final T delta = muRate.multiply(yawEnd).divide(yawRate);
                 return yawEnd.subtract(FastMath.abs(context.computePhi(realBeta, delta).
                                                     subtract(context.computePhi(realBeta, delta.negate()))).
                                        multiply(0.5));
             };
-            final T[] bracket = UnivariateSolverUtils.bracket(f, field.getZero().add(YAW_END_ZERO),
-                                                              field.getZero(), field.getZero().add(FastMath.PI));
-            final T yawEnd = new FieldBracketingNthOrderBrentSolver<>(field.getZero().add(1.0e-14),
-                                                                      field.getZero().add(1.0e-8),
-                                                                      field.getZero().add(1.0e-15),
+            final T[] bracket = UnivariateSolverUtils.bracket(f, field.getZero().newInstance(YAW_END_ZERO),
+                                                              field.getZero(), field.getZero().getPi());
+            final T yawEnd = new FieldBracketingNthOrderBrentSolver<>(field.getZero().newInstance(1.0e-14),
+                                                                      field.getZero().newInstance(1.0e-8),
+                                                                      field.getZero().newInstance(1.0e-15),
                                                                       5).
                             solve(50, f, bracket[0], bracket[1], AllowedSolution.ANY_SIDE);
             aNoon = muRate.multiply(yawEnd).divide(yawRate);
@@ -178,7 +178,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
             context.setHalfSpan(context.inSunSide() ?
                                 aNoon :
-                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
+                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(aNight.getPi())),
                                 END_MARGIN);
             if (context.inTurnTimeRange()) {
 
@@ -192,11 +192,11 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
                 final T phiEnd    = context.getYawEnd(beta);
                 if (context.inSunSide()) {
                     // noon turn
-                    phiDot    = field.getZero().add(-FastMath.copySign(yawRate, beta.getReal()));
+                    phiDot    = field.getZero().newInstance(-FastMath.copySign(yawRate, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 } else {
                     // midnight turn
-                    phiDot    = field.getZero().add(FastMath.copySign(yawRate, beta.getReal()));
+                    phiDot    = field.getZero().newInstance(FastMath.copySign(yawRate, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
 
                     // this turn limitation is only computed for midnight turns in Kouba model

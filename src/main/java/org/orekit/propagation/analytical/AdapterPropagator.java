@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -27,6 +26,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 
 /** Orbit propagator that adapts an underlying propagator, adding {@link
  * DifferentialEffect differential effects}.
@@ -84,6 +84,8 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
         super(reference.getAttitudeProvider());
         this.reference = reference;
         this.effects = new ArrayList<DifferentialEffect>();
+        // Sets initial state
+        super.resetInitialState(getInitialState());
     }
 
     /** Add a differential effect.
@@ -133,17 +135,23 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
         // compute reference state
         SpacecraftState state = reference.propagate(date);
-        final Map<String, double[]> before = state.getAdditionalStates();
+        final DoubleArrayDictionary additionalBefore    = state.getAdditionalStatesValues();
+        final DoubleArrayDictionary additionalDotBefore = state.getAdditionalStatesDerivatives();
 
         // add all the effects
         for (final DifferentialEffect effect : effects) {
             state = effect.apply(state);
         }
 
-        // forward additional states from the reference propagator
-        for (final Map.Entry<String, double[]> entry : before.entrySet()) {
+        // forward additional states and derivatives from the reference propagator
+        for (final DoubleArrayDictionary.Entry entry : additionalBefore.getData()) {
             if (!state.hasAdditionalState(entry.getKey())) {
                 state = state.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+        }
+        for (final DoubleArrayDictionary.Entry entry : additionalDotBefore.getData()) {
+            if (!state.hasAdditionalState(entry.getKey())) {
+                state = state.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
             }
         }
 

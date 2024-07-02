@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,12 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This interface is a space-dynamics aware step interpolator.
  *
@@ -26,8 +29,9 @@ import org.orekit.time.FieldAbsoluteDate;
  * href="http://commons.apache.org/math/"> commons-math</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
-public interface FieldOrekitStepInterpolator<T extends RealFieldElement<T>> {
+public interface FieldOrekitStepInterpolator<T extends CalculusFieldElement<T>> extends FieldPVCoordinatesProvider<T> {
 
     /**
      * Get the state at previous grid point date.
@@ -52,5 +56,26 @@ public interface FieldOrekitStepInterpolator<T extends RealFieldElement<T>> {
      * @return true if integration is forward in date
      */
     boolean isForward();
+
+    /** Create a new restricted version of the instance.
+     * <p>
+     * The instance is not changed at all.
+     * </p>
+     * @param newPreviousState start of the restricted step
+     * @param newCurrentState end of the restricted step
+     * @return restricted version of the instance
+     * @see #getPreviousState()
+     * @see #getCurrentState()
+     * @since 11.0
+     */
+    FieldOrekitStepInterpolator<T> restrictStep(FieldSpacecraftState<T> newPreviousState, FieldSpacecraftState<T> newCurrentState);
+
+    /** {@inheritDoc}
+     * @since 12.0
+     */
+    @Override
+    default TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return getInterpolatedState(date).getPVCoordinates(frame);
+    }
 
 }

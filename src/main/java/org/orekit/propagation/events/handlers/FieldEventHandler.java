@@ -16,27 +16,21 @@
  */
 package org.orekit.propagation.events.handlers;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
 
 
-/**
- * An interface defining how to override event handling behavior in the standard
- * propagator eventing classes without requiring subclassing.  In cases where
- * one wishes to use anonymous classes rather than explicit subclassing this
- * allows for a more direct way to override the behavior.  Event classes have to
- * specifically support this capability.
+/** An interface defining how to handle events occurring during propagation..
  *
  * @author Hank Grabowski
  *
- * @param <KK> object type that the handler is called from
+ * @param <T> type of the field element
  * @since 6.1
  */
-public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends RealFieldElement<T>> {
+public interface FieldEventHandler<T extends CalculusFieldElement<T>> {
 
     /** Initialize event handler at the start of a propagation.
      * <p>
@@ -49,19 +43,14 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * </p>
      * @param initialState initial state
      * @param target target date for the propagation
-     *
+     * @param detector event detector related to the event handler
+     * @since 11.1
      */
-    default void init(FieldSpacecraftState<T> initialState,
-                      FieldAbsoluteDate<T> target) {
+    default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target, FieldEventDetector<T> detector) {
         // nothing by default
     }
 
-    /**
-     * eventOccurred method mirrors the same interface method as in {@link EventDetector}
-     * and its subclasses, but with an additional parameter that allows the calling
-     * method to pass in an object from the detector which would have potential
-     * additional data to allow the implementing class to determine the correct
-     * return state.
+    /** Handle an event.
      *
      * @param s SpaceCraft state to be used in the evaluation
      * @param detector object with appropriate type that can be used in determining correct return state
@@ -69,7 +58,7 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * @return the Action that the calling detector should pass back to the evaluation system
      *
      */
-    Action eventOccurred(FieldSpacecraftState<T> s, KK detector, boolean increasing);
+    Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing);
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
@@ -86,7 +75,7 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * @param oldState old state
      * @return new state
      */
-    default FieldSpacecraftState<T> resetState(KK detector, FieldSpacecraftState<T> oldState) {
+    default FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
         return oldState;
     }
 }

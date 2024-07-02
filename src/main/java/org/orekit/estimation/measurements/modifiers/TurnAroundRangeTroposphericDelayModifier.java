@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,29 +19,37 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TurnAroundRange;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical turn-around TurnAroundRange measurement with tropospheric delay.
+ * <p>
  * The effect of tropospheric correction on the TurnAroundRange is directly computed
  * through the computation of the tropospheric delay.
- *
+ * </p>
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Maxime Journot
  * @since 9.0
@@ -49,38 +57,15 @@ import org.orekit.utils.ParameterFunction;
 public class TurnAroundRangeTroposphericDelayModifier implements EstimationModifier<TurnAroundRange> {
 
     /** Tropospheric delay model. */
-    private final DiscreteTroposphericModel tropoModel;
+    private final TroposphericModel tropoModel;
 
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current TurnAroundRange measurement method.
+     * @since 12.1
      */
-    public TurnAroundRangeTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    public TurnAroundRangeTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
-    }
-
-    /** Get the station height above mean sea level.
-     *
-     * @param station  ground station (or measuring station)
-     * @return the measuring station height above sea level, m
-     */
-    private double getStationHeightAMSL(final GroundStation station) {
-        // FIXME height should be computed with respect to geoid WGS84+GUND = EGM2008 for example
-        final double height = station.getBaseFrame().getPoint().getAltitude();
-        return height;
-    }
-
-    /** Get the station height above mean sea level.
-    * @param <T> type of the elements
-    * @param field field of the elements
-    * @param station  ground station (or measuring station)
-    * @return the measuring station height above sea level, m
-    */
-    private <T extends RealFieldElement<T>> T getStationHeightAMSL(final Field<T> field,
-                                                                   final GroundStation station) {
-        // FIXME heigth should be computed with respect to geoid WGS84+GUND = EGM2008 for example
-        final T height = station.getBaseFrame().getPoint(field).getAltitude();
-        return height;
     }
 
     /** Compute the measurement error due to Troposphere.
@@ -90,22 +75,20 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
      */
     private double rangeErrorTroposphericModel(final GroundStation station, final SpacecraftState state) {
         //
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
-        // elevation
-        final double elevation = station.getBaseFrame().getElevation(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
+        // tracking
+        final TrackingCoordinates trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
 
         // only consider measures above the horizon
-        if (elevation > 0) {
-            // altitude AMSL in meters
-            final double height = getStationHeightAMSL(station);
-
+        if (trackingCoordinates.getElevation() > 0) {
             // Delay in meters
-            final double delay = tropoModel.pathDelay(elevation, height, tropoModel.getParameters(), state.getDate());
-
-            return delay;
+            return tropoModel.pathDelay(trackingCoordinates,
+                                        station.getOffsetGeodeticPoint(state.getDate()),
+                                        station.getPressureTemperatureHumidity(state.getDate()),
+                                        tropoModel.getParameters(state.getDate()), state.getDate()).
+                                 getDelay();
         }
 
         return 0;
@@ -118,7 +101,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
      * @param parameters tropospheric model parameters
      * @return the measurement error due to Troposphere
      */
-    private <T extends RealFieldElement<T>> T rangeErrorTroposphericModel(final GroundStation station,
+    private <T extends CalculusFieldElement<T>> T rangeErrorTroposphericModel(final GroundStation station,
                                                                           final FieldSpacecraftState<T> state,
                                                                           final T[] parameters) {
         // Field
@@ -126,20 +109,18 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final T zero         = field.getZero();
 
         //
-        final FieldVector3D<T> position = state.getPVCoordinates().getPosition();
-        final T dsElevation             = station.getBaseFrame().getElevation(position,
-                                                                              state.getFrame(),
-                                                                              state.getDate());
+        final FieldVector3D<T> position = state.getPosition();
+        final FieldTrackingCoordinates<T> trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(position,  state.getFrame(), state.getDate());
 
         // only consider measures above the horizon
-        if (dsElevation.getReal() > 0) {
-            // altitude AMSL in meters
-            final T height = getStationHeightAMSL(field, station);
-
+        if (trackingCoordinates.getElevation().getReal() > 0) {
             // Delay in meters
-            final T delay = tropoModel.pathDelay(dsElevation, height, parameters, state.getDate());
-
-            return delay;
+            return tropoModel.pathDelay(trackingCoordinates,
+                                        station.getOffsetGeodeticPoint(state.getDate()),
+                                        station.getPressureTemperatureHumidity(state.getDate()),
+                                        parameters, state.getDate()).
+                            getDelay();
         }
 
         return zero;
@@ -149,16 +130,12 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
     * automatic differentiation.
     *
     * @param derivatives tropospheric delay derivatives
-    * @param freeStateParameters dimension of the state.
     *
     * @return Jacobian of the delay wrt state
     */
-    private double[][] rangeErrorJacobianState(final double[] derivatives, final int freeStateParameters) {
+    private double[][] rangeErrorJacobianState(final double[] derivatives) {
         final double[][] finiteDifferencesJacobian = new double[1][6];
-        for (int i = 0; i < freeStateParameters; i++) {
-            // First element is the value of the delay
-            finiteDifferencesJacobian[0][i] = derivatives[i + 1];
-        }
+        System.arraycopy(derivatives, 0, finiteDifferencesJacobian[0], 0, 6);
         return finiteDifferencesJacobian;
     }
 
@@ -177,14 +154,14 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) {
+            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                 return rangeErrorTroposphericModel(station, state);
             }
         };
 
         final ParameterFunction rangeErrorDerivative = Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
 
-        return rangeErrorDerivative.value(driver);
+        return rangeErrorDerivative.value(driver, state.getDate());
 
     }
 
@@ -196,17 +173,9 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
     * @return derivative of the delay wrt tropospheric model parameters
     */
     private double[] rangeErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
-        // 0                               -> value of the delay
-        // 1 ... freeStateParameters       -> derivatives of the delay wrt state
-        // freeStateParameters + 1 ... n   -> derivatives of the delay wrt tropospheric parameters
-        final int dim = derivatives.length - 1 - freeStateParameters;
-        final double[] rangeError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[1 + freeStateParameters + i];
-        }
-
-        return rangeError;
+        // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
+        // freeStateParameters ... n     -> derivatives of the delay wrt tropospheric parameters
+        return Arrays.copyOfRange(derivatives, freeStateParameters, derivatives.length);
     }
 
     /** {@inheritDoc} */
@@ -217,87 +186,116 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
 
     /** {@inheritDoc} */
     @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TurnAroundRange> estimated) {
+
+        final TurnAroundRange measurement      = estimated.getObservedMeasurement();
+        final GroundStation   primaryStation   = measurement.getPrimaryStation();
+        final GroundStation   secondaryStation = measurement.getSecondaryStation();
+        final SpacecraftState state            = estimated.getStates()[0];
+
+        // Update estimated value taking into account the tropospheric delay.
+        // The tropospheric delay is directly added to the TurnAroundRange.
+        final double[] newValue       = estimated.getEstimatedValue();
+        final double   primaryDelay   = rangeErrorTroposphericModel(primaryStation, state);
+        final double   secondaryDelay = rangeErrorTroposphericModel(secondaryStation, state);
+        newValue[0] = newValue[0] + primaryDelay + secondaryDelay;
+        estimated.modifyEstimatedValue(this, newValue);
+
+    }
+    /** {@inheritDoc} */
+    @Override
     public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
-        final TurnAroundRange measurement   = estimated.getObservedMeasurement();
-        final GroundStation   masterStation = measurement.getMasterStation();
-        final GroundStation   slaveStation  = measurement.getSlaveStation();
-        final SpacecraftState state         = estimated.getStates()[0];
+        final TurnAroundRange measurement      = estimated.getObservedMeasurement();
+        final GroundStation   primaryStation   = measurement.getPrimaryStation();
+        final GroundStation   secondaryStation = measurement.getSecondaryStation();
+        final SpacecraftState state            = estimated.getStates()[0];
 
         final double[] oldValue = estimated.getEstimatedValue();
 
         // Update estimated derivatives with Jacobian of the measure wrt state
-        final TroposphericDSConverter converter = new TroposphericDSConverter(state, 6, Propagator.DEFAULT_LAW);
-        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(tropoModel);
-        final DerivativeStructure[] dsParameters = converter.getParameters(dsState, tropoModel);
-        final DerivativeStructure masterDSDelay = rangeErrorTroposphericModel(masterStation, dsState, dsParameters);
-        final DerivativeStructure slaveDSDelay = rangeErrorTroposphericModel(slaveStation, dsState, dsParameters);
-        final double[] masterDerivatives = masterDSDelay.getAllDerivatives();
-        final double[] slaveDerivatives  = masterDSDelay.getAllDerivatives();
+        final ModifierGradientConverter converter =
+                new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame()));
+        final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
+        final Gradient[] gParameters = converter.getParametersAtStateDate(gState, tropoModel);
+        final Gradient   primaryGDelay        = rangeErrorTroposphericModel(primaryStation, gState, gParameters);
+        final Gradient   secondaryGDelay      = rangeErrorTroposphericModel(secondaryStation, gState, gParameters);
+        final double[]   primaryDerivatives   = primaryGDelay.getGradient();
+        final double[]   secondaryDerivatives = secondaryGDelay.getGradient();
 
-        final double[][] masterDjac = rangeErrorJacobianState(masterDerivatives, converter.getFreeStateParameters());
-        final double[][] slaveDjac  = rangeErrorJacobianState(slaveDerivatives, converter.getFreeStateParameters());
+        final double[][] primaryDjac      = rangeErrorJacobianState(primaryDerivatives);
+        final double[][] secondaryDjac    = rangeErrorJacobianState(secondaryDerivatives);
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-                stateDerivatives[irow][jcol] += masterDjac[irow][jcol] + slaveDjac[irow][jcol];
+                stateDerivatives[irow][jcol] += primaryDjac[irow][jcol] + secondaryDjac[irow][jcol];
             }
         }
         estimated.setStateDerivatives(0, stateDerivatives);
 
-        int indexMaster = 0;
+        int indexPrimary = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt tropospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] derivatives = rangeErrorParameterDerivative(masterDerivatives, converter.getFreeStateParameters());
-                parameterDerivative += derivatives[indexMaster];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                indexMaster += 1;
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    final double[] derivatives = rangeErrorParameterDerivative(primaryDerivatives, converter.getFreeStateParameters());
+                    parameterDerivative += derivatives[indexPrimary];
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                    indexPrimary += 1;
+                }
             }
 
         }
 
-        int indexSlave = 0;
+        int indexSecondary = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt tropospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] derivatives = rangeErrorParameterDerivative(slaveDerivatives, converter.getFreeStateParameters());
-                parameterDerivative += derivatives[indexSlave];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                indexSlave += 1;
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    final double[] derivatives = rangeErrorParameterDerivative(secondaryDerivatives, converter.getFreeStateParameters());
+                    parameterDerivative += derivatives[indexSecondary];
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                    indexSecondary += 1;
+                }
             }
 
         }
 
-        // Update derivatives with respect to master station position
-        for (final ParameterDriver driver : Arrays.asList(masterStation.getClockOffsetDriver(),
-                                                          masterStation.getEastOffsetDriver(),
-                                                          masterStation.getNorthOffsetDriver(),
-                                                          masterStation.getZenithOffsetDriver())) {
+        // Update derivatives with respect to primary station position
+        for (final ParameterDriver driver : Arrays.asList(primaryStation.getClockOffsetDriver(),
+                                                          primaryStation.getEastOffsetDriver(),
+                                                          primaryStation.getNorthOffsetDriver(),
+                                                          primaryStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += rangeErrorParameterDerivative(masterStation, driver, state);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += rangeErrorParameterDerivative(primaryStation, driver, state);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                }
             }
         }
 
-        // Update derivatives with respect to slave station position
-        for (final ParameterDriver driver : Arrays.asList(slaveStation.getEastOffsetDriver(),
-                                                          slaveStation.getNorthOffsetDriver(),
-                                                          slaveStation.getZenithOffsetDriver())) {
+        // Update derivatives with respect to secondary station position
+        for (final ParameterDriver driver : Arrays.asList(secondaryStation.getEastOffsetDriver(),
+                                                          secondaryStation.getNorthOffsetDriver(),
+                                                          secondaryStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += rangeErrorParameterDerivative(slaveStation, driver, state);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += rangeErrorParameterDerivative(secondaryStation, driver, state);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                }
             }
         }
 
         // Update estimated value taking into account the tropospheric delay.
         // The tropospheric delay is directly added to the TurnAroundRange.
         final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + masterDSDelay.getReal() + slaveDSDelay.getReal();
-        estimated.setEstimatedValue(newValue);
+        newValue[0] = newValue[0] + primaryGDelay.getReal() + secondaryGDelay.getReal();
+        estimated.modifyEstimatedValue(this, newValue);
 
     }
 

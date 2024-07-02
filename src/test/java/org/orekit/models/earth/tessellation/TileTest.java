@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,13 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.bodies.GeodeticPoint;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
-
-import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.tessellation.Tile;
 
 public class TileTest {
 
@@ -70,7 +69,7 @@ public class TileTest {
         assertThat(tile.getInterpolatedPoint(1, 1), geodeticPointCloseTo(v2, 1.0e-9));
         assertThat(tile.getInterpolatedPoint(0, 1), geodeticPointCloseTo(v3, 1.0e-9));
 
-        Assert.assertEquals(0.5 * FastMath.PI, tile.getCenter().getLatitude(), 1.0e-9);
+        Assertions.assertEquals(0.5 * FastMath.PI, tile.getCenter().getLatitude(), 1.0e-9);
 
     }
 

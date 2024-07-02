@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,10 @@
  */
 package org.orekit.forces.gravity.potential;
 
-
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
@@ -37,11 +35,8 @@ public class GRGSFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
-        Assert.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
-        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
+        Assertions.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
         AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
 
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         int maxUlps = 2;
@@ -53,8 +48,8 @@ public class GRGSFormatReaderTest {
                    1997, 1, 1, 0, 0, maxUlps);
         checkValue(harmonics.getUnnormalizedSnm(4, 4), date, 4, 4,
                    1997, 1, 1, 0.30882755318300E-06, 0, maxUlps);
-        Assert.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
+        Assertions.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
+        Assertions.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
 
     }
 
@@ -62,23 +57,21 @@ public class GRGSFormatReaderTest {
     public void testRegular05cNormalized() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
-        Assert.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
 
         double offset     = date.durationFrom(refDate);
         double offsetYear = offset / Constants.JULIAN_YEAR;
         NormalizedSphericalHarmonics harmonics = provider.onDate(date);
-        Assert.assertEquals(0.95857491635129E-06 + offsetYear * 0.28175700027753E-11,
+        Assertions.assertEquals(0.95857491635129E-06 + offsetYear * 0.28175700027753E-11,
                             harmonics.getNormalizedCnm(3, 0), 1.0e-15);
-        Assert.assertEquals( 0.17481512311600E-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
-        Assert.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
-        Assert.assertEquals( 0.30882755318300E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
-        Assert.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
+        Assertions.assertEquals( 0.17481512311600E-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
+        Assertions.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
+        Assertions.assertEquals( 0.30882755318300E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
+        Assertions.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
+        Assertions.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
     }
 
     @Test
@@ -86,10 +79,7 @@ public class GRGSFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
-        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
 
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         int maxUlps = 2;
@@ -101,8 +91,8 @@ public class GRGSFormatReaderTest {
                    1997, 1, 1, 0, 0, maxUlps);
         checkValue(harmonics.getUnnormalizedSnm(4, 4), date, 4, 4,
                    1997, 1, 1, 0.30882755318300E-06, 0, maxUlps);
-        Assert.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
+        Assertions.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
+        Assertions.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
 
     }
 
@@ -110,47 +100,61 @@ public class GRGSFormatReaderTest {
     public void testReadLimits() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
-        UnnormalizedSphericalHarmonics harmonics = provider.onDate(provider.getReferenceDate());
+        UnnormalizedSphericalHarmonics harmonics = provider.onDate(new AbsoluteDate(1997, 1, 1, 12, 0, 0.0, TimeScalesFactory.getTT()));
         try {
             harmonics.getUnnormalizedCnm(3, 3);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
         } catch (Exception e) {
-            Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
+            Assertions.fail("wrong exception caught: " + e.getLocalizedMessage());
         }
         try {
             harmonics.getUnnormalizedCnm(4, 2);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
         } catch (Exception e) {
-            Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
+            Assertions.fail("wrong exception caught: " + e.getLocalizedMessage());
         }
         harmonics.getUnnormalizedCnm(3, 2);
-        Assert.assertEquals(3, provider.getMaxDegree());
-        Assert.assertEquals(2, provider.getMaxOrder());
+        Assertions.assertEquals(3, provider.getMaxDegree());
+        Assertions.assertEquals(2, provider.getMaxOrder());
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testCorruptedFile1() {
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-1-grim5.dat", false));
-        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-1-grim5.dat", false));
+            GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testCorruptedFile2() {
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-2-grim5.dat", false));
-        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-2-grim5.dat", false));
+            GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testCorruptedFile3() {
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-3-grim5.dat", false));
-        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-3-grim5.dat", false));
+            GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        });
     }
 
-    @Before
+    @Test
+    public void testCorruptedFile4() {
+        Assertions.assertThrows(OrekitException.class, () -> {
+            GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-4-grim5.dat", false));
+            GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        });
+    }
+
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("potential:regular-data");
     }
@@ -159,14 +163,13 @@ public class GRGSFormatReaderTest {
                             final AbsoluteDate date, final int n, final int m,
                             final int refYear, final int refMonth, final int refDay,
                             final double constant, final double trend,
-                            final int maxUlps)
-        {
+                            final int maxUlps) {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         AbsoluteDate refDate = new AbsoluteDate(refYear, refMonth, refDay, 12, 0, 0, TimeScalesFactory.getTT());
         double dtYear = date.durationFrom(refDate) / Constants.JULIAN_YEAR;
         double normalized = factor * (constant + trend * dtYear);
         double epsilon = maxUlps * FastMath.ulp(normalized);
-        Assert.assertEquals(normalized, value, epsilon);
+        Assertions.assertEquals(normalized, value, epsilon);
     }
 
 }

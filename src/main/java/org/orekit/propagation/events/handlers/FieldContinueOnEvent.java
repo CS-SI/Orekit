@@ -17,7 +17,7 @@
 package org.orekit.propagation.events.handlers;
 
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -27,10 +27,21 @@ import org.orekit.propagation.events.FieldEventDetector;
  * Event handler which will always return {@link Action#CONTINUE continue} as a state.
  * @author Hank Grabowski
  *
- * @param <T> class type for the generic version
+ * @param <T> type of the field element
  */
-public class FieldContinueOnEvent <KK extends FieldEventDetector<T>, T extends RealFieldElement<T>>
-                                    implements FieldEventHandler<KK, T> {
+public class FieldContinueOnEvent <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public FieldContinueOnEvent() {
+        // nothing to do
+    }
+
     /**
      * Specific implementation of the eventOccurred interface.
      *
@@ -40,7 +51,7 @@ public class FieldContinueOnEvent <KK extends FieldEventDetector<T>, T extends R
      * @return {@link Action#CONTINUE continue} under all circumstances
      */
     @Override
-    public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing) {
+    public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
         return Action.CONTINUE;
     }
 

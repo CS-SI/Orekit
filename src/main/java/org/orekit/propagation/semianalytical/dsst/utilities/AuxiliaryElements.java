@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -86,6 +86,9 @@ public class AuxiliaryElements {
      */
     private final int    I;
 
+    /** Orbit. */
+    private Orbit orbit;
+
     /** B = sqrt(1 - h² - k²). */
     private final double B;
 
@@ -115,6 +118,9 @@ public class AuxiliaryElements {
      * @param retrogradeFactor retrograde factor I [Eq. 2.1.2-(2)]
      */
     public AuxiliaryElements(final Orbit orbit, final int retrogradeFactor) {
+
+        // Orbit
+        this.orbit = orbit;
 
         // Date of the orbit
         date = orbit.getDate();
@@ -166,6 +172,13 @@ public class AuxiliaryElements {
         alpha = f.getZ();
         beta  = g.getZ();
         gamma = w.getZ();
+    }
+
+    /** Get the orbit.
+     * @return the orbit
+     */
+    public Orbit getOrbit() {
+        return orbit;
     }
 
     /** Get the date of the orbit.

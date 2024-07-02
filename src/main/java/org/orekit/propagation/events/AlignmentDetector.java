@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -72,8 +73,8 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
     public AlignmentDetector(final double maxCheck, final double threshold,
                              final PVCoordinatesProvider body,
                              final double alignAngle) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<AlignmentDetector>(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER,
+             new StopOnIncreasing(),
              body, alignAngle);
     }
 
@@ -92,9 +93,9 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
         this(orbit.getKeplerianPeriod() / 3, threshold, body, alignAngle);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
@@ -105,21 +106,22 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
      * @param body the body to align
      * @param alignAngle the alignment angle (rad)
      */
-    private AlignmentDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<? super AlignmentDetector> handler,
-                              final PVCoordinatesProvider body,
-                              final double alignAngle) {
+    protected AlignmentDetector(final AdaptableInterval maxCheck, final double threshold,
+                                final int maxIter, final EventHandler handler,
+                                final PVCoordinatesProvider body,
+                                final double alignAngle) {
         super(maxCheck, threshold, maxIter, handler);
+        final SinCos sc    = FastMath.sinCos(alignAngle);
         this.body          = body;
         this.alignAngle    = alignAngle;
-        this.cosAlignAngle = FastMath.cos(alignAngle);
-        this.sinAlignAngle = FastMath.sin(alignAngle);
+        this.cosAlignAngle = sc.cos();
+        this.sinAlignAngle = sc.sin();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected AlignmentDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super AlignmentDetector> newHandler) {
+    protected AlignmentDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler newHandler) {
         return new AlignmentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      body, alignAngle);
     }
@@ -151,7 +153,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
         final Vector3D b  = Vector3D.crossProduct(pv.getMomentum(), a).normalize();
         final Vector3D x  = new Vector3D(cosAlignAngle, a,  sinAlignAngle, b);
         final Vector3D y  = new Vector3D(sinAlignAngle, a, -cosAlignAngle, b);
-        final Vector3D pb = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final Vector3D pb = body.getPosition(s.getDate(), s.getFrame());
         final double beta = FastMath.atan2(Vector3D.dotProduct(pb, y), Vector3D.dotProduct(pb, x));
         final double betm = -FastMath.PI - beta;
         final double betp =  FastMath.PI - beta;

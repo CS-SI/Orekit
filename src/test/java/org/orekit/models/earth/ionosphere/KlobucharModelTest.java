@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,17 +16,17 @@
  */
 package org.orekit.models.earth.ionosphere;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -61,7 +61,7 @@ public class KlobucharModelTest {
 
     private UTCScale utc;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
@@ -73,7 +73,7 @@ public class KlobucharModelTest {
         utc = TimeScalesFactory.getUTC();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         utc = null;
     }
@@ -93,18 +93,18 @@ public class KlobucharModelTest {
         double delayMeters = model.pathDelay(date, geo,
                                              FastMath.toRadians(elevation),
                                              FastMath.toRadians(azimuth),
-                                             1575.42e6, model.getParameters());
+                                             1575.42e6, model.getParameters(date));
 
-        Assert.assertTrue(Precision.compareTo(delayMeters, 12., epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters, 12., epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
     }
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final T zero = field.getZero();
 
         final T latitude  = zero.add(FastMath.toRadians(45));
@@ -119,10 +119,10 @@ public class KlobucharModelTest {
 
         T delayMeters = model.pathDelay(date, geo,
                                         elevation, azimuth,
-                                        1575.42e6, model.getParameters(field));
+                                        1575.42e6, model.getParameters(field, date));
 
-        Assert.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters.getReal(), 0., epsilon) > 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 0., epsilon) > 0);
     }
 
     @Test
@@ -142,17 +142,17 @@ public class KlobucharModelTest {
         final double delayMeters = model.pathDelay(date, geo,
                                                    FastMath.toRadians(elevation),
                                                    FastMath.toRadians(azimuth),
-                                                   1575.42e6, model.getParameters());
+                                                   1575.42e6, model.getParameters(date));
 
-        Assert.assertEquals(23.784, delayMeters, 0.001);
+        Assertions.assertEquals(23.784, delayMeters, 0.001);
     }
 
     @Test
-    public <T extends RealFieldElement<T>> void compareFieldExpectedValue() {
-        doCompareFieldExpectedValue(Decimal64Field.getInstance());
+    public <T extends CalculusFieldElement<T>> void compareFieldExpectedValue() {
+        doCompareFieldExpectedValue(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doCompareFieldExpectedValue(final Field<T> field)
+    private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValue(final Field<T> field)
         throws IllegalArgumentException, OrekitException {
         final T zero = field.getZero();
 
@@ -171,9 +171,9 @@ public class KlobucharModelTest {
 
         final T delayMeters = model.pathDelay(fieldDate, geo,
                                               elevation, azimuth,
-                                              1575.42e6, model.getParameters(field));
+                                              1575.42e6, model.getParameters(field, fieldDate));
 
-        Assert.assertEquals(23.784, delayMeters.getReal(), 0.001);
+        Assertions.assertEquals(23.784, delayMeters.getReal(), 0.001);
     }
 
     @Test
@@ -188,7 +188,7 @@ public class KlobucharModelTest {
         final double azimuth   = 1.70;
         final double elevation = 0.09;
 
-        double delayAzEl = model.pathDelay(date, point, elevation, azimuth, 1575.42e6, model.getParameters());
+        double delayAzEl = model.pathDelay(date, point, elevation, azimuth, 1575.42e6, model.getParameters(date));
 
         // Delay using SpacecraftState
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -205,18 +205,18 @@ public class KlobucharModelTest {
                                                Constants.WGS84_EARTH_FLATTENING, ecef);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
 
-        double delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters());
+        double delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters(date));
 
         // Verify
-        Assert.assertEquals(delayAzEl, delayState, 1.0e-6);
+        Assertions.assertEquals(delayAzEl, delayState, 1.0e-6);
     }
 
     @Test
-    public <T extends RealFieldElement<T>> void testFieldEquality() {
-        doTestFieldEquality(Decimal64Field.getInstance());
+    public <T extends CalculusFieldElement<T>> void testFieldEquality() {
+        doTestFieldEquality(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldEquality(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldEquality(final Field<T> field) {
         // Common parameters
         final T zero = field.getZero();
         final AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 35, 04.245, TimeScalesFactory.getUTC());
@@ -232,7 +232,7 @@ public class KlobucharModelTest {
         final T azimuth   = zero.add(1.70);
         final T elevation = zero.add(0.09);
 
-        T delayAzEl = model.pathDelay(dateF, point, elevation, azimuth, 1575.42e6, model.getParameters(field));
+        T delayAzEl = model.pathDelay(dateF, point, elevation, azimuth, 1575.42e6, model.getParameters(field, dateF));
 
         // Delay using SpacecraftState
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -249,10 +249,10 @@ public class KlobucharModelTest {
                                                Constants.WGS84_EARTH_FLATTENING, ecef);
         TopocentricFrame topo = new TopocentricFrame(earth, new GeodeticPoint(0.389, -2.962, 0), "Gstation");
 
-        T delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters(field));
+        T delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters(field, dateF));
 
         // Verify
-        Assert.assertEquals(delayAzEl.getReal(), delayState.getReal(), 1.0e-6);
+        Assertions.assertEquals(delayAzEl.getReal(), delayState.getReal(), 1.0e-6);
     }
 
 }

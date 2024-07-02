@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,14 +18,18 @@
  * This package provides interfaces for orbit file representations and corresponding
  * parsers.
  *
- * <p> {@link org.orekit.files.general.EphemerisFile} and {@link
- * org.orekit.files.general.EphemerisFileParser} provide a standardized interface for
- * accessing the date in ephemeris files. Each ephemeris file can have data for one ore
- * more satellites and the ephemeris for each satellite can have one or more segments.
- * Each ephemeris segment is interpolated independently so ephemeris segments are
- * commonly used for discontinuous events, such as maneuvers. Each specific implementation
- * provides access to additional information in the file by providing specialized return
- * types with extra getters for the information unique to that file type.
+ * <p> {@link org.orekit.files.general.EphemerisFile EphemerisFile}, {@link
+ * org.orekit.files.general.EphemerisFileParser EphemerisFileParser} and {@link
+ * org.orekit.files.general.EphemerisFileWriter EphemerisFileWriter} for orbit ephemeris and
+ * {@link org.orekit.files.general.AttitudeEphemerisFile AttitudeEphemerisFile}, {@link
+ * org.orekit.files.general.AttitudeEphemerisFileParser AttitudeEphemerisFileParser} and {@link
+ * org.orekit.files.general.AttitudeEphemerisFileWriter AttitudeEphemerisFileWriter} for attitude
+ * ephemeris provide a standardized interface for accessing and writing the data in ephemeris files.
+ * Each ephemeris file can have data for one or more satellites and the ephemeris for each satellite
+ * can have one or more segments. Each ephemeris segment is interpolated independently so ephemeris
+ * segments are commonly used for discontinuous events, such as maneuvers. Each specific
+ * implementation provides access to additional information in the file by providing specialized
+ * return types with extra getters for the information unique to that file type.
  *
  * <p> For example to create a propagator from an OEM file one can use:
  *

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -31,7 +30,6 @@ import org.orekit.errors.OrekitMessages;
 
 
 /**  Provider for data files stored in a directories tree on filesystem.
-
  * <p>
  * This class handles data files recursively starting from a root directories
  * tree. The organization of files in the directories is free. There may be
@@ -39,7 +37,8 @@ import org.orekit.errors.OrekitMessages;
  * files are checked for loading.
  * </p>
  * <p>
- * Gzip-compressed files are supported.
+ * All {@link FiltersManager#addFilter(DataFilter) registered}
+ * {@link DataFilter filters} are applied.
  * </p>
  * <p>
  * Zip archives entries are supported recursively.
@@ -67,62 +66,64 @@ public class DirectoryCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final Pattern supported, final DataLoader visitor) {
+    public boolean feed(final Pattern supported,
+                        final DataLoader visitor,
+                        final DataProvidersManager manager) {
         try {
-            return feed(supported, visitor, root);
-        } catch (IOException ioe) {
+            return feed(supported, visitor, manager, root);
+        } catch (IOException | ParseException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } catch (ParseException pe) {
-            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
         }
     }
 
     /** Feed a data file loader by browsing a directory hierarchy.
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to feed
+     * @param manager with the filters to apply.
      * @param directory current directory
      * @return true if something has been loaded
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
-    private boolean feed(final Pattern supported, final DataLoader visitor, final File directory)
+    private boolean feed(final Pattern supported,
+                         final DataLoader visitor,
+                         final DataProvidersManager manager,
+                         final File directory)
         throws IOException, ParseException {
 
         // search in current directory
         final File[] list = directory.listFiles();
-        Arrays.sort(list, new Comparator<File>() {
-            @Override
-            public int compare(final File o1, final File o2) {
-                return o1.compareTo(o2);
-            }
-        });
+        if (list == null) {
+            // notify about race condition if directory is removed by another program
+            throw new OrekitException(OrekitMessages.NOT_A_DIRECTORY, directory.getAbsolutePath());
+        }
+        Arrays.sort(list, File::compareTo);
 
         OrekitException delayedException = null;
         boolean loaded = false;
-        for (int i = 0; i < list.length; ++i) {
+        for (final File file : list) {
             try {
                 if (visitor.stillAcceptsData()) {
-                    final File file = list[i];
                     if (file.isDirectory()) {
 
                         // recurse in the sub-directory
-                        loaded = feed(supported, visitor, file) || loaded;
+                        loaded = feed(supported, visitor, manager, file) || loaded;
 
                     } else if (ZIP_ARCHIVE_PATTERN.matcher(file.getName()).matches()) {
 
                         // browse inside the zip/jar file
                         final DataProvider zipProvider = new ZipJarCrawler(file);
-                        loaded = zipProvider.feed(supported, visitor) || loaded;
+                        loaded = zipProvider.feed(supported, visitor, manager) || loaded;
 
                     } else {
 
                         // apply all registered filters
-                        NamedData data = new NamedData(file.getName(), () -> new FileInputStream(file));
-                        data = DataProvidersManager.getInstance().applyAllFilters(data);
+                        DataSource data = new DataSource(file.getName(), () -> new FileInputStream(file));
+                        data = manager.getFiltersManager().applyRelevantFilters(data);
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            try (InputStream input = data.getStreamOpener().openStream()) {
+                            try (InputStream input = data.getOpener().openStreamOnce()) {
                                 visitor.loadData(input, file.getPath());
                                 loaded = true;
                             }

@@ -1,0 +1,4 @@
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Basic realm="/RTCM3EPH01"
+Date: Wed, 06 Feb 2019 13:46:04 GMT
+Connection: close

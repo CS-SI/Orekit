@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2024 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -23,7 +23,7 @@ specifies the version. If this is the first time you download the library and
 you have not yet set up your own data set with UTC-TAI history, JPL ephemerides,
 IERS Earth Orientation Parameters ... you may want to also download the
 orekit-data.zip file which is an example file suitable for a quick start (see
-[configuration](./configuration.html) for further reading about data configuration).
+[configuration](./data/default-configuration.html) for further reading about data configuration).
 
 It is also possible to retrieve published versions from the Git repository
 (see next section below), if retrieving either release-x.y branches or the

@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,9 +25,9 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
-  package org.orekit #ECEBD8 {
-  package time #DDEBD8 {
+  package org.orekit.time #ECEBD8 {
 
     interface TimeStamped {
       +AbsoluteDate getDate()
@@ -62,6 +62,14 @@
       +double durationFrom(AbsoluteDate instant)
       +double offsetFrom(AbsoluteDate instant, TimeScale timeScale)
       +double timeScalesOffset(TimeScale scale1, TimeScale scale2)
+      +boolean isAfter(Timestamped other)
+      +boolean isAfterOrEqualTo(Timestamped other)
+      +boolean isBefore(Timestamped other)
+      +boolean isBeforeOrEqualTo(Timestamped other)
+      +boolean isBetween(Timestamped boundary1, Timestamped boundary2)
+      +boolean isBetweenOrEqualTo(Timestamped boundary1, Timestamped boundary2)
+      +boolean isCloseTo(Timestamped other, double tolerance)
+      +boolean isEqualTo(Timestamped other)
     }
     note top
       numerous constructor ommitted
@@ -112,8 +120,8 @@
       for clarity
     end note
 
-    TimeStamped               <|.left. AbsoluteDate
-    TimeShiftable_T_          <|.left. AbsoluteDate
+    TimeStamped               <|.. AbsoluteDate
+    TimeShiftable_T_          <|.. AbsoluteDate
     TimeScalesFactory         *-down-> TimeScale : creates
     Comparable_AbsoluteDate_  <|..     AbsoluteDate
     Comparator_TimeStamped_   <-up-    ChronologicalComparator
@@ -127,15 +135,14 @@
     AbsoluteDate              -down->  TimeComponents
     AbsoluteDate              -down->  TimeScale
 
+    TimeScale  <|-- TTScale
+    TimeScale  <|-- GalileoScale
     TimeScale  <|-- TAIScale
     TimeScale  <|-- UTCScale
     TimeScale  <|-- UT1Scale
-    TimeScale  <|-- TTScale
-    TimeScale  <|-- GalileoScale
     TimeScale  <|-- DummyScale
 
     UTCScale <--* GLONASSScale
 
-  }
   }
 @enduml

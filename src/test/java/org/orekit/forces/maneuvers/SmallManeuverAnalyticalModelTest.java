@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,13 @@
  */
 package org.orekit.forces.maneuvers;
 
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
@@ -34,8 +33,9 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -45,15 +45,15 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class SmallManeuverAnalyticalModelTest {
+class SmallManeuverAnalyticalModelTest {
 
     @Test
-    public void testLowEarthOrbit1() {
+    void testLowEarthOrbit1() {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
-                                      0.0, PositionAngle.MEAN,
+                                      0.0, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(),
                                       new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -67,8 +67,8 @@ public class SmallManeuverAnalyticalModelTest {
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(leo, mass, t0, dV, f, isp);
         SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
-        Assert.assertEquals(t0, model.getDate());
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), OrbitType.CIRCULAR, dV, isp);
+        Assertions.assertEquals(t0, model.getDate());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -80,27 +80,27 @@ public class SmallManeuverAnalyticalModelTest {
             double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
             if (t.compareTo(t0) < 0) {
                 // before maneuver, all positions should be equal
-                Assert.assertEquals(0, nominalDeltaP, 1.0e-10);
-                Assert.assertEquals(0, modelError,    1.0e-10);
+                Assertions.assertEquals(0, nominalDeltaP, 1.0e-10);
+                Assertions.assertEquals(0, modelError,    1.0e-10);
             } else {
                 // after maneuver, model error should be less than 0.8m,
                 // despite nominal deltaP exceeds 1 kilometer after less than 3 orbits
                 if (t.durationFrom(t0) > 0.1 * leo.getKeplerianPeriod()) {
-                    Assert.assertTrue(modelError < 0.009 * nominalDeltaP);
+                    Assertions.assertTrue(modelError < 0.009 * nominalDeltaP);
                 }
-                Assert.assertTrue(modelError < 0.8);
+                Assertions.assertTrue(modelError < 0.8);
             }
         }
 
     }
 
     @Test
-    public void testLowEarthOrbit2() {
+    void testLowEarthOrbit2() {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
-                                      0.0, PositionAngle.MEAN,
+                                      0.0, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(),
                                       new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -113,9 +113,11 @@ public class SmallManeuverAnalyticalModelTest {
         double isp      = 315.0;
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(leo, mass, t0, dV, f, isp);
+        SpacecraftState stateWithoutManeuver = withoutManeuver.propagate(t0);
+        Vector3D rotatedDV = stateWithoutManeuver.getAttitude().getRotation().applyInverseTo(dV);
         SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
-        Assert.assertEquals(t0, model.getDate());
+                new SmallManeuverAnalyticalModel(stateWithoutManeuver, OrbitType.EQUINOCTIAL, leo.getFrame(), rotatedDV, isp);
+        Assertions.assertEquals(t0, model.getDate());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -127,27 +129,27 @@ public class SmallManeuverAnalyticalModelTest {
             double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
             if (t.compareTo(t0) < 0) {
                 // before maneuver, all positions should be equal
-                Assert.assertEquals(0, nominalDeltaP, 1.0e-10);
-                Assert.assertEquals(0, modelError,    1.0e-10);
+                Assertions.assertEquals(0, nominalDeltaP, 1.0e-10);
+                Assertions.assertEquals(0, modelError,    1.0e-10);
             } else {
                 // after maneuver, model error should be less than 0.8m,
                 // despite nominal deltaP exceeds 1 kilometer after less than 3 orbits
                 if (t.durationFrom(t0) > 0.1 * leo.getKeplerianPeriod()) {
-                    Assert.assertTrue(modelError < 0.009 * nominalDeltaP);
+                    Assertions.assertTrue(modelError < 0.009 * nominalDeltaP);
                 }
-                Assert.assertTrue(modelError < 0.8);
+                Assertions.assertTrue(modelError < 0.8);
             }
         }
 
     }
 
     @Test
-    public void testEccentricOrbit() {
+    void testEccentricOrbit() {
 
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
                                        FastMath.toRadians(123.456),
-                                       FastMath.toRadians(1.23456), PositionAngle.MEAN,
+                                       FastMath.toRadians(1.23456), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(),
                                        new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                         new TimeComponents(23, 30, 00.000),
@@ -162,11 +164,11 @@ public class SmallManeuverAnalyticalModelTest {
         BoundedPropagator withManeuver    = getEphemeris(heo, mass, t0, dV, f, isp);
         SpacecraftState s0 = withoutManeuver.propagate(t0);
         SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(s0, dV, isp);
-        Assert.assertEquals(t0, model.getDate());
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(t0, model.getDate());
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(dV, s0.getAttitude().getRotation().applyTo(model.getInertialDV())),
                             1.0e-15);
-        Assert.assertSame(FramesFactory.getEME2000(), model.getInertialFrame());
+        Assertions.assertSame(FramesFactory.getEME2000(), model.getInertialFrame());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -178,28 +180,28 @@ public class SmallManeuverAnalyticalModelTest {
             double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
             if (t.compareTo(t0) < 0) {
                 // before maneuver, all positions should be equal
-                Assert.assertEquals(0, nominalDeltaP, 1.0e-10);
-                Assert.assertEquals(0, modelError,    1.0e-10);
+                Assertions.assertEquals(0, nominalDeltaP, 1.0e-10);
+                Assertions.assertEquals(0, modelError,    1.0e-10);
             } else {
                 // after maneuver, model error should be less than 1700m,
                 // despite nominal deltaP exceeds 300 kilometers at perigee, after 3 orbits
                 if (t.durationFrom(t0) > 0.01 * heo.getKeplerianPeriod()) {
-                    Assert.assertTrue(modelError < 0.005 * nominalDeltaP);
+                    Assertions.assertTrue(modelError < 0.005 * nominalDeltaP);
                 }
-                Assert.assertTrue(modelError < 1700);
+                Assertions.assertTrue(modelError < 1700);
             }
         }
 
     }
 
     @Test
-    public void testJacobian() {
+    void testJacobian() {
 
         Frame eme2000 = FramesFactory.getEME2000();
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-2, 2.0e-3,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
-                                      0.3, PositionAngle.MEAN,
+                                      0.3, PositionAngleType.MEAN,
                                       eme2000,
                                       new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -212,12 +214,12 @@ public class SmallManeuverAnalyticalModelTest {
         double isp      = 315.0;
 
         for (OrbitType orbitType : OrbitType.values()) {
-            for (PositionAngle positionAngle : PositionAngle.values()) {
+            for (PositionAngleType positionAngleType : PositionAngleType.values()) {
                 BoundedPropagator withoutManeuver = getEphemeris(orbitType.convertType(leo), mass, t0, Vector3D.ZERO, f, isp);
 
                 SpacecraftState state0 = withoutManeuver.propagate(t0);
                 SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(state0, eme2000, dV0, isp);
-                Assert.assertEquals(t0, model.getDate());
+                Assertions.assertEquals(t0, model.getDate());
 
                 Vector3D[] velDirs  = new Vector3D[] { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K, Vector3D.ZERO };
                 double[]   timeDirs = new double[] { 0, 0, 0, 1 };
@@ -250,7 +252,7 @@ public class SmallManeuverAnalyticalModelTest {
                     // compute reference orbit gradient by finite differences
                     double c = 1.0 / (840 * h);
                     for (int j = 0; j < models.length; ++j) {
-                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngle, array[j], null);
+                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngleType, array[j], null);
                     }
                     double[] orbitGradient = new double[6];
                     for (int k = 0; k < orbitGradient.length; ++k) {
@@ -263,10 +265,10 @@ public class SmallManeuverAnalyticalModelTest {
 
                     // analytical Jacobian to check
                     double[][] jacobian = new double[6][4];
-                    model.getJacobian(orbitWithout, positionAngle, jacobian);
+                    model.getJacobian(orbitWithout, positionAngleType, jacobian);
 
                     for (int j = 0; j < orbitGradient.length; ++j) {
-                        Assert.assertEquals(orbitGradient[j], jacobian[j][i], 1.6e-4 * FastMath.abs(orbitGradient[j]));
+                        Assertions.assertEquals(orbitGradient[j], jacobian[j][i], 1.6e-4 * FastMath.abs(orbitGradient[j]));
                     }
 
                 }
@@ -295,6 +297,7 @@ public class SmallManeuverAnalyticalModelTest {
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(orbit.getType());
+        propagator.setPositionAngleType(PositionAngleType.TRUE);
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(law);
 
@@ -307,13 +310,13 @@ public class SmallManeuverAnalyticalModelTest {
             propagator.addForceModel(maneuver);
         }
 
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(t0.shiftedBy(5 * orbit.getKeplerianPeriod()));
-        return propagator.getGeneratedEphemeris();
+        return generator.getGeneratedEphemeris();
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

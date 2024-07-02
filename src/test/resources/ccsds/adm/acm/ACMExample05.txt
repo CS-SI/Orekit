@@ -1,0 +1,271 @@
+CCSDS_ACM_VERS = 2.0
+COMMENT      This is an arbitrary test file with probably inconsistent data
+COMMENT      its purpose is only to exercise all possible entries in ACM files
+
+CLASSIFICATION = free to use under Orekit license
+CREATION_DATE  = 2023-04-08T14:31:00
+ORIGINATOR     = OREKIT
+MESSAGE_ID     = a4830b29-a805-4d31-ab6e-06b57c843323
+
+META_START
+COMMENT      comment at metadata start
+OBJECT_NAME              = Korrigan
+INTERNATIONAL_DESIGNATOR = 1703-999Z
+CATALOG_NAME             = FAERY
+OBJECT_DESIGNATOR        = Korrik-17
+ORIGINATOR_POC           = Melusine
+ORIGINATOR_POSITION      = Odonatoptera-lead
+ORIGINATOR_PHONE         = +9911223344
+ORIGINATOR_EMAIL         = melusine@avalon.surreal
+ORIGINATOR_ADDRESS       = -1 dolmen avenue, Stonehenge
+ODM_MSG_LINK             = odm-7c32f8a9c126432f
+CENTER_NAME              = MOON
+TIME_SYSTEM              = UTC
+EPOCH_TZERO              = 2016-03-15T00:00:00.0
+ACM_DATA_ELEMENTS        = ATT, ATT, ATT, ATT, ATT, PHYS, COV, COV, COV, COV, COV, COV, MAN, MAN, MAN, AD, USER
+START_TIME               = 2016-03-15T05:10:00.0
+STOP_TIME                = 2016-03-15T05:16:40.0
+TAIMUTC_AT_TZERO         = 36
+NEXT_LEAP_EPOCH          = 2017-01-01T00:00:00.0
+NEXT_LEAP_TAIMUTC        = 37
+META_STOP
+
+ATT_START
+COMMENT                    first attitude block
+ATT_ID                   = ATT_1
+ATT_PREV_ID              = ATT_0
+ATT_BASIS                = SIMULATED
+ATT_BASIS_ID             = rnd-25
+REF_FRAME_A              = EME2000
+REF_FRAME_B              = GYRO_3
+NUMBER_STATES            = 4
+ATT_TYPE                 = QUATERNION
+RATE_TYPE                = NONE
+0.0     0.73566    -0.50547    0.41309    0.180707
+0.25    0.73529    -0.50531    0.41375    0.181158
+ATT_STOP
+
+ATT_START
+COMMENT                    second attitude block
+ATT_ID                   = ATT_2
+ATT_PREV_ID              = ATT_1
+ATT_BASIS                = SIMULATED
+ATT_BASIS_ID             = rnd-25
+REF_FRAME_A              = EME2000
+REF_FRAME_B              = ACC_0
+EULER_ROT_SEQ            = XYZ
+NUMBER_STATES            = 6
+ATT_TYPE                 = EULER_ANGLES
+RATE_TYPE                = ANGVEL
+0.50     1.0   1.2  1.3  -0.4  -0.5 -0.6
+0.75     2.0   2.2  2.3  -1.4  -1.5 -1.6
+ATT_STOP
+
+ATT_START
+COMMENT                    third attitude block
+ATT_ID                   = ATT_3
+ATT_PREV_ID              = ATT_2
+ATT_BASIS                = SIMULATED
+ATT_BASIS_ID             = rnd-25
+REF_FRAME_A              = EME2000
+REF_FRAME_B              = AST_1
+NUMBER_STATES            = 8
+ATT_TYPE                 = QUATERNION
+RATE_TYPE                = Q_DOT
+1.00    0.73566    -0.50547    0.41309    0.180707   0.0073566    -0.0050547    0.0041309    0.00180707
+1.25    0.73529    -0.50531    0.41375    0.181158   0.0073529    -0.0050531    0.0041375    0.00181158
+ATT_STOP
+
+ATT_START
+COMMENT                    fourth attitude block
+ATT_ID                   = ATT_4
+ATT_PREV_ID              = ATT_3
+ATT_BASIS                = SIMULATED
+ATT_BASIS_ID             = rnd-25
+REF_FRAME_A              = EME2000
+REF_FRAME_B              = CSS_7
+NUMBER_STATES            = 13
+ATT_TYPE                 = DCM
+RATE_TYPE                = Q_DOT
+1.50    1.0 0.0 0.0   0.0 1.0 0.0   0.0 0.0 1.0   0.01 0.02 0.03 0.04
+1.75    0.0 1.0 0.0   0.0 0.0 1.0   1.0 0.0 0.0   0.05 0.06 0.07 0.08
+ATT_STOP
+
+ATT_START
+COMMENT                    fifth attitude block
+ATT_ID                   = ATT_5
+ATT_PREV_ID              = ATT_4
+ATT_BASIS                = SIMULATED
+ATT_BASIS_ID             = rnd-25
+REF_FRAME_A              = EME2000
+REF_FRAME_B              = ESA_9
+EULER_ROT_SEQ            = XYZ
+NUMBER_STATES            = 6
+ATT_TYPE                 = EULER_ANGLES
+RATE_TYPE                = GYRO_BIAS
+2.00     1.0   1.2  1.3  -0.4  -0.5 -0.6
+2.25     2.0   2.2  2.3  -1.4  -1.5 -1.6
+ATT_STOP
+
+PHYS_START
+COMMENT                       Spacecraft Physical Parameters
+DRAG_COEFF                  = 1.8
+WET_MASS                    = 1916              [kg]
+DRY_MASS                    = 800               [kg]
+CP_REF_FRAME                = SC_BODY_1
+CP                          = 0.04 -0.78 -0.023 [m]
+INERTIA_REF_FRAME           = SC_BODY_2
+IXX                         = 752               [kg*m**2]
+IYY                         = 1305              [kg*m**2]
+IZZ                         = 1490              [kg*m**2]
+IXY                         = 81.1              [kg*m**2]
+IXZ                         = -25.7             [kg*m**2]
+IYZ                         = 74.1              [kg*m**2]
+PHYS_STOP
+
+COV_START
+COMMENT first covariance block
+COV_ID                  = COV_1
+COV_PREV_ID             = COV_0
+COV_BASIS               = DETERMINED_OBC
+COV_BASIS_ID            = blip-12
+COV_REF_FRAME           = SC_BODY_1
+COV_TYPE                = ANGLE_GYROBIAS
+ 0.0      6.74E-11 8.10E-11 9.22E-11 1.11E-15 1.11E-15 1.12E-15
+ 1.096694 6.74E-11 8.10E-11 9.22E-11 1.11E-15 1.11E-15 1.12E-15
+COV_STOP
+
+COV_START
+COMMENT second covariance block
+COV_ID                  = COV_2
+COV_PREV_ID             = COV_1
+COV_BASIS               = DETERMINED_OBC
+COV_BASIS_ID            = blip-12
+COV_REF_FRAME           = SC_BODY_1
+COV_TYPE                = ANGLE
+ 0.0      6.74E-11 8.10E-11 9.22E-11
+ 1.096694 6.74E-11 8.10E-11 9.22E-11
+COV_STOP
+
+COV_START
+COMMENT third covariance block
+COV_ID                  = COV_3
+COV_PREV_ID             = COV_2
+COV_BASIS               = DETERMINED_OBC
+COV_BASIS_ID            = blip-12
+COV_REF_FRAME           = SC_BODY_1
+COV_TYPE                = ANGLE_ANGVEL
+ 0.0      6.74E-11 8.10E-11 9.22E-11 1.11E-15 1.11E-15 1.12E-15
+ 1.096694 6.74E-11 8.10E-11 9.22E-11 1.11E-15 1.11E-15 1.12E-15
+COV_STOP
+
+COV_START
+COMMENT fourth covariance block
+COV_ID                  = COV_4
+COV_PREV_ID             = COV_3
+COV_BASIS               = DETERMINED_OBC
+COV_BASIS_ID            = blip-12
+COV_REF_FRAME           = SC_BODY_1
+COV_TYPE                = QUATERNION
+ 0.0      6.74E-11 8.10E-11 9.22E-11 2.17e-11
+ 1.096694 6.74E-11 8.10E-11 9.22E-11 2.17e-11
+COV_STOP
+
+COV_START
+COMMENT fifth covariance block
+COV_ID                  = COV_5
+COV_PREV_ID             = COV_4
+COV_BASIS               = DETERMINED_OBC
+COV_BASIS_ID            = blip-12
+COV_REF_FRAME           = SC_BODY_1
+COV_TYPE                = QUATERNION_GYROBIAS
+ 0.0      6.74E-11 8.10E-11 9.22E-11 2.17e-11 1.11E-15 1.11E-15 1.12E-15
+ 1.096694 6.74E-11 8.10E-11 9.22E-11 2.17e-11 1.11E-15 1.11E-15 1.12E-15
+COV_STOP
+
+COV_START
+COMMENT sixth covariance block
+COV_ID                  = COV_6
+COV_PREV_ID             = COV_5
+COV_BASIS               = DETERMINED_OBC
+COV_BASIS_ID            = blip-12
+COV_REF_FRAME           = SC_BODY_1
+COV_TYPE                = QUATERNION_ANGVEL
+ 0.0      6.74E-11 8.10E-11 9.22E-11 2.17e-11 1.11E-15 1.11E-15 1.12E-15
+ 1.096694 6.74E-11 8.10E-11 9.22E-11 2.17e-11 1.11E-15 1.11E-15 1.12E-15
+COV_STOP
+
+MAN_START
+COMMENT                  first maneuver
+MAN_ID                   = MAN_1
+MAN_PREV_ID              = MAN_0
+MAN_PURPOSE              = MOM_DESAT
+MAN_BEGIN_TIME           = 100.0
+MAN_DURATION             = 450.0
+ACTUATOR_USED            = ATT-THRUSTER
+TARGET_MOMENTUM          = 1.30 -16.400 -11.350
+TARGET_MOM_FRAME         = EME2000
+MAN_STOP
+
+MAN_START
+COMMENT                  second maneuver
+MAN_ID                   = MAN_2
+MAN_PREV_ID              = MAN_1
+MAN_PURPOSE              = ATT_ADJUST
+MAN_BEGIN_TIME           = 500.0
+MAN_END_TIME             = 600.0
+ACTUATOR_USED            = MAGNETOTORQUER
+TARGET_ATTITUDE          = 0.0 0.0 -0.707106781187 0.707106781187
+MAN_STOP
+
+MAN_START
+COMMENT                  third maneuver
+MAN_ID                   = MAN_3
+MAN_PREV_ID              = MAN_2
+MAN_PURPOSE              = SPIN_RATE_ADJUST
+MAN_BEGIN_TIME           = 700.0
+MAN_DURATION             = 200.0
+ACTUATOR_USED            = REACTION-WHEEL
+TARGET_SPINRATE          = 0.12
+MAN_STOP
+
+AD_START
+COMMENT attitude determination block
+AD_ID                             = AD_1
+AD_PREV_ID                        = AD_0
+AD_METHOD                         = Q_METHOD
+ATTITUDE_SOURCE                   = OBC
+EULER_ROT_SEQ                     = XYZ
+NUMBER_STATES                     = 7
+ATTITUDE_STATES                   = QUATERNION
+COV_TYPE                          = ANGLE_GYROBIAS
+REF_FRAME_A                       = EME2000
+REF_FRAME_B                       = SC_BODY_1
+RATE_STATES                       = ANGVEL
+SIGMA_U                           = 3.7e-7
+SIGMA_V                           = 1.3e-5
+RATE_PROCESS_NOISE_STDDEV         = 5.1e-6
+SENSOR_START
+SENSOR_NUMBER                     = 1
+SENSOR_USED                       = AST1
+NUMBER_SENSOR_NOISE_COVARIANCE    =  2
+SENSOR_NOISE_STDDEV               = 0.0097 0.0098
+SENSOR_FREQUENCY                  =  5.0 [Hz]
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER                     = 2
+SENSOR_USED                       = AST2
+NUMBER_SENSOR_NOISE_COVARIANCE    =  2
+SENSOR_NOISE_STDDEV               = 0.0079 0.0089
+SENSOR_FREQUENCY                  = 10.0 [Hz]
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER                     = 3
+SENSOR_USED                       = IMU
+SENSOR_STOP
+AD_STOP
+
+USER_START
+COMMENT user data
+USER_DEFINED_OXIDIZER             = viscum-album
+USER_STOP

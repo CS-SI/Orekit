@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,21 +16,25 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.generation.AbstractMeasurementBuilder;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-
 
 /** Builder for {@link Phase} measurements.
  * @author Luc Maisonobe
  * @since 10.1
  */
 public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
+
+    /** Cache for ambiguities.
+     * @since 12.1
+     */
+    private final AmbiguityCache cache;
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
@@ -45,56 +49,27 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
+     * @param cache from which ambiguity drive should come
+     * @since 12.1
      */
     public PhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                         final GroundStation station, final double wavelength,
                         final double sigma, final double baseWeight,
-                        final ObservableSatellite satellite) {
+                        final ObservableSatellite satellite,
+                        final AmbiguityCache cache) {
         super(noiseSource, sigma, baseWeight, satellite);
         this.station    = station;
         this.wavelength = wavelength;
+        this.cache      = cache;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Phase build(final SpacecraftState[] states) {
-
-        final ObservableSatellite satellite = getSatellites()[0];
-        final double sigma                  = getTheoreticalStandardDeviation()[0];
-        final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
-
-        // create a dummy measurement
-        final Phase dummy = new Phase(station, state.getDate(), Double.NaN, wavelength, sigma, baseWeight, satellite);
-        for (final EstimationModifier<Phase> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        double phase = dummy.estimate(0, 0, states).getEstimatedValue()[0];
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            phase += noise[0];
-        }
-
-        // generate measurement
-        final Phase measurement = new Phase(station, state.getDate(), phase, wavelength, sigma, baseWeight, satellite);
-        for (final EstimationModifier<Phase> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected Phase buildObserved(final AbsoluteDate date,
+                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new Phase(station, date, Double.NaN, wavelength,
+                         getTheoreticalStandardDeviation()[0],
+                         getBaseWeight()[0], getSatellites()[0], cache);
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,7 +23,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AdapterPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -68,8 +68,7 @@ import org.orekit.utils.Constants;
  * </p>
  * @author Luc Maisonobe
  */
-public class SmallManeuverAnalyticalModel
-    implements AdapterPropagator.DifferentialEffect {
+public class SmallManeuverAnalyticalModel implements AdapterPropagator.DifferentialEffect {
 
     /** State at maneuver date (before maneuver occurrence). */
     private final SpacecraftState state0;
@@ -92,7 +91,7 @@ public class SmallManeuverAnalyticalModel
     /** Mean anomaly change factor. */
     private final double ksi;
 
-    /** Build a maneuver defined in spacecraft frame.
+    /** Build a maneuver defined in spacecraft frame with default orbit type.
      * @param state0 state at maneuver date, <em>before</em> the maneuver
      * is performed
      * @param dV velocity increment in spacecraft frame
@@ -101,6 +100,21 @@ public class SmallManeuverAnalyticalModel
     public SmallManeuverAnalyticalModel(final SpacecraftState state0,
                                         final Vector3D dV, final double isp) {
         this(state0, state0.getFrame(),
+             state0.getAttitude().getRotation().applyInverseTo(dV),
+             isp);
+    }
+
+    /** Build a maneuver defined in spacecraft frame.
+     * @param state0 state at maneuver date, <em>before</em> the maneuver
+     * is performed
+     * @param orbitType orbit type to be used later on in Jacobian conversions
+     * @param dV velocity increment in spacecraft frame
+     * @param isp engine specific impulse (s)
+     * @since 12.1 orbit type added as input
+     */
+    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType orbitType,
+                                        final Vector3D dV, final double isp) {
+        this(state0, orbitType, state0.getFrame(),
              state0.getAttitude().getRotation().applyInverseTo(dV),
              isp);
     }
@@ -114,18 +128,31 @@ public class SmallManeuverAnalyticalModel
      */
     public SmallManeuverAnalyticalModel(final SpacecraftState state0, final Frame frame,
                                         final Vector3D dV, final double isp) {
+        // No orbit type specified, use equinoctial orbit type if possible, Keplerian if nearly hyperbolic orbits
+        this(state0, (state0.getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN, frame, dV, isp);
+    }
+
+    /** Build a maneuver defined in user-specified frame.
+     * @param state0 state at maneuver date, <em>before</em> the maneuver
+     * is performed
+     * @param orbitType orbit type to be used later on in Jacobian conversions
+     * @param frame frame in which velocity increment is defined
+     * @param dV velocity increment in specified frame
+     * @param isp engine specific impulse (s)
+     * @since 12.1 orbit type added as input
+     */
+    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType orbitType,
+                                        final Frame frame, final Vector3D dV, final double isp) {
 
         this.state0    = state0;
         this.massRatio = FastMath.exp(-dV.getNorm() / (Constants.G0_STANDARD_GRAVITY * isp));
-
-        // use equinoctial orbit type if possible, Keplerian if nearly hyperbolic orbits
-        type = (state0.getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN;
+        this.type = orbitType;
 
         // compute initial Jacobian
         final double[][] fullJacobian = new double[6][6];
         j0 = new double[6][3];
-        final Orbit orbit0 = type.convertType(state0.getOrbit());
-        orbit0.getJacobianWrtCartesian(PositionAngle.MEAN, fullJacobian);
+        final Orbit orbit0 = orbitType.convertType(state0.getOrbit());
+        orbit0.getJacobianWrtCartesian(PositionAngleType.MEAN, fullJacobian);
         for (int i = 0; i < j0.length; ++i) {
             System.arraycopy(fullJacobian[i], 3, j0[i], 0, 3);
         }
@@ -134,7 +161,8 @@ public class SmallManeuverAnalyticalModel
         j0Dot = null;
 
         // compute maneuver effect on Keplerian (or equinoctial) elements
-        inertialDV = frame.getTransformTo(state0.getFrame(), state0.getDate()).transformVector(dV);
+        inertialDV = frame.getStaticTransformTo(state0.getFrame(), state0.getDate())
+                        .transformVector(dV);
 
         // compute mean anomaly change: dM(t1) = dM(t0) + ksi * da * (t1 - t0)
         final double mu = state0.getMu();
@@ -171,7 +199,7 @@ public class SmallManeuverAnalyticalModel
      * @return orbit at t₁, taking the maneuver
      * into account if t₁ &gt; t₀
      * @see #apply(SpacecraftState)
-     * @see #getJacobian(Orbit, PositionAngle, double[][])
+     * @see #getJacobian(Orbit, PositionAngleType, double[][])
      */
     public Orbit apply(final Orbit orbit1) {
 
@@ -190,7 +218,7 @@ public class SmallManeuverAnalyticalModel
      * @return spacecraft state at t₁, taking the maneuver
      * into account if t₁ &gt; t₀
      * @see #apply(Orbit)
-     * @see #getJacobian(Orbit, PositionAngle, double[][])
+     * @see #getJacobian(Orbit, PositionAngleType, double[][])
      */
     public SpacecraftState apply(final SpacecraftState state1) {
 
@@ -223,13 +251,13 @@ public class SmallManeuverAnalyticalModel
 
         // convert current orbital state to Keplerian or equinoctial elements
         final double[] parameters    = new double[6];
-        type.mapOrbitToArray(type.convertType(orbit1), PositionAngle.MEAN, parameters, null);
+        type.mapOrbitToArray(type.convertType(orbit1), PositionAngleType.MEAN, parameters, null);
         for (int i = 0; i < delta.length; ++i) {
             parameters[i] += delta[i];
         }
 
         // build updated orbit as Keplerian or equinoctial elements
-        return type.mapArrayToOrbit(parameters, null, PositionAngle.MEAN,
+        return type.mapArrayToOrbit(parameters, null, PositionAngleType.MEAN,
                                     orbit1.getDate(), orbit1.getMu(), orbit1.getFrame());
 
     }
@@ -239,19 +267,19 @@ public class SmallManeuverAnalyticalModel
      * The Jacobian matrix is a 6x4 matrix. Element jacobian[i][j] corresponds to
      * the partial derivative of orbital parameter i with respect to maneuver
      * parameter j. The rows order is the same order as used in {@link
-     * Orbit#getJacobianWrtCartesian(PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * Orbit#getJacobianWrtCartesian(PositionAngleType, double[][]) Orbit.getJacobianWrtCartesian}
      * method. Columns (0, 1, 2) correspond to the velocity increment coordinates
      * (ΔV<sub>x</sub>, ΔV<sub>y</sub>, ΔV<sub>z</sub>) in the
      * inertial frame returned by {@link #getInertialFrame()}, and column 3
      * corresponds to the maneuver date t₀.
      * </p>
      * @param orbit1 original orbit at t₁, without maneuver
-     * @param positionAngle type of the position angle to use
+     * @param positionAngleType type of the position angle to use
      * @param jacobian placeholder 6x4 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x4, only the 6x4 upper left corner will be modified
      * @see #apply(Orbit)
      */
-    public void getJacobian(final Orbit orbit1, final PositionAngle positionAngle,
+    public void getJacobian(final Orbit orbit1, final PositionAngleType positionAngleType,
                             final double[][] jacobian) {
 
         final double dt = orbit1.getDate().durationFrom(state0.getDate());
@@ -282,29 +310,29 @@ public class SmallManeuverAnalyticalModel
         final double da = j0[0][0] * x + j0[0][1] * y + j0[0][2] * z;
         jacobian[5][3] += ksi * (jacobian[0][3] * dt - da);
 
-        if (orbit1.getType() != type || positionAngle != PositionAngle.MEAN) {
+        if (orbit1.getType() != type || positionAngleType != PositionAngleType.MEAN) {
 
             // convert to derivatives of Cartesian parameters
             final double[][] j2         = new double[6][6];
             final double[][] pvJacobian = new double[6][4];
             final Orbit updated         = updateOrbit(orbit1);
-            updated.getJacobianWrtParameters(PositionAngle.MEAN, j2);
+            updated.getJacobianWrtParameters(PositionAngleType.MEAN, j2);
             for (int i = 0; i < 6; ++i) {
                 for (int j = 0; j < 4; ++j) {
                     pvJacobian[i][j] = j2[i][0] * jacobian[0][j] + j2[i][1] * jacobian[1][j] +
-                                       j2[i][2] * jacobian[2][j] + j2[i][3] * jacobian[3][j] +
-                                       j2[i][4] * jacobian[4][j] + j2[i][5] * jacobian[5][j];
+                                    j2[i][2] * jacobian[2][j] + j2[i][3] * jacobian[3][j] +
+                                    j2[i][4] * jacobian[4][j] + j2[i][5] * jacobian[5][j];
                 }
             }
 
             // convert to derivatives of specified parameters
             final double[][] j3 = new double[6][6];
-            orbit1.getType().convertType(updated).getJacobianWrtCartesian(positionAngle, j3);
+            orbit1.getType().convertType(updated).getJacobianWrtCartesian(positionAngleType, j3);
             for (int j = 0; j < 4; ++j) {
                 for (int i = 0; i < 6; ++i) {
                     jacobian[i][j] = j3[i][0] * pvJacobian[0][j] + j3[i][1] * pvJacobian[1][j] +
-                                     j3[i][2] * pvJacobian[2][j] + j3[i][3] * pvJacobian[3][j] +
-                                     j3[i][4] * pvJacobian[4][j] + j3[i][5] * pvJacobian[5][j];
+                                    j3[i][2] * pvJacobian[2][j] + j3[i][3] * pvJacobian[3][j] +
+                                    j3[i][4] * pvJacobian[4][j] + j3[i][5] * pvJacobian[5][j];
                 }
             }
 
@@ -324,9 +352,9 @@ public class SmallManeuverAnalyticalModel
 
             // compute shifted Jacobians
             final double[][] j0m1 = new double[6][6];
-            orbit.shiftedBy(-1 * dt).getJacobianWrtCartesian(PositionAngle.MEAN, j0m1);
+            orbit.shiftedBy(-1 * dt).getJacobianWrtCartesian(PositionAngleType.MEAN, j0m1);
             final double[][] j0p1 = new double[6][6];
-            orbit.shiftedBy(+1 * dt).getJacobianWrtCartesian(PositionAngle.MEAN, j0p1);
+            orbit.shiftedBy(+1 * dt).getJacobianWrtCartesian(PositionAngleType.MEAN, j0p1);
 
             // evaluate derivative by finite differences
             for (int i = 0; i < j0Dot.length; ++i) {

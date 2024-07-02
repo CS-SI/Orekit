@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,19 +16,20 @@
  */
 package org.orekit.propagation.integration;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This class maps between raw double elements and {@link FieldSpacecraftState} instances.
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
-public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
+public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
 
     /** Reference date. */
     private final FieldAbsoluteDate<T> referenceDate;
@@ -37,10 +38,10 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     private final OrbitType orbitType;
 
     /** Position angle type. */
-    private final PositionAngle angleType;
+    private final PositionAngleType angleType;
 
     /** Attitude provider. */
-    private final AttitudeProvider attitudeProvider;
+    private AttitudeProvider attitudeProvider;
 
     /** Central attraction coefficient. */
     private final T mu;
@@ -63,7 +64,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param frame inertial frame
      */
     protected FieldStateMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
-                          final OrbitType orbitType, final PositionAngle positionAngleType,
+                          final OrbitType orbitType, final PositionAngleType positionAngleType,
                           final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
@@ -95,7 +96,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    public PositionAngle getPositionAngleType() {
+    public PositionAngleType getPositionAngleType() {
         return angleType;
     }
 
@@ -118,6 +119,14 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      */
     public AttitudeProvider getAttitudeProvider() {
         return attitudeProvider;
+    }
+
+    /**
+     * Setter for the attitude provider.
+     * @param attitudeProvider new attitude provider
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** Map the raw double time offset to a date.

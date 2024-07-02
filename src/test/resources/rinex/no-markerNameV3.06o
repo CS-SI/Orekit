@@ -1,0 +1,35 @@
+     3.00           OBSERVATION DATA    M                   RINEX VERSION / TYPE
+G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED       COMMENT
+XXRINEXO V9.9       AIUB                20060324 144333 UTC PGM / RUN BY / DATE
+9080.1.34                                                   MARKER NUMBER     
+BILL SMITH          ABC INSTITUTE                           OBSERVER / AGENCY   
+X1234A123           GEODETIC            1.3.1               REC # / TYPE / VERS
+G1234               ROVER                                   ANT # / TYPE
+  2104228.     -5642017.      2095406.                      APPROX POSITION XYZ
+         .9030         .0000         .0000                  ANTENNA: DELTA H/E/N
+     0                                                      RCV CLOCK OFFS APPL
+G    5 C1C L1W L2W C1W S2W                                  SYS / # / OBS TYPES
+R    5 C0  L0  C1C L1C S0                                   SYS / # / OBS TYPES
+E    2 L1B L5I                                              SYS / # / OBS TYPES
+S    2 C1C L1C                                              SYS / # / OBS TYPES
+    18.000                                                  INTERVAL
+DBHZ                                                        SIGNAL STRENGTH UNIT
+  2006    03    24    13    10   36.0000000     GPS         TIME OF FIRST OBS
+ 18 R01  1 R02  2 R03  3 R04  4 R05  5 R06 -6 R07 -5 R08 -4 GLONASS SLOT / FRQ #
+    R09 -3 R10 -2 R11 -1 R12  0 R13  1 R14  2 R15  0 R16  4 GLONASS SLOT / FRQ #
+    R17  5 R18 -5                                           GLONASS SLOT / FRQ #
+G L1C                                                       SYS / PHASE SHIFT
+G L1W                                                       SYS / PHASE SHIFT
+G L2W   0.00000                                             SYS / PHASE SHIFT
+R L1C   0.00000                                             SYS / PHASE SHIFT
+E L1B   0.00000                                             SYS / PHASE SHIFT
+E L5I   0.00000                                             SYS / PHASE SHIFT
+S L1C   0.00000                                             SYS / PHASE SHIFT
+ C1C    0.000 C2C    0.000 C2P    0.000                     GLONASS COD/PHS/BIS
+                                                            END OF HEADER       
+> 2016 03 24 13 10 36.0000000  0  5       0.000000000000
+G06  23629347.915      651379.300 8                  23629347.158          24.158
+G09  20891534.648     -453349.120 9                  20891545.292          38.123
+G12  20607600.189     -756349.430 9                  20891545.848          35.234
+R12  20427680.259     -885349.430 9                  22397545.647          37.594
+E11  20742800.324 8    378849.178 7

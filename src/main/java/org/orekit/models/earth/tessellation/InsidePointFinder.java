@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,7 +36,7 @@ import org.hipparchus.geometry.spherical.twod.Vertex;
  * </p>
  * @author Luc Maisonobe
  */
-class InsideFinder implements BSPTreeVisitor<Sphere2D> {
+class InsidePointFinder implements BSPTreeVisitor<Sphere2D> {
 
     /** Zone of interest. */
     private final SphericalPolygonsSet zone;
@@ -50,7 +50,7 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     /** Simple constructor.
      * @param zone zone of interest
      */
-    InsideFinder(final SphericalPolygonsSet zone) {
+    InsidePointFinder(final SphericalPolygonsSet zone) {
         this.zone                    = zone;
         this.insidePointFirstChoice  = null;
         this.insidePointSecondChoice = null;
@@ -89,13 +89,28 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
             final List<Vertex> boundary = convex.getBoundaryLoops();
             final Vertex start = boundary.get(0);
             int n = 0;
-            Vector3D sumB = Vector3D.ZERO;
+
+            // Initialize centroid coordinates
+            Vector3D centroid = Vector3D.ZERO;
+
+            // Iterate through each edge in the boundary loop
             for (Edge e = start.getOutgoing(); n == 0 || e.getStart() != start; e = e.getEnd().getOutgoing()) {
-                sumB = new Vector3D(1, sumB, e.getLength(), e.getCircle().getPole());
+                // Get the 3D coordinates of the start and end points of the edge
+                final Vector3D startPoint = e.getStart().getLocation().getVector();
+                final Vector3D endPoint   = e.getEnd().getLocation().getVector();
+
+                // Add the coordinates of the start and end points to the centroid
+                centroid = centroid.add(startPoint).add(endPoint);
+
+                // Increment the counter
                 n++;
             }
 
-            final S2Point candidate = new S2Point(sumB);
+            // Calculate the average centroid coordinates
+            centroid = centroid.scalarMultiply(1.0 / (2 * n));
+
+            // Project the centroid coordinates onto the sphere to get the candidate point
+            final S2Point candidate = new S2Point(centroid.normalize());
 
             // check the candidate point is really considered inside
             // it may appear outside if the current leaf cell is very thin

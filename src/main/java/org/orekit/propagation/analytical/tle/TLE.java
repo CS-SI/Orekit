@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,21 +19,30 @@ package org.orekit.propagation.analytical.tle;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -51,10 +60,7 @@ import org.orekit.time.TimeStamped;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLE implements TimeStamped, Serializable {
-
-    /** Identifier for default type of ephemeris (SGP4/SDP4). */
-    public static final int DEFAULT = 0;
+public class TLE implements TimeStamped, Serializable, ParameterDriversProvider {
 
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
@@ -71,14 +77,37 @@ public class TLE implements TimeStamped, Serializable {
     /** Identifier for SDP8 type of ephemeris. */
     public static final int SDP8 = 5;
 
+    /** Identifier for default type of ephemeris (SGP4/SDP4). */
+    public static final int DEFAULT = 0;
+
+    /** Parameter name for B* coefficient. */
+    public static final String B_STAR = "BSTAR";
+
+    /** B* scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
+
+    /** Name of the mean motion parameter. */
+    private static final String MEAN_MOTION = "meanMotion";
+
+    /** Name of the inclination parameter. */
+    private static final String INCLINATION = "inclination";
+
+    /** Name of the eccentricity parameter. */
+    private static final String ECCENTRICITY = "eccentricity";
+
     /** Pattern for line 1. */
     private static final Pattern LINE_1_PATTERN =
-        Pattern.compile("1 [ 0-9]{5}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ 0+-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
+        Pattern.compile("1 [ 0-9A-Z&&[^IO]][ 0-9]{4}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ 0+-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
                         "[ +-][ 0-9]{5}[+-][ 0-9] [ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]");
 
     /** Pattern for line 2. */
     private static final Pattern LINE_2_PATTERN =
-        Pattern.compile("2 [ 0-9]{5} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{7} " +
+        Pattern.compile("2 [ 0-9A-Z&&[^IO]][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{7} " +
                         "[ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{2}[.][ 0-9]{13}[ 0-9]");
 
     /** International symbols for parsing. */
@@ -139,79 +168,125 @@ public class TLE implements TimeStamped, Serializable {
     /** Revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
 
-    /** Ballistic coefficient. */
-    private final double bStar;
-
     /** First line. */
     private String line1;
 
     /** Second line. */
     private String line2;
 
-    /** Simple constructor from unparsed two lines.
+    /** The UTC scale. */
+    private final TimeScale utc;
+
+    /** Driver for ballistic coefficient parameter. */
+    private final transient ParameterDriver bStarParameterDriver;
+
+
+    /** Simple constructor from unparsed two lines. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
-     * before trying to build this object.<p>
+     * before trying to build this object.</p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
+     * @see #TLE(String, String, TimeScale)
      */
+    @DefaultDataContext
     public TLE(final String line1, final String line2) {
+        this(line1, line2, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /** Simple constructor from unparsed two lines using the given time scale as UTC.
+     *
+     * <p>The static method {@link #isFormatOK(String, String)} should be called
+     * before trying to build this object.</p>
+     * @param line1 the first element (69 char String)
+     * @param line2 the second element (69 char String)
+     * @param utc the UTC time scale.
+     * @since 10.1
+     */
+    public TLE(final String line1, final String line2, final TimeScale utc) {
 
         // identification
-        satelliteNumber = parseInteger(line1, 2, 5);
-        final int satNum2 = parseInteger(line2, 2, 5);
+        satelliteNumber = ParseUtils.parseSatelliteNumber(line1, 2, 5);
+        final int satNum2 = ParseUtils.parseSatelliteNumber(line2, 2, 5);
         if (satelliteNumber != satNum2) {
             throw new OrekitException(OrekitMessages.TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT,
                                       line1, line2);
         }
         classification  = line1.charAt(7);
-        launchYear      = parseYear(line1, 9);
-        launchNumber    = parseInteger(line1, 11, 3);
+        launchYear      = ParseUtils.parseYear(line1, 9);
+        launchNumber    = ParseUtils.parseInteger(line1, 11, 3);
         launchPiece     = line1.substring(14, 17).trim();
-        ephemerisType   = parseInteger(line1, 62, 1);
-        elementNumber   = parseInteger(line1, 64, 4);
+        ephemerisType   = ParseUtils.parseInteger(line1, 62, 1);
+        elementNumber   = ParseUtils.parseInteger(line1, 64, 4);
 
         // Date format transform (nota: 27/31250 == 86400/100000000)
-        final int    year      = parseYear(line1, 18);
-        final int    dayInYear = parseInteger(line1, 20, 3);
-        final long   df        = 27l * parseInteger(line1, 24, 8);
+        final int    year      = ParseUtils.parseYear(line1, 18);
+        final int    dayInYear = ParseUtils.parseInteger(line1, 20, 3);
+        final long   df        = 27l * ParseUtils.parseInteger(line1, 24, 8);
         final int    secondsA  = (int) (df / 31250l);
         final double secondsB  = (df % 31250l) / 31250.0;
         epoch = new AbsoluteDate(new DateComponents(year, dayInYear),
                                  new TimeComponents(secondsA, secondsB),
-                                 TimeScalesFactory.getUTC());
+                                 utc);
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
-        meanMotion                 = parseDouble(line2, 52, 11) * FastMath.PI / 43200.0;
-        meanMotionFirstDerivative  = parseDouble(line1, 33, 10) * FastMath.PI / 1.86624e9;
+        meanMotion                 = ParseUtils.parseDouble(line2, 52, 11) * FastMath.PI / 43200.0;
+        meanMotionFirstDerivative  = ParseUtils.parseDouble(line1, 33, 10) * FastMath.PI / 1.86624e9;
         meanMotionSecondDerivative = Double.parseDouble((line1.substring(44, 45) + '.' +
                                                          line1.substring(45, 50) + 'e' +
                                                          line1.substring(50, 52)).replace(' ', '0')) *
                                      FastMath.PI / 5.3747712e13;
 
         eccentricity = Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0'));
-        inclination  = FastMath.toRadians(parseDouble(line2, 8, 8));
-        pa           = FastMath.toRadians(parseDouble(line2, 34, 8));
+        inclination  = FastMath.toRadians(ParseUtils.parseDouble(line2, 8, 8));
+        pa           = FastMath.toRadians(ParseUtils.parseDouble(line2, 34, 8));
         raan         = FastMath.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0')));
-        meanAnomaly  = FastMath.toRadians(parseDouble(line2, 43, 8));
+        meanAnomaly  = FastMath.toRadians(ParseUtils.parseDouble(line2, 43, 8));
 
-        revolutionNumberAtEpoch = parseInteger(line2, 63, 5);
-        bStar = Double.parseDouble((line1.substring(53, 54) + '.' +
+        revolutionNumberAtEpoch = ParseUtils.parseInteger(line2, 63, 5);
+        final double bStarValue = Double.parseDouble((line1.substring(53, 54) + '.' +
                                     line1.substring(54, 59) + 'e' +
                                     line1.substring(59, 61)).replace(' ', '0'));
 
         // save the lines
         this.line1 = line1;
         this.line2 = line2;
+        this.utc = utc;
+
+        // create model parameter drivers
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStarValue, B_STAR_SCALE,
+                                                        Double.NEGATIVE_INFINITY,
+                                                        Double.POSITIVE_INFINITY);
 
     }
 
-    /** Simple constructor from already parsed elements.
+    /**
+     * <p>
+     * Simple constructor from already parsed elements. This constructor uses the
+     * {@link DataContext#getDefault() default data context}.
+     * </p>
+     *
+     * <p>
+     * The mean anomaly, the right ascension of ascending node Ω and the argument of
+     * perigee ω are normalized into the [0, 2π] interval as they can be negative.
+     * After that, a range check is performed on some of the orbital elements:
+     *
+     * <pre>
+     *     meanMotion &gt;= 0
+     *     0 &lt;= i &lt;= π
+     *     0 &lt;= Ω &lt;= 2π
+     *     0 &lt;= e &lt;= 1
+     *     0 &lt;= ω &lt;= 2π
+     *     0 &lt;= meanAnomaly &lt;= 2π
+     * </pre>
+     *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
      * @param launchYear launch year (all digits)
      * @param launchNumber launch number
-     * @param launchPiece launch piece
+     * @param launchPiece launch piece (3 char String)
      * @param ephemerisType type of ephemeris
      * @param elementNumber element number
      * @param epoch elements epoch
@@ -225,7 +300,10 @@ public class TLE implements TimeStamped, Serializable {
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
      * @param bStar ballistic coefficient
+     * @see #TLE(int, char, int, int, String, int, int, AbsoluteDate, double, double,
+     * double, double, double, double, double, double, int, double, TimeScale)
      */
+    @DefaultDataContext
     public TLE(final int satelliteNumber, final char classification,
                final int launchYear, final int launchNumber, final String launchPiece,
                final int ephemerisType, final int elementNumber, final AbsoluteDate epoch,
@@ -233,6 +311,62 @@ public class TLE implements TimeStamped, Serializable {
                final double meanMotionSecondDerivative, final double e, final double i,
                final double pa, final double raan, final double meanAnomaly,
                final int revolutionNumberAtEpoch, final double bStar) {
+        this(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
+                ephemerisType, elementNumber, epoch, meanMotion,
+                meanMotionFirstDerivative, meanMotionSecondDerivative, e, i, pa, raan,
+                meanAnomaly, revolutionNumberAtEpoch, bStar,
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * <p>
+     * Simple constructor from already parsed elements using the given time scale as
+     * UTC.
+     * </p>
+     *
+     * <p>
+     * The mean anomaly, the right ascension of ascending node Ω and the argument of
+     * perigee ω are normalized into the [0, 2π] interval as they can be negative.
+     * After that, a range check is performed on some of the orbital elements:
+     *
+     * <pre>
+     *     meanMotion &gt;= 0
+     *     0 &lt;= i &lt;= π
+     *     0 &lt;= Ω &lt;= 2π
+     *     0 &lt;= e &lt;= 1
+     *     0 &lt;= ω &lt;= 2π
+     *     0 &lt;= meanAnomaly &lt;= 2π
+     * </pre>
+     *
+     * @param satelliteNumber satellite number
+     * @param classification classification (U for unclassified)
+     * @param launchYear launch year (all digits)
+     * @param launchNumber launch number
+     * @param launchPiece launch piece (3 char String)
+     * @param ephemerisType type of ephemeris
+     * @param elementNumber element number
+     * @param epoch elements epoch
+     * @param meanMotion mean motion (rad/s)
+     * @param meanMotionFirstDerivative mean motion first derivative (rad/s²)
+     * @param meanMotionSecondDerivative mean motion second derivative (rad/s³)
+     * @param e eccentricity
+     * @param i inclination (rad)
+     * @param pa argument of perigee (rad)
+     * @param raan right ascension of ascending node (rad)
+     * @param meanAnomaly mean anomaly (rad)
+     * @param revolutionNumberAtEpoch revolution number at epoch
+     * @param bStar ballistic coefficient
+     * @param utc the UTC time scale.
+     * @since 10.1
+     */
+    public TLE(final int satelliteNumber, final char classification,
+               final int launchYear, final int launchNumber, final String launchPiece,
+               final int ephemerisType, final int elementNumber, final AbsoluteDate epoch,
+               final double meanMotion, final double meanMotionFirstDerivative,
+               final double meanMotionSecondDerivative, final double e, final double i,
+               final double pa, final double raan, final double meanAnomaly,
+               final int revolutionNumberAtEpoch, final double bStar,
+               final TimeScale utc) {
 
         // identification
         this.satelliteNumber = satelliteNumber;
@@ -244,23 +378,49 @@ public class TLE implements TimeStamped, Serializable {
         this.elementNumber   = elementNumber;
 
         // orbital parameters
-        this.epoch                      = epoch;
-        this.meanMotion                 = meanMotion;
-        this.meanMotionFirstDerivative  = meanMotionFirstDerivative;
+        this.epoch = epoch;
+        // Checking mean motion range
+        this.meanMotion = meanMotion;
+        this.meanMotionFirstDerivative = meanMotionFirstDerivative;
         this.meanMotionSecondDerivative = meanMotionSecondDerivative;
-        this.inclination                = i;
-        this.raan                       = raan;
-        this.eccentricity               = e;
-        this.pa                         = pa;
-        this.meanAnomaly                = meanAnomaly;
+
+        // Checking inclination range
+        this.inclination = i;
+
+        // Normalizing RAAN in [0,2pi] interval
+        this.raan = MathUtils.normalizeAngle(raan, FastMath.PI);
+
+        // Checking eccentricity range
+        this.eccentricity = e;
+
+        // Normalizing PA in [0,2pi] interval
+        this.pa = MathUtils.normalizeAngle(pa, FastMath.PI);
+
+        // Normalizing mean anomaly in [0,2pi] interval
+        this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, FastMath.PI);
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
-        this.bStar                   = bStar;
+
 
         // don't build the line until really needed
         this.line1 = null;
         this.line2 = null;
+        this.utc = utc;
 
+        // create model parameter drivers
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
+                                                        Double.NEGATIVE_INFINITY,
+                                                        Double.POSITIVE_INFINITY);
+
+    }
+
+    /**
+     * Get the UTC time scale used to create this TLE.
+     *
+     * @return UTC time scale.
+     */
+    public TimeScale getUtc() {
+        return utc;
     }
 
     /** Get the first line.
@@ -287,32 +447,38 @@ public class TLE implements TimeStamped, Serializable {
      */
     private void buildLine1() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
 
         buffer.append('1');
 
         buffer.append(' ');
-        buffer.append(addPadding("satelliteNumber-1", satelliteNumber, '0', 5, true));
+        buffer.append(ParseUtils.buildSatelliteNumber(satelliteNumber, "satelliteNumber-1"));
         buffer.append(classification);
 
         buffer.append(' ');
-        buffer.append(addPadding("launchYear",   launchYear % 100, '0', 2, true));
-        buffer.append(addPadding("launchNumber", launchNumber, '0', 3, true));
-        buffer.append(addPadding("launchPiece",  launchPiece, ' ', 3, false));
+        buffer.append(ParseUtils.addPadding("launchYear",   launchYear % 100, '0', 2, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("launchNumber", launchNumber, '0', 3, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("launchPiece",  launchPiece, ' ', 3, false, satelliteNumber));
 
         buffer.append(' ');
-        final DateTimeComponents dtc = epoch.getComponents(TimeScalesFactory.getUTC());
-        buffer.append(addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true));
-        buffer.append(addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true));
+        DateTimeComponents dtc = epoch.getComponents(utc);
+        int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
+        if (fraction >= 100000000) {
+            dtc =  epoch.shiftedBy(Constants.JULIAN_DAY).getComponents(utc);
+            fraction -= 100000000;
+        }
+        buffer.append(ParseUtils.addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true, satelliteNumber));
         buffer.append('.');
         // nota: 31250/27 == 100000000/86400
-        final int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
-        buffer.append(addPadding("fraction", fraction,  '0', 8, true));
+
+        buffer.append(ParseUtils.addPadding("fraction", fraction,  '0', 8, true, satelliteNumber));
 
         buffer.append(' ');
         final double n1 = meanMotionFirstDerivative * 1.86624e9 / FastMath.PI;
-        final String sn1 = addPadding("meanMotionFirstDerivative",
-                                      new DecimalFormat(".00000000", SYMBOLS).format(n1), ' ', 10, true);
+        final String sn1 = ParseUtils.addPadding("meanMotionFirstDerivative",
+                                                 new DecimalFormat(".00000000", SYMBOLS).format(n1),
+                                                 ' ', 10, true, satelliteNumber);
         buffer.append(sn1);
 
         buffer.append(' ');
@@ -320,15 +486,15 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(formatExponentMarkerFree("B*", bStar, 5, ' ', 8, true));
+        buffer.append(formatExponentMarkerFree("B*", getBStar(), 5, ' ', 8, true));
 
         buffer.append(' ');
         buffer.append(ephemerisType);
 
         buffer.append(' ');
-        buffer.append(addPadding("elementNumber", elementNumber, ' ', 4, true));
+        buffer.append(ParseUtils.addPadding("elementNumber", elementNumber, ' ', 4, true, satelliteNumber));
 
-        buffer.append(Integer.toString(checksum(buffer)));
+        buffer.append(checksum(buffer));
 
         line1 = buffer.toString();
 
@@ -358,11 +524,11 @@ public class TLE implements TimeStamped, Serializable {
             exponent++;
             mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         }
-        final String sMantissa = addPadding(name, (int) mantissa, '0', mantissaSize, true);
+        final String sMantissa = ParseUtils.addPadding(name, (int) mantissa, '0', mantissaSize, true, satelliteNumber);
         final String sExponent = Integer.toString(FastMath.abs(exponent));
         final String formatted = (d <  0 ? '-' : ' ') + sMantissa + (exponent <= 0 ? '-' : '+') + sExponent;
 
-        return addPadding(name, formatted, c, size, rightJustified);
+        return ParseUtils.addPadding(name, formatted, c, size, rightJustified, satelliteNumber);
 
     }
 
@@ -370,112 +536,34 @@ public class TLE implements TimeStamped, Serializable {
      */
     private void buildLine2() {
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
         final DecimalFormat f211  = new DecimalFormat("#0.00000000", SYMBOLS);
 
         buffer.append('2');
 
         buffer.append(' ');
-        buffer.append(addPadding("satelliteNumber-2", satelliteNumber, '0', 5, true));
+        buffer.append(ParseUtils.buildSatelliteNumber(satelliteNumber, "satelliteNumber-2"));
 
         buffer.append(' ');
-        buffer.append(addPadding("inclination", f34.format(FastMath.toDegrees(inclination)), ' ', 8, true));
+        buffer.append(ParseUtils.addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination)), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true));
+        buffer.append(ParseUtils.addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(addPadding("eccentricity", (int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true));
+        buffer.append(ParseUtils.addPadding(ECCENTRICITY, (int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true));
+        buffer.append(ParseUtils.addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true));
+        buffer.append(ParseUtils.addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true, satelliteNumber));
 
         buffer.append(' ');
-        buffer.append(addPadding("meanMotion", f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true));
-        buffer.append(addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true));
+        buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true, satelliteNumber));
 
-        buffer.append(Integer.toString(checksum(buffer)));
+        buffer.append(checksum(buffer));
 
         line2 = buffer.toString();
 
-    }
-
-    /** Add padding characters before an integer.
-     * @param name parameter name
-     * @param k integer to pad
-     * @param c padding character
-     * @param size desired size
-     * @param rightJustified if true, the resulting string is
-     * right justified (i.e. space are added to the left)
-     * @return padded string
-     */
-    private String addPadding(final String name, final int k, final char c,
-                              final int size, final boolean rightJustified) {
-        return addPadding(name, Integer.toString(k), c, size, rightJustified);
-    }
-
-    /** Add padding characters to a string.
-     * @param name parameter name
-     * @param string string to pad
-     * @param c padding character
-     * @param size desired size
-     * @param rightJustified if true, the resulting string is
-     * right justified (i.e. space are added to the left)
-     * @return padded string
-     */
-    private String addPadding(final String name, final String string, final char c,
-                              final int size, final boolean rightJustified) {
-
-        if (string.length() > size) {
-            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
-                                      satelliteNumber, name, string);
-        }
-
-        final StringBuffer padding = new StringBuffer();
-        for (int i = 0; i < size; ++i) {
-            padding.append(c);
-        }
-
-        if (rightJustified) {
-            final String concatenated = padding + string;
-            final int l = concatenated.length();
-            return concatenated.substring(l - size, l);
-        }
-
-        return (string + padding).substring(0, size);
-
-    }
-
-    /** Parse a double.
-     * @param line line to parse
-     * @param start start index of the first character
-     * @param length length of the string
-     * @return value of the double
-     */
-    private double parseDouble(final String line, final int start, final int length) {
-        final String field = line.substring(start, start + length).trim();
-        return field.length() > 0 ? Double.parseDouble(field.replace(' ', '0')) : 0;
-    }
-
-    /** Parse an integer.
-     * @param line line to parse
-     * @param start start index of the first character
-     * @param length length of the string
-     * @return value of the integer
-     */
-    private int parseInteger(final String line, final int start, final int length) {
-        final String field = line.substring(start, start + length).trim();
-        return field.length() > 0 ? Integer.parseInt(field.replace(' ', '0')) : 0;
-    }
-
-    /** Parse a year written on 2 digits.
-     * @param line line to parse
-     * @param start start index of the first character
-     * @return value of the year
-     */
-    private int parseYear(final String line, final int start) {
-        final int year = 2000 + parseInteger(line, start, 2);
-        return (year > 2056) ? (year - 100) : year;
     }
 
     /** Get the satellite id.
@@ -598,11 +686,19 @@ public class TLE implements TimeStamped, Serializable {
         return revolutionNumberAtEpoch;
     }
 
-    /** Get the ballistic coefficient.
+    /** Get the ballistic coefficient at tle date.
      * @return bStar
      */
     public double getBStar() {
-        return bStar;
+        return bStarParameterDriver.getValue(getDate());
+    }
+
+    /** Get the ballistic coefficient at a specific date.
+     * @param date at which the ballistic coefficient wants to be known.
+     * @return bStar
+     */
+    public double getBStar(final AbsoluteDate date) {
+        return bStarParameterDriver.getValue(date);
     }
 
     /** Get a string representation of this TLE set.
@@ -611,11 +707,21 @@ public class TLE implements TimeStamped, Serializable {
      * @return string representation of this TLE set
      */
     public String toString() {
-        try {
-            return getLine1() + System.getProperty("line.separator") + getLine2();
-        } catch (OrekitException oe) {
-            throw new OrekitInternalError(oe);
-        }
+        return getLine1() + System.getProperty("line.separator") + getLine2();
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param generationAlgorithm TLE generation algorithm
+     * @return a generated TLE
+     * @since 12.0
+     */
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
+                                 final TleGenerationAlgorithm generationAlgorithm) {
+        return generationAlgorithm.generate(state, templateTLE);
     }
 
     /** Check the lines format validity.
@@ -704,7 +810,7 @@ public class TLE implements TimeStamped, Serializable {
                 raan == tle.raan &&
                 meanAnomaly == tle.meanAnomaly &&
                 revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
-                bStar == tle.bStar;
+                getBStar() == tle.getBStar();
     }
 
     /** Get a hashcode for this tle.
@@ -729,7 +835,56 @@ public class TLE implements TimeStamped, Serializable {
                 raan,
                 meanAnomaly,
                 revolutionNumberAtEpoch,
-                bStar);
+                getBStar());
+    }
+
+    /** Get the drivers for TLE propagation SGP4 and SDP4.
+     * @return drivers for SGP4 and SDP4 model parameters
+     */
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(bStarParameterDriver);
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(line1, line2, utc);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -1596648022319057689L;
+
+        /** First line. */
+        private String line1;
+
+        /** Second line. */
+        private String line2;
+
+        /** The UTC scale. */
+        private final TimeScale utc;
+
+        /** Simple constructor.
+         * @param line1 the first element (69 char String)
+         * @param line2 the second element (69 char String)
+         * @param utc the UTC time scale
+         */
+        DataTransferObject(final String line1, final String line2, final TimeScale utc) {
+            this.line1 = line1;
+            this.line2 = line2;
+            this.utc   = utc;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TLE}.
+         * @return replacement {@link TLE}
+         */
+        private Object readResolve() {
+            return new TLE(line1, line2, utc);
+        }
+
     }
 
 }

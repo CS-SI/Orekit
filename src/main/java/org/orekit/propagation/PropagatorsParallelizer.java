@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -29,11 +29,13 @@ import java.util.concurrent.TimeUnit;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.sampling.MultiSatFixedStepHandler;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
+import org.orekit.propagation.sampling.MultisatStepNormalizer;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeStamped;
 
 /** This class provides a way to propagate simultaneously several orbits.
  *
@@ -48,10 +50,10 @@ import org.orekit.time.TimeStamped;
  * variables, so separate instances for each propagator must be set up.
  * </p>
  * <p>
- * This class <em>will</em> create new threads for running the propagators
- * and it <em>will</em> override the underlying propagators step handlers.
- * The intent is anyway to manage the steps all at once using the global
- * {@link MultiSatStepHandler handler} set up at construction.
+ * This class <em>will</em> create new threads for running the propagators.
+ * It adds a new {@link MultiSatStepHandler global step handler} to manage
+ * the steps all at once, in addition to the existing individual step
+ * handlers that are preserved.
  * </p>
  * <p>
  * All propagators remain independent of each other (they don't even know
@@ -121,6 +123,20 @@ public class PropagatorsParallelizer {
         this.globalHandler = globalHandler;
     }
 
+    /** Simple constructor.
+     * @param propagators list of propagators to use
+     * @param h fixed time step (sign is not used)
+     * @param globalHandler global handler for managing all spacecrafts
+     * simultaneously
+     * @since 12.0
+     */
+    public PropagatorsParallelizer(final List<Propagator> propagators,
+                                   final double h,
+                                   final MultiSatFixedStepHandler globalHandler) {
+        this.propagators   = propagators;
+        this.globalHandler = new MultisatStepNormalizer(h, globalHandler);
+    }
+
     /** Get an unmodifiable list of the underlying mono-satellite propagators.
      * @return unmodifiable list of the underlying mono-satellite propagators
      */
@@ -137,77 +153,73 @@ public class PropagatorsParallelizer {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
-            propagators.get(0).setMasterMode(new SinglePropagatorHandler(globalHandler));
+            propagators.get(0).getMultiplexer().add(new SinglePropagatorHandler(globalHandler));
             return Collections.singletonList(propagators.get(0).propagate(start, target));
         }
 
         final double sign = FastMath.copySign(1.0, target.durationFrom(start));
-        final int n = propagators.size();
 
-        // set up queues for propagators synchronization
-        // the main thread will let underlying propagators go forward
-        // by consuming the step handling parameters they will put at each step
-        final List<SynchronousQueue<SpacecraftState>>        initQueues = new ArrayList<>(n);
-        final List<SynchronousQueue<StepHandlingParameters>> shpQueues  = new ArrayList<>(n);
+        // start all propagators in concurrent threads
+        final ExecutorService            executorService = Executors.newFixedThreadPool(propagators.size());
+        final List<PropagatorMonitoring> monitors        = new ArrayList<>(propagators.size());
         for (final Propagator propagator : propagators) {
-            final SynchronousQueue<SpacecraftState>        initQueue = new SynchronousQueue<>();
-            initQueues.add(initQueue);
-            final SynchronousQueue<StepHandlingParameters> shpQueue  = new SynchronousQueue<>();
-            shpQueues.add(shpQueue);
-            propagator.setMasterMode(new MultiplePropagatorsHandler(initQueue, shpQueue));
-        }
-
-        // concurrently run all propagators
-        final ExecutorService               executorService        = Executors.newFixedThreadPool(n);
-        final List<Future<SpacecraftState>> futures                = new ArrayList<>(n);
-        final List<SpacecraftState>         initialStates          = new ArrayList<>(n);
-        final List<StepHandlingParameters>  stepHandlingParameters = new ArrayList<>(n);
-        final List<OrekitStepInterpolator>  restricted             = new ArrayList<>(n);
-        final List<SpacecraftState>         finalStates            = new ArrayList<>(n);
-        for (int i = 0; i < n; ++i) {
-            final Propagator propagator = propagators.get(i);
-            final Future<SpacecraftState> future = executorService.submit(() -> propagator.propagate(start, target));
-            futures.add(future);
-            initialStates.add(getParameters(i, future, initQueues.get(i)));
-            stepHandlingParameters.add(getParameters(i, future, shpQueues.get(i)));
-            restricted.add(null);
-            finalStates.add(null);
+            final PropagatorMonitoring monitor = new PropagatorMonitoring(propagator, start, target, executorService);
+            monitor.waitFirstStepCompletion();
+            monitors.add(monitor);
         }
 
         // main loop
         AbsoluteDate previousDate = start;
+        final List<SpacecraftState> initialStates = new ArrayList<>(monitors.size());
+        for (final PropagatorMonitoring monitor : monitors) {
+            initialStates.add(monitor.parameters.initialState);
+        }
         globalHandler.init(initialStates, target);
         for (boolean isLast = false; !isLast;) {
 
             // select the earliest ending propagator, according to propagation direction
-            int selected = -1;
-            AbsoluteDate selectedStepEnd = null;
-            for (int i = 0; i < n; ++i) {
-                final AbsoluteDate stepEnd = stepHandlingParameters.get(i).getDate();
-                if (selected < 0 || sign * selectedStepEnd.durationFrom(stepEnd) > 0) {
-                    selected        = i;
+            PropagatorMonitoring selected = null;
+            AbsoluteDate selectedStepEnd  = null;
+            for (PropagatorMonitoring monitor : monitors) {
+                final AbsoluteDate stepEnd = monitor.parameters.interpolator.getCurrentState().getDate();
+                if (selected == null || sign * selectedStepEnd.durationFrom(stepEnd) > 0) {
+                    selected        = monitor;
                     selectedStepEnd = stepEnd;
                 }
             }
 
             // restrict steps to a common time range
-            for (int i = 0; i < n; ++i) {
-                final OrekitStepInterpolator interpolator  = stepHandlingParameters.get(i).interpolator;
+            for (PropagatorMonitoring monitor : monitors) {
+                final OrekitStepInterpolator interpolator  = monitor.parameters.interpolator;
                 final SpacecraftState        previousState = interpolator.getInterpolatedState(previousDate);
                 final SpacecraftState        currentState  = interpolator.getInterpolatedState(selectedStepEnd);
-                restricted.set(i, interpolator.restrictStep(previousState, currentState));
+                monitor.restricted                         = interpolator.restrictStep(previousState, currentState);
             }
 
-            // will this be the last step?
-            isLast = stepHandlingParameters.get(selected).isLast;
-
             // handle all states at once
-            globalHandler.handleStep(restricted, isLast);
+            final List<OrekitStepInterpolator> interpolators = new ArrayList<>(monitors.size());
+            for (final PropagatorMonitoring monitor : monitors) {
+                interpolators.add(monitor.restricted);
+            }
+            globalHandler.handleStep(interpolators);
 
-            if (!isLast) {
-                // advance one step
-                stepHandlingParameters.set(selected,
-                                           getParameters(selected, futures.get(selected), shpQueues.get(selected)));
+            if (selected.parameters.finalState == null) {
+                // step handler can still provide new results
+                // this will wait until either handleStep or finish are called
+                selected.retrieveNextParameters();
+            } else {
+                // this was the last step
+                isLast = true;
+                /* For NumericalPropagators :
+                 * After reaching the finalState with the selected monitor,
+                 * we need to do the step with all remaining monitors to reach the target time.
+                 * This also triggers the StoringStepHandler, producing ephemeris.
+                 */
+                for (PropagatorMonitoring monitor : monitors) {
+                    if (monitor != selected) {
+                        monitor.retrieveNextParameters();
+                    }
+                }
             }
 
             previousDate = selectedStepEnd;
@@ -218,67 +230,26 @@ public class PropagatorsParallelizer {
         executorService.shutdownNow();
 
         // extract the final states
-        for (int i = 0; i < n; ++i) {
+        final List<SpacecraftState> finalStates = new ArrayList<>(monitors.size());
+        for (PropagatorMonitoring monitor : monitors) {
             try {
-                finalStates.set(i, futures.get(i).get());
+                finalStates.add(monitor.future.get());
             } catch (InterruptedException | ExecutionException e) {
 
                 // sort out if exception was intentional or not
-                manageException(e);
+                monitor.manageException(e);
 
                 // this propagator was intentionally stopped,
                 // we retrieve the final state from the last available interpolator
-                finalStates.set(i, stepHandlingParameters.get(i).interpolator.getInterpolatedState(previousDate));
+                finalStates.add(monitor.parameters.interpolator.getInterpolatedState(previousDate));
 
             }
         }
+
+        globalHandler.finish(finalStates);
 
         return finalStates;
 
-    }
-
-    /** Retrieve parameters.
-     * @param index index of the propagator
-     * @param future propagation task
-     * @param queue queue for transferring parameters
-     * @param <T> type of the parameters
-     * @return retrieved parameters
-     */
-    private <T> T getParameters(final int index,
-                                final Future<SpacecraftState> future,
-                                final SynchronousQueue<T> queue) {
-        try {
-            T params = null;
-            while (params == null && !future.isDone()) {
-                params = queue.poll(MAX_WAIT, TimeUnit.MILLISECONDS);
-            }
-            if (params == null) {
-                // call Future.get just for the side effect of retrieving the exception
-                // in case the propagator ended due to an exception
-                future.get();
-            }
-            return params;
-        } catch (InterruptedException | ExecutionException e) {
-            manageException(e);
-            return null;
-        }
-    }
-
-    /** Convert exceptions.
-     * @param exception exception caught
-     */
-    private void manageException(final Exception exception) {
-        if (exception.getCause() instanceof PropagatorStoppingException) {
-            // this was an expected exception, we deliberately shut down the propagators
-            // we therefore explicitly ignore this exception
-            return;
-        } else if (exception.getCause() instanceof OrekitException) {
-            // unwrap the original exception
-            throw (OrekitException) exception.getCause();
-        } else {
-            throw new OrekitException(exception.getCause(),
-                                      LocalizedCoreFormats.SIMPLE_MESSAGE, exception.getLocalizedMessage());
-        }
     }
 
     /** Local exception to stop propagators. */
@@ -318,8 +289,14 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
-            globalHandler.handleStep(Collections.singletonList(interpolator), isLast);
+        public void handleStep(final OrekitStepInterpolator interpolator) {
+            globalHandler.handleStep(Collections.singletonList(interpolator));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void finish(final SpacecraftState finalState) {
+            globalHandler.finish(Collections.singletonList(finalState));
         }
 
     }
@@ -327,71 +304,203 @@ public class PropagatorsParallelizer {
     /** Local class for handling multiple propagator steps. */
     private static class MultiplePropagatorsHandler implements OrekitStepHandler {
 
-        /** Queue for passing initial state. */
-        private final SynchronousQueue<SpacecraftState> initQueue;
+        /** Previous container handed off. */
+        private ParametersContainer previous;
 
         /** Queue for passing step handling parameters. */
-        private final SynchronousQueue<StepHandlingParameters> shpQueue;
+        private final SynchronousQueue<ParametersContainer> queue;
 
         /** Simple constructor.
-         * @param initQueue queuefor passing initial state
-         * @param shpQueue queue for passing step handling parameters.
+         * @param queue queue for passing step handling parameters
          */
-        MultiplePropagatorsHandler(final SynchronousQueue<SpacecraftState> initQueue,
-                                   final SynchronousQueue<StepHandlingParameters> shpQueue) {
-            this.initQueue = initQueue;
-            this.shpQueue  = shpQueue;
+        MultiplePropagatorsHandler(final SynchronousQueue<ParametersContainer> queue) {
+            this.previous = new ParametersContainer(null, null, null);
+            this.queue    = queue;
         }
 
+        /** Hand off container to parallelizer.
+         * @param container parameters container to hand-off
+         */
+        private void handOff(final ParametersContainer container) {
+            try {
+                previous = container;
+                queue.put(previous);
+            } catch (InterruptedException ie) {
+                // use a dedicated exception to stop thread almost gracefully
+                throw new PropagatorStoppingException(ie);
+            }
+        }
 
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            try {
-                initQueue.put(s0);
-            } catch (InterruptedException ie) {
-                // use a dedicated exception to stop thread almost gracefully
-                throw new PropagatorStoppingException(ie);
-            }
+            handOff(new ParametersContainer(s0, null, null));
         }
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
-            try {
-                shpQueue.put(new StepHandlingParameters(interpolator, isLast));
-            } catch (InterruptedException ie) {
-                // use a dedicated exception to stop thread almost gracefully
-                throw new PropagatorStoppingException(ie);
-            }
+        public void handleStep(final OrekitStepInterpolator interpolator) {
+            handOff(new ParametersContainer(previous.initialState, interpolator, null));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void finish(final SpacecraftState finalState) {
+            handOff(new ParametersContainer(previous.initialState, previous.interpolator, finalState));
         }
 
     }
 
-    /** Local class holding parameters for one step handling. */
-    private static class StepHandlingParameters implements TimeStamped {
+    /** Container for parameters passed by propagators to step handlers. */
+    private static class ParametersContainer {
 
-        /** Interpolator set up for the current step. */
+        /** Initial state. */
+        private final SpacecraftState initialState;
+
+        /** Interpolator set up for last seen step. */
         private final OrekitStepInterpolator interpolator;
 
-        /** Indicator for last step. */
-        private final boolean isLast;
+        /** Final state. */
+        private final SpacecraftState finalState;
 
         /** Simple constructor.
-         * @param interpolator interpolator set up for the current step
-         * @param isLast if true, this is the last integration step
+         * @param initialState initial state
+         * @param interpolator interpolator set up for last seen step
+         * @param finalState final state
          */
-        StepHandlingParameters(final OrekitStepInterpolator interpolator, final boolean isLast) {
+        ParametersContainer(final SpacecraftState initialState,
+                            final OrekitStepInterpolator interpolator,
+                            final SpacecraftState finalState) {
+            this.initialState = initialState;
             this.interpolator = interpolator;
-            this.isLast       = isLast;
+            this.finalState   = finalState;
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public AbsoluteDate getDate() {
-            return interpolator.getCurrentState().getDate();
+    }
+
+    /** Container for propagator monitoring. */
+    private static class PropagatorMonitoring {
+
+        /** Queue for handing off step handler parameters. */
+        private final SynchronousQueue<ParametersContainer> queue;
+
+        /** Future for retrieving propagation return value. */
+        private final Future<SpacecraftState> future;
+
+        /** Last step handler parameters received. */
+        private ParametersContainer parameters;
+
+        /** Interpolator restricted to time range shared with other propagators. */
+        private OrekitStepInterpolator restricted;
+
+        /** Simple constructor.
+         * @param propagator managed propagator
+         * @param start start date from which orbit state should be propagated
+         * @param target target date to which orbit state should be propagated
+         * @param executorService service for running propagator
+         */
+        PropagatorMonitoring(final Propagator propagator, final AbsoluteDate start, final AbsoluteDate target,
+                             final ExecutorService executorService) {
+
+            // set up queue for handing off step handler parameters synchronization
+            // the main thread will let underlying propagators go forward
+            // by consuming the step handling parameters they will put at each step
+            queue = new SynchronousQueue<>();
+
+            // Remove former instances of "MultiplePropagatorsHandler" from step handlers multiplexer
+            clearMultiplePropagatorsHandler(propagator);
+
+            // Add MultiplePropagatorsHandler step handler
+            propagator.getMultiplexer().add(new MultiplePropagatorsHandler(queue));
+
+            // start the propagator
+            future = executorService.submit(() -> propagator.propagate(start, target));
+
         }
 
+        /** Wait completion of first step.
+         */
+        public void waitFirstStepCompletion() {
+
+            // wait until both the init method and the handleStep method
+            // of the current propagator step handler have been called,
+            // thus ensuring we have one step available to compare propagators
+            // progress with each other
+            while (parameters == null || parameters.initialState == null || parameters.interpolator == null) {
+                retrieveNextParameters();
+            }
+
+        }
+
+        /** Retrieve next step handling parameters.
+         */
+        public void retrieveNextParameters() {
+            try {
+                ParametersContainer params = null;
+                while (params == null && !future.isDone()) {
+                    params = queue.poll(MAX_WAIT, TimeUnit.MILLISECONDS);
+                    // Check to avoid loop on future not done, in the case of reached finalState.
+                    if (parameters != null) {
+                        if (parameters.finalState != null) {
+                            break;
+                        }
+                    }
+                }
+                if (params == null) {
+                    // call Future.get just for the side effect of retrieving the exception
+                    // in case the propagator ended due to an exception
+                    future.get();
+                }
+                parameters = params;
+            } catch (InterruptedException | ExecutionException e) {
+                manageException(e);
+                parameters = null;
+            }
+        }
+
+        /** Convert exceptions.
+         * @param exception exception caught
+         */
+        private void manageException(final Exception exception) {
+            if (exception.getCause() instanceof PropagatorStoppingException) {
+                // this was an expected exception, we deliberately shut down the propagators
+                // we therefore explicitly ignore this exception
+                return;
+            } else if (exception.getCause() instanceof OrekitException) {
+                // unwrap the original exception
+                throw (OrekitException) exception.getCause();
+            } else {
+                throw new OrekitException(exception.getCause(),
+                                          LocalizedCoreFormats.SIMPLE_MESSAGE, exception.getLocalizedMessage());
+            }
+        }
+
+        /** Clear existing instances of MultiplePropagatorsHandler in a monitored propagator.
+         * <p>
+         * Removes former instances of "MultiplePropagatorsHandler" from step handlers multiplexer.
+         * <p>
+         * This is done to avoid propagation getting stuck after several calls to PropagatorsParallelizer.propagate(...)
+         * <p>
+         * See issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1105">1105</a>.
+         * @param propagator monitored propagator whose MultiplePropagatorsHandlers must be cleared
+         */
+        private void clearMultiplePropagatorsHandler(final Propagator propagator) {
+
+            // First, list instances of MultiplePropagatorsHandler in the propagator multiplexer
+            final StepHandlerMultiplexer multiplexer = propagator.getMultiplexer();
+            final List<OrekitStepHandler> existingMultiplePropagatorsHandler = new ArrayList<>();
+            for (final OrekitStepHandler handler : multiplexer.getHandlers()) {
+                if (handler instanceof MultiplePropagatorsHandler) {
+                    existingMultiplePropagatorsHandler.add(handler);
+                }
+            }
+            // Then, clear all MultiplePropagatorsHandler instances from multiplexer.
+            // This is done in two steps because method "StepHandlerMultiplexer.remove(...)" already loops on the OrekitStepHandlers,
+            // leading to a ConcurrentModificationException if attempting to do everything in a single loop
+            for (final OrekitStepHandler handler : existingMultiplePropagatorsHandler) {
+                multiplexer.remove(handler);
+            }
+        }
     }
 
 }

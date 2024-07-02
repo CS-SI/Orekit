@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Finals xmlns="http://www.iers.org/2003/schema/iers" type="IAU2000A">
-<data>
+<Finals xmlns="http://www.iers.org/2003/schema/iers"
+  type="IAU2000A">
+  <data>
     <EOPSet lineID="3654">
       <date>2002-01-01</date>
       <MJD>52275</MJD>

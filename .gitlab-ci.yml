@@ -1,0 +1,160 @@
+stages:
+  - verify
+  - visualize
+  - deploy
+  - release
+
+default:
+  # Default image
+  image: registry.orekit.org/orekit/ci-utils/maven:3.9.6-eclipse-temurin-11
+  # Cache downloaded dependencies and plugins between builds.
+  # To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
+  cache:
+    paths:
+      - .m2/repository
+
+variables:
+  # This will suppress any download for dependencies and plugins or upload
+  # messages which would clutter the console log. `showDateTime` will show the
+  # passed time in milliseconds. You need to specify `--batch-mode` to make
+  # this work.
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  # As of Maven 3.3.0 instead of this you may define these options in
+  # `.mvn/maven.config` so the same config is used when running from the
+  # command line.
+  # `installAtEnd` and `deployAtEnd` are only effective with recent version of
+  # the corresponding plugins.
+  MAVEN_CLI_OPTS: "-s .CI/maven-settings.xml --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
+  SONAR_PROJECT_KEY: "${CI_PROJECT_NAMESPACE}:${CI_PROJECT_NAME}"
+  SONAR_PROJECT_NAME: "${CI_PROJECT_TITLE} (${CI_PROJECT_NAMESPACE}:${CI_PROJECT_NAME})"
+  # Deployment target properties
+  TARGET_URL_PREFIX: "cochise@ganymede.orekit.org:/var/www/mvn-sites/site-orekit"
+
+verify:
+  stage: verify
+  script:
+    - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
+    - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
+          -Dsonar.host.url=${SONAR_HOST_URL}
+          -Dsonar.login=${SONAR_TOKEN}
+          -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
+          -Dsonar.projectKey="$SONAR_PROJECT_KEY"
+          -Dsonar.projectName="$SONAR_PROJECT_NAME"
+          -Dsonar.qualitygate.wait=true
+  artifacts:
+    paths:
+      - target/*.jar
+      - target/site
+    reports:
+      junit:
+        - target/surefire-reports/*.xml
+
+verify:warning:
+  stage: verify
+  script:
+    - echo "Please, configure SonarQube by following steps described in the contribution guide:"
+    - echo "https://www.orekit.org/site-orekit-development/contributing.html"
+    - exit 1
+  allow_failure: true
+  rules:
+    - if: $SONAR_TOKEN == null
+
+# Convert and import in GitLab coverage data.
+# The information is then available directly in merge-request view.
+# Cf. https://docs.gitlab.com/ee/user/project/merge_requests/test_coverage_visualization.html
+coverage-import:
+  stage: visualize
+  image: haynes/jacoco2cobertura:1.0.8
+  script:
+    # Display total coverage
+    - "grep -o '<tfoot.*tfoot>' target/site/jacoco/index.html | sed 's:<[^>]*>: :g'"
+    # Convert report from jacoco to cobertura
+    - 'python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java > target/site/cobertura.xml'
+    # Read the <source></source> tag and prepend the path to every filename
+    # attribute
+    - 'python /opt/source2filename.py target/site/cobertura.xml'
+  needs:
+    - verify
+  dependencies:
+    - verify
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: target/site/cobertura.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
+
+changelog:
+  stage: verify
+  image: alpine:latest
+  before_script:
+    - apk add libxslt
+  script:
+    - xsltproc .CI/changes2release.xsl src/changes/changes.xml > CHANGELOG.md
+  artifacts:
+    paths:
+      - CHANGELOG.md
+
+# On main branches (develop, release-*, master) the produced artifacts are
+# deployed on the Nexus of the project (https://packages.orekit.org/)
+deploy:artifacts:
+  stage: deploy
+  script:
+    - mvn $MAVEN_CLI_OPTS javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
+  artifacts:
+    paths:
+      - target/*.jar
+  only:
+    - master@orekit/orekit
+    - /^release-[.0-9]+$/@orekit/orekit
+    - develop@orekit/orekit
+
+deploy:site:
+  stage: deploy
+  before_script:
+    # Prepare the SSH environment required to push documentation onto the server
+    - eval $(ssh-agent -s)
+    - echo "$SSH_SECRET_KEY" | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
+  script:
+    - PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+    - rsync -rz --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
+            target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
+  only:
+    - master@orekit/orekit
+    - /^release-[.0-9]+$/@orekit/orekit
+    - develop@orekit/orekit
+
+# trigger performance tests after artifacts are deployed to Nexus
+# similar to Jenkins' "build after a snapshot dependency is built"
+performance:
+  stage: deploy
+  # don't fail the build if this doesn't work
+  allow_failure: true
+  needs:
+    - job: deploy:artifacts
+      artifacts: false
+  trigger: orekit/orekit-performance
+  only:
+    - develop@orekit/orekit
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - cat CHANGELOG.md
+  release:
+    tag_name: $CI_COMMIT_TAG
+    description: './CHANGELOG.md'
+    assets:
+      links:
+        - name: orekit-${CI_COMMIT_TAG}.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}.jar
+        - name: orekit-${CI_COMMIT_TAG}-javadoc.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}-javadoc.jar
+        - name: orekit-${CI_COMMIT_TAG}-sources.jar
+          url: https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}-sources.jar
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^[.0-9]+$/'

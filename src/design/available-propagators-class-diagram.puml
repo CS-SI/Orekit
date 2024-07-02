@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
@@ -36,12 +37,10 @@
  
     package propagation #DDEBD8 {
       interface Propagator {
-        +int getMode()
-        +void setSlaveMode()
-        +void setMasterMode(double h, OrekitFixedStepHandler handler)
-        +void setMasterMode(OrekitStepHandler handler)
-        +void setEphemerisMode()
-        +BoundedPropagator getGeneratedEphemeris()
+        +StepHandlerMultiplexer getMultiplexer()
+        +void clearStepHandlers()
+        +void setStepHandler(double h, OrekitFixedStepHandler handler)
+        +void setStepHandler(OrekitStepHandler handler)
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
         +void addEventDetector(EventDetector detector)
@@ -49,6 +48,7 @@
         +void clearEventsDetectors()
         +AttitudeProvider getAttitudeProvider()
         +void setAttitudeProvider(AttitudeProvider attitudeProvider)
+        +MatricesHarvester setupMatricesComputation(String stmName, RealMatrix initialStm, DoubleArrayDictionary initialJacobianColumns)
         +Frame getFrame()
         +SpacecraftState propagate(AbsoluteDate target)
         +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
@@ -66,7 +66,7 @@
       Propagator            <|.. AbstractPropagator
       Propagator            <|.. BoundedPropagator
 
-      package analytical #ECEBD8 {
+      package analytical #CBDBC8 {
 
         abstract class AbstractAnalyticalPropagator {
           +PVCoordinatesProvider getPvProvider()
@@ -75,27 +75,33 @@
 
         AbstractPropagator           <|-- AbstractAnalyticalPropagator
         AbstractAnalyticalPropagator <|-- AdapterPropagator
+        AbstractAnalyticalPropagator <|-- BrouwerLyddanePropagator
         AbstractAnalyticalPropagator <|-- EcksteinHechlerPropagator
+        AbstractAnalyticalPropagator <|-- GLONASSAnalyticalPropagator
         AbstractAnalyticalPropagator <|-- KeplerianPropagator
 
         AbstractAnalyticalPropagator <|-- Ephemeris
         BoundedPropagator            <|.. Ephemeris
 
-        package tle #DDEBD8 {
+        package tle #CCCCC7 {
           AbstractAnalyticalPropagator <|-- TLEPropagator
         }
 
-        package gnss #DDEBD8 {
-          AbstractAnalyticalPropagator <|-- GPSPropagator
+        package gnss #CCCCC7 {
+          AbstractAnalyticalPropagator <|-- GNSSPropagator
+        }
+
+        package intelsat #CCCCC7 {
+          AbstractAnalyticalPropagator <|-- IntelsatElevenElementsPropagator
         }
 
      }
 
-     package integration #ECEBD8 {
+     package integration #CBDBC8 {
 
        abstract class AbstractIntegratedPropagator {
          +void setIntegrator(FirstOrderIntegrator integrator)
-         +void addAdditionalEquations(AdditionalEquations addEqu)
+         +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
          +void setInitialAdditionalState(String name, double[] addState)
        }
 
@@ -106,16 +112,17 @@
 
      }
 
-     package semianalytical #ECEBD8 {
+     package semianalytical #CBDBC8 {
 
-       package dsst #DDEBD8 {
+       package dsst #CCCCC7 {
          DSSTPropagator --|> AbstractIntegratedPropagator
        }
 
      }
 
-     package numerical #ECEBD8 {
+     package numerical #CBDBC8 {
        NumericalPropagator --|> AbstractIntegratedPropagator
+       GLONASSNumericalPropagator  --|> AbstractIntegratedPropagator
      }
 
    }

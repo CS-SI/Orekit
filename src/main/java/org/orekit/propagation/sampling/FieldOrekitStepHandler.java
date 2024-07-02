@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -26,8 +26,9 @@ import org.orekit.time.FieldAbsoluteDate;
  * href="http://commons.apache.org/math/"> commons-math</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
-public interface FieldOrekitStepHandler<T extends RealFieldElement<T>> {
+public interface FieldOrekitStepHandler<T extends CalculusFieldElement<T>> {
 
     /** Initialize step handler at the start of a propagation.
      * <p>
@@ -38,12 +39,22 @@ public interface FieldOrekitStepHandler<T extends RealFieldElement<T>> {
      * @param s0 initial state
      * @param t target time for the integration
      */
-    void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t);
+    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+        // do nothing by default
+    }
 
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
-     * @param isLast if true, this is the last integration step
      */
-    void handleStep(FieldOrekitStepInterpolator<T> interpolator, boolean isLast);
+    void handleStep(FieldOrekitStepInterpolator<T> interpolator);
+
+    /**
+     * Finalize propagation.
+     * @param finalState state at propagation end
+     * @since 11.0
+     */
+    default void finish(FieldSpacecraftState<T> finalState) {
+        // nothing by default
+    }
 
 }

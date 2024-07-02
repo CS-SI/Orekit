@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,10 +19,11 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -32,16 +33,25 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 /** This classes manages a sequence of different attitude providers that are activated
  * in turn according to switching events.
@@ -84,13 +94,13 @@ public class AttitudesSequence implements AttitudeProvider {
     private transient TimeSpanMap<AttitudeProvider> activated;
 
     /** Switching events list. */
-    private final List<Switch<?>> switches;
+    private final List<Switch> switches;
 
     /** Constructor for an initially empty sequence.
      */
     public AttitudesSequence() {
         activated = null;
-        switches  = new ArrayList<Switch<?>>();
+        switches  = new ArrayList<>();
     }
 
     /** Reset the active provider.
@@ -102,7 +112,7 @@ public class AttitudesSequence implements AttitudeProvider {
      * @param provider provider to activate
      */
     public void resetActiveProvider(final AttitudeProvider provider) {
-        activated = new TimeSpanMap<AttitudeProvider>(provider);
+        activated = new TimeSpanMap<>(provider);
     }
 
     /** Register all wrapped switch events to the propagator.
@@ -116,7 +126,7 @@ public class AttitudesSequence implements AttitudeProvider {
      * @param propagator propagator that will handle the events
      */
     public void registerSwitchEvents(final Propagator propagator) {
-        for (final Switch<?> s : switches) {
+        for (final Switch s : switches) {
             propagator.addEventDetector(s);
         }
     }
@@ -133,8 +143,8 @@ public class AttitudesSequence implements AttitudeProvider {
      * @param propagator propagator that will handle the events
      * @param <T> type of the field elements
      */
-    public <T extends RealFieldElement<T>> void registerSwitchEvents(final Field<T> field, final FieldPropagator<T> propagator) {
-        for (final Switch<?> sw : switches) {
+    public <T extends CalculusFieldElement<T>> void registerSwitchEvents(final Field<T> field, final FieldPropagator<T> propagator) {
+        for (final Switch sw : switches) {
             propagator.addEventDetector(new FieldEventDetector<T>() {
 
                 /** {@inheritDoc} */
@@ -147,19 +157,19 @@ public class AttitudesSequence implements AttitudeProvider {
                 /** {@inheritDoc} */
                 @Override
                 public T g(final FieldSpacecraftState<T> s) {
-                    return field.getZero().add(sw.g(s.toSpacecraftState()));
+                    return field.getZero().newInstance(sw.g(s.toSpacecraftState()));
                 }
 
                 /** {@inheritDoc} */
                 @Override
                 public T getThreshold() {
-                    return field.getZero().add(sw.getThreshold());
+                    return field.getZero().newInstance(sw.getThreshold());
                 }
 
                 /** {@inheritDoc} */
                 @Override
-                public T getMaxCheckInterval() {
-                    return field.getZero().add(sw.getMaxCheckInterval());
+                public FieldAdaptableInterval<T> getMaxCheckInterval() {
+                    return s -> sw.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
                 }
 
                 /** {@inheritDoc} */
@@ -170,14 +180,23 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
-                    return sw.eventOccurred(s.toSpacecraftState(), increasing);
-                }
+                public FieldEventHandler<T> getHandler() {
+                    return new FieldEventHandler<T>() {
+                        /** {@inheritDoc} */
+                        @Override
+                        public Action eventOccurred(final FieldSpacecraftState<T> s,
+                                                    final FieldEventDetector<T> detector,
+                                                    final boolean increasing) {
+                            return sw.eventOccurred(s.toSpacecraftState(), sw, increasing);
+                        }
 
-                /** {@inheritDoc} */
-                @Override
-                public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) {
-                    return new FieldSpacecraftState<>(field, sw.resetState(oldState.toSpacecraftState()));
+                        /** {@inheritDoc} */
+                        @Override
+                        public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector,
+                                                                  final FieldSpacecraftState<T> oldState) {
+                            return new FieldSpacecraftState<>(field, sw.resetState(sw, oldState.toSpacecraftState()));
+                        }
+                    };
                 }
 
             });
@@ -281,31 +300,44 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         // add the switching condition
-        switches.add(new Switch<T>(switchEvent, switchOnIncrease, switchOnDecrease,
-                                   past, future, transitionTime, transitionFilter, handler));
+        switches.add(new Switch(switchEvent, switchOnIncrease, switchOnDecrease,
+                                past, future, transitionTime, transitionFilter, handler));
 
     }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame) {
         return activated.get(date).getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame) {
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
         return activated.get(date.toAbsoluteDate()).getAttitude(pvProv, date, frame);
     }
 
-    /** Switch specification.
-     * @param <T> class type for the generic version
-     */
-    private class Switch<T extends EventDetector> implements EventDetector {
+    /** {@inheritDoc} */
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        return activated.get(date).getAttitudeRotation(pvProv, date, frame);
+    }
+
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+        return activated.get(date.toAbsoluteDate()).getAttitudeRotation(pvProv, date, frame);
+    }
+
+    /** Switch specification. */
+    private class Switch implements EventDetector, EventHandler {
 
         /** Event. */
-        private final T event;
+        private final EventDetector event;
 
         /** Event direction triggering the switch. */
         private final boolean switchOnIncrease;
@@ -343,7 +375,7 @@ public class AttitudesSequence implements AttitudeProvider {
          * should match past and future attitude laws
          * @param switchHandler handler to call for notifying when switch occurs (may be null)
          */
-        Switch(final T event,
+        Switch(final EventDetector event,
                final boolean switchOnIncrease, final boolean switchOnDecrease,
                final AttitudeProvider past, final AttitudeProvider future,
                final double transitionTime, final AngularDerivativesFilter transitionFilter,
@@ -366,7 +398,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double getMaxCheckInterval() {
+        public AdaptableInterval getMaxCheckInterval() {
             return event.getMaxCheckInterval();
         }
 
@@ -377,13 +409,12 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0,
-                         final AbsoluteDate t) {
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
 
             // reset the transition parameters (this will be done once for each switch,
-            //  despite doing it only once would have sufficient; its not really a problem)
+            //  despite doing it only once would have sufficient; it's not really a problem)
             forward = t.durationFrom(s0.getDate()) >= 0.0;
-            if (activated.getTransitions().size() > 1) {
+            if (activated.getSpansNumber() > 1) {
                 // remove transitions that will be overridden during upcoming propagation
                 if (forward) {
                     activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate().shiftedBy(transitionTime));
@@ -403,27 +434,32 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+        public EventHandler getHandler() {
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
 
             final AbsoluteDate date = s.getDate();
             if (activated.get(date) == (forward ? past : future) &&
-                ((increasing && switchOnIncrease) || (!increasing && switchOnDecrease))) {
+                (increasing && switchOnIncrease || !increasing && switchOnDecrease)) {
 
                 if (forward) {
 
                     // prepare transition
                     final AbsoluteDate transitionEnd = date.shiftedBy(transitionTime);
-                    activated.addValidAfter(new TransitionProvider(s.getAttitude(), transitionEnd), date);
+                    activated.addValidAfter(new TransitionProvider(s.getAttitude(), transitionEnd), date, false);
 
                     // prepare future law after transition
-                    activated.addValidAfter(future, transitionEnd);
+                    activated.addValidAfter(future, transitionEnd, false);
 
                     // notify about the switch
                     if (switchHandler != null) {
                         switchHandler.switchOccurred(past, future, s);
                     }
 
-                    return event.eventOccurred(s, increasing);
+                    return event.getHandler().eventOccurred(s, event, increasing);
 
                 } else {
 
@@ -431,37 +467,37 @@ public class AttitudesSequence implements AttitudeProvider {
                     final Orbit     sOrbit    = s.getOrbit().shiftedBy(-transitionTime);
                     final Attitude  sAttitude = past.getAttitude(sOrbit, sOrbit.getDate(), sOrbit.getFrame());
                     SpacecraftState sState    = new SpacecraftState(sOrbit, sAttitude, s.getMass());
-                    for (final Map.Entry<String, double[]> entry : s.getAdditionalStates().entrySet()) {
+                    for (final DoubleArrayDictionary.Entry entry : s.getAdditionalStatesValues().getData()) {
                         sState = sState.addAdditionalState(entry.getKey(), entry.getValue());
                     }
 
                     // prepare transition
-                    activated.addValidBefore(new TransitionProvider(sAttitude, date), date);
+                    activated.addValidBefore(new TransitionProvider(sAttitude, date), date, false);
 
                     // prepare past law before transition
-                    activated.addValidBefore(past, sOrbit.getDate());
+                    activated.addValidBefore(past, sOrbit.getDate(), false);
 
                     // notify about the switch
                     if (switchHandler != null) {
                         switchHandler.switchOccurred(future, past, sState);
                     }
 
-                    return event.eventOccurred(sState, increasing);
+                    return event.getHandler().eventOccurred(sState, event, increasing);
 
                 }
 
             } else {
                 // trigger the underlying event despite no attitude switch occurred
-                return event.eventOccurred(s, increasing);
+                return event.getHandler().eventOccurred(s, event, increasing);
             }
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final SpacecraftState oldState) {
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
             // delegate to underlying event
-            return event.resetState(oldState);
+            return event.getHandler().resetState(event, oldState);
         }
 
         /** Provider for transition phases.
@@ -488,35 +524,45 @@ public class AttitudesSequence implements AttitudeProvider {
             public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                         final AbsoluteDate date, final Frame frame) {
 
-                // interpolate between the two boundary attitudes
+                // Create sample
                 final TimeStampedAngularCoordinates start =
-                                transitionPreceding.withReferenceFrame(frame).getOrientation();
+                        transitionPreceding.withReferenceFrame(frame).getOrientation();
                 final TimeStampedAngularCoordinates end =
-                                future.getAttitude(pvProv, transitionEnd, frame).getOrientation();
-                final TimeStampedAngularCoordinates interpolated =
-                                TimeStampedAngularCoordinates.interpolate(date, transitionFilter,
-                                                                          Arrays.asList(start, end));
+                        future.getAttitude(pvProv, transitionEnd, frame).getOrientation();
+                final List<TimeStampedAngularCoordinates> sample =  Arrays.asList(start, end);
+
+                // Create interpolator
+                final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =
+                        new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), transitionFilter);
+
+                // interpolate between the two boundary attitudes
+                final TimeStampedAngularCoordinates interpolated = interpolator.interpolate(date, sample);
 
                 return new Attitude(frame, interpolated);
 
             }
 
             /** {@inheritDoc} */
-            public <S extends RealFieldElement<S>> FieldAttitude<S> getAttitude(final FieldPVCoordinatesProvider<S> pvProv,
+            public <S extends CalculusFieldElement<S>> FieldAttitude<S> getAttitude(final FieldPVCoordinatesProvider<S> pvProv,
                                                                                 final FieldAbsoluteDate<S> date,
                                                                                 final Frame frame) {
 
-                // interpolate between the two boundary attitudes
+                // create sample
                 final TimeStampedFieldAngularCoordinates<S> start =
-                                new TimeStampedFieldAngularCoordinates<>(date.getField(),
-                                                                         transitionPreceding.withReferenceFrame(frame).getOrientation());
+                        new TimeStampedFieldAngularCoordinates<>(date.getField(),
+                                                                 transitionPreceding.withReferenceFrame(frame).getOrientation());
                 final TimeStampedFieldAngularCoordinates<S> end =
-                                future.getAttitude(pvProv,
-                                                   new FieldAbsoluteDate<>(date.getField(), transitionEnd),
-                                                   frame).getOrientation();
-                final TimeStampedFieldAngularCoordinates<S> interpolated =
-                                TimeStampedFieldAngularCoordinates.interpolate(date, transitionFilter,
-                                                                               Arrays.asList(start, end));
+                        future.getAttitude(pvProv,
+                                           new FieldAbsoluteDate<>(date.getField(), transitionEnd),
+                                           frame).getOrientation();
+                final List<TimeStampedFieldAngularCoordinates<S>> sample = Arrays.asList(start, end);
+
+                // create interpolator
+                final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<S>, S> interpolator =
+                        new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(sample.size(), transitionFilter);
+
+                // interpolate between the two boundary attitudes
+                final TimeStampedFieldAngularCoordinates<S> interpolated = interpolator.interpolate(date, sample);
 
                 return new FieldAttitude<>(frame, interpolated);
             }

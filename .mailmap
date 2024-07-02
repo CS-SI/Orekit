@@ -1,49 +1,115 @@
-Albert Alcarraz García <albert.alcarraz-garcia@c-s.fr> Albert Alcarraz García <albert.alcarraz-garcia@c-s.fr>
-Andrea Antolino <andrea.antolino@c-s.fr>               Andrea Antolino <Andrea.Antolino@c-s.fr>
-Andrea Antolino <andrea.antolino@c-s.fr>               Andrea Antolino <andrea.antolino@c-s.fr>
-Bruno Revelin <bruno.revelin@c-s.fr>                   Bruno Revelin <Bruno.Revelin@c-s.fr>
-Bryan Cazabonne <bryan.cazabonne@c-s.fr>               Bryan <bryan.cazabonne@c-s.com>
-Bryan Cazabonne <bryan.cazabonne@c-s.fr>               Bryan Cazabonne <bryan.cazabonne@c-s.fr>
-Daniel De Sousa <dan.desousa@gmail.com>                Daniel De Sousa <dan.desousa@gmail.com>
-Evan Ward <evan.ward@nrl.navy.mil>                     Evan Ward <evan.ward@nrl.navy.mil>
-Evan Ward <evan.ward@nrl.navy.mil>                     Evan Ward <nomail@nowhere.org>
-Fabien Maussion <fabien@orekit.org>                    Fabien Maussion <fabien@orekit.org>
-Francesco Rocca <francesco.rocca@telespazio.com>       Francesco Rocca <>
-Greg Carbott <gregory.carbott@nrl.navy.mil>            Greg Carbott <gregory.carbott@nrl.navy.mil>
-Guilhem Bonnefille <guilhem.bonnefille@c-s.fr>         Guilhem Bonnefille <guilhem.bonnefille@c-s.fr>
-Guylaine Prat <guylaine.prat@c-s.fr>                   Guylaine Prat <guylaine.prat@c-s.fr>
-Hank Grabowski <hank@applieddefense.com>               Hank Grabowski <hank@applieddefense.com>
-Joris Olympio <joris.olympio@c-s.fr>                   Joris Olympio <joris.olympio@c-s.fr>
-Joris Olympio <joris.olympio@c-s.fr>                   jolympio <joris.olympio@c-s.fr>
-Luc Maisonobe <luc@orekit.org>                         Luc Maisonobe <Luc.Maisonobe@free.fr>
-Luc Maisonobe <luc@orekit.org>                         Luc Maisonobe <Luc.Maisonobe@orekit.org>
-Luc Maisonobe <luc@orekit.org>                         Luc Maisonobe <luc@orekit.org>
-Luc Maisonobe <luc@orekit.org>                         maisonobe <maisonobe@users.noreply.github.com>
-Lucian Barbulescu <lucian.barbulescu@c-s.ro>           Lucian Barbulescu <lucian.barbulescu@c-s.ro>
-Madalin Mamuleanu <mamuleanu.madalin@gmail.com>        Madalin Mamuleanu <mamuleanu.madalin@gmail.com>
-MaksimP <maksimp86@mail.ru>                            MaksimP <maksimp86@mail.ru>
-Maxime Journot <maxime.journot@c-s.fr>                 Maxime Journot <Maxime.Journot@c-s.fr>
-Maxime Journot <maxime.journot@c-s.fr>                 Maxime Journot <maxime.journot@c-s.fr>
-Nicolas Bernard <nicolas.bernard@c-s.fr>               Nicola Bernard <nicolas.bernard@c-s.fr>
-Nicolas Bernard <nicolas.bernard@c-s.fr>               Nicolas Bernard <nicolas.bernard@c-s.fr>
-Pascal Parraud <pascal@orekit.org>                     Pascal Parraud <pascal@orekit.org>
-Pavel Bludov <pbludov@gmail.com>                       Pavel Bludov <pbludov@gmail.com>
-Piotr Listkiewicz <piotr.listkiewicz@gmail.com>        Piotr Listkiewicz <piotr.listkiewicz@gmail.com>
-Piotr Listkiewicz <piotr.listkiewicz@gmail.com>        liscju <piotr.listkiewicz@gmail.com>
-rnveach <rveach02@gmail.com>                           rnveach <rveach02@gmail.com>
-Robert Painsi <robertpainsi@gmail.com>                 Robert Painsi <robertpainsi@gmail.com>
-Romain di Costanzo <romain.di-costanzo@c-s.fr>         Romain Di Costanzo <romain.di-costanzo@c-s.fr>
-Romain di Costanzo <romain.di-costanzo@c-s.fr>         rdicosta <romain.di-costanzo@c-s.fr>
-Roman Ivanov <ivanov-jr@mail.ru>                       Roman Ivanov <ivanov-jr@mail.ru>
-Sébastien Dinot <sebastien.dinot@c-s.fr>               Sebastien Dinot <sebastien.dinot@c-s.fr>
-Sébastien Dinot <sebastien.dinot@c-s.fr>               Sebastien Dinot <sebastien@dinot.net>
-Sébastien Dinot <sebastien.dinot@c-s.fr>               Sébastien Dinot <Sebastien.Dinot@c-s.fr>
-Sébastien Dinot <sebastien.dinot@c-s.fr>               Sébastien Dinot <sebastien.dinot@c-s.fr>
-Steven <sljkwsk@yahoo.com>                             Steven <sljkwsk@yahoo.com>
-Steven Ports <steven.ports@c-s.fr>                     Steven Ports <steven.ports@c-s.fr>
-Thierry Ceolin <thierry.ceolin@c-s.fr>                 Thierry Ceolin <thierry@orekit.org>
-Thierry Ceolin <thierry.ceolin@c-s.fr>                 thierry ceolin <thierry.ceolin@c-s.fr>
-Thierry Ceolin <thierry.ceolin@c-s.fr>                 thierry ceolin <thierry@orekit.org>
-Thomas Neidhart <thomas.neidhart@gmail.com>            Thomas Neidhart <thomas.neidhart@gmail.com>
-Véronique Pommier-Maurussane <vero@orekit.org>         Véronique Pommier-Maurussane <vero@orekit.org>
-Yannick Jeandroz <yannick.jeandroz@airbus.com>         Yannick Jeandroz <yannick.jeandroz@airbus.com>
+Abhishek Kumar <abhimait1909@gmail.com>                    abhishek kumar <abhimait1909@gmail.com>
+Albert Alcarraz García <albert.alcarraz-garcia@csgroup.eu> albert alcarraz garcía <albert.alcarraz-garcia@c-s.fr>
+Alberto Fossà <alberto.fossa18@gmail.com>                  alberto fossà <alberto.fossa18@gmail.com>
+Alexandr Puzeyev <puzeyev.a@gmail.com>                     alexandr <puzeyev.a@gmail.com>
+Amir Allahvirdi-Zadeh <am.allahverdi@gmail.com>            amir allahvirdi-zadeh <am.allahverdi@gmail.com>
+Andrea Antolino <andrea.antolino@csgroup.eu>               andrea antolino <andrea.antolino@csgroup.eu>
+Andrea Antolino <andrea.antolino@csgroup.eu>               andrea antolino <andrea.antolino@c-s.fr>
+Andrew Goetz <andrew@goetz.space>                          andrew goetz <andrew@goetz.space>
+Andrew Goetz <andrew@goetz.space>                          andrew goetz <andrew.s.goetz@lmco.com>
+Anne-Laure Lugan <anne-laure.lugan@airbus.com>             anne-laure lugan <anne-laure.lugan@airbus.com>
+Bruno Revelin <bruno.revelin@csgroup.eu>                   bruno revelin <bruno.revelin@csgroup.eu>
+Bruno Revelin <bruno.revelin@csgroup.eu>                   bruno revelin <bruno.revelin@c-s.fr>
+Bryan Cazabonne <bryan.cazabonne@gmail.com>                bryan cazabonne <bryan.cazabonne@gmail.com>
+Bryan Cazabonne <bryan.cazabonne@gmail.com>                bryan cazabonne <bryan.cazabonne@csgroup.eu>
+Bryan Cazabonne <bryan.cazabonne@gmail.com>                bryan cazabonne <bryan.cazabonne@c-s.fr>
+Bryan Cazabonne <bryan.cazabonne@gmail.com>                bryan <bryan.cazabonne@c-s.com>
+Chiara Rusconi <chiara.rusconi@csgroup.eu>                 chiara rusconi <chiara.rusconi@csgroup.eu>
+Chiara Rusconi <chiara.rusconi@csgroup.eu>                 crusconi <chiara.rusconi@csgroup.eu>
+Clément Jonglez <clement@jonglez.space>                    clément jonglez <clement@jonglez.space>
+Daniel De Sousa <dan.desousa@gmail.com>                    daniel de sousa <dan.desousa@gmail.com>
+David Soulard <david.soulard@csgroup.eu>                   david soulard <david.soulard@csgroup.eu>
+David Soulard <david.soulard@csgroup.eu>                   david soulard <david.soulard@c-s.fr>
+Dylan Gautreau <dylan.gautreau@csgroup.eu>                 dylan gautreau <dylan.gautreau@csgroup.eu>
+Dylan Gautreau <dylan.gautreau@csgroup.eu>                 dylan gautreau <dylan.gautreau@c-s.fr>
+Evan Ward <evan.ward@nrl.navy.mil>                         evan ward <evan.ward@nrl.navy.mil>
+Evan Ward <evan.ward@nrl.navy.mil>                         evan ward <nomail@nowhere.org>
+Fabien Maussion <fabien@orekit.org>                        fabien maussion <fabien@orekit.org>
+Francesco Rocca <francesco.rocca@telespazio.com>           francesco rocca <>
+Gabriele Serafini <gabriele.serafini94@gmail.com>          gabriele serafini <gabriele.serafini94@gmail.com>
+Greg Carbott <gregory.carbott@nrl.navy.mil>                greg carbott <gregory.carbott@nrl.navy.mil>
+Guilhem Bonnefille <guilhem.bonnefille@csgroup.eu>         guilhem bonnefille <guilhem.bonnefille@csgroup.eu>
+Guilhem Bonnefille <guilhem.bonnefille@csgroup.eu>         guilhem bonnefille <guilhem.bonnefille@c-s.fr>
+Guillaume Obrecht <guillaume.obrecht@gmail.com>            guillaume obrecht <guillaume.obrecht@gmail.com>
+Guylaine Prat <guylaine.prat@csgroup.eu>                   guylaine prat <guylaine.prat@csgroup.eu>
+Guylaine Prat <guylaine.prat@csgroup.eu>                   guylaine prat <guylaine.prat@c-s.fr>
+Hank Grabowski <hank@applieddefense.com>                   hank grabowski <hank@applieddefense.com>
+Joris Olympio <joris.olympio@csgroup.eu>                   joris olympio <joris.olympio@csgroup.eu>
+Joris Olympio <joris.olympio@csgroup.eu>                   joris olympio <joris.olympio@c-s.fr>
+Joris Olympio <joris.olympio@csgroup.eu>                   jolympio <joris.olympio@c-s.fr>
+Julie Bayard <julie.bayard@csgroup.eu>                     jbayard <jbayard@po18076lx>
+Julio Hernanz González <juliohernanzgonzalez@gmail.com>    julio hernanz gonzález <juliohernanzgonzalez@gmail.com>
+Lara Hue <lara.hue@airbus.com>                             lara hue <lara.hue@airbus.com>
+Lars Næsbye Christensen <lars@naesbye.dk>                  lars næsbye christensen <lars@naesbye.dk>
+Laurene Beauvalet <laurene.beauvalet@csgroup.eu>           laurene beauvalet <laurene.beauvalet@csgroup.eu>
+Laurene Beauvalet <laurene.beauvalet@csgroup.eu>           laurene beauvalet <laurene.beauvalet@c-s.fr>
+Luc Maisonobe <luc@orekit.org>                             luc maisonobe <luc.maisonobe@csgroup.eu>
+Luc Maisonobe <luc@orekit.org>                             luc maisonobe <luc.maisonobe@c-s.fr>
+Luc Maisonobe <luc@orekit.org>                             luc maisonobe <luc.maisonobe@free.fr>
+Luc Maisonobe <luc@orekit.org>                             luc maisonobe <luc.maisonobe@orekit.org>
+Luc Maisonobe <luc@orekit.org>                             luc maisonobe <luc@orekit.org>
+Luc Maisonobe <luc@orekit.org>                             maisonobe <maisonobe@users.noreply.github.com>
+Lucian Barbulescu <lucian.barbulescu@c-s.ro>               lucian barbulescu <lucian.barbulescu@c-s.ro>
+Lucian Barbulescu <lucian.barbulescu@c-s.ro>               lucian barbulescu <lucian.barbulescu@edu.ucv.ro>
+Lukas Matt <lukas@zauberstuhl.de>                          lukas matt <lukas@zauberstuhl.de>
+Madalin Mamuleanu <mamuleanu.madalin@gmail.com>            madalin mamuleanu <mamuleanu.madalin@gmail.com>
+MaksimP <maksimp86@mail.ru>                                maksimp <maksimp86@mail.ru>
+Mark Rutten <markgrutten@yahoo.com.au>                     mark rutten <markgrutten@yahoo.com.au>
+Maxime Journot <maxime.journot@csgroup.eu>                 maxime journot <maxime.journot@csgroup.eu>
+Maxime Journot <maxime.journot@csgroup.eu>                 maxime journot <maxime.journot@c-s.fr>
+Mélina Vanel <melina.vanel@csgroup.eu>                     mélina vanel <melina.vanel@csgroup.eu>
+Mélina Vanel <melina.vanel@csgroup.eu>                     mélina vanel <melina.vanel@c-s.fr>
+Mélina Vanel <melina.vanel@csgroup.eu>                     mvanel <Mélina Vanel>
+Mikael Fillastre <mikael.fillastre@exotrail.com>           mikael fillastre <mikael.fillastre@exotrail.com>
+Nick Mancuso <nicholas.mancuso13@gmail.com>                nick mancuso <nicholas.mancuso13@gmail.com>
+Nicolas Bernard <nicolas.bernard@csgroup.eu>               nicola bernard <nicolas.bernard@c-s.fr>
+Nicolas Bernard <nicolas.bernard@csgroup.eu>               nicolas bernard <nicolas.bernard@csgroup.eu>
+Nicolas Bernard <nicolas.bernard@csgroup.eu>               nicolas bernard <nicolas.bernard@c-s.fr>
+Nicolas Fialton <nicolas.fialton@csgroup.eu>               nfialton <nfialton@pc16565lx>
+Pascal Parraud <pascal@orekit.org>                         pascal parraud <pascal@orekit.org>
+Pascal Parraud <pascal@orekit.org>                         pascal parraud <pascal.parraud@csgroup.eu>
+Pascal Parraud <pascal@orekit.org>                         pascal parraud <pascal.parraud@c-s.fr>
+Pavel Bludov <pbludov@gmail.com>                           pavel bludov <pbludov@gmail.com>
+Petrus Hyvönen <petrus.hyvonen@sscspace.com>               petrus hyvönen <petrus.hyvonen@sscspace.com>
+Piotr Listkiewicz <piotr.listkiewicz@gmail.com>            piotr listkiewicz <piotr.listkiewicz@gmail.com>
+Piotr Listkiewicz <piotr.listkiewicz@gmail.com>            liscju <piotr.listkiewicz@gmail.com>
+plan3d <plan3d@tutanota.com>                               plan3d <plan3d@tutanota.com>
+Pol Mesalles <pol.developer1@gmail.com>                    pol mesalles <pol.developer1@gmail.com>
+Raphaël Fermé <raphael.ferme@csgroup.eu>                   ferme raphael <rferme@idsi0.si.c-s.fr>
+Raphaël Fermé <raphael.ferme@csgroup.eu>                   raphael ferme <rferme@csgroup.eu>
+Raphaël Fermé <raphael.ferme@csgroup.eu>                   raphael ferme <rferme@c-s.fr>
+rnveach <rveach02@gmail.com>                               rnveach <rveach02@gmail.com>
+Robert Painsi <robertpainsi@gmail.com>                     robert painsi <robertpainsi@gmail.com>
+Romain di Costanzo <romain.di-costanzo@csgroup.eu>         romain di costanzo <romain.di-costanzo@csgroup.eu>
+Romain di Costanzo <romain.di-costanzo@csgroup.eu>         romain di costanzo <romain.di-costanzo@c-s.fr>
+Romain di Costanzo <romain.di-costanzo@csgroup.eu>         rdicosta <romain.di-costanzo@c-s.fr>
+Roman Ivanov <ivanov-jr@mail.ru>                           roman ivanov <ivanov-jr@mail.ru>
+Romaric Her <romaric.her@csgroup.eu>                       romaric her <romaric.her@csgroup.eu>
+Romaric Her <romaric.her@csgroup.eu>                       romaric her <romaric.her@c-s.fr>
+Sébastien Dinot <sebastien.dinot@csgroup.eu>               sebastien dinot <sebastien.dinot@c-s.fr>
+Sébastien Dinot <sebastien.dinot@csgroup.eu>               sebastien dinot <sebastien.dinot@csgroup.eu>
+Sébastien Dinot <sebastien.dinot@csgroup.eu>               sebastien dinot <sebastien.dinot@free.fr>
+Sébastien Dinot <sebastien.dinot@csgroup.eu>               sebastien dinot <sebastien@dinot.net>
+Sébastien Dinot <sebastien.dinot@csgroup.eu>               sebastien dinot <sebastien@palabritudes.net>
+Sébastien Dinot <sebastien.dinot@csgroup.eu>               sébastien dinot <sebastien.dinot@c-s.fr>
+Shipping Enjoyer <ezp33940@zwoho.com>                      user <user@user.user>
+Shiva Iyer <shiva.iyer@gmail.com>                          shiva_iyer <shiva.iyer@gmail.com>
+Steven <sljkwsk@yahoo.com>                                 steven <sljkwsk@yahoo.com>
+Steven Ports <steven.ports@csgroup.eu>                     steven ports <steven.ports@csgroup.eu>
+Steven Ports <steven.ports@csgroup.eu>                     steven ports <steven.ports@c-s.fr>
+Thierry Ceolin <thierry.ceolin@csgroup.eu>                 thierry ceolin <thierry.ceolin@csgroup.eu>
+Thierry Ceolin <thierry.ceolin@csgroup.eu>                 thierry ceolin <thierry.ceolin@c-s.fr>
+Thierry Ceolin <thierry.ceolin@csgroup.eu>                 thierry ceolin <thierry@orekit.org>
+Thomas Neidhart <thomas.neidhart@gmail.com>                thomas neidhart <thomas.neidhart@gmail.com>
+Thomas Paulet <thomas.paulet@csgroup.eu>                   thomas paulet <thomas.paulet@csgroup.eu>
+Thomas Paulet <thomas.paulet@csgroup.eu>                   thomas paulet <thomas.paulet@c-s.fr>
+Thomas Paulet <thomas.paulet@csgroup.eu>                   root <root@po18481lx>
+Véronique Pommier-Maurussane <vero@orekit.org>             véronique pommier-maurussane <vero@orekit.org>
+Vincent Mouraux <vincent.mouraux@c-s.fr>                   vincent mouraux <vincent.mouraux@csgroup.eu>
+Vincent Mouraux <vincent.mouraux@c-s.fr>                   vincent mouraux <vincent.mouraux@c-s.fr>
+Vyom Yadav <jackhammervyom@gmail.com>                      vyom-yadav <jackhammervyom@gmail.com>
+Vyom Yadav <jackhammervyom@gmail.com>                      vyomyadav <jackhammervyom@gmail.com>
+William Desprats <william.desprats@csgroup.eu>             william desprats <william.desprats@csgroup.eu>
+William Desprats <william.desprats@csgroup.eu>             william desprats <william.desprats@c-s.fr>
+Yannick Jeandroz <yannick.jeandroz@airbus.com>             yannick jeandroz <yannick.jeandroz@airbus.com>
+Yannick Jeandroz <yannick.jeandroz@airbus.com>             yannick jeandroz <yannick.jeandroz@gmail.com>

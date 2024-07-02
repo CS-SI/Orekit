@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,36 +16,35 @@
  */
 package org.orekit.utils;
 
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CartesianDerivativesFilterTest {
 
     @Test
     public void testList() {
-        Assert.assertEquals(3, CartesianDerivativesFilter.values().length);
+        Assertions.assertEquals(3, CartesianDerivativesFilter.values().length);
     }
 
     @Test
     public void testOrder() {
-        Assert.assertEquals(0, CartesianDerivativesFilter.USE_P.getMaxOrder(), 0);
-        Assert.assertEquals(1, CartesianDerivativesFilter.USE_PV.getMaxOrder(), 0);
-        Assert.assertEquals(2, CartesianDerivativesFilter.USE_PVA.getMaxOrder(), 0);
+        Assertions.assertEquals(0, CartesianDerivativesFilter.USE_P.getMaxOrder(), 0);
+        Assertions.assertEquals(1, CartesianDerivativesFilter.USE_PV.getMaxOrder(), 0);
+        Assertions.assertEquals(2, CartesianDerivativesFilter.USE_PVA.getMaxOrder(), 0);
     }
 
     @Test
     public void testBuildFromOrder() {
-        Assert.assertEquals(CartesianDerivativesFilter.USE_P,  CartesianDerivativesFilter.getFilter(0));
-        Assert.assertEquals(CartesianDerivativesFilter.USE_PV, CartesianDerivativesFilter.getFilter(1));
-        Assert.assertEquals(CartesianDerivativesFilter.USE_PVA, CartesianDerivativesFilter.getFilter(2));
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_P,  CartesianDerivativesFilter.getFilter(0));
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_PV, CartesianDerivativesFilter.getFilter(1));
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_PVA, CartesianDerivativesFilter.getFilter(2));
     }
 
     @Test
     public void testNoNegativeOrder() {
         try {
             CartesianDerivativesFilter.getFilter(-1);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected
         }
@@ -55,7 +54,7 @@ public class CartesianDerivativesFilterTest {
     public void testNoOrder3() {
         try {
             CartesianDerivativesFilter.getFilter(3);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected
         }

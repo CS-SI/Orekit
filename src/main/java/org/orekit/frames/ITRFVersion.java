@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,17 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.RealFieldElement;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.HelmertTransformation;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 
 /** Enumerate for ITRF versions.
  * @see EOPEntry
@@ -30,6 +35,9 @@ import org.orekit.time.FieldAbsoluteDate;
  * @since 9.2
  */
 public enum ITRFVersion {
+
+    /** Constant for ITRF 2020. */
+    ITRF_2020(2020),
 
     /** Constant for ITRF 2014. */
     ITRF_2014(2014),
@@ -43,32 +51,35 @@ public enum ITRFVersion {
     /** Constant for ITRF 2000. */
     ITRF_2000(2000),
 
-    /** Constant for ITRF 97. */
-    ITRF_97(1997),
+    /** Constant for ITRF 1997. */
+    ITRF_1997(1997),
 
-    /** Constant for ITRF 96. */
-    ITRF_96(1996),
+    /** Constant for ITRF 1996. */
+    ITRF_1996(1996),
 
-    /** Constant for ITRF 94. */
-    ITRF_94(1994),
+    /** Constant for ITRF 1994. */
+    ITRF_1994(1994),
 
-    /** Constant for ITRF 93. */
-    ITRF_93(1993),
+    /** Constant for ITRF 1993. */
+    ITRF_1993(1993),
 
-    /** Constant for ITRF 92. */
-    ITRF_92(1992),
+    /** Constant for ITRF 1992. */
+    ITRF_1992(1992),
 
-    /** Constant for ITRF 91. */
-    ITRF_91(1991),
+    /** Constant for ITRF 1991. */
+    ITRF_1991(1991),
 
-    /** Constant for ITRF 90. */
-    ITRF_90(1990),
+    /** Constant for ITRF 1990. */
+    ITRF_1990(1990),
 
     /** Constant for ITRF 89. */
-    ITRF_89(1989),
+    ITRF_1989(1989),
 
     /** Constant for ITRF 88. */
-    ITRF_88(1988);
+    ITRF_1988(1988);
+
+    /** Regular expression for ITRF names, using several variations. */
+    private static final Pattern PATTERN = Pattern.compile("[Ii][Tt][Rr][Ff][-_ ]?([0-9]{2,4})");
 
     /** Reference year of the frame version. */
     private final int year;
@@ -81,7 +92,7 @@ public enum ITRFVersion {
      */
     ITRFVersion(final int year) {
         this.year = year;
-        this.name = "ITRF-" + ((year >= 2000) ? year : (year - 1900));
+        this.name = "ITRF-" + year;
     }
 
     /** Get the reference year of the frame version.
@@ -104,9 +115,11 @@ public enum ITRFVersion {
      */
     public static ITRFVersion getITRFVersion(final int year) {
 
+        final int fixedYear = (year < 100) ? (year + (year > 87 ? 1900 : 2000)) : year;
+
         // loop over all predefined frames versions
         for (final ITRFVersion version : values()) {
-            if (version.getYear() == year) {
+            if (version.getYear() == fixedYear) {
                 return version;
             }
         }
@@ -122,10 +135,13 @@ public enum ITRFVersion {
      */
     public static ITRFVersion getITRFVersion(final String name) {
 
-        // loop over all predefined frames versions
-        for (final ITRFVersion version : values()) {
-            if (version.getName().equalsIgnoreCase(name)) {
-                return version;
+        // extract year from name
+        final Matcher matcher = PATTERN.matcher(name);
+        if (matcher.matches()) {
+            try {
+                return getITRFVersion(Integer.parseInt(matcher.group(1)));
+            } catch (OrekitException oe) {
+                throw new OrekitException(OrekitMessages.NO_SUCH_ITRF_FRAME, name);
             }
         }
 
@@ -134,12 +150,45 @@ public enum ITRFVersion {
 
     }
 
+    /** Get last supported ITRF version.
+     * @return last supported ITRF version
+     * @since 11.2
+     */
+    public static ITRFVersion getLast() {
+        ITRFVersion last = ITRFVersion.ITRF_1988;
+        for (final ITRFVersion iv : ITRFVersion.values()) {
+            if (iv.getYear() > last.getYear()) {
+                last = iv;
+            }
+        }
+        return last;
+    }
+
     /** Find a converter between specified ITRF frames.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param origin origin ITRF
      * @param destination destination ITRF
      * @return transform from {@code origin} to {@code destination}
+     * @see #getConverter(ITRFVersion, ITRFVersion, TimeScale)
      */
+    @DefaultDataContext
     public static Converter getConverter(final ITRFVersion origin, final ITRFVersion destination) {
+        return getConverter(origin, destination,
+                DataContext.getDefault().getTimeScales().getTT());
+    }
+
+    /** Find a converter between specified ITRF frames.
+     * @param origin origin ITRF
+     * @param destination destination ITRF
+     * @param tt TT time scale.
+     * @return transform from {@code origin} to {@code destination}
+     * @since 10.1
+     */
+    public static Converter getConverter(final ITRFVersion origin,
+                                         final ITRFVersion destination,
+                                         final TimeScale tt) {
 
         TransformProvider provider = null;
 
@@ -150,13 +199,14 @@ public enum ITRFVersion {
 
         if (provider == null) {
             // try to find a direct provider
-            provider = getDirectTransformProvider(origin, destination);
+            provider = getDirectTransformProvider(origin, destination, tt);
         }
 
         if (provider == null) {
-            // no direct provider found, use ITRF 2014 as a pivot frame
-            provider = TransformProviderUtils.getCombinedProvider(getDirectTransformProvider(origin, ITRF_2014),
-                                                                  getDirectTransformProvider(ITRF_2014, destination));
+            // no direct provider found, use last supported ITRF as a pivot frame
+            final ITRFVersion last = getLast();
+            provider = TransformProviderUtils.getCombinedProvider(getDirectTransformProvider(origin, last, tt),
+                                                                  getDirectTransformProvider(last, destination, tt));
         }
 
         // build the converter, to keep the origin and destination information
@@ -167,18 +217,22 @@ public enum ITRFVersion {
     /** Find a direct transform provider between specified ITRF frames.
      * @param origin origin ITRF
      * @param destination destination ITRF
+     * @param tt TT time scale.
      * @return transform from {@code origin} to {@code destination}, or null if no direct transform is found
      */
-    private static TransformProvider getDirectTransformProvider(final ITRFVersion origin, final ITRFVersion destination) {
+    private static TransformProvider getDirectTransformProvider(
+            final ITRFVersion origin,
+            final ITRFVersion destination,
+            final TimeScale tt) {
 
         // loop over all predefined transforms
         for (final HelmertTransformation.Predefined predefined : HelmertTransformation.Predefined.values()) {
             if (predefined.getOrigin() == origin && predefined.getDestination() == destination) {
                 // we have an Helmert transformation in the specified direction
-                return predefined.getTransformation();
+                return predefined.getTransformation(tt);
             } else if (predefined.getOrigin() == destination && predefined.getDestination() == origin) {
                 // we have an Helmert transformation in the opposite direction
-                return TransformProviderUtils.getReversedProvider(predefined.getTransformation());
+                return TransformProviderUtils.getReversedProvider(predefined.getTransformation(tt));
             }
         }
 
@@ -235,8 +289,32 @@ public enum ITRFVersion {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+            return provider.getKinematicTransform(date);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public StaticTransform getStaticTransform(final AbsoluteDate date) {
+            return provider.getStaticTransform(date);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return provider.getTransform(date);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+            return provider.getKinematicTransform(date);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+            return provider.getStaticTransform(date);
         }
 
     }

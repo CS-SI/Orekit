@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,13 @@
  */
 package org.orekit.attitudes;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -87,34 +91,54 @@ public abstract class GroundPointing implements AttitudeProvider {
     }
 
     /** Compute the target point position/velocity in specified frame.
-     * <p>
-     * This method is {@code public} only to allow users to subclass this
-     * abstract class from other packages. It is <em>not</em> intended to
-     * be used directly.
-     * </p>
      * @param pvProv provider for PV coordinates
      * @param date date at which target point is requested
      * @param frame frame in which observed ground point should be provided
      * @return observed ground point position (element 0) and velocity (at index 1)
      * in specified frame
      */
-    public abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv,
-                                                         AbsoluteDate date, Frame frame);
+    protected abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame);
 
     /** Compute the target point position/velocity in specified frame.
      * @param pvProv provider for PV coordinates
      * @param date date at which target point is requested
      * @param frame frame in which observed ground point should be provided
-     * @param <T> type of the fiels elements
+     * @param <T> type of the field elements
      * @return observed ground point position (element 0) and velocity (at index 1)
      * in specified frame
      * @since 9.0
      */
-    public abstract <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv,
-                                                                                                 FieldAbsoluteDate<T> date,
-                                                                                                 Frame frame);
+    protected abstract <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv,
+                                                                                                        FieldAbsoluteDate<T> date,
+                                                                                                        Frame frame);
+
+    /** Compute the target point position in specified frame.
+     * @param pvProv provider for PV coordinates
+     * @param date date at which target point is requested
+     * @param frame frame in which observed ground point should be provided
+     * @return observed ground point position in specified frame
+     * @since 12.0
+     */
+    protected Vector3D getTargetPosition(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        return getTargetPV(pvProv, date, frame).getPosition();
+    }
+
+    /** Compute the target point position in specified frame.
+     * @param pvProv provider for PV coordinates
+     * @param date date at which target point is requested
+     * @param frame frame in which observed ground point should be provided
+     * @param <T> type of the field elements
+     * @return observed ground point position in specified frame
+     * @since 12.0
+     */
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getTargetPosition(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                     final FieldAbsoluteDate<T> date,
+                                                                                     final Frame frame) {
+        return getTargetPV(pvProv, date, frame).getPosition();
+    }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
                                 final Frame frame) {
 
@@ -155,9 +179,10 @@ public abstract class GroundPointing implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                       final FieldAbsoluteDate<T> date,
-                                                                       final Frame frame) {
+    @Override
+    public <T extends CalculusFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                           final FieldAbsoluteDate<T> date,
+                                                                           final Frame frame) {
 
         // satellite-target relative vector
         final FieldPVCoordinates<T> pva  = pvProv.getPVCoordinates(date, inertialFrame);
@@ -202,6 +227,69 @@ public abstract class GroundPointing implements AttitudeProvider {
 
         // build the attitude
         return new FieldAttitude<>(date, frame, ac);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
+                                        final Frame frame) {
+
+        // satellite-target relative vector
+        final PVCoordinates pva  = pvProv.getPVCoordinates(date, inertialFrame);
+        final Vector3D targetPosition = getTargetPosition(pvProv, date, inertialFrame);
+        final Vector3D deltaPosition = targetPosition.subtract(pva.getPosition());
+
+        // spacecraft and target should be away from each other to define a pointing direction
+        if (deltaPosition.getNorm() == 0.0) {
+            throw new OrekitException(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET);
+        }
+
+        final Vector3D los    = deltaPosition.normalize();
+        final Vector3D normal = Vector3D.crossProduct(los, pva.getVelocity()).normalize();
+
+        final Rotation rotation = new Rotation(los, normal, PLUS_K.getPosition(), PLUS_J.getPosition());
+
+        if (frame != inertialFrame) {
+            // prepend transform from specified frame to inertial frame
+            return rotation.compose(frame.getStaticTransformTo(inertialFrame, date).getRotation(),
+                    RotationConvention.VECTOR_OPERATOR);
+        }
+
+        return rotation;
+
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+        // satellite-target relative vector
+        final FieldPVCoordinates<T> pva  = pvProv.getPVCoordinates(date, inertialFrame);
+        final FieldVector3D<T> targetPosition = getTargetPosition(pvProv, date, inertialFrame);
+        final FieldVector3D<T> deltaPosition = targetPosition.subtract(pva.getPosition());
+
+        // spacecraft and target should be away from each other to define a pointing direction
+        if (deltaPosition.getNorm().getReal() == 0.0) {
+            throw new OrekitException(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET);
+        }
+
+        final FieldVector3D<T> los    = deltaPosition.normalize();
+        final FieldVector3D<T> normal = FieldVector3D.crossProduct(los, pva.getVelocity()).normalize();
+
+        final Field<T> field = date.getField();
+        final FieldRotation<T> rotation = new FieldRotation<>(los, normal,
+                new FieldVector3D<>(field, PLUS_K.getPosition()), new FieldVector3D<>(field, PLUS_J.getPosition()));
+
+        if (frame != inertialFrame) {
+            // prepend transform from specified frame to inertial frame
+            return rotation.compose(frame.getStaticTransformTo(inertialFrame, date).getRotation(),
+                    RotationConvention.VECTOR_OPERATOR);
+        }
+
+        return rotation;
 
     }
 

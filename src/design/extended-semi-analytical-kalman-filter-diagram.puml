@@ -1,0 +1,138 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+
+  package org.hipparchus.filtering #ECEBD8 {
+
+    abstract AbstractKalmanFilter {
+       + predict()
+       + correct()
+    }
+
+    package kalman.extended #DDEBD8 {
+
+      interface NonLinearProcess {
+        + getEvolution()
+        + getInnovation()
+      }
+      
+      class ExtendedKalmanFilter {
+        + ExtendedKalmanFiler(MatrixDecomposer decomposer, NonLinearProcess process, ProcessEstimate initialState)
+        + estimationStep(measurement)
+      }
+
+      ExtendedKalmanFilter *-->"1"  NonLinearProcess
+
+    }
+
+    ExtendedKalmanFilter --|> AbstractKalmanFilter
+
+  }
+
+  package org.orekit #ECEBD8 {
+
+    package propagation #DDEBD8 {
+      
+      package integration #F3EFEB {
+         interface AdditionalDerivativesProvider {
+           + init()
+           + derivatives()
+         }
+      }
+
+      package sampling #F3EFEB {
+         interface OrekitStepHandler {
+           + init()
+           + handleStep(OrekitStepInterpolator interpolator)
+         }
+      }
+
+      package seminalytical.dsst #F3EFEB {
+
+         class DSSTPropagator {
+           + void addAdditionalEquations(AdditionalEquations additional)
+           + SpacecraftState propagate(AbsoluteDate start, AbsoluteDate end)
+           + void setStepHandler(OrekitStepHandler handler)
+         }
+
+         class DSSTHarvester {
+           + RealMatrix getB1()
+           + RealMatrix getB2()
+           + RealMatrix getB3()
+           + RealMatrix getB4()
+           + setReferenceState(SpacecraftState meanState)
+         }
+         
+         AdditionalDerivativesProvider <|.. DSSTStateTransitionMatrixGenerator
+         DSSTPropagator *-->  AdditionalDerivativesProvider
+         DSSTPropagator *-->  OrekitStepHandler
+         DSSTHarvester <--o DSSTPropagator
+         DSSTStateTransitionMatrixGenerator <--o DSSTPropagator
+
+      }
+
+    }
+
+    package estimation.sequential #DDEBD8 {
+
+      class SemiAnalyticalKalmanEstimator {
+         - ExtendedKalmanFilter filter
+         - SemiAnalyticalKalmanModel processModel
+         + DSSTPropagator processMeasurements(List<ObservedMeasurement> measurements)
+      }
+      
+      class SemiAnalyticalKalmanEstimatorBuilder {
+        + decomposer(MatrixDecomposer decomposer)
+        + addPropagationConfiguration(DSSTPropagator propagator, CovarianceMatrixProvider initialCovariance)
+        + SemiAnalyticalKalmanEstimator build()
+      }
+      
+      class SemiAnalyticalKalmanModel {
+         - DSSTHarvester mapper
+         - DSSTPropagator dsstPropagator
+         + DSSTPropagator processMeasurements(List<ObservedMeasurement> measurements)
+         - void updateNominalSpacecraftState(SpacecraftState nominal)
+         - RealMatrix getErrorStateTransitionMatrix()
+         - RealMatrix getMeasurementMatrix()
+         - RealVector predictFilterCorrection(RealMatrix stm)
+         - computeOsculatingElements()
+      }
+      
+      class SemiAnalyticalMeasurementHandler
+
+      OrekitStepHandler <|..  SemiAnalyticalMeasurementHandler
+      SemiAnalyticalKalmanEstimator <--   SemiAnalyticalKalmanEstimatorBuilder
+      NonLinearProcess <|..  SemiAnalyticalKalmanModel
+      SemiAnalyticalKalmanModel <--   SemiAnalyticalKalmanEstimator
+      ExtendedKalmanFilter <--   SemiAnalyticalKalmanEstimator
+      SemiAnalyticalMeasurementHandler <--   SemiAnalyticalKalmanModel
+
+    }
+
+  }
+
+
+@enduml

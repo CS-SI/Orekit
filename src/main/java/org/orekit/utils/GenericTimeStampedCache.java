@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -63,8 +64,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
     /** Generator to use for yet non-cached data. */
     private final TimeStampedGenerator<T> generator;
 
-    /** Number of entries in a neighbors array. */
-    private final int neighborsSize;
+    /** Overriding mean step. */
+    private final double overridingMeanStep;
+
+    /** Maximum number of entries in a neighbors array. */
+    private final int maxNeighborsSize;
 
     /** Independent time slots cached. */
     private final List<Slot> slots;
@@ -82,8 +86,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
     private final ReadWriteLock lock;
 
     /** Simple constructor.
-     * @param neighborsSize fixed size of the arrays to be returned by {@link
-     * #getNeighbors(AbsoluteDate)}, must be at least 2
+     * @param maxNeighborsSize maximum size of the arrays to be returned by {@link
+     * #getNeighbors(AbsoluteDate, int)}, must be at least 2
      * @param maxSlots maximum number of independent cached time slots
      * @param maxSpan maximum duration span in seconds of one slot
      * (can be set to {@code Double.POSITIVE_INFINITY} if desired)
@@ -91,29 +95,58 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * instead of extending an existing one
      * @param generator generator to use for yet non-existent data
      */
-    public GenericTimeStampedCache(final int neighborsSize, final int maxSlots, final double maxSpan,
+    public GenericTimeStampedCache(final int maxNeighborsSize, final int maxSlots, final double maxSpan,
                                    final double newSlotInterval, final TimeStampedGenerator<T> generator) {
+        this(maxNeighborsSize, maxSlots, maxSpan, newSlotInterval, generator, Double.NaN);
+
+    }
+
+    /** Simple constructor with overriding minimum step.
+     * @param maxNeighborsSize maximum size of the arrays to be returned by {@link
+     * #getNeighbors(AbsoluteDate, int)}, must be at least 2
+     * @param maxSlots maximum number of independent cached time slots
+     * @param maxSpan maximum duration span in seconds of one slot
+     * (can be set to {@code Double.POSITIVE_INFINITY} if desired)
+     * @param newSlotInterval time interval above which a new slot is created
+     * instead of extending an existing one
+     * @param generator generator to use for yet non-existent data
+     * @param overridingMeanStep overriding mean step designed for non-homogeneous tabulated values. To be used for example
+     *                    when caching monthly tabulated values. Use {@code Double.NaN} otherwise.
+     * @throws OrekitIllegalArgumentException if :
+     * <ul>
+     *     <li>neighbors size &lt; 2 </li>
+     *     <li>maximum allowed number of slots &lt; 1</li>
+     *     <li>minimum step ≤ 0 </li>
+     * </ul>
+     */
+    public GenericTimeStampedCache(final int maxNeighborsSize, final int maxSlots, final double maxSpan,
+                                   final double newSlotInterval, final TimeStampedGenerator<T> generator,
+                                   final double overridingMeanStep) {
 
         // safety check
         if (maxSlots < 1) {
             throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL, maxSlots, 1);
         }
-        if (neighborsSize < 2) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
-                                                     neighborsSize, 2);
+        if (overridingMeanStep <= 0) {
+            throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL_BOUND_EXCLUDED,
+                                                     overridingMeanStep, 0);
+        }
+        if (maxNeighborsSize < 2) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS, maxNeighborsSize, 2);
         }
 
-        this.reference         = new AtomicReference<AbsoluteDate>();
-        this.maxSlots          = maxSlots;
-        this.maxSpan           = maxSpan;
-        this.newSlotQuantumGap = FastMath.round(newSlotInterval / QUANTUM_STEP);
-        this.generator         = generator;
-        this.neighborsSize     = neighborsSize;
-        this.slots             = new ArrayList<Slot>(maxSlots);
-        this.getNeighborsCalls = new AtomicInteger(0);
-        this.generateCalls     = new AtomicInteger(0);
-        this.evictions         = new AtomicInteger(0);
-        this.lock              = new ReentrantReadWriteLock();
+        this.reference          = new AtomicReference<>();
+        this.maxSlots           = maxSlots;
+        this.maxSpan            = maxSpan;
+        this.newSlotQuantumGap  = FastMath.round(newSlotInterval / QUANTUM_STEP);
+        this.generator          = generator;
+        this.overridingMeanStep = overridingMeanStep;
+        this.maxNeighborsSize   = maxNeighborsSize;
+        this.slots              = new ArrayList<>(maxSlots);
+        this.getNeighborsCalls  = new AtomicInteger(0);
+        this.generateCalls      = new AtomicInteger(0);
+        this.evictions          = new AtomicInteger(0);
+        this.lock               = new ReentrantReadWriteLock();
 
     }
 
@@ -221,11 +254,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
     }
 
-    /** Get the earliest cached entry.
-     * @return earliest cached entry
-     * @exception IllegalStateException if the cache has no slots at all
-     * @see #getSlots()
-     */
+    /** {@inheritDoc} */
+    @Override
     public T getEarliest() throws IllegalStateException {
 
         lock.readLock().lock();
@@ -240,11 +270,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
     }
 
-    /** Get the latest cached entry.
-     * @return latest cached entry
-     * @exception IllegalStateException if the cache has no slots at all
-     * @see #getSlots()
-     */
+    /** {@inheritDoc} */
+    @Override
     public T getLatest() throws IllegalStateException {
 
         lock.readLock().lock();
@@ -259,37 +286,25 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
     }
 
-    /** Get the fixed size of the arrays to be returned by {@link #getNeighbors(AbsoluteDate)}.
-     * @return size of the array
-     */
-    public int getNeighborsSize() {
-        return neighborsSize;
+    /** {@inheritDoc} */
+    @Override
+    public int getMaxNeighborsSize() {
+        return maxNeighborsSize;
     }
 
-    /** Get the entries surrounding a central date.
-     * <p>
-     * If the central date is well within covered range, the returned array
-     * will be balanced with half the points before central date and half the
-     * points after it (depending on n parity, of course). If the central date
-     * is near the generator range boundary, then the returned array will be
-     * unbalanced and will contain only the n earliest (or latest) generated
-     * (and cached) entries. A typical example of the later case is leap seconds
-     * cache, since the number of leap seconds cannot be arbitrarily increased.
-     * </p>
-     * @param central central date
-     * @return array of cached entries surrounding specified date (the size
-     * of the array is fixed to the one specified in the {@link
-     * #GenericTimeStampedCache(int, int, double, double, TimeStampedGenerator)}
-     * @see #getEarliest()
-     * @see #getLatest()
-     */
-    public Stream<T> getNeighbors(final AbsoluteDate central) {
+    /** {@inheritDoc} */
+    @Override
+    public Stream<T> getNeighbors(final AbsoluteDate central, final int n) {
+
+        if (n > maxNeighborsSize) {
+            throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA, maxNeighborsSize);
+        }
 
         lock.readLock().lock();
         try {
             getNeighborsCalls.incrementAndGet();
             final long dateQuantum = quantum(central);
-            return selectSlot(central, dateQuantum).getNeighbors(central, dateQuantum);
+            return selectSlot(central, dateQuantum).getNeighbors(central, dateQuantum, n);
         } finally {
             lock.readLock().unlock();
         }
@@ -340,7 +355,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
                     // we really need to create a new slot in the current thread
                     // (no other threads have created it while we were waiting for the lock)
-                    if ((!slots.isEmpty()) &&
+                    if (!slots.isEmpty() &&
                         slots.get(index).getLatestQuantum() < dateQuantum - newSlotQuantumGap) {
                         ++index;
                     }
@@ -438,7 +453,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         Slot(final AbsoluteDate date) {
 
             // allocate cache
-            this.cache = new ArrayList<Entry>();
+            this.cache = new ArrayList<>();
 
             // set up first entries
             AbsoluteDate generationDate = date;
@@ -450,7 +465,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             earliestQuantum = new AtomicLong(cache.get(0).getQuantum());
             latestQuantum   = new AtomicLong(cache.get(cache.size() - 1).getQuantum());
 
-            while (cache.size() < neighborsSize) {
+            while (cache.size() < maxNeighborsSize) {
                 // we need to generate more entries
 
                 final AbsoluteDate entry0 = cache.get(0).getData().getDate();
@@ -461,13 +476,13 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                 if (entryN.getDate().durationFrom(date) <= date.durationFrom(entry0.getDate())) {
                     // generate additional point at the end of the slot
                     existingDate = entryN;
-                    generationDate = entryN.getDate().shiftedBy(getMeanStep() * (neighborsSize - cache.size()));
-                    appendAtEnd(generateAndCheck(existingDate, generationDate));
+                    generationDate = entryN.getDate().shiftedBy(getMeanStep() * (maxNeighborsSize - cache.size()));
+                    appendAtEnd(generateAndCheck(existingDate, generationDate), date);
                 } else {
                     // generate additional point at the start of the slot
                     existingDate = entry0;
-                    generationDate = entry0.getDate().shiftedBy(-getMeanStep() * (neighborsSize - cache.size()));
-                    insertAtStart(generateAndCheck(existingDate, generationDate));
+                    generationDate = entry0.getDate().shiftedBy(-getMeanStep() * (maxNeighborsSize - cache.size()));
+                    insertAtStart(generateAndCheck(existingDate, generationDate), date);
                 }
 
             }
@@ -505,14 +520,16 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             return latestQuantum.get();
         }
 
-        /** Get the number of entries contained din the slot.
-         * @return number of entries contained din the slot
+        /** Get the number of entries contained in the slot.
+         * @return number of entries contained in the slot
          */
         public int getEntries() {
             return cache.size();
         }
 
         /** Get the mean step between entries.
+         * <p>
+         * If an overriding mean step has been defined at construction, then it will be returned instead.
          * @return mean step between entries (or an arbitrary non-null value
          * if there are fewer than 2 entries)
          */
@@ -520,9 +537,13 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             if (cache.size() < 2) {
                 return 1.0;
             } else {
-                final AbsoluteDate t0 = cache.get(0).getData().getDate();
-                final AbsoluteDate tn = cache.get(cache.size() - 1).getData().getDate();
-                return tn.durationFrom(t0) / (cache.size() - 1);
+                if (!Double.isNaN(overridingMeanStep)) {
+                    return overridingMeanStep;
+                } else {
+                    final AbsoluteDate t0 = cache.get(0).getData().getDate();
+                    final AbsoluteDate tn = cache.get(cache.size() - 1).getData().getDate();
+                    return tn.durationFrom(t0) / (cache.size() - 1);
+                }
             }
         }
 
@@ -546,16 +567,14 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * </p>
          * @param central central date
          * @param dateQuantum global quantum of the date
+         * @param n number of neighbors
          * @return a new array containing date neighbors
-         * @see #getBefore(AbsoluteDate)
-         * @see #getAfter(AbsoluteDate)
          */
-        public Stream<T> getNeighbors(final AbsoluteDate central, final long dateQuantum) {
-
+        public Stream<T> getNeighbors(final AbsoluteDate central, final long dateQuantum, final int n) {
             int index         = entryIndex(central, dateQuantum);
-            int firstNeighbor = index - (neighborsSize - 1) / 2;
+            int firstNeighbor = index - (n - 1) / 2;
 
-            if (firstNeighbor < 0 || firstNeighbor + neighborsSize > cache.size()) {
+            if (firstNeighbor < 0 || firstNeighbor + n > cache.size()) {
                 // the cache is not balanced around the desired date, we can try to generate new data
 
                 // upgrade the read lock to a write lock so we can change the list of available slots
@@ -568,8 +587,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                     boolean loop = true;
                     while (loop) {
                         index         = entryIndex(central, dateQuantum);
-                        firstNeighbor = index - (neighborsSize - 1) / 2;
-                        if (firstNeighbor < 0 || firstNeighbor + neighborsSize > cache.size()) {
+                        firstNeighbor = index - (n - 1) / 2;
+                        if (firstNeighbor < 0 || firstNeighbor + n > cache.size()) {
 
                             // estimate which data we need to be generated
                             final double step = getMeanStep();
@@ -582,7 +601,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                                 simplyRebalance = existingDate.getDate().compareTo(central) <= 0;
                             } else {
                                 existingDate    = cache.get(cache.size() - 1).getData().getDate();
-                                generationDate  = existingDate.getDate().shiftedBy(step * (firstNeighbor + neighborsSize - cache.size()));
+                                generationDate  = existingDate.getDate().shiftedBy(step * (firstNeighbor + n - cache.size()));
                                 simplyRebalance = existingDate.getDate().compareTo(central) >= 0;
                             }
                             generateCalls.incrementAndGet();
@@ -590,9 +609,9 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                             // generated data and add it to the slot
                             try {
                                 if (firstNeighbor < 0) {
-                                    insertAtStart(generateAndCheck(existingDate, generationDate));
+                                    insertAtStart(generateAndCheck(existingDate, generationDate), central);
                                 } else {
-                                    appendAtEnd(generateAndCheck(existingDate, generationDate));
+                                    appendAtEnd(generateAndCheck(existingDate, generationDate), central);
                                 }
                             } catch (TimeStampedCacheException tce) {
                                 if (simplyRebalance) {
@@ -617,16 +636,16 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
             }
 
-            if (firstNeighbor + neighborsSize > cache.size()) {
+            if (firstNeighbor + n > cache.size()) {
                 // we end up with a non-balanced neighborhood,
                 // adjust the start point to fit within the cache
-                firstNeighbor = cache.size() - neighborsSize;
+                firstNeighbor = cache.size() - n;
             }
             if (firstNeighbor < 0) {
                 firstNeighbor = 0;
             }
             final Stream.Builder<T> builder = Stream.builder();
-            for (int i = 0; i < neighborsSize; ++i) {
+            for (int i = 0; i < n; ++i) {
                 builder.accept(cache.get(firstNeighbor + i).getData());
             }
 
@@ -706,8 +725,9 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         /** Insert data at slot start.
          * @param data data to insert
+         * @param requestedDate use for the error message.
          */
-        private void insertAtStart(final List<T> data) {
+        private void insertAtStart(final List<T> data, final AbsoluteDate requestedDate) {
 
             // insert data at start
             boolean inserted = false;
@@ -723,13 +743,15 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             if (!inserted) {
-                throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                              cache.get(0).getData().getDate());
+                final AbsoluteDate earliest = cache.get(0).getData().getDate();
+                throw new TimeStampedCacheException(
+                        OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
+                        earliest, requestedDate, earliest.durationFrom(requestedDate));
             }
 
             // evict excess data at end
             final AbsoluteDate t0 = cache.get(0).getData().getDate();
-            while (cache.size() > neighborsSize &&
+            while (cache.size() > maxNeighborsSize &&
                    cache.get(cache.size() - 1).getData().getDate().durationFrom(t0) > maxSpan) {
                 cache.remove(cache.size() - 1);
             }
@@ -742,8 +764,9 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         /** Append data at slot end.
          * @param data data to append
+         * @param requestedDate use for error message.
          */
-        private void appendAtEnd(final List<T> data) {
+        private void appendAtEnd(final List<T> data, final AbsoluteDate requestedDate) {
 
             // append data at end
             boolean appended = false;
@@ -760,13 +783,15 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             if (!appended) {
-                throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                    cache.get(cache.size() - 1).getData().getDate());
+                final AbsoluteDate latest = cache.get(cache.size() - 1).getData().getDate();
+                throw new TimeStampedCacheException(
+                        OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+                        latest, requestedDate, requestedDate.durationFrom(latest));
             }
 
             // evict excess data at start
             final AbsoluteDate tn = cache.get(cache.size() - 1).getData().getDate();
-            while (cache.size() > neighborsSize &&
+            while (cache.size() > maxNeighborsSize &&
                    tn.durationFrom(cache.get(0).getData().getDate()) > maxSpan) {
                 cache.remove(0);
             }
@@ -789,10 +814,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                 throw new TimeStampedCacheException(OrekitMessages.NO_DATA_GENERATED, date);
             }
             for (int i = 1; i < entries.size(); ++i) {
-                if (entries.get(i).getDate().compareTo(entries.get(i - 1).getDate()) < 0) {
+                final AbsoluteDate previous = entries.get(i - 1).getDate();
+                final AbsoluteDate current = entries.get(i).getDate();
+                if (current.compareTo(previous) < 0) {
                     throw new TimeStampedCacheException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
-                                                                  entries.get(i - 1).getDate(),
-                                                                  entries.get(i).getDate());
+                            previous, current, previous.durationFrom(current));
                 }
             }
             return entries;

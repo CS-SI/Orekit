@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,20 +20,24 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
@@ -63,26 +67,48 @@ import org.orekit.utils.ParameterDriver;
  */
 public class KlobucharIonoModel implements IonosphericModel {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7277525837842061107L;
-
     /** The 4 coefficients of a cubic equation representing the amplitude of the vertical delay. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] alpha;
 
     /** The 4 coefficients of a cubic equation representing the period of the model. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] beta;
 
+    /** GPS time scale. */
+    private final TimeScale gps;
+
     /** Create a new Klobuchar ionospheric delay model, when a single frequency system is used.
      * This model accounts for at least 50 percent of RMS error due to ionospheric propagation effect (ICD-GPS-200)
      *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param alpha coefficients of a cubic equation representing the amplitude of the vertical delay.
      * @param beta coefficients of a cubic equation representing the period of the model.
+     * @see #KlobucharIonoModel(double[], double[], TimeScale)
      */
+    @DefaultDataContext
     public KlobucharIonoModel(final double[] alpha, final double[] beta) {
-        this.alpha = alpha.clone();
-        this.beta  = beta.clone();
+        this(alpha, beta, DataContext.getDefault().getTimeScales().getGPS());
     }
 
+    /**
+     * Create a new Klobuchar ionospheric delay model, when a single frequency system is
+     * used. This model accounts for at least 50 percent of RMS error due to ionospheric
+     * propagation effect (ICD-GPS-200)
+     *
+     * @param alpha coefficients of a cubic equation representing the amplitude of the
+     *              vertical delay.
+     * @param beta  coefficients of a cubic equation representing the period of the
+     *              model.
+     * @param gps   GPS time scale.
+     * @since 10.1
+     */
+    public KlobucharIonoModel(final double[] alpha,
+                              final double[] beta,
+                              final TimeScale gps) {
+        this.alpha = alpha.clone();
+        this.beta  = beta.clone();
+        this.gps = gps;
+    }
 
     /**
      * Calculates the ionospheric path delay for the signal path from a ground
@@ -101,7 +127,11 @@ public class KlobucharIonoModel implements IonosphericModel {
     public double pathDelay(final AbsoluteDate date, final GeodeticPoint geo,
                             final double elevation, final double azimuth, final double frequency,
                             final double[] parameters) {
-        // degees to semisircles
+
+        // Sine and cosine of the azimuth
+        final SinCos sc = FastMath.sinCos(azimuth);
+
+        // degrees to semicircles
         final double rad2semi = 1. / FastMath.PI;
         final double semi2rad = FastMath.PI;
 
@@ -111,19 +141,19 @@ public class KlobucharIonoModel implements IonosphericModel {
         // Subionospheric latitude: the latitude of the IPP (Ionospheric Pierce Point)
         // in [-0.416, 0.416], semicircle
         final double latIono = FastMath.min(
-                                      FastMath.max(geo.getLatitude() * rad2semi + psi * FastMath.cos(azimuth), -0.416),
+                                      FastMath.max(geo.getLatitude() * rad2semi + psi * sc.cos(), -0.416),
                                       0.416);
 
         // Subionospheric longitude: the longitude of the IPP
         // in semicircle
-        final double lonIono = geo.getLongitude() * rad2semi + (psi * FastMath.sin(azimuth) / FastMath.cos(latIono * semi2rad));
+        final double lonIono = geo.getLongitude() * rad2semi + (psi * sc.sin() / FastMath.cos(latIono * semi2rad));
 
         // Geomagnetic latitude, semicircle
         final double latGeom = latIono + 0.064 * FastMath.cos((lonIono - 1.617) * semi2rad);
 
         // day of week and tow (sec)
         // Note: Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getGPS());
+        final DateTimeComponents dtc = date.getComponents(gps);
         final int dofweek = dtc.getDate().getDayOfWeek();
         final double secday = dtc.getTime().getSecondsInLocalDay();
         final double tow = dofweek * 86400. + secday;
@@ -161,7 +191,7 @@ public class KlobucharIonoModel implements IonosphericModel {
                             final double frequency, final double[] parameters) {
 
         // Elevation in radians
-        final Vector3D position  = state.getPVCoordinates(baseFrame).getPosition();
+        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -197,37 +227,41 @@ public class KlobucharIonoModel implements IonosphericModel {
      * @param parameters ionospheric model parameters
      * @return the path delay due to the ionosphere in m
      */
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final FieldGeodeticPoint<T> geo,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final FieldGeodeticPoint<T> geo,
                                                        final T elevation, final T azimuth, final double frequency,
                                                        final T[] parameters) {
+
+        // Sine and cosine of the azimuth
+        final FieldSinCos<T> sc = FastMath.sinCos(azimuth);
+
         // Field
         final Field<T> field = date.getField();
         final T zero = field.getZero();
         final T one  = field.getOne();
 
-        // degees to semisircles
-        final double rad2semi = 1. / FastMath.PI;
-        final double semi2rad = FastMath.PI;
+        // degrees to semicircles
+        final T pi       = one.getPi();
+        final T rad2semi = pi.reciprocal();
 
         // Earth Centered angle
-        final T psi = elevation.divide(FastMath.PI).add(0.11).divide(0.0137).reciprocal().subtract(0.022);
+        final T psi = elevation.divide(pi).add(0.11).divide(0.0137).reciprocal().subtract(0.022);
 
         // Subionospheric latitude: the latitude of the IPP (Ionospheric Pierce Point)
         // in [-0.416, 0.416], semicircle
         final T latIono = FastMath.min(
-                                      FastMath.max(geo.getLatitude().multiply(rad2semi).add(psi.multiply(FastMath.cos(azimuth))), zero.subtract(0.416)),
-                                      zero.add(0.416));
+                                      FastMath.max(geo.getLatitude().multiply(rad2semi).add(psi.multiply(sc.cos())), zero.subtract(0.416)),
+                                      zero.newInstance(0.416));
 
         // Subionospheric longitude: the longitude of the IPP
         // in semicircle
-        final T lonIono = geo.getLongitude().multiply(rad2semi).add(psi.multiply(FastMath.sin(azimuth)).divide(FastMath.cos(latIono.multiply(semi2rad))));
+        final T lonIono = geo.getLongitude().multiply(rad2semi).add(psi.multiply(sc.sin()).divide(FastMath.cos(latIono.multiply(pi))));
 
         // Geomagnetic latitude, semicircle
-        final T latGeom = latIono.add(FastMath.cos(lonIono.subtract(1.617).multiply(semi2rad)).multiply(0.064));
+        final T latGeom = latIono.add(FastMath.cos(lonIono.subtract(1.617).multiply(pi)).multiply(0.064));
 
         // day of week and tow (sec)
         // Note: Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getGPS());
+        final DateTimeComponents dtc = date.getComponents(gps);
         final int dofweek = dtc.getDate().getDayOfWeek();
         final double secday = dtc.getTime().getSecondsInLocalDay();
         final double tow = dofweek * 86400. + secday;
@@ -236,14 +270,14 @@ public class KlobucharIonoModel implements IonosphericModel {
         final T tsec = t.subtract(FastMath.floor(t.divide(86400.)).multiply(86400.)); // Seconds of day
 
         // Slant factor, semicircle
-        final T slantFactor = FastMath.pow(elevation.divide(FastMath.PI).negate().add(0.53), 3).multiply(16.0).add(one);
+        final T slantFactor = FastMath.pow(elevation.divide(pi).negate().add(0.53), 3).multiply(16.0).add(one);
 
         // Period of model, seconds
-        final T period = FastMath.max(zero.add(72000.), latGeom.multiply(latGeom.multiply(latGeom.multiply(beta[3]).add(beta[2])).add(beta[1])).add(beta[0]));
+        final T period = FastMath.max(zero.newInstance(72000.), latGeom.multiply(latGeom.multiply(latGeom.multiply(beta[3]).add(beta[2])).add(beta[1])).add(beta[0]));
 
         // Phase of the model, radians
         // (Max at 14.00 = 50400 sec local time)
-        final T x = tsec.subtract(50400.0).multiply(2.0 * FastMath.PI).divide(period);
+        final T x = tsec.subtract(50400.0).multiply(pi.multiply(2.0)).divide(period);
 
         // Amplitude of the model, seconds
         final T amplitude = FastMath.max(zero, latGeom.multiply(latGeom.multiply(latGeom.multiply(alpha[3]).add(alpha[2])).add(alpha[1])).add(alpha[0]));
@@ -261,11 +295,11 @@ public class KlobucharIonoModel implements IonosphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
 
         // Elevation and azimuth in radians
-        final FieldVector3D<T> position = state.getPVCoordinates(baseFrame).getPosition();
+        final FieldVector3D<T> position = state.getPosition(baseFrame);
         final T elevation = position.getDelta();
 
         if (elevation.getReal() > 0.0) {

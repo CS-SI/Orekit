@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,9 @@
  */
 package org.orekit.gnss.antenna;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -37,7 +37,7 @@ import org.orekit.time.AbsoluteDate;
 
 public class SatelliteTypeTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("regular-data");
@@ -52,36 +52,42 @@ public class SatelliteTypeTest {
                                                                    FramesFactory.getEME2000(),
                                                                    1);
 
-            if (type == SatelliteType.BEIDOU_3I  ||
-                type == SatelliteType.GALILEO_0A ||
-                type == SatelliteType.GALILEO_0B ||
-                type == SatelliteType.GALILEO_1  ||
+            if (type == SatelliteType.BEIDOU_3I        ||
+                type == SatelliteType.BEIDOU_3M_SECM   ||
+                type == SatelliteType.BEIDOU_3SI_SECM  ||
+                type == SatelliteType.BEIDOU_3SI_CAST  ||
+                type == SatelliteType.BEIDOU_3G_CAST   ||
+                type == SatelliteType.BEIDOU_3M_CAST   ||
+                type == SatelliteType.BEIDOU_3SM_CAST  ||
+                type == SatelliteType.GALILEO_0A       ||
+                type == SatelliteType.GALILEO_0B       ||
+                type == SatelliteType.GALILEO_1        ||
                 type == SatelliteType.GALILEO_2) {
-                Assert.assertEquals(Galileo.class, provider.getClass());
+                Assertions.assertEquals(Galileo.class, provider.getClass());
             } else if (type == SatelliteType.BEIDOU_2G) {
-                Assert.assertEquals(BeidouGeo.class, provider.getClass());
+                Assertions.assertEquals(BeidouGeo.class, provider.getClass());
             } else if (type == SatelliteType.BEIDOU_2I) {
-                Assert.assertEquals(BeidouIGSO.class, provider.getClass());
+                Assertions.assertEquals(BeidouIGSO.class, provider.getClass());
             } else if (type == SatelliteType.BEIDOU_2M) {
-                Assert.assertEquals(BeidouMeo.class, provider.getClass());
+                Assertions.assertEquals(BeidouMeo.class, provider.getClass());
             } else if (type == SatelliteType.BLOCK_I   ||
                        type == SatelliteType.BLOCK_II ||
                        type == SatelliteType.BLOCK_IIA) {
-                Assert.assertEquals(GPSBlockIIA.class, provider.getClass());
+                Assertions.assertEquals(GPSBlockIIA.class, provider.getClass());
             } else if (type == SatelliteType.BLOCK_IIR_A ||
                        type == SatelliteType.BLOCK_IIR_B ||
                        type == SatelliteType.BLOCK_IIR_M) {
-                Assert.assertEquals(GPSBlockIIR.class, provider.getClass());
+                Assertions.assertEquals(GPSBlockIIR.class, provider.getClass());
             } else if (type == SatelliteType.BLOCK_IIF ||
                        type == SatelliteType.BLOCK_IIIA) {
-                Assert.assertEquals(GPSBlockIIF.class, provider.getClass());
+                Assertions.assertEquals(GPSBlockIIF.class, provider.getClass());
             } else if (type == SatelliteType.GLONASS ||
                        type == SatelliteType.GLONASS_M ||
                        type == SatelliteType.GLONASS_K1 ||
                        type == SatelliteType.GLONASS_K2) {
-                Assert.assertEquals(Glonass.class, provider.getClass());
+                Assertions.assertEquals(Glonass.class, provider.getClass());
             } else {
-                Assert.assertEquals(GenericGNSS.class, provider.getClass());
+                Assertions.assertEquals(GenericGNSS.class, provider.getClass());
             }
         }
     }

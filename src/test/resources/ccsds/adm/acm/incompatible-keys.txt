@@ -1,0 +1,21 @@
+CCSDS_ACM_VERS           = 2.0
+CREATION_DATE            = 2017-12-01T00:00:00
+ORIGINATOR               = NASA
+MESSAGE_ID               = A7015Z5
+
+META_START
+OBJECT_NAME              = SDO
+INTERNATIONAL_DESIGNATOR = 2010-005A
+TIME_SYSTEM              = UTC
+EPOCH_TZERO              = 2017-12-26T19:40:00.000
+META_STOP
+
+MAN_START
+COMMENT  test file with intentional error: using two incompatible keys at the same time
+MAN_PURPOSE             = MOM_DESAT
+MAN_BEGIN_TIME          = 100.0
+MAN_END_TIME            = 550.0
+MAN_DURATION            = 450.0
+ACTUATOR_USED           = ATT-THRUSTER
+TARGET_MOMENTUM         = 1.30 -16.400 -11.350
+MAN_STOP

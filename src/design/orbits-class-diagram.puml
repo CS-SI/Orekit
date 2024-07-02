@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
@@ -40,17 +41,6 @@
       class CartesianOrbit
       class EquinoctialOrbit
 
-      abstract class Orbit {
-        +OrbitType getType()
-        +Frame getFrame()
-        +double getA()
-        +double getKeplerianPeriod()
-        +double getKeplerianMeanMotion()
-        +double get...()
-        +void getJacobianWrtCartesian(PositionAngle type, double[][] jacobian)
-        +void getJacobianWrtParameters(PositionAngle type, double[][] jacobian)
-      }
-
       enum OrbitType {
         +CARTESIAN
         +CIRCULAR
@@ -61,20 +51,31 @@
         +Orbit mapArrayToOrbit(...)
       }
 
-      enum PositionAngle {
+      enum PositionAngleType {
         +MEAN
         +ECCENTRIC
         +TRUE
       }
 
-      Orbit     <--       OrbitType : convert
-      Orbit     *-->      OrbitType
-      Orbit     -->       PositionAngle
-      OrbitType -right->  PositionAngle
-      Orbit     <|--      KeplerianOrbit
-      Orbit     <|--      CircularOrbit
-      Orbit     <|--      CartesianOrbit
-      Orbit     <|--      EquinoctialOrbit
+      abstract class Orbit {
+        +OrbitType getType()
+        +Frame getFrame()
+        +double getA()
+        +double getKeplerianPeriod()
+        +double getKeplerianMeanMotion()
+        +double get...()
+        +void getJacobianWrtCartesian(PositionAngleType type, double[][] jacobian)
+        +void getJacobianWrtParameters(PositionAngleType type, double[][] jacobian)
+      }
+
+      OrbitType     -->   Orbit : convert
+      OrbitType     <--*  Orbit
+      PositionAngleType <--   Orbit
+      OrbitType     -->   PositionAngleType
+      Orbit         <|--  KeplerianOrbit
+      Orbit         <|--  CircularOrbit
+      Orbit         <|--  CartesianOrbit
+      Orbit         <|--  EquinoctialOrbit
 
     }
 

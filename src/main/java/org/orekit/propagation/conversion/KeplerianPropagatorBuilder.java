@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,19 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.BatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for Keplerian propagator.
  * @author Pascal Parraud
@@ -35,22 +44,65 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * used together with the {@code positionScale} to convert from the {@link
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
+     *
      * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-          * @since 8.0
+     * @since 8.0
+     * @see #KeplerianPropagatorBuilder(Orbit, PositionAngleType, double, AttitudeProvider)
      */
-    public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
+    public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngleType positionAngleType,
                                       final double positionScale) {
-        super(templateOrbit, positionAngle, positionScale, true);
+        this(templateOrbit, positionAngleType, positionScale,
+             FrameAlignedProvider.of(templateOrbit.getFrame()));
+    }
+
+    /** Build a new instance.
+     * <p>
+     * The template orbit is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, the orbit type, and is also
+     * used together with the {@code positionScale} to convert from the {@link
+     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters.
+     * </p>
+     * @param templateOrbit reference orbit from which real orbits will be built
+     * @param positionAngleType position angle type to use
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param attitudeProvider attitude law to use.
+     * @since 10.1
+     */
+    public KeplerianPropagatorBuilder(final Orbit templateOrbit,
+                                      final PositionAngleType positionAngleType,
+                                      final double positionScale,
+                                      final AttitudeProvider attitudeProvider) {
+        super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public KeplerianPropagatorBuilder copy() {
+        return new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngleType(),
+                                              getPositionScale(), getAttitudeProvider());
     }
 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
-        return new KeplerianPropagator(createInitialOrbit());
+        return new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
 }

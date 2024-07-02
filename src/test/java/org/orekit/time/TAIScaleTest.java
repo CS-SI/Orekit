@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,9 @@
  */
 package org.orekit.time;
 
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.Constants;
@@ -31,12 +30,12 @@ public class TAIScaleTest {
     @Test
     public void testZero() {
         TimeScale scale = TimeScalesFactory.getTAI();
-        Assert.assertEquals("TAI", scale.toString());
+        Assertions.assertEquals("TAI", scale.toString());
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            Assert.assertEquals(0, scale.offsetFromTAI(date), 0);
+            Assertions.assertEquals(0, scale.offsetFromTAI(date), 0);
             DateTimeComponents components = date.getComponents(scale);
-            Assert.assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
+            Assertions.assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
         }
     }
 
@@ -62,12 +61,12 @@ public class TAIScaleTest {
         AbsoluteDate date =
                 new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009, TimeScalesFactory.getUTC());
         DateTimeComponents components = date.getComponents(TimeScalesFactory.getTAI());
-        Assert.assertEquals(2004,        components.getDate().getYear());
-        Assert.assertEquals(   4,        components.getDate().getMonth());
-        Assert.assertEquals(   6,        components.getDate().getDay());
-        Assert.assertEquals(   7,        components.getTime().getHour());
-        Assert.assertEquals(  52,        components.getTime().getMinute());
-        Assert.assertEquals(   0.386009, components.getTime().getSecond(), 1.0e-10);
+        Assertions.assertEquals(2004,        components.getDate().getYear());
+        Assertions.assertEquals(   4,        components.getDate().getMonth());
+        Assertions.assertEquals(   6,        components.getDate().getDay());
+        Assertions.assertEquals(   7,        components.getTime().getHour());
+        Assertions.assertEquals(  52,        components.getTime().getMinute());
+        Assertions.assertEquals(   0.386009, components.getTime().getSecond(), 1.0e-10);
     }
 
     @Test
@@ -78,13 +77,13 @@ public class TAIScaleTest {
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
-        Assert.assertEquals(61, utc.minuteDuration(during));
-        Assert.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
-        Assert.assertEquals(60, scale.minuteDuration(during));
-        Assert.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(61, utc.minuteDuration(during));
+        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(60, scale.minuteDuration(during));
+        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

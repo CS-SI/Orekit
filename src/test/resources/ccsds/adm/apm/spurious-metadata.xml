@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-4.0.0-master-4.0.xsd" id="CCSDS_APM_VERS" version="2.0">
+  <header>
+    <CREATION_DATE>2023-04-04T14:02:51.0</CREATION_DATE>
+    <ORIGINATOR>OREKIT</ORIGINATOR>
+  </header>
+
+  <body>
+    <segment>
+      <metadata>
+        <OBJECT_NAME>OREKIT_SAT</OBJECT_NAME>
+        <OBJECT_ID>2002-999Z</OBJECT_ID>
+        <TIME_SYSTEM>UTC</TIME_SYSTEM>
+      </metadata>
+      <metadata>
+        <COMMENT>second metadata is an error</COMMENT>
+      </metadata>
+    </segment>
+  </body>
+</apm>

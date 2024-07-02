@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,15 +16,16 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.TreeMap;
-
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * This class is designed to provide coefficient from the DSST theory.
@@ -34,7 +35,7 @@ import org.orekit.errors.OrekitMessages;
 public class CoefficientsFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation. */
-    private static TreeMap<NSKey, Double> VNS = new TreeMap<NSKey, Double>();
+    private static SortedMap<NSKey, Double> VNS = new ConcurrentSkipListMap<>();
 
     /** Last computed order for V<sub>ns</sub> coefficients. */
     private static int         LAST_VNS_ORDER = 2;
@@ -104,7 +105,7 @@ public class CoefficientsFactory {
      *  @param <T> the type of the field elements
      *  @return Q<sub>n,s</sub> coefficients array
      */
-    public static <T extends RealFieldElement<T>> T[][] computeQns(final T gamma, final int nMax, final int sMax) {
+    public static <T extends CalculusFieldElement<T>> T[][] computeQns(final T gamma, final int nMax, final int sMax) {
 
         // Initialization
         final int sDim = FastMath.min(sMax + 1, nMax) + 1;
@@ -178,7 +179,7 @@ public class CoefficientsFactory {
      *          The 1st column contains the G<sub>s</sub> values.
      *          The 2nd column contains the H<sub>s</sub> values.
      */
-    public static <T extends RealFieldElement<T>> T[][] computeGsHs(final T k, final T h,
+    public static <T extends CalculusFieldElement<T>> T[][] computeGsHs(final T k, final T h,
                                          final T alpha, final T beta,
                                          final int order, final Field<T> field) {
         // Zero for initialization
@@ -189,7 +190,7 @@ public class CoefficientsFactory {
         final T kaphb = k.multiply(alpha).add(h.multiply(beta));
         // Initialization
         final T[][] GsHs = MathArrays.buildArray(field, 2, order + 1);
-        GsHs[0][0] = zero.add(1.);
+        GsHs[0][0] = zero.newInstance(1.);
         GsHs[1][0] = zero;
 
         for (int s = 1; s <= order; s++) {
@@ -205,13 +206,14 @@ public class CoefficientsFactory {
     /** Compute the V<sub>n,s</sub> coefficients from 2.8.2-(1)(2).
      * @param order Order of the computation. Computation will be done from 0 to order -1
      * @return Map of the V<sub>n, s</sub> coefficients
+     * @since 11.3.3
      */
-    public static TreeMap<NSKey, Double> computeVns(final int order) {
+    public static SortedMap<NSKey, Double> computeVns(final int order) {
 
         if (order > LAST_VNS_ORDER) {
             // Compute coefficient
             // Need previous computation as recurrence relation is done at s + 1 and n + 2
-            final int min = (LAST_VNS_ORDER - 2 < 0) ? 0 : (LAST_VNS_ORDER - 2);
+            final int min = FastMath.max(LAST_VNS_ORDER - 2, 0);
             for (int n = min; n < order; n++) {
                 for (int s = 0; s < n + 1; s++) {
                     if ((n - s) % 2 != 0) {
@@ -230,7 +232,7 @@ public class CoefficientsFactory {
             }
             LAST_VNS_ORDER = order;
         }
-        return VNS;
+        return new ConcurrentSkipListMap<>(VNS);
     }
 
     /** Get the V<sub>n,s</sub><sup>m</sup> coefficient from V<sub>n,s</sub>.
@@ -320,8 +322,8 @@ public class CoefficientsFactory {
                 return true;
             }
 
-            if ((key != null) && (key instanceof NSKey)) {
-                return (n == ((NSKey) key).n) && (s == ((NSKey) key).s);
+            if (key instanceof NSKey) {
+                return n == ((NSKey) key).n && s == ((NSKey) key).s;
             }
 
             return false;

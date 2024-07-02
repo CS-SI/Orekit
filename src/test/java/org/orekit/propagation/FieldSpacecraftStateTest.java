@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,47 +16,48 @@
  */
 package org.orekit.propagation;
 
-
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -66,84 +67,160 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 
-public class FieldSpacecraftStateTest {
-
-    @Test
-    public void testFieldVSReal() {
-        doTestFieldVsReal(Decimal64Field.getInstance());
-    }
+class FieldSpacecraftStateTest {
 
     @Test
-    public void testShiftVsEcksteinHechlerError() {
-        doTestShiftVsEcksteinHechlerError(Decimal64Field.getInstance());
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testDatesConsistency() {
-        doTestDatesConsistency(Decimal64Field.getInstance());
+    void testFieldVSReal() {
+        doTestFieldVsReal(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDateConsistencyClose() {
-        doTestDateConsistencyClose(Decimal64Field.getInstance());
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testFramesConsistency() {
-        doTestFramesConsistency(Decimal64Field.getInstance());
+    void testShiftVsEcksteinHechlerError() {
+        doTestShiftVsEcksteinHechlerError(Binary64Field.getInstance());
     }
 
     @Test
-    public void testTransform() {
-        doTestTransform(Decimal64Field.getInstance());
+    void testDatesConsistency() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            doTestDatesConsistency(Binary64Field.getInstance());
+        });
     }
 
     @Test
-    public void testAdditionalStates() {
-        doTestAdditionalStates(Decimal64Field.getInstance());
+    void testDateConsistencyClose() {
+        doTestDateConsistencyClose(Binary64Field.getInstance());
     }
 
     @Test
-    public void testInterpolation() throws ParseException {
-        doTestInterpolation(Decimal64Field.getInstance());
+    void testFramesConsistency() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            doTestFramesConsistency(Binary64Field.getInstance());
+        });
     }
 
     @Test
-    public void testFieldVSRealAbsPV() {
-        doTestFieldVsRealAbsPV(Decimal64Field.getInstance());
+    void testTransform() {
+        doTestTransform(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDateConsistencyCloseAbsPV() {
-        doTestDateConsistencyCloseAbsPV(Decimal64Field.getInstance());
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testFramesConsistencyAbsPV() {
-        doTestFramesConsistencyAbsPV(Decimal64Field.getInstance());
+    void testAdditionalStates() {
+        doTestAdditionalStates(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAdditionalStatesAbsPV() {
-        doTestAdditionalStatesAbsPV(Decimal64Field.getInstance());
+    void testAdditionalStatesDerivatives() {
+        doTestAdditionalStatesDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testResetOnEventAnalytical() {
-        doTestAdditionalTestResetOnEventAnalytical(Decimal64Field.getInstance());
+    void testFieldVSRealAbsPV() {
+        doTestFieldVsRealAbsPV(Binary64Field.getInstance());
     }
 
     @Test
-    public void testResetOnEventNumerical() {
-        doTestAdditionalTestResetOnEventNumerical(Decimal64Field.getInstance());
+    void testDateConsistencyCloseAbsPV() {
+        doTestDateConsistencyCloseAbsPV(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
+    @Test
+    void testFramesConsistencyAbsPV() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            doTestFramesConsistencyAbsPV(Binary64Field.getInstance());
+        });
+    }
+
+    @Test
+    void testAdditionalStatesAbsPV() {
+        doTestAdditionalStatesAbsPV(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testAdditionalStatesDerivativesAbsPV() {
+        doTestAdditionalStatesDerivativesAbsPV(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testResetOnEventAnalytical() {
+        doTestAdditionalTestResetOnEventAnalytical(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testResetOnEventNumerical() {
+        doTestAdditionalTestResetOnEventNumerical(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testShiftAdditionalDerivativesDouble() {
+        doTestShiftAdditionalDerivativesDouble(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testShiftAdditionalDerivativesField() {
+        doTestShiftAdditionalDerivativesField(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testToTransform() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final FieldOrbit<Complex> orbit = new FieldCartesianOrbit<>(field, rOrbit);
+        final TimeStampedAngularCoordinates angularCoordinates = new TimeStampedAngularCoordinates(
+                orbit.getDate().toAbsoluteDate(), Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        final FieldAttitude<Complex> attitude = new FieldAttitude<>(orbit.getFrame(),
+                new TimeStampedFieldAngularCoordinates<>(field, angularCoordinates));
+        final FieldSpacecraftState<Complex> state = new FieldSpacecraftState<>(orbit, attitude);
+        // WHEN
+        final FieldTransform<Complex> fieldTransform = state.toTransform();
+        // THEN
+        final Transform expectedTransform = state.toSpacecraftState().toTransform();
+        Assertions.assertEquals(expectedTransform.getDate(), fieldTransform.getDate());
+        final double tolerance = 1e-10;
+        Assertions.assertEquals(expectedTransform.getTranslation().getX(),
+                fieldTransform.getTranslation().getX().getReal(), tolerance);
+        Assertions.assertEquals(expectedTransform.getTranslation().getY(),
+                fieldTransform.getTranslation().getY().getReal(), tolerance);
+        Assertions.assertEquals(expectedTransform.getTranslation().getZ(),
+                fieldTransform.getTranslation().getZ().getReal(), tolerance);
+        Assertions.assertEquals(0., Rotation.distance(expectedTransform.getRotation(),
+                fieldTransform.getRotation().toRotation()));
+    }
+    
+    @Test
+    void testToStaticTransform() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final FieldOrbit<Complex> orbit = new FieldCartesianOrbit<>(field, rOrbit);
+        final TimeStampedAngularCoordinates angularCoordinates = new TimeStampedAngularCoordinates(
+                orbit.getDate().toAbsoluteDate(), Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        final FieldAttitude<Complex> attitude = new FieldAttitude<>(orbit.getFrame(),
+                new TimeStampedFieldAngularCoordinates<>(field, angularCoordinates));
+        final FieldSpacecraftState<Complex> state = new FieldSpacecraftState<>(orbit, attitude);
+        // WHEN
+        final FieldStaticTransform<Complex> actualStaticTransform = state.toStaticTransform();
+        // THEN
+        final FieldStaticTransform<Complex> expectedStaticTransform = state.toTransform();
+        Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
+        final double tolerance = 1e-10;
+        Assertions.assertEquals(expectedStaticTransform.getTranslation().getX().getReal(),
+                actualStaticTransform.getTranslation().getX().getReal(), tolerance);
+        Assertions.assertEquals(expectedStaticTransform.getTranslation().getY().getReal(),
+                actualStaticTransform.getTranslation().getY().getReal(), tolerance);
+        Assertions.assertEquals(expectedStaticTransform.getTranslation().getZ().getReal(),
+                actualStaticTransform.getTranslation().getZ().getReal(), tolerance);
+        Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation().toRotation(),
+                actualStaticTransform.getRotation().toRotation()));
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
         T zero = field.getZero();
 
         double mu = 3.9860047e14;
@@ -167,8 +244,8 @@ public class FieldSpacecraftStateTest {
         AbsoluteDate t_r = t_f.toAbsoluteDate();
 
 
-        KeplerianOrbit      kep_r = new KeplerianOrbit(a_r, e_r, i_r, pa_r, raan_r, m_r, PositionAngle.ECCENTRIC, FramesFactory.getEME2000(), t_r, mu);
-        FieldKeplerianOrbit<T> kep_f = new FieldKeplerianOrbit<>(a_f, e_f, i_f, pa_f, raan_f, m_f, PositionAngle.ECCENTRIC, FramesFactory.getEME2000(), t_f, zero.add(mu));
+        KeplerianOrbit      kep_r = new KeplerianOrbit(a_r, e_r, i_r, pa_r, raan_r, m_r, PositionAngleType.ECCENTRIC, FramesFactory.getEME2000(), t_r, mu);
+        FieldKeplerianOrbit<T> kep_f = new FieldKeplerianOrbit<>(a_f, e_f, i_f, pa_f, raan_f, m_f, PositionAngleType.ECCENTRIC, FramesFactory.getEME2000(), t_f, zero.add(mu));
 
         SpacecraftState ScS_r = new SpacecraftState(kep_r);
         FieldSpacecraftState<T> ScS_f = new FieldSpacecraftState<>(kep_f);
@@ -178,37 +255,37 @@ public class FieldSpacecraftStateTest {
             FieldSpacecraftState<T> control_f = ScS_f.shiftedBy(zero.add(dt));
 
 
-            Assert.assertEquals(control_r.getA(), control_f.getA().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getE(), control_f.getE().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getEquinoctialEx(), control_f.getEquinoctialEx().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getEquinoctialEy(), control_f.getEquinoctialEy().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getX(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getY(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getZ(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ0(), control_f.getAttitude().getOrientation().getRotation().getQ0().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ1(), control_f.getAttitude().getOrientation().getRotation().getQ1().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ2(), control_f.getAttitude().getOrientation().getRotation().getQ2().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ3(), control_f.getAttitude().getOrientation().getRotation().getQ3().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getA(), control_f.getA().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getE(), control_f.getE().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getEquinoctialEx(), control_f.getEquinoctialEx().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getEquinoctialEy(), control_f.getEquinoctialEy().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
+            Assertions.assertEquals(control_r.getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
+            Assertions.assertEquals(control_r.getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getX(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getY(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getZ(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ0(), control_f.getAttitude().getOrientation().getRotation().getQ0().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ1(), control_f.getAttitude().getOrientation().getRotation().getQ1().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ2(), control_f.getAttitude().getOrientation().getRotation().getQ2().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ3(), control_f.getAttitude().getOrientation().getRotation().getQ3().getReal(), 1e-10);
 
-            Assert.assertEquals(control_r.getAttitude().getSpin().getAlpha(), control_f.getAttitude().getSpin().getAlpha().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getSpin().getDelta(), control_f.getAttitude().getSpin().getDelta().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getSpin().getNorm(), control_f.getAttitude().getSpin().getNorm().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getSpin().getAlpha(), control_f.getAttitude().getSpin().getAlpha().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getSpin().getDelta(), control_f.getAttitude().getSpin().getDelta().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getSpin().getNorm(), control_f.getAttitude().getSpin().getNorm().getReal(), 1e-10);
 
-            Assert.assertEquals(control_r.getAttitude().getReferenceFrame().isPseudoInertial(), control_f.getAttitude().getReferenceFrame().isPseudoInertial());
-            Assert.assertEquals(control_r.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH), control_f.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH).getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getReferenceFrame().isPseudoInertial(), control_f.getAttitude().getReferenceFrame().isPseudoInertial());
+            Assertions.assertEquals(control_r.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH), control_f.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH).getReal(), 1e-10);
 
 
         }
 
     }
 
-    private <T extends RealFieldElement<T>>  void doTestShiftVsEcksteinHechlerError(final Field<T> field)
+    private <T extends CalculusFieldElement<T>>  void doTestShiftVsEcksteinHechlerError(final Field<T> field)
         {
 
         T zero = field.getZero();
@@ -257,7 +334,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
@@ -294,13 +371,13 @@ public class FieldSpacecraftStateTest {
 
         }
 
-        Assert.assertEquals(0.40,   maxResidualP, 0.01);
-        Assert.assertEquals(4.9e-4, maxResidualV, 1.0e-5);
-        Assert.assertEquals(2.8e-6, maxResidualR, 1.0e-1);
+        Assertions.assertEquals(0.40,   maxResidualP, 0.01);
+        Assertions.assertEquals(4.9e-4, maxResidualV, 1.0e-5);
+        Assertions.assertEquals(2.8e-6, maxResidualR, 1.0e-1);
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestDatesConsistency(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDatesConsistency(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -315,7 +392,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
@@ -328,7 +405,7 @@ public class FieldSpacecraftStateTest {
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
      */
-    private <T extends RealFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) {
 
 
         //setup
@@ -344,7 +421,7 @@ public class FieldSpacecraftStateTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 01, 01),
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldKeplerianOrbit<T> orbit10Shifts = orbit;
@@ -359,8 +436,8 @@ public class FieldSpacecraftStateTest {
                 .getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
 
         //verify dates are very close, but not equal
-        Assert.assertNotEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
-        Assert.assertEquals(
+        Assertions.assertNotEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
+        Assertions.assertEquals(
                 shiftedAttitude.getDate().durationFrom(orbit10Shifts.getDate()).getReal(),
                 0, Precision.EPSILON);
 
@@ -368,8 +445,8 @@ public class FieldSpacecraftStateTest {
         new FieldSpacecraftState<>(orbit10Shifts, shiftedAttitude);
     }
 
-    // (expected=IllegalArgumentException.class)
-    private <T extends RealFieldElement<T>> void doTestFramesConsistency(final Field<T> field) {
+    // 
+    private <T extends CalculusFieldElement<T>> void doTestFramesConsistency(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -382,19 +459,19 @@ public class FieldSpacecraftStateTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 01, 01),
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         new FieldSpacecraftState<>(orbit,
                             new FieldAttitude<>(orbit.getDate(),
                                                 FramesFactory.getGCRF(),
-                                                FieldRotation.getIdentity(field),
-                                                FieldVector3D.getZero(field),
-                                                FieldVector3D.getZero(field)));
+                                                Rotation.IDENTITY,
+                                                Vector3D.ZERO,
+                                                Vector3D.ZERO,
+                                                field));
     }
 
-    private <T extends RealFieldElement<T>> void doTestTransform(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>> void doTestTransform(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -409,7 +486,7 @@ public class FieldSpacecraftStateTest {
                         TimeComponents.H00,
                         TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
@@ -426,18 +503,18 @@ public class FieldSpacecraftStateTest {
             PVCoordinates pv = transform.transformPVCoordinates(PVCoordinates.ZERO);
             PVCoordinates dPV = new PVCoordinates(pv, state.getPVCoordinates().toPVCoordinates());
             Vector3D mZDirection = transform.transformVector(Vector3D.MINUS_K);
-            double alpha = Vector3D.angle(mZDirection, state.getPVCoordinates().toPVCoordinates().getPosition());
+            double alpha = Vector3D.angle(mZDirection, state.getPosition().toVector3D());
             maxDP = FastMath.max(maxDP, dPV.getPosition().getNorm());
             maxDV = FastMath.max(maxDV, dPV.getVelocity().getNorm());
             maxDA = FastMath.max(maxDA, FastMath.toDegrees(alpha));
         }
-        Assert.assertEquals(0.0, maxDP, 1.0e-6);
-        Assert.assertEquals(0.0, maxDV, 1.0e-9);
-        Assert.assertEquals(0.0, maxDA, 1.0e-12);
+        Assertions.assertEquals(0.0, maxDP, 1.0e-6);
+        Assertions.assertEquals(0.0, maxDV, 1.0e-9);
+        Assertions.assertEquals(0.0, maxDA, 8.1e-10);
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalStates(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalStates(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -452,7 +529,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
@@ -471,135 +548,150 @@ public class FieldSpacecraftStateTest {
                 state.
                  addAdditionalState("test-1", add).
                   addAdditionalState("test-2", zero.add(42.0));
-        Assert.assertEquals(0, state.getAdditionalStates().size());
-        Assert.assertFalse(state.hasAdditionalState("test-1"));
+        Assertions.assertEquals(0, state.getAdditionalStatesValues().size());
+        Assertions.assertFalse(state.hasAdditionalState("test-1"));
         try {
             state.getAdditionalState("test-1");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
-            Assert.assertEquals(oe.getParts()[0], "test-1");
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
-            Assert.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
-            Assert.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             T[] kk = MathArrays.buildArray(field, 7);
             extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", kk));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
-            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
-            Assert.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
+            Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
+            Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
-        Assert.assertEquals(2, extended.getAdditionalStates().size());
-        Assert.assertTrue(extended.hasAdditionalState("test-1"));
-        Assert.assertTrue(extended.hasAdditionalState("test-2"));
-        Assert.assertEquals( 1.0, extended.getAdditionalState("test-1")[0].getReal(), 1.0e-15);
-        Assert.assertEquals( 2.0, extended.getAdditionalState("test-1")[1].getReal(), 1.0e-15);
-        Assert.assertEquals(42.0, extended.getAdditionalState("test-2")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(2, extended.getAdditionalStatesValues().size());
+        Assertions.assertTrue(extended.hasAdditionalState("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalState("test-2"));
+        Assertions.assertEquals( 1.0, extended.getAdditionalState("test-1")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals( 2.0, extended.getAdditionalState("test-1")[1].getReal(), 1.0e-15);
+        Assertions.assertEquals(42.0, extended.getAdditionalState("test-2")[0].getReal(), 1.0e-15);
 
         // test various constructors
         T[] dd = MathArrays.buildArray(field, 1);
         dd[0] = zero.add(-6.0);
-        Map<String, T[]> map = new HashMap<String, T[]>();
-        map.put("test-3", dd);
-        FieldSpacecraftState<T> sO = new FieldSpacecraftState<>(state.getOrbit(), map);
-        Assert.assertEquals(-6.0, sO.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOA = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), map);
-        Assert.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOM = new FieldSpacecraftState<>(state.getOrbit(), state.getMass(), map);
-        Assert.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOAM = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), state.getMass(), map);
-        Assert.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        FieldArrayDictionary<T> dictionary = new FieldArrayDictionary<>(field);
+        dictionary.put("test-3", dd);
+        FieldSpacecraftState<T> sO = new FieldSpacecraftState<>(state.getOrbit(), dictionary);
+        Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        FieldSpacecraftState<T> sOA = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), dictionary);
+        Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        FieldSpacecraftState<T> sOM = new FieldSpacecraftState<>(state.getOrbit(), state.getMass(), dictionary);
+        Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        FieldSpacecraftState<T> sOAM = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), state.getMass(), dictionary);
+        Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
         FieldSpacecraftState<T> sFromDouble = new FieldSpacecraftState<>(field, sOAM.toSpacecraftState());
-        Assert.assertEquals(-6.0, sFromDouble.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-6.0, sFromDouble.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field)
-        throws ParseException, OrekitException {
-        checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, field);
-        checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0, field);
-        checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0, field);
-    }
-
-    private <T extends RealFieldElement<T>> void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
-                                         double expectedErrorA, double expectedErrorM, double expectedErrorQ, Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalStatesDerivatives(final Field<T> field) {
 
         T zero = field.getZero();
-        T mu  = zero.add(3.9860047e14);
-        double ae  = 6.378137e6;
-        double c20 = -1.08263e-3;
-        double c30 = 2.54e-6;
-        double c40 = 1.62e-6;
-        double c50 = 2.3e-7;
-        double c60 = -5.5e-7;
-
-
+        T a = zero.add(rOrbit.getA());
+        T e = zero.add(rOrbit.getE());
+        T i = zero.add(rOrbit.getI());
+        T pa = zero.add(1.9674147913622104);
+        T raan = zero.add(FastMath.toRadians(261));
+        T lv = zero.add(0);
         T mass = zero.add(2500);
-        T a = zero.add(7187990.1979844316);
-        T e = zero.add(0.5e-4);
-        T i = zero.add(1.7105407051081795);
-        T omega = zero.add(1.9674147913622104);
-        T OMEGA = zero.add(FastMath.toRadians(261));
-        T lv = zero;
 
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 01, 01),
-                        TimeComponents.H00,
-                        TimeScalesFactory.getUTC());
+                                                            TimeComponents.H00,
+                                                            TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
-                        FramesFactory.getEME2000(), date, zero.add(mu));
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
+                                                                 FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
-        FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(orbit, attitudeLaw, mass,
-                                                                               ae, mu, c20, c30, c40, c50, c60);
-        FieldAbsoluteDate<T> centerDate = orbit.getDate().shiftedBy(100.0);
-        FieldSpacecraftState<T> centerState = propagator.propagate(centerDate).addAdditionalState("quadratic", zero);
-        List<FieldSpacecraftState<T>> sample = new ArrayList<FieldSpacecraftState<T>>();
-        for (int ii = 0; ii < n; ++ii) {
-            double dt = ii * 900.0 / (n - 1);
-            FieldSpacecraftState<T> state = propagator.propagate(centerDate.shiftedBy(dt));
-            state = state.addAdditionalState("quadratic", zero.add(dt * dt));
-            sample.add(state);
+        FieldKeplerianPropagator<T> propagator =
+                        new FieldKeplerianPropagator<>(orbit, attitudeLaw, zero.add(mu), mass);
+
+
+
+
+        final FieldSpacecraftState<T> state = propagator.propagate(orbit.getDate().shiftedBy(60));
+        T[] add = MathArrays.buildArray(field, 2);
+        add[0] = zero.add(1.);
+        add[1] = zero.add(2.);
+        final FieldSpacecraftState<T> extended =
+                state.
+                 addAdditionalStateDerivative("test-1", add).
+                  addAdditionalStateDerivative("test-2", zero.add(42.0));
+        Assertions.assertEquals(0, state.getAdditionalStatesDerivatives().size());
+        Assertions.assertFalse(state.hasAdditionalStateDerivative("test-1"));
+        try {
+            state.getAdditionalStateDerivative("test-1");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
-        double maxErrorP = 0;
-        double maxErrorV = 0;
-        double maxErrorA = 0;
-        double maxErrorM = 0;
-        double maxErrorQ = 0;
-        for (double dt = 0; dt < 900.0; dt += 5) {
-            FieldSpacecraftState<T> interpolated = centerState.interpolate(centerDate.shiftedBy(dt), sample);
-            FieldSpacecraftState<T> propagated = propagator.propagate(centerDate.shiftedBy(dt));
-            FieldPVCoordinates<T> dpv = new FieldPVCoordinates<>(propagated.getPVCoordinates(), interpolated.getPVCoordinates());
-            maxErrorP = FastMath.max(maxErrorP, dpv.getPosition().getNorm().getReal());
-            maxErrorV = FastMath.max(maxErrorV, dpv.getVelocity().getNorm().getReal());
-            maxErrorA = FastMath.max(maxErrorA, FastMath.toDegrees(FieldRotation.distance(interpolated.getAttitude().getRotation(),
-                                                                                                  propagated.getAttitude().getRotation()).getReal()));
-            maxErrorM = FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass().getReal() - propagated.getMass().getReal()));
-            maxErrorQ = FastMath.max(maxErrorQ, FastMath.abs(interpolated.getAdditionalState("quadratic")[0].getReal() - dt * dt));
+        try {
+            state.ensureCompatibleAdditionalStates(extended);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
-        Assert.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
-        Assert.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
-        Assert.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
-        Assert.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
-        Assert.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
+        try {
+            extended.ensureCompatibleAdditionalStates(state);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
+        }
+        try {
+            T[] kk = MathArrays.buildArray(field, 7);
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalStateDerivative("test-2", kk));
+            Assertions.fail("an exception should have been thrown");
+        } catch (MathIllegalStateException mise) {
+            Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
+            Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
+        }
+        Assertions.assertEquals(2, extended.getAdditionalStatesDerivatives().size());
+        Assertions.assertTrue(extended.hasAdditionalStateDerivative("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalStateDerivative("test-2"));
+        Assertions.assertEquals( 1.0, extended.getAdditionalStateDerivative("test-1")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals( 2.0, extended.getAdditionalStateDerivative("test-1")[1].getReal(), 1.0e-15);
+        Assertions.assertEquals(42.0, extended.getAdditionalStateDerivative("test-2")[0].getReal(), 1.0e-15);
+
+        // test most complete constructor
+        T[] dd = MathArrays.buildArray(field, 1);
+        dd[0] = zero.add(-6.0);
+        FieldArrayDictionary<T> dict = new FieldArrayDictionary<>(field);
+        dict.put("test-3", dd);
+        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), state.getMass(), null, dict);
+        Assertions.assertFalse(s.hasAdditionalState("test-3"));
+        Assertions.assertEquals(-6.0, s.getAdditionalStateDerivative("test-3")[0].getReal(), 1.0e-15);
+
+        // test conversion
+        FieldSpacecraftState<T> rebuilt = new FieldSpacecraftState<>(field, s.toSpacecraftState());
+        rebuilt.ensureCompatibleAdditionalStates(s);
+
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldVsRealAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFieldVsRealAbsPV(final Field<T> field) {
         T zero = field.getZero();
 
         T x_f     = zero.add(0.8);
@@ -616,6 +708,8 @@ public class FieldSpacecraftStateTest {
         FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), t_f, pva_f);
 
         FieldSpacecraftState<T> ScS_f = new FieldSpacecraftState<>(absPV_f);
+        FieldSpacecraftState<T> withM = new FieldSpacecraftState<>(absPV_f, zero.newInstance(1234.5));
+        Assertions.assertEquals(1234.5, withM.getMass().getReal(), 1.0e-10);
         SpacecraftState ScS_r = ScS_f.toSpacecraftState();
 
         for (double dt = 0; dt < 500; dt+=100){
@@ -623,35 +717,35 @@ public class FieldSpacecraftStateTest {
             FieldSpacecraftState<T> control_f = ScS_f.shiftedBy(zero.add(dt));
 
 
-            Assert.assertEquals(control_r.getMu(), control_f.getMu().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getI(), control_f.getI().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getHx(), control_f.getHx().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getHy(), control_f.getHy().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getLv(), control_f.getLv().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getLE(), control_f.getLE().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getLM(), control_f.getLM().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getKeplerianMeanMotion(), control_f.getKeplerianMeanMotion().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getKeplerianPeriod(), control_f.getKeplerianPeriod().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getX(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getY(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getZ(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ0(), control_f.getAttitude().getOrientation().getRotation().getQ0().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ1(), control_f.getAttitude().getOrientation().getRotation().getQ1().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ2(), control_f.getAttitude().getOrientation().getRotation().getQ2().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ3(), control_f.getAttitude().getOrientation().getRotation().getQ3().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getMu(), control_f.getMu().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getI(), control_f.getI().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getHx(), control_f.getHx().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getHy(), control_f.getHy().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getLv(), control_f.getLv().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getLE(), control_f.getLE().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getLM(), control_f.getLM().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getKeplerianMeanMotion(), control_f.getKeplerianMeanMotion().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getKeplerianPeriod(), control_f.getKeplerianPeriod().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
+            Assertions.assertEquals(control_r.getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
+            Assertions.assertEquals(control_r.getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getX(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getY(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getZ(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
+            Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ0(), control_f.getAttitude().getOrientation().getRotation().getQ0().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ1(), control_f.getAttitude().getOrientation().getRotation().getQ1().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ2(), control_f.getAttitude().getOrientation().getRotation().getQ2().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ3(), control_f.getAttitude().getOrientation().getRotation().getQ3().getReal(), 1e-10);
 
-            Assert.assertEquals(control_r.getAttitude().getSpin().getAlpha(), control_f.getAttitude().getSpin().getAlpha().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getSpin().getDelta(), control_f.getAttitude().getSpin().getDelta().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getSpin().getNorm(), control_f.getAttitude().getSpin().getNorm().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getSpin().getAlpha(), control_f.getAttitude().getSpin().getAlpha().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getSpin().getDelta(), control_f.getAttitude().getSpin().getDelta().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getSpin().getNorm(), control_f.getAttitude().getSpin().getNorm().getReal(), 1e-10);
 
-            Assert.assertEquals(control_r.getAttitude().getReferenceFrame().isPseudoInertial(), control_f.getAttitude().getReferenceFrame().isPseudoInertial());
-            Assert.assertEquals(control_r.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH), control_f.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH).getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getAttitude().getReferenceFrame().isPseudoInertial(), control_f.getAttitude().getReferenceFrame().isPseudoInertial());
+            Assertions.assertEquals(control_r.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH), control_f.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH).getReal(), 1e-10);
 
 
         }
@@ -662,7 +756,7 @@ public class FieldSpacecraftStateTest {
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
      */
-    private <T extends RealFieldElement<T>> void doTestDateConsistencyCloseAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDateConsistencyCloseAbsPV(final Field<T> field) {
 
 
         //setup
@@ -693,18 +787,28 @@ public class FieldSpacecraftStateTest {
                 .getAttitude(AbsolutePVCoordinates1Shift, AbsolutePVCoordinates1Shift.getDate(), absPV_f.getFrame());
 
         //verify dates are very close, but not equal
-        Assert.assertNotEquals(shiftedAttitude.getDate(), AbsolutePVCoordinates10Shifts.getDate());
-        Assert.assertEquals(
+        Assertions.assertNotEquals(shiftedAttitude.getDate(), AbsolutePVCoordinates10Shifts.getDate());
+        Assertions.assertEquals(
                 shiftedAttitude.getDate().durationFrom(AbsolutePVCoordinates10Shifts.getDate()).getReal(),
                 0, Precision.EPSILON);
 
         //action + verify no exception is thrown
-        new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, shiftedAttitude);
+        FieldSpacecraftState<T> s1 = new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, shiftedAttitude);
+        FieldSpacecraftState<T> s2 = s1.shiftedBy(0.001);
+
+        try {
+            // but here, the time difference is too great
+            new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, s2.getAttitude());
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assertions.assertEquals(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
+                                oiae.getSpecifier());
+        }
     }
 
 
-    // (expected=IllegalArgumentException.class)
-    private <T extends RealFieldElement<T>> void doTestFramesConsistencyAbsPV(final Field<T> field) {
+    // 
+    private <T extends CalculusFieldElement<T>> void doTestFramesConsistencyAbsPV(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -732,7 +836,7 @@ public class FieldSpacecraftStateTest {
                                         FieldVector3D.getZero(field)));
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalStatesAbsPV(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalStatesAbsPV(final Field<T> field) {
 
         T zero = field.getZero();
         T x_f     = zero.add(0.8);
@@ -766,70 +870,153 @@ public class FieldSpacecraftStateTest {
                 state.
                  addAdditionalState("test-1", add).
                   addAdditionalState("test-2", zero.add(42.0));
-        Assert.assertEquals(0, state.getAdditionalStates().size());
-        Assert.assertFalse(state.hasAdditionalState("test-1"));
+        Assertions.assertEquals(0, state.getAdditionalStatesValues().size());
+        Assertions.assertFalse(state.hasAdditionalState("test-1"));
         try {
             state.getAdditionalState("test-1");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
-            Assert.assertEquals(oe.getParts()[0], "test-1");
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
-            Assert.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
-            Assert.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             T[] kk = MathArrays.buildArray(field, 7);
             extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", kk));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
-            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
-            Assert.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
+            Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
+            Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
-        Assert.assertEquals(2, extended.getAdditionalStates().size());
-        Assert.assertTrue(extended.hasAdditionalState("test-1"));
-        Assert.assertTrue(extended.hasAdditionalState("test-2"));
-        Assert.assertEquals( 1.0, extended.getAdditionalState("test-1")[0].getReal(), 1.0e-15);
-        Assert.assertEquals( 2.0, extended.getAdditionalState("test-1")[1].getReal(), 1.0e-15);
-        Assert.assertEquals(42.0, extended.getAdditionalState("test-2")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(2, extended.getAdditionalStatesValues().size());
+        Assertions.assertTrue(extended.hasAdditionalState("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalState("test-2"));
+        Assertions.assertEquals( 1.0, extended.getAdditionalState("test-1")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals( 2.0, extended.getAdditionalState("test-1")[1].getReal(), 1.0e-15);
+        Assertions.assertEquals(42.0, extended.getAdditionalState("test-2")[0].getReal(), 1.0e-15);
 
         // test various constructors
         T[] dd = MathArrays.buildArray(field, 1);
         dd[0] = zero.add(-6.0);
-        Map<String, T[]> map = new HashMap<String, T[]>();
+        FieldArrayDictionary<T> map = new FieldArrayDictionary<>(field);
         map.put("test-3", dd);
         FieldSpacecraftState<T> sO = new FieldSpacecraftState<>(state.getAbsPVA(), map);
-        Assert.assertEquals(-6.0, sO.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
         FieldSpacecraftState<T> sOA = new FieldSpacecraftState<>(state.getAbsPVA(), state.getAttitude(), map);
-        Assert.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
         FieldSpacecraftState<T> sOM = new FieldSpacecraftState<>(state.getAbsPVA(), state.getMass(), map);
-        Assert.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
         FieldSpacecraftState<T> sOAM = new FieldSpacecraftState<>(state.getAbsPVA(), state.getAttitude(), state.getMass(), map);
-        Assert.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
         FieldSpacecraftState<T> sFromDouble = new FieldSpacecraftState<>(field, sOAM.toSpacecraftState());
-        Assert.assertEquals(-6.0, sFromDouble.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-6.0, sFromDouble.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalTestResetOnEventAnalytical(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalStatesDerivativesAbsPV(final Field<T> field) {
+
+        T zero = field.getZero();
+        T x_f     = zero.add(0.8);
+        T y_f     = zero.add(0.2);
+        T z_f     = zero;
+        T vx_f    = zero;
+        T vy_f    = zero;
+        T vz_f    = zero.add(0.1);
+
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 01, 01),
+                                                            TimeComponents.H00,
+                                                            TimeScalesFactory.getUTC());
+
+        FieldPVCoordinates<T> pva_f = new FieldPVCoordinates<>(new FieldVector3D<>(x_f,y_f,z_f), new FieldVector3D<>(vx_f,vy_f,vz_f));
+
+        FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), date, pva_f);
+
+        FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
+                        new DormandPrince853FieldIntegrator<>(field, 0.1, 500, 0.001, 0.001));
+        prop.setOrbitType(null);
+
+        final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(absPV_f);
+
+        prop.resetInitialState(initialState);
+
+        final FieldSpacecraftState<T> state = prop.propagate(absPV_f.getDate().shiftedBy(60));
+        T[] add = MathArrays.buildArray(field, 2);
+        add[0] = zero.add(1.);
+        add[1] = zero.add(2.);
+        final FieldSpacecraftState<T> extended =
+                state.
+                 addAdditionalStateDerivative("test-1", add).
+                  addAdditionalStateDerivative("test-2", zero.add(42.0));
+        Assertions.assertEquals(0, state.getAdditionalStatesDerivatives().size());
+        Assertions.assertFalse(state.hasAdditionalStateDerivative("test-1"));
+        try {
+            state.getAdditionalStateDerivative("test-1");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getParts()[0], "test-1");
+        }
+        try {
+            state.ensureCompatibleAdditionalStates(extended);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
+        }
+        try {
+            extended.ensureCompatibleAdditionalStates(state);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
+        }
+        try {
+            T[] kk = MathArrays.buildArray(field, 7);
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalStateDerivative("test-2", kk));
+            Assertions.fail("an exception should have been thrown");
+        } catch (MathIllegalStateException mise) {
+            Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
+            Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
+        }
+        Assertions.assertEquals(2, extended.getAdditionalStatesDerivatives().size());
+        Assertions.assertTrue(extended.hasAdditionalStateDerivative("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalStateDerivative("test-2"));
+        Assertions.assertEquals( 1.0, extended.getAdditionalStateDerivative("test-1")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals( 2.0, extended.getAdditionalStateDerivative("test-1")[1].getReal(), 1.0e-15);
+        Assertions.assertEquals(42.0, extended.getAdditionalStateDerivative("test-2")[0].getReal(), 1.0e-15);
+
+        // test most complete constructor
+        T[] dd = MathArrays.buildArray(field, 1);
+        dd[0] = zero.add(-6.0);
+        FieldArrayDictionary<T> dictionary = new FieldArrayDictionary<T>(field);
+        dictionary.put("test-3", dd);
+        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(state.getAbsPVA(), state.getAttitude(), state.getMass(), null, dictionary);
+        Assertions.assertFalse(s.hasAdditionalState("test-3"));
+        Assertions.assertEquals(-6.0, s.getAdditionalStateDerivative("test-3")[0].getReal(), 1.0e-15);
+
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalTestResetOnEventAnalytical(final Field<T> field) {
 
         T zero = field.getZero();
 
         // Build orbit
         FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          zero.add(Constants.WGS84_EARTH_MU));
 
         // Build propagator
@@ -844,42 +1031,42 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
-                                    withHandler(new FieldEventHandler<FieldDateDetector<T>, T>() {
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
+                                    withHandler(new FieldEventHandler<T>() {
 
             @Override
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
               return Action.RESET_STATE;
             }
 
             @Override
-            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+            public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
                 return oldState.addAdditionalState(name, zero.add(+1));
             }
 
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(zero.add(0.125), (s, isFinal) -> {
+        propagator.setStepHandler(zero.add(0.125), s -> {
             if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
-                Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
+                Assertions.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
-                Assert.assertEquals(+1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
+                Assertions.assertEquals(+1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             }
         });
         FieldSpacecraftState<T> finalState = propagator.propagate(date0, date0.shiftedBy(5));
-        Assert.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalTestResetOnEventNumerical(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAdditionalTestResetOnEventNumerical(final Field<T> field) {
 
         T zero = field.getZero();
 
         // Build orbit
         FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          zero.add(Constants.WGS84_EARTH_MU));
 
         // Build propagator
@@ -895,35 +1082,117 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
-                                    withHandler(new FieldEventHandler<FieldDateDetector<T>, T>() {
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
+                                    withHandler(new FieldEventHandler<T>() {
 
             @Override
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
               return Action.RESET_STATE;
             }
 
             @Override
-            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+            public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
                 return oldState.addAdditionalState(name, zero.add(+1));
             }
 
         });
 
         propagator.addEventDetector(dateDetector);
-        propagator.setMasterMode(zero.add(0.125), (s, isFinal) -> {
+        propagator.setStepHandler(zero.add(0.125), s -> {
             if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
-                Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
+                Assertions.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
-                Assert.assertEquals(+1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
+                Assertions.assertEquals(+1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
             }
         });
         FieldSpacecraftState<T> finalState = propagator.propagate(date0, date0.shiftedBy(5));
-        Assert.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
 
     }
 
-    @Before
+    private <T extends CalculusFieldElement<T>> void doTestShiftAdditionalDerivativesDouble(final Field<T> field) {
+
+        T zero = field.getZero();
+
+        // Build orbit
+        FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
+                                         zero.add(Constants.WGS84_EARTH_MU));
+
+        // Build propagator
+        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
+
+        final String valueAndDerivative = "value-and-derivative";
+        final String valueOnly          = "value-only";
+        final String derivativeOnly     = "derivative-only";
+        final FieldSpacecraftState<T> s0 = propagator.getInitialState().
+                                           addAdditionalState(valueAndDerivative,           convert(field, new double[] { 1.0,  2.0 })).
+                                           addAdditionalStateDerivative(valueAndDerivative, convert(field, new double[] { 3.0,  2.0 })).
+                                           addAdditionalState(valueOnly,                    convert(field, new double[] { 5.0,  4.0 })).
+                                           addAdditionalStateDerivative(derivativeOnly,     convert(field, new double[] { 1.0, -1.0 }));
+        Assertions.assertEquals( 1.0, s0.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
+        Assertions.assertEquals( 2.0, s0.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
+        Assertions.assertEquals( 3.0, s0.getAdditionalStateDerivative(valueAndDerivative)[0].getReal(), 1.0e-15);
+        Assertions.assertEquals( 2.0, s0.getAdditionalStateDerivative(valueAndDerivative)[1].getReal(), 1.0e-15);
+        Assertions.assertEquals( 5.0, s0.getAdditionalState(valueOnly)[0].getReal(),                    1.0e-15);
+        Assertions.assertEquals( 4.0, s0.getAdditionalState(valueOnly)[1].getReal(),                    1.0e-15);
+        Assertions.assertEquals( 1.0, s0.getAdditionalStateDerivative(derivativeOnly)[0].getReal(),     1.0e-15);
+        Assertions.assertEquals(-1.0, s0.getAdditionalStateDerivative(derivativeOnly)[1].getReal(),     1.0e-15);
+        final FieldSpacecraftState<T> s1 = s0.shiftedBy(-2.0);
+        Assertions.assertEquals(-5.0, s1.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
+        Assertions.assertEquals(-2.0, s1.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
+        Assertions.assertEquals( 3.0, s1.getAdditionalStateDerivative(valueAndDerivative)[0].getReal(), 1.0e-15);
+        Assertions.assertEquals( 2.0, s1.getAdditionalStateDerivative(valueAndDerivative)[1].getReal(), 1.0e-15);
+        Assertions.assertEquals( 5.0, s1.getAdditionalState(valueOnly)[0].getReal(),                    1.0e-15);
+        Assertions.assertEquals( 4.0, s1.getAdditionalState(valueOnly)[1].getReal(),                    1.0e-15);
+        Assertions.assertEquals( 1.0, s1.getAdditionalStateDerivative(derivativeOnly)[0].getReal(),     1.0e-15);
+        Assertions.assertEquals(-1.0, s1.getAdditionalStateDerivative(derivativeOnly)[1].getReal(),     1.0e-15);
+
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestShiftAdditionalDerivativesField(final Field<T> field) {
+
+        T zero = field.getZero();
+
+        // Build orbit
+        FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
+                                         zero.add(Constants.WGS84_EARTH_MU));
+
+        // Build propagator
+        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
+
+        final String valueAndDerivative = "value-and-derivative";
+        final String valueOnly          = "value-only";
+        final String derivativeOnly     = "derivative-only";
+        final FieldSpacecraftState<T> s0 = propagator.getInitialState().
+                                           addAdditionalState(valueAndDerivative,           convert(field, new double[] { 1.0,  2.0 })).
+                                           addAdditionalStateDerivative(valueAndDerivative, convert(field, new double[] { 3.0,  2.0 })).
+                                           addAdditionalState(valueOnly,                    convert(field, new double[] { 5.0,  4.0 })).
+                                           addAdditionalStateDerivative(derivativeOnly,     convert(field, new double[] { 1.0, -1.0 }));
+        Assertions.assertEquals( 1.0, s0.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
+        Assertions.assertEquals( 2.0, s0.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
+        Assertions.assertEquals( 3.0, s0.getAdditionalStateDerivative(valueAndDerivative)[0].getReal(), 1.0e-15);
+        Assertions.assertEquals( 2.0, s0.getAdditionalStateDerivative(valueAndDerivative)[1].getReal(), 1.0e-15);
+        Assertions.assertEquals( 5.0, s0.getAdditionalState(valueOnly)[0].getReal(),                    1.0e-15);
+        Assertions.assertEquals( 4.0, s0.getAdditionalState(valueOnly)[1].getReal(),                    1.0e-15);
+        Assertions.assertEquals( 1.0, s0.getAdditionalStateDerivative(derivativeOnly)[0].getReal(),     1.0e-15);
+        Assertions.assertEquals(-1.0, s0.getAdditionalStateDerivative(derivativeOnly)[1].getReal(),     1.0e-15);
+        final FieldSpacecraftState<T> s1 = s0.shiftedBy(field.getZero().newInstance(-2.0));
+        Assertions.assertEquals(-5.0, s1.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
+        Assertions.assertEquals(-2.0, s1.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
+        Assertions.assertEquals( 3.0, s1.getAdditionalStateDerivative(valueAndDerivative)[0].getReal(), 1.0e-15);
+        Assertions.assertEquals( 2.0, s1.getAdditionalStateDerivative(valueAndDerivative)[1].getReal(), 1.0e-15);
+        Assertions.assertEquals( 5.0, s1.getAdditionalState(valueOnly)[0].getReal(),                    1.0e-15);
+        Assertions.assertEquals( 4.0, s1.getAdditionalState(valueOnly)[1].getReal(),                    1.0e-15);
+        Assertions.assertEquals( 1.0, s1.getAdditionalStateDerivative(derivativeOnly)[0].getReal(),     1.0e-15);
+        Assertions.assertEquals(-1.0, s1.getAdditionalStateDerivative(derivativeOnly)[1].getReal(),     1.0e-15);
+
+    }
+
+    @BeforeEach
     public void setUp(){
         try {
 
@@ -940,15 +1209,23 @@ public class FieldSpacecraftStateTest {
             rDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                      TimeComponents.H00,
                                      TimeScalesFactory.getUTC());
-            rOrbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            rOrbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(), rDate, mu);
             earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                          Constants.WGS84_EARTH_FLATTENING,
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         } catch (OrekitException oe) {
 
-            Assert.fail(oe.getLocalizedMessage());
+            Assertions.fail(oe.getLocalizedMessage());
         }
+    }
+
+    private <T extends CalculusFieldElement<T>> T[] convert(final Field<T> field, final double[] a) {
+        final T[] converted = MathArrays.buildArray(field, a.length);
+        for (int i = 0; i < a.length; ++i) {
+            converted[i] = field.getZero().newInstance(a[i]);
+        }
+        return converted;
     }
 
     private AbsoluteDate rDate;

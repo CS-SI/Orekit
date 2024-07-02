@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,28 +22,33 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.Ephemeris;
+import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 
 /**
  * Implementation of a Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link IntegratedPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
- * or {@link DSSTPropagator} .
+ * The filter uses a {@link PropagatorBuilder} to initialize its reference trajectory.
+ * The Kalman estimator can be used with a {@link NumericalPropagator}, {@link TLEPropagator},
+ * {@link BrouwerLyddanePropagator}, {@link EcksteinHechlerPropagator}, {@link KeplerianPropagator},
+ * or {@link Ephemeris}.
+ * </p>
+ * <p>
+ * Kalman estimation using a {@link DSSTPropagator semi-analytical orbit propagator} must be done using
+ * the {@link SemiAnalyticalKalmanEstimator}.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
@@ -71,16 +76,13 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class KalmanEstimator {
-
-    /** Builders for orbit propagators. */
-    private List<IntegratedPropagatorBuilder> propagatorBuilders;
+public class KalmanEstimator extends AbstractKalmanEstimator {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
 
     /** Kalman filter process model. */
-    private final KalmanODModel processModel;
+    private final KalmanModel processModel;
 
     /** Filter. */
     private final ExtendedKalmanFilter<MeasurementDecorator> filter;
@@ -93,25 +95,32 @@ public class KalmanEstimator {
      * @param propagatorBuilders propagators builders used to evaluate the orbit.
      * @param processNoiseMatricesProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @since 10.3
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                    final List<PropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
-                    final ParameterDriversList estimatedMeasurementParameters) {
-
-        this.propagatorBuilders = propagatorBuilders;
+                    final ParameterDriversList estimatedMeasurementParameters,
+                    final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        super(propagatorBuilders);
         this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
         this.observer           = null;
 
         // Build the process model and measurement model
-        this.processModel = propagatorBuilders.get(0).buildKalmanModel(propagatorBuilders,
-                                                                   processNoiseMatricesProviders,
-                                                                   estimatedMeasurementParameters);
-        //this.processModel = new KalmanModel(propagatorBuilders, processNoiseMatricesProviders,
-                                      //estimatedMeasurementParameters);
+        this.processModel = new KalmanModel(propagatorBuilders,
+                                            processNoiseMatricesProviders,
+                                            estimatedMeasurementParameters,
+                                            measurementProcessNoiseMatrix);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    protected KalmanEstimation getKalmanEstimation() {
+        return processModel;
     }
 
     /** Set the observer.
@@ -121,91 +130,6 @@ public class KalmanEstimator {
         this.observer = observer;
     }
 
-    /** Get the current measurement number.
-     * @return current measurement number
-     */
-    public int getCurrentMeasurementNumber() {
-        return processModel.getCurrentMeasurementNumber();
-    }
-
-    /** Get the current date.
-     * @return current date
-     */
-    public AbsoluteDate getCurrentDate() {
-        return processModel.getCurrentDate();
-    }
-
-    /** Get the "physical" estimated state (i.e. not normalized)
-     * @return the "physical" estimated state
-     */
-    public RealVector getPhysicalEstimatedState() {
-        return processModel.getPhysicalEstimatedState();
-    }
-
-    /** Get the "physical" estimated covariance matrix (i.e. not normalized)
-     * @return the "physical" estimated covariance matrix
-     */
-    public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
-        return processModel.getPhysicalEstimatedCovarianceMatrix();
-    }
-
-    /** Get the orbital parameters supported by this estimator.
-     * <p>
-     * If there are more than one propagator builder, then the names
-     * of the drivers have an index marker in square brackets appended
-     * to them in order to distinguish the various orbits. So for example
-     * with one builder generating Keplerian orbits the names would be
-     * simply "a", "e", "i"... but if there are several builders the
-     * names would be "a[0]", "e[0]", "i[0]"..."a[1]", "e[1]", "i[1]"...
-     * </p>
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return orbital parameters supported by this estimator
-     */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (int i = 0; i < propagatorBuilders.size(); ++i) {
-            final String suffix = propagatorBuilders.size() > 1 ? "[" + i + "]" : null;
-            for (final ParameterDriver driver : propagatorBuilders.get(i).getOrbitalParametersDrivers().getDrivers()) {
-                if (driver.isSelected() || !estimatedOnly) {
-                    if (suffix != null && !driver.getName().endsWith(suffix)) {
-                        // we add suffix only conditionally because the method may already have been called
-                        // and suffixes may have already been appended
-                        driver.setName(driver.getName() + suffix);
-                    }
-                    estimated.add(driver);
-                }
-            }
-        }
-        return estimated;
-    }
-
-    /** Get the propagator parameters supported by this estimator.
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return propagator parameters supported by this estimator
-     */
-    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (PropagatorBuilder builder : propagatorBuilders) {
-            for (final DelegatingDriver delegating : builder.getPropagationParametersDrivers().getDrivers()) {
-                if (delegating.isSelected() || !estimatedOnly) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        estimated.add(driver);
-                    }
-                }
-            }
-        }
-        return estimated;
-    }
-
-    /** Get the list of estimated measurements parameters.
-     * @return the list of estimated measurements parameters
-     */
-    public ParameterDriversList getEstimatedMeasurementsParameters() {
-        return processModel.getEstimatedMeasurementsParameters();
-    }
-
     /** Process a single measurement.
      * <p>
      * Update the filter with the new measurement by calling the estimate method.
@@ -213,9 +137,9 @@ public class KalmanEstimator {
      * @param observedMeasurement the measurement to process
      * @return estimated propagators
      */
-    public AbstractIntegratedPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
+    public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
-            final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurement));
+            final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, referenceDate));
             processModel.finalizeEstimation(observedMeasurement, estimate);
             if (observer != null) {
                 observer.evaluationPerformed(processModel);
@@ -230,43 +154,12 @@ public class KalmanEstimator {
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
      * @return estimated propagators
      */
-    public AbstractIntegratedPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
-        AbstractIntegratedPropagator[] propagators = null;
+    public Propagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
+        Propagator[] propagators = null;
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
             propagators = estimationStep(observedMeasurement);
         }
         return propagators;
-    }
-
-    /** Decorate an observed measurement.
-     * <p>
-     * The "physical" measurement noise matrix is the covariance matrix of the measurement.
-     * Normalizing it consists in applying the following equation: Rn[i,j] =  R[i,j]/σ[i]/σ[j]
-     * Thus the normalized measurement noise matrix is the matrix of the correlation coefficients
-     * between the different components of the measurement.
-     * </p>
-     * @param observedMeasurement the measurement
-     * @return decorated measurement
-     */
-    private MeasurementDecorator decorate(final ObservedMeasurement<?> observedMeasurement) {
-
-        // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
-        // of the measurement on its non-diagonal elements.
-        // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
-        // Normalizing it leaves us with the matrix of the correlation coefficients
-        final RealMatrix covariance;
-        if (observedMeasurement instanceof PV) {
-            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final PV pv = (PV) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
-        } else {
-            // For other measurements we do not have a covariance matrix.
-            // Thus the correlation coefficients matrix is an identity matrix.
-            covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
-        }
-
-        return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
-
     }
 
 }

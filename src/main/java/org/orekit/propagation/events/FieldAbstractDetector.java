@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,18 +16,21 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.ode.events.Action;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Common parts shared by several orbital events finders.
+ * @param <D> type of the detector
+ * @param <T> type of the field element
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
-                                            T extends RealFieldElement<T>> implements FieldEventDetector<T> {
+public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T>, T extends CalculusFieldElement<T>>
+    implements FieldEventDetector<T> {
 
     /** Default maximum checking interval (s). */
     public static final double DEFAULT_MAXCHECK = 600;
@@ -39,7 +42,7 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     public static final int DEFAULT_MAX_ITER = 100;
 
     /** Max check interval. */
-    private final T maxCheck;
+    private final FieldAdaptableInterval<T> maxCheck;
 
     /** Convergence threshold. */
     private final T threshold;
@@ -48,19 +51,20 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     private final int maxIter;
 
     /** Default handler for event overrides. */
-    private final FieldEventHandler<? super D, T> handler;
+    private final FieldEventHandler<T> handler;
 
     /** Propagation direction. */
     private boolean forward;
 
     /** Build a new instance.
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    protected FieldAbstractDetector(final T maxCheck, final T threshold, final int maxIter,
-                                    final FieldEventHandler<? super D, T> handler) {
+    protected FieldAbstractDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
+                                    final FieldEventHandler<T> handler) {
+        checkStrictlyPositive(threshold.getReal());
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
         this.maxIter   = maxIter;
@@ -68,18 +72,29 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
         this.forward   = true;
     }
 
+    /** Check value is strictly positive.
+     * @param value value to check
+     * @exception OrekitException if value is not strictly positive
+     * @since 11.2
+     */
+    private void checkStrictlyPositive(final double value) throws OrekitException {
+        if (value <= 0.0) {
+            throw new OrekitException(OrekitMessages.NOT_STRICTLY_POSITIVE, value);
+        }
+    }
+
     /** {@inheritDoc} */
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
-        getHandler().init(s0, t);
+        getHandler().init(s0, t, this);
     }
 
     /** {@inheritDoc} */
     public abstract T g(FieldSpacecraftState<T> s);
 
     /** {@inheritDoc} */
-    public T getMaxCheckInterval() {
+    public FieldAdaptableInterval<T> getMaxCheckInterval() {
         return maxCheck;
     }
 
@@ -100,9 +115,22 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * </p>
      * @param newMaxCheck maximum checking interval (s)
      * @return a new detector with updated configuration (the instance is not changed)
-     * @since 6.1
+     * @since 12.0
      */
-    public D withMaxCheck(final T newMaxCheck) {
+    public D withMaxCheck(final double newMaxCheck) {
+        return withMaxCheck(FieldAdaptableInterval.of(newMaxCheck));
+    }
+
+    /**
+     * Setup the maximum checking interval.
+     * <p>
+     * This will override a maximum checking interval if it has been configured previously.
+     * </p>
+     * @param newMaxCheck maximum checking interval (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
+     */
+    public D withMaxCheck(final FieldAdaptableInterval<T> newMaxCheck) {
         return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
     }
 
@@ -141,40 +169,24 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
      */
-    public D withHandler(final FieldEventHandler<? super D, T> newHandler) {
+    public D withHandler(final FieldEventHandler<T> newHandler) {
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
-    /** Get the handler.
-     * @return event handler to call at event occurrences
-     */
-    public FieldEventHandler<? super D, T> getHandler() {
+    /** {@inheritDoc} */
+    public FieldEventHandler<T> getHandler() {
         return handler;
     }
 
-    /** {@inheritDoc} */
-    public Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
-        @SuppressWarnings("unchecked")
-        final Action whatNext = getHandler().eventOccurred(s, (D) this, increasing);
-        return whatNext;
-    }
-
-    /** {@inheritDoc} */
-    public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) {
-        @SuppressWarnings("unchecked")
-        final FieldSpacecraftState<T> newState = getHandler().resetState((D) this, oldState);
-        return newState;
-    }
-
     /** Build a new instance.
-     * @param newMaxCheck maximum checking interval (s)
+     * @param newMaxCheck maximum checking interval
      * @param newThreshold convergence threshold (s)
      * @param newMaxIter maximum number of iterations in the event time search
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      */
-    protected abstract D create(T newMaxCheck, T newThreshold,
-                                int newMaxIter, FieldEventHandler<? super D, T> newHandler);
+    protected abstract D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold,
+                                int newMaxIter, FieldEventHandler<T> newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

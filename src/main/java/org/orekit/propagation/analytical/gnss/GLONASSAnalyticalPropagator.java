@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,29 +16,39 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;
-import org.orekit.utils.IERSConventions;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinates;
 
 /**
  * This class aims at propagating a GLONASS orbit from {@link GLONASSOrbitalElements}.
+ * <p>
+ * <b>Caution:</b> The Glonass analytical propagator can only be used with {@link GLONASSAlmanac}.
+ * Using this propagator with a {@link GLONASSNavigationMessage} is prone to error.
+ * </p>
  *
  * @see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
  *       GLONASS Interface Control Document</a>
@@ -92,7 +102,6 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         B  = k3 * k3 / (6 * k1);
     }
 
-    // Fields
     /** The GLONASS orbital elements used. */
     private final GLONASSOrbitalElements glonassOrbit;
 
@@ -105,122 +114,37 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     /** The ECEF frame used for GLONASS propagation. */
     private final Frame ecef;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
-    /**
-     * This nested class aims at building a GLONASSPropagator.
-     * <p>It implements the classical builder pattern.</p>
-     *
-     */
-    public static class Builder {
-
-        // Required parameter
-        /** The GLONASS orbital elements. */
-        private final GLONASSOrbitalElements orbit;
-
-        // Optional parameters
-        /** The attitude provider. */
-        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
-        /** The mass. */
-        private double mass = DEFAULT_MASS;
-        /** The ECI frame. */
-        private Frame eci  = null;
-        /** The ECEF frame. */
-        private Frame ecef = null;
-
-        /** Initializes the builder.
-         * <p>The GLONASS orbital elements is the only requested parameter to build a GLONASSPropagator.</p>
-         * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
-         * The mass is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-         * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-         * The ECEF frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
-         * </p>
-         *
-         * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASS propagator.
-         * @see #attitudeProvider(AttitudeProvider provider)
-         * @see #mass(double mass)
-         * @see #eci(Frame inertial)
-         * @see #ecef(Frame bodyFixed)
-         */
-        public Builder(final GLONASSOrbitalElements glonassOrbElt) {
-            this.orbit = glonassOrbElt;
-            this.eci   = FramesFactory.getEME2000();
-            this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        }
-
-        /** Sets the attitude provider.
-         *
-         * @param userProvider the attitude provider
-         * @return the updated builder
-         */
-        public Builder attitudeProvider(final AttitudeProvider userProvider) {
-            this.attitudeProvider = userProvider;
-            return this;
-        }
-
-        /** Sets the mass.
-         *
-         * @param userMass the mass (in kg)
-         * @return the updated builder
-         */
-        public Builder mass(final double userMass) {
-            this.mass = userMass;
-            return this;
-        }
-
-        /** Sets the Earth Centered Inertial frame used for propagation.
-         *
-         * @param inertial the ECI frame
-         * @return the updated builder
-         */
-        public Builder eci(final Frame inertial) {
-            this.eci = inertial;
-            return this;
-        }
-
-        /** Sets the Earth Centered Earth Fixed frame assimilated to the WGS84 ECEF.
-         *
-         * @param bodyFixed the ECEF frame
-         * @return the updated builder
-         */
-        public Builder ecef(final Frame bodyFixed) {
-            this.ecef = bodyFixed;
-            return this;
-        }
-
-        /** Finalizes the build.
-         *
-         * @return the built GLONASSPropagator
-         */
-        public GLONASSAnalyticalPropagator build() {
-            return new GLONASSAnalyticalPropagator(this);
-        }
-
-    }
+    /** Data context for propagation. */
+    private final DataContext dataContext;
 
     /**
      * Private constructor.
-     * @param builder the builder
+     * @param glonassOrbit Glonass orbital elements
+     * @param eci Earth Centered Inertial frame
+     * @param ecef Earth Centered Earth Fixed frame
+     * @param provider Attitude provider
+     * @param mass Satellite mass (kg)
+     * @param context Data context
      */
-    private GLONASSAnalyticalPropagator(final Builder builder) {
-        super(builder.attitudeProvider);
+    GLONASSAnalyticalPropagator(final GLONASSOrbitalElements glonassOrbit, final Frame eci,
+                                final Frame ecef, final AttitudeProvider provider,
+                                final double mass, final DataContext context) {
+        super(provider);
+        this.dataContext = context;
         // Stores the GLONASS orbital elements
-        this.glonassOrbit = builder.orbit;
+        this.glonassOrbit = glonassOrbit;
         // Sets the start date as the date of the orbital elements
         setStartDate(glonassOrbit.getDate());
         // Sets the mass
-        this.mass = builder.mass;
+        this.mass = mass;
         // Sets the Earth Centered Inertial frame
-        this.eci  = builder.eci;
+        this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
-        this.ecef = builder.ecef;
-
-        this.factory = new DSFactory(1, 2);
+        this.ecef = ecef;
+        // Sets initial state
+        final Orbit orbit = propagateOrbit(getStartDate());
+        final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
     }
 
     /**
@@ -236,109 +160,117 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     public PVCoordinates propagateInEcef(final AbsoluteDate date) {
 
         // Interval of prediction dTpr
-        final DerivativeStructure dTpr = getdTpr(date);
+        final UnivariateDerivative2 dTpr = getdTpr(date);
 
         // Zero
-        final DerivativeStructure zero = dTpr.getField().getZero();
+        final UnivariateDerivative2 zero = dTpr.getField().getZero();
 
         // The number of whole orbits "w" on a prediction interval
-        final DerivativeStructure w = FastMath.floor(dTpr.divide(GLONASS_MEAN_DRACONIAN_PERIOD + glonassOrbit.getDeltaT()));
+        final UnivariateDerivative2 w = FastMath.floor(dTpr.divide(GLONASS_MEAN_DRACONIAN_PERIOD + glonassOrbit.getDeltaT()));
 
         // Current inclination
-        final DerivativeStructure i = zero.add(GLONASS_MEAN_INCLINATION / 180 * GLONASSOrbitalElements.GLONASS_PI + glonassOrbit.getDeltaI());
+        final UnivariateDerivative2 i = zero.newInstance(GLONASS_MEAN_INCLINATION / 180 * GNSSConstants.GLONASS_PI + glonassOrbit.getDeltaI());
 
         // Eccentricity
-        final DerivativeStructure e = zero.add(glonassOrbit.getE());
+        final UnivariateDerivative2 e = zero.newInstance(glonassOrbit.getE());
 
         // Mean draconique period in orbite w+1 and mean motion
-        final DerivativeStructure tDR = w.multiply(2.0).add(1.0).multiply(glonassOrbit.getDeltaTDot()).
-                                        add(glonassOrbit.getDeltaT()).
-                                        add(GLONASS_MEAN_DRACONIAN_PERIOD);
-        final DerivativeStructure n = tDR.divide(2.0 * GLONASSOrbitalElements.GLONASS_PI).reciprocal();
+        final UnivariateDerivative2 tDR = w.multiply(2.0).add(1.0).multiply(glonassOrbit.getDeltaTDot()).
+                                          add(glonassOrbit.getDeltaT()).
+                                          add(GLONASS_MEAN_DRACONIAN_PERIOD);
+        final UnivariateDerivative2 n = tDR.divide(2.0 * GNSSConstants.GLONASS_PI).reciprocal();
 
         // Semi-major axis : computed by successive approximation
-        final DerivativeStructure sma = computeSma(tDR, i, e);
+        final UnivariateDerivative2 sma = computeSma(tDR, i, e);
 
         // (ae / p)^2 term
-        final DerivativeStructure p     = sma.multiply(e.multiply(e).negate().add(1.0));
-        final DerivativeStructure aeop  = p.divide(GLONASS_EARTH_EQUATORIAL_RADIUS).reciprocal();
-        final DerivativeStructure aeop2 = aeop.multiply(aeop);
+        final UnivariateDerivative2 p     = sma.multiply(e.multiply(e).negate().add(1.0));
+        final UnivariateDerivative2 aeop  = p.divide(GLONASS_EARTH_EQUATORIAL_RADIUS).reciprocal();
+        final UnivariateDerivative2 aeop2 = aeop.multiply(aeop);
 
         // Current longitude of the ascending node
-        final DerivativeStructure lambda = computeLambda(dTpr, n, aeop2, i);
+        final UnivariateDerivative2 lambda = computeLambda(dTpr, n, aeop2, i);
 
         // Current argument of perigee
-        final DerivativeStructure pa = computePA(dTpr, n, aeop2, i);
+        final UnivariateDerivative2 pa = computePA(dTpr, n, aeop2, i);
 
         // Mean longitude at the instant the spacecraft passes the current ascending node
-        final DerivativeStructure tanPAo2 = FastMath.tan(pa.divide(2.0));
-        final DerivativeStructure coef    = tanPAo2.multiply(FastMath.sqrt(e.negate().add(1.0).divide(e.add(1.0))));
-        final DerivativeStructure e0      = FastMath.atan(coef).multiply(2.0).negate();
-        final DerivativeStructure m1   = pa.add(e0).subtract(FastMath.sin(e0).multiply(e));
+        final UnivariateDerivative2 tanPAo2 = FastMath.tan(pa.divide(2.0));
+        final UnivariateDerivative2 coef    = tanPAo2.multiply(FastMath.sqrt(e.negate().add(1.0).divide(e.add(1.0))));
+        final UnivariateDerivative2 e0      = FastMath.atan(coef).multiply(2.0).negate();
+        final UnivariateDerivative2 m1      = pa.add(e0).subtract(FastMath.sin(e0).multiply(e));
 
         // Current mean longitude
-        final DerivativeStructure correction = dTpr.
-                                               subtract(w.multiply(GLONASS_MEAN_DRACONIAN_PERIOD + glonassOrbit.getDeltaT())).
-                                               subtract(w.multiply(w).multiply(glonassOrbit.getDeltaTDot()));
-        final DerivativeStructure m = m1.add(n.multiply(correction));
+        final UnivariateDerivative2 correction = dTpr.
+                                                 subtract(w.multiply(GLONASS_MEAN_DRACONIAN_PERIOD + glonassOrbit.getDeltaT())).
+                                                 subtract(w.square().multiply(glonassOrbit.getDeltaTDot()));
+        final UnivariateDerivative2 m = m1.add(n.multiply(correction));
 
         // Take into consideration the periodic perturbations
-        final DerivativeStructure h = e.multiply(FastMath.sin(pa));
-        final DerivativeStructure l = e.multiply(FastMath.cos(pa));
+        final FieldSinCos<UnivariateDerivative2> scPa = FastMath.sinCos(pa);
+        final UnivariateDerivative2 h = e.multiply(scPa.sin());
+        final UnivariateDerivative2 l = e.multiply(scPa.cos());
         // δa1
-        final DerivativeStructure[] d1 = getParameterDifferentials(sma, i, h, l, m1);
+        final UnivariateDerivative2[] d1 = getParameterDifferentials(sma, i, h, l, m1);
         // δa2
-        final DerivativeStructure[] d2 = getParameterDifferentials(sma, i, h, l, m);
+        final UnivariateDerivative2[] d2 = getParameterDifferentials(sma, i, h, l, m);
         // Apply corrections
-        final DerivativeStructure smaCorr    = sma.add(d2[0]).subtract(d1[0]);
-        final DerivativeStructure hCorr      = h.add(d2[1]).subtract(d1[1]);
-        final DerivativeStructure lCorr      = l.add(d2[2]).subtract(d1[2]);
-        final DerivativeStructure lambdaCorr = lambda.add(d2[3]).subtract(d1[3]);
-        final DerivativeStructure iCorr      = i.add(d2[4]).subtract(d1[4]);
-        final DerivativeStructure mCorr      = m.add(d2[5]).subtract(d1[5]);
-        final DerivativeStructure eCorr      = FastMath.sqrt(hCorr.multiply(hCorr).add(lCorr.multiply(lCorr)));
-        final DerivativeStructure paCorr;
+        final UnivariateDerivative2 smaCorr    = sma.add(d2[0]).subtract(d1[0]);
+        final UnivariateDerivative2 hCorr      = h.add(d2[1]).subtract(d1[1]);
+        final UnivariateDerivative2 lCorr      = l.add(d2[2]).subtract(d1[2]);
+        final UnivariateDerivative2 lambdaCorr = lambda.add(d2[3]).subtract(d1[3]);
+        final UnivariateDerivative2 iCorr      = i.add(d2[4]).subtract(d1[4]);
+        final UnivariateDerivative2 mCorr      = m.add(d2[5]).subtract(d1[5]);
+        final UnivariateDerivative2 eCorr      = FastMath.sqrt(hCorr.multiply(hCorr).add(lCorr.multiply(lCorr)));
+        final UnivariateDerivative2 paCorr;
         if (eCorr.getValue() == 0.) {
             paCorr = zero;
         } else {
             if (lCorr.getValue() == eCorr.getValue()) {
-                paCorr = zero.add(0.5 * GLONASSOrbitalElements.GLONASS_PI);
+                paCorr = zero.newInstance(0.5 * GNSSConstants.GLONASS_PI);
             } else if (lCorr.getValue() == -eCorr.getValue()) {
-                paCorr = zero.add(-0.5 * GLONASSOrbitalElements.GLONASS_PI);
+                paCorr = zero.newInstance(-0.5 * GNSSConstants.GLONASS_PI);
             } else {
                 paCorr = FastMath.atan2(hCorr, lCorr);
             }
         }
 
         // Eccentric Anomaly
-        final DerivativeStructure mk = mCorr.subtract(paCorr);
-        final DerivativeStructure ek = getEccentricAnomaly(mk, eCorr);
+        final UnivariateDerivative2 mk = mCorr.subtract(paCorr);
+        final UnivariateDerivative2 ek = getEccentricAnomaly(mk, eCorr);
 
         // True Anomaly
-        final DerivativeStructure vk =  getTrueAnomaly(ek, eCorr);
+        final UnivariateDerivative2 vk =  getTrueAnomaly(ek, eCorr);
 
         // Argument of Latitude
-        final DerivativeStructure phik = vk.add(paCorr);
+        final UnivariateDerivative2 phik = vk.add(paCorr);
 
         // Corrected Radius
-        final DerivativeStructure pCorr = smaCorr.multiply(eCorr.multiply(eCorr).negate().add(1.0));
-        final DerivativeStructure rk    = pCorr.divide(eCorr.multiply(FastMath.cos(vk)).add(1.0));
+        final UnivariateDerivative2 pCorr = smaCorr.multiply(eCorr.multiply(eCorr).negate().add(1.0));
+        final UnivariateDerivative2 rk    = pCorr.divide(eCorr.multiply(FastMath.cos(vk)).add(1.0));
 
         // Positions in orbital plane
-        final DerivativeStructure xk = FastMath.cos(phik).multiply(rk);
-        final DerivativeStructure yk = FastMath.sin(phik).multiply(rk);
+        final FieldSinCos<UnivariateDerivative2> scPhik = FastMath.sinCos(phik);
+        final UnivariateDerivative2 xk = scPhik.cos().multiply(rk);
+        final UnivariateDerivative2 yk = scPhik.sin().multiply(rk);
 
         // Coordinates of position
-        final DerivativeStructure cosL = FastMath.cos(lambdaCorr);
-        final DerivativeStructure sinL = FastMath.sin(lambdaCorr);
-        final DerivativeStructure cosI = FastMath.cos(iCorr);
-        final DerivativeStructure sinI = FastMath.sin(iCorr);
-        final FieldVector3D<DerivativeStructure> positionwithDerivatives =
-                        new FieldVector3D<>(xk.multiply(cosL).subtract(yk.multiply(sinL).multiply(cosI)),
-                                            xk.multiply(sinL).add(yk.multiply(cosL).multiply(cosI)),
-                                            yk.multiply(sinI));
+        final FieldSinCos<UnivariateDerivative2> scL = FastMath.sinCos(lambdaCorr);
+        final FieldSinCos<UnivariateDerivative2> scI = FastMath.sinCos(iCorr);
+        final FieldVector3D<UnivariateDerivative2> positionwithDerivatives =
+                        new FieldVector3D<>(xk.multiply(scL.cos()).subtract(yk.multiply(scL.sin()).multiply(scI.cos())),
+                                            xk.multiply(scL.sin()).add(yk.multiply(scL.cos()).multiply(scI.cos())),
+                                            yk.multiply(scI.sin()));
 
-        return new PVCoordinates(positionwithDerivatives);
+        return new PVCoordinates(new Vector3D(positionwithDerivatives.getX().getValue(),
+                                              positionwithDerivatives.getY().getValue(),
+                                              positionwithDerivatives.getZ().getValue()),
+                                 new Vector3D(positionwithDerivatives.getX().getFirstDerivative(),
+                                              positionwithDerivatives.getY().getFirstDerivative(),
+                                              positionwithDerivatives.getZ().getFirstDerivative()),
+                                 new Vector3D(positionwithDerivatives.getX().getSecondDerivative(),
+                                              positionwithDerivatives.getY().getSecondDerivative(),
+                                              positionwithDerivatives.getZ().getSecondDerivative()));
     }
 
     /**
@@ -352,15 +284,15 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @param e the eccentricity
      * @return the eccentric anomaly (rad)
      */
-    private DerivativeStructure getEccentricAnomaly(final DerivativeStructure mk, final DerivativeStructure e) {
+    private UnivariateDerivative2 getEccentricAnomaly(final UnivariateDerivative2 mk, final UnivariateDerivative2 e) {
 
         // reduce M to [-PI PI] interval
-        final double[] mlDerivatives = mk.getAllDerivatives();
-        mlDerivatives[0] = MathUtils.normalizeAngle(mlDerivatives[0], 0.0);
-        final DerivativeStructure reducedM = mk.getFactory().build(mlDerivatives);
+        final UnivariateDerivative2 reducedM = new UnivariateDerivative2(MathUtils.normalizeAngle(mk.getValue(), 0.0),
+                                                                         mk.getFirstDerivative(),
+                                                                         mk.getSecondDerivative());
 
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-        DerivativeStructure ek;
+        UnivariateDerivative2 ek;
         if (FastMath.abs(reducedM.getValue()) < 1.0 / 6.0) {
             if (FastMath.abs(reducedM.getValue()) < Precision.SAFE_MIN) {
                 // this is an Orekit change to the S12 starter.
@@ -373,35 +305,35 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
             }
         } else {
             if (reducedM.getValue() < 0) {
-                final DerivativeStructure w = reducedM.add(FastMath.PI);
+                final UnivariateDerivative2 w = reducedM.add(FastMath.PI);
                 ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(e));
             } else {
-                final DerivativeStructure minusW = reducedM.subtract(FastMath.PI);
+                final UnivariateDerivative2 minusW = reducedM.subtract(FastMath.PI);
                 ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(e));
             }
         }
 
-        final DerivativeStructure e1 = e.negate().add(1.0);
+        final UnivariateDerivative2 e1 = e.negate().add(1.0);
         final boolean noCancellationRisk = (e1.getValue() + ek.getValue() * ek.getValue() / 6) >= 0.1;
 
         // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
         for (int j = 0; j < 2; ++j) {
-            final DerivativeStructure f;
-            DerivativeStructure fd;
-            final DerivativeStructure fdd  = ek.sin().multiply(e);
-            final DerivativeStructure fddd = ek.cos().multiply(e);
+            final UnivariateDerivative2 f;
+            UnivariateDerivative2 fd;
+            final UnivariateDerivative2 fdd  = ek.sin().multiply(e);
+            final UnivariateDerivative2 fddd = ek.cos().multiply(e);
             if (noCancellationRisk) {
                 f  = ek.subtract(fdd).subtract(reducedM);
                 fd = fddd.subtract(1).negate();
             } else {
                 f  = eMeSinE(ek, e).subtract(reducedM);
-                final DerivativeStructure s = ek.multiply(0.5).sin();
+                final UnivariateDerivative2 s = ek.multiply(0.5).sin();
                 fd = s.multiply(s).multiply(e.multiply(2.0)).add(e1);
             }
-            final DerivativeStructure dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
+            final UnivariateDerivative2 dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
 
             // update eccentric anomaly, using expressions that limit underflow problems
-            final DerivativeStructure w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
+            final UnivariateDerivative2 w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
             fd = fd.add(dee.multiply(fdd.add(dee.multiply(0.5).multiply(fdd))));
             ek = ek.subtract(f.subtract(dee.multiply(fd.subtract(w))).divide(fd));
         }
@@ -420,13 +352,13 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @param ecc the eccentricity
      * @return E - e sin(E)
      */
-    private DerivativeStructure eMeSinE(final DerivativeStructure E, final DerivativeStructure ecc) {
-        DerivativeStructure x = E.sin().multiply(ecc.negate().add(1.0));
-        final DerivativeStructure mE2 = E.negate().multiply(E);
-        DerivativeStructure term = E;
-        DerivativeStructure d    = E.getField().getZero();
+    private UnivariateDerivative2 eMeSinE(final UnivariateDerivative2 E, final UnivariateDerivative2 ecc) {
+        UnivariateDerivative2 x = E.sin().multiply(ecc.negate().add(1.0));
+        final UnivariateDerivative2 mE2 = E.negate().multiply(E);
+        UnivariateDerivative2 term = E;
+        UnivariateDerivative2 d    = E.getField().getZero();
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (DerivativeStructure x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(Double.valueOf(x0.getValue()));) {
+        for (UnivariateDerivative2 x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(Double.valueOf(x0.getValue()));) {
             d = d.add(2);
             term = term.multiply(mE2.divide(d.multiply(d.add(1))));
             x0 = x;
@@ -441,9 +373,9 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     * @param ecc the eccentricity
     * @return the true anomaly (rad)
     */
-    private DerivativeStructure getTrueAnomaly(final DerivativeStructure ek, final DerivativeStructure ecc) {
-        final DerivativeStructure svk = ek.sin().multiply(FastMath.sqrt( ecc.multiply(ecc).negate().add(1.0)));
-        final DerivativeStructure cvk = ek.cos().subtract(ecc);
+    private UnivariateDerivative2 getTrueAnomaly(final UnivariateDerivative2 ek, final UnivariateDerivative2 ecc) {
+        final UnivariateDerivative2 svk = ek.sin().multiply(FastMath.sqrt( ecc.square().negate().add(1.0)));
+        final UnivariateDerivative2 cvk = ek.cos().subtract(ecc);
         return svk.atan2(cvk);
     }
 
@@ -453,9 +385,10 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @param date the considered date
      * @return the duration from GLONASS orbit Reference epoch (s)
      */
-    private DerivativeStructure getdTpr(final AbsoluteDate date) {
-        final GLONASSDate tEnd = new GLONASSDate(date);
-        final GLONASSDate tSta = new GLONASSDate(glonassOrbit.getDate());
+    private UnivariateDerivative2 getdTpr(final AbsoluteDate date) {
+        final TimeScale glonass = dataContext.getTimeScales().getGLONASS();
+        final GLONASSDate tEnd = new GLONASSDate(date, glonass);
+        final GLONASSDate tSta = new GLONASSDate(glonassOrbit.getDate(), glonass);
         final int n  = tEnd.getDayNumber();
         final int na = tSta.getDayNumber();
         final int deltaN;
@@ -464,7 +397,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         } else {
             deltaN = n - na - FastMath.round((float) (n - na) / 1461) * 1461;
         }
-        final DerivativeStructure ti = factory.variable(0, tEnd.getSecInDay());
+        final UnivariateDerivative2 ti = new UnivariateDerivative2(tEnd.getSecInDay(), 1.0, 0.0);
 
         return ti.subtract(glonassOrbit.getTime()).add(86400 * deltaN);
     }
@@ -476,12 +409,12 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @param e eccentricity
      * @return the semi-major axis (m).
      */
-    private DerivativeStructure computeSma(final DerivativeStructure tDR,
-                                           final DerivativeStructure i,
-                                           final DerivativeStructure e) {
+    private UnivariateDerivative2 computeSma(final UnivariateDerivative2 tDR,
+                                             final UnivariateDerivative2 i,
+                                             final UnivariateDerivative2 e) {
 
         // Zero
-        final DerivativeStructure zero = tDR.getField().getZero();
+        final UnivariateDerivative2 zero = tDR.getField().getZero();
 
         // If one of the input parameter is equal to Double.NaN, an infinite loop can occur.
         // In that case, we do not compute the value of the semi major axis.
@@ -491,41 +424,41 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         }
 
         // Common parameters
-        final DerivativeStructure sinI         = FastMath.sin(i);
-        final DerivativeStructure sin2I        = sinI.multiply(sinI);
-        final DerivativeStructure ome2         = e.multiply(e).negate().add(1.0);
-        final DerivativeStructure ome2Pow3o2   = FastMath.sqrt(ome2).multiply(ome2);
-        final DerivativeStructure pa           = zero.add(glonassOrbit.getPa());
-        final DerivativeStructure cosPA        = FastMath.cos(pa);
-        final DerivativeStructure opecosPA     = e.multiply(cosPA).add(1.0);
-        final DerivativeStructure opecosPAPow2 = opecosPA.multiply(opecosPA);
-        final DerivativeStructure opecosPAPow3 = opecosPAPow2.multiply(opecosPA);
+        final UnivariateDerivative2 sinI         = FastMath.sin(i);
+        final UnivariateDerivative2 sin2I        = sinI.multiply(sinI);
+        final UnivariateDerivative2 ome2         = e.multiply(e).negate().add(1.0);
+        final UnivariateDerivative2 ome2Pow3o2   = FastMath.sqrt(ome2).multiply(ome2);
+        final UnivariateDerivative2 pa           = zero.newInstance(glonassOrbit.getPa());
+        final UnivariateDerivative2 cosPA        = FastMath.cos(pa);
+        final UnivariateDerivative2 opecosPA     = e.multiply(cosPA).add(1.0);
+        final UnivariateDerivative2 opecosPAPow2 = opecosPA.multiply(opecosPA);
+        final UnivariateDerivative2 opecosPAPow3 = opecosPAPow2.multiply(opecosPA);
 
         // Initial approximation
-        DerivativeStructure tOCK = tDR;
+        UnivariateDerivative2 tOCK = tDR;
 
         // Successive approximations
         // The process of approximation ends when fulfilling the following condition: |a(n+1) - a(n)| < 1cm
-        DerivativeStructure an   = zero;
-        DerivativeStructure anp1 = zero;
+        UnivariateDerivative2 an   = zero;
+        UnivariateDerivative2 anp1 = zero;
         boolean isLastStep = false;
         while (!isLastStep) {
 
             // a(n+1) computation
-            final DerivativeStructure tOCKo2p     = tOCK.divide(2.0 * GLONASSOrbitalElements.GLONASS_PI);
-            final DerivativeStructure tOCKo2pPow2 = tOCKo2p.multiply(tOCKo2p);
-            anp1 = FastMath.cbrt(tOCKo2pPow2.multiply(GLONASSOrbitalElements.GLONASS_MU));
+            final UnivariateDerivative2 tOCKo2p     = tOCK.divide(2.0 * GNSSConstants.GLONASS_PI);
+            final UnivariateDerivative2 tOCKo2pPow2 = tOCKo2p.multiply(tOCKo2p);
+            anp1 = FastMath.cbrt(tOCKo2pPow2.multiply(GNSSConstants.GLONASS_MU));
 
             // p(n+1) computation
-            final DerivativeStructure p = anp1.multiply(ome2);
+            final UnivariateDerivative2 p = anp1.multiply(ome2);
 
             // Tock(n+1) computation
-            final DerivativeStructure aeop  = p.divide(GLONASS_EARTH_EQUATORIAL_RADIUS).reciprocal();
-            final DerivativeStructure aeop2 = aeop.multiply(aeop);
-            final DerivativeStructure term1 = aeop2.multiply(GLONASS_J20).multiply(1.5);
-            final DerivativeStructure term2 = sin2I.multiply(2.5).negate().add(2.0);
-            final DerivativeStructure term3 = ome2Pow3o2.divide(opecosPAPow2);
-            final DerivativeStructure term4 = opecosPAPow3.divide(ome2);
+            final UnivariateDerivative2 aeop  = p.divide(GLONASS_EARTH_EQUATORIAL_RADIUS).reciprocal();
+            final UnivariateDerivative2 aeop2 = aeop.multiply(aeop);
+            final UnivariateDerivative2 term1 = aeop2.multiply(GLONASS_J20).multiply(1.5);
+            final UnivariateDerivative2 term2 = sin2I.multiply(2.5).negate().add(2.0);
+            final UnivariateDerivative2 term3 = ome2Pow3o2.divide(opecosPAPow2);
+            final UnivariateDerivative2 term4 = opecosPAPow3.divide(ome2);
             tOCK = tDR.divide(term1.multiply(term2.multiply(term3).add(term4)).negate().add(1.0));
 
             // Check convergence
@@ -548,12 +481,12 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @param i inclination (rad)
      * @return the current longitude of the ascending node (rad)
      */
-    private DerivativeStructure computeLambda(final DerivativeStructure dTpr,
-                                              final DerivativeStructure n,
-                                              final DerivativeStructure aeop2,
-                                              final DerivativeStructure i) {
-        final DerivativeStructure cosI = FastMath.cos(i);
-        final DerivativeStructure precession = aeop2.multiply(n).multiply(cosI).multiply(1.5 * GLONASS_J20);
+    private UnivariateDerivative2 computeLambda(final UnivariateDerivative2 dTpr,
+                                                final UnivariateDerivative2 n,
+                                                final UnivariateDerivative2 aeop2,
+                                                final UnivariateDerivative2 i) {
+        final UnivariateDerivative2 cosI = FastMath.cos(i);
+        final UnivariateDerivative2 precession = aeop2.multiply(n).multiply(cosI).multiply(1.5 * GLONASS_J20);
         return dTpr.multiply(precession.add(GLONASS_AV)).negate().add(glonassOrbit.getLambda());
     }
 
@@ -565,13 +498,13 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @param i inclination (rad)
      * @return the current argument of perigee (rad)
      */
-    private DerivativeStructure computePA(final DerivativeStructure dTpr,
-                                          final DerivativeStructure n,
-                                          final DerivativeStructure aeop2,
-                                          final DerivativeStructure i) {
-        final DerivativeStructure cosI  = FastMath.cos(i);
-        final DerivativeStructure cos2I = cosI.multiply(cosI);
-        final DerivativeStructure precession = aeop2.multiply(n).multiply(cos2I.multiply(5.0).negate().add(1.0)).multiply(0.75 * GLONASS_J20);
+    private UnivariateDerivative2 computePA(final UnivariateDerivative2 dTpr,
+                                            final UnivariateDerivative2 n,
+                                            final UnivariateDerivative2 aeop2,
+                                            final UnivariateDerivative2 i) {
+        final UnivariateDerivative2 cosI  = FastMath.cos(i);
+        final UnivariateDerivative2 cos2I = cosI.multiply(cosI);
+        final UnivariateDerivative2 precession = aeop2.multiply(n).multiply(cos2I.multiply(5.0).negate().add(1.0)).multiply(0.75 * GLONASS_J20);
         return dTpr.multiply(precession).negate().add(glonassOrbit.getPa());
     }
 
@@ -588,95 +521,100 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @param m longitude (current or at the ascending node instant)
      * @return the differentials of the orbital parameters
      */
-    private DerivativeStructure[] getParameterDifferentials(final DerivativeStructure a, final DerivativeStructure i,
-                                                            final DerivativeStructure h, final DerivativeStructure l,
-                                                            final DerivativeStructure m) {
+    private UnivariateDerivative2[] getParameterDifferentials(final UnivariateDerivative2 a, final UnivariateDerivative2 i,
+                                                              final UnivariateDerivative2 h, final UnivariateDerivative2 l,
+                                                              final UnivariateDerivative2 m) {
 
         // B constant
-        final DerivativeStructure aeoa  = a.divide(GLONASS_EARTH_EQUATORIAL_RADIUS).reciprocal();
-        final DerivativeStructure aeoa2 = aeoa.multiply(aeoa);
-        final DerivativeStructure b     = aeoa2.multiply(1.5 * GLONASS_J20);
+        final UnivariateDerivative2 aeoa  = a.divide(GLONASS_EARTH_EQUATORIAL_RADIUS).reciprocal();
+        final UnivariateDerivative2 aeoa2 = aeoa.multiply(aeoa);
+        final UnivariateDerivative2 b     = aeoa2.multiply(1.5 * GLONASS_J20);
 
         // Commons Parameters
-        final DerivativeStructure cosI   = FastMath.cos(i);
-        final DerivativeStructure sinI   = FastMath.sin(i);
-        final DerivativeStructure cosI2  = cosI.multiply(cosI);
-        final DerivativeStructure sinI2  = sinI.multiply(sinI);
-        final DerivativeStructure cosLk  = FastMath.cos(m);
-        final DerivativeStructure sinLk  = FastMath.sin(m);
-        final DerivativeStructure cos2Lk = FastMath.cos(m.multiply(2.0));
-        final DerivativeStructure sin2Lk = FastMath.sin(m.multiply(2.0));
-        final DerivativeStructure cos3Lk = FastMath.cos(m.multiply(3.0));
-        final DerivativeStructure sin3Lk = FastMath.sin(m.multiply(3.0));
-        final DerivativeStructure cos4Lk = FastMath.cos(m.multiply(4.0));
-        final DerivativeStructure sin4Lk = FastMath.sin(m.multiply(4.0));
+        final FieldSinCos<UnivariateDerivative2> scI   = FastMath.sinCos(i);
+        final FieldSinCos<UnivariateDerivative2> scLk  = FastMath.sinCos(m);
+        final FieldSinCos<UnivariateDerivative2> sc2Lk = FieldSinCos.sum(scLk, scLk);
+        final FieldSinCos<UnivariateDerivative2> sc3Lk = FieldSinCos.sum(scLk, sc2Lk);
+        final FieldSinCos<UnivariateDerivative2> sc4Lk = FieldSinCos.sum(sc2Lk, sc2Lk);
+        final UnivariateDerivative2 cosI   = scI.cos();
+        final UnivariateDerivative2 sinI   = scI.sin();
+        final UnivariateDerivative2 cosI2  = cosI.multiply(cosI);
+        final UnivariateDerivative2 sinI2  = sinI.multiply(sinI);
+        final UnivariateDerivative2 cosLk  = scLk.cos();
+        final UnivariateDerivative2 sinLk  = scLk.sin();
+        final UnivariateDerivative2 cos2Lk = sc2Lk.cos();
+        final UnivariateDerivative2 sin2Lk = sc2Lk.sin();
+        final UnivariateDerivative2 cos3Lk = sc3Lk.cos();
+        final UnivariateDerivative2 sin3Lk = sc3Lk.sin();
+        final UnivariateDerivative2 cos4Lk = sc4Lk.cos();
+        final UnivariateDerivative2 sin4Lk = sc4Lk.sin();
 
         // h*cos(nLk), l*cos(nLk), h*sin(nLk) and l*sin(nLk)
         // n = 1
-        final DerivativeStructure hCosLk = h.multiply(cosLk);
-        final DerivativeStructure hSinLk = h.multiply(sinLk);
-        final DerivativeStructure lCosLk = l.multiply(cosLk);
-        final DerivativeStructure lSinLk = l.multiply(sinLk);
+        final UnivariateDerivative2 hCosLk = h.multiply(cosLk);
+        final UnivariateDerivative2 hSinLk = h.multiply(sinLk);
+        final UnivariateDerivative2 lCosLk = l.multiply(cosLk);
+        final UnivariateDerivative2 lSinLk = l.multiply(sinLk);
         // n = 2
-        final DerivativeStructure hCos2Lk = h.multiply(cos2Lk);
-        final DerivativeStructure hSin2Lk = h.multiply(sin2Lk);
-        final DerivativeStructure lCos2Lk = l.multiply(cos2Lk);
-        final DerivativeStructure lSin2Lk = l.multiply(sin2Lk);
+        final UnivariateDerivative2 hCos2Lk = h.multiply(cos2Lk);
+        final UnivariateDerivative2 hSin2Lk = h.multiply(sin2Lk);
+        final UnivariateDerivative2 lCos2Lk = l.multiply(cos2Lk);
+        final UnivariateDerivative2 lSin2Lk = l.multiply(sin2Lk);
         // n = 3
-        final DerivativeStructure hCos3Lk = h.multiply(cos3Lk);
-        final DerivativeStructure hSin3Lk = h.multiply(sin3Lk);
-        final DerivativeStructure lCos3Lk = l.multiply(cos3Lk);
-        final DerivativeStructure lSin3Lk = l.multiply(sin3Lk);
+        final UnivariateDerivative2 hCos3Lk = h.multiply(cos3Lk);
+        final UnivariateDerivative2 hSin3Lk = h.multiply(sin3Lk);
+        final UnivariateDerivative2 lCos3Lk = l.multiply(cos3Lk);
+        final UnivariateDerivative2 lSin3Lk = l.multiply(sin3Lk);
         // n = 4
-        final DerivativeStructure hCos4Lk = h.multiply(cos4Lk);
-        final DerivativeStructure hSin4Lk = h.multiply(sin4Lk);
-        final DerivativeStructure lCos4Lk = l.multiply(cos4Lk);
-        final DerivativeStructure lSin4Lk = l.multiply(sin4Lk);
+        final UnivariateDerivative2 hCos4Lk = h.multiply(cos4Lk);
+        final UnivariateDerivative2 hSin4Lk = h.multiply(sin4Lk);
+        final UnivariateDerivative2 lCos4Lk = l.multiply(cos4Lk);
+        final UnivariateDerivative2 lSin4Lk = l.multiply(sin4Lk);
 
         // 1 - (3 / 2)*sin²i
-        final DerivativeStructure om3o2xSinI2 = sinI2.multiply(1.5).negate().add(1.0);
+        final UnivariateDerivative2 om3o2xSinI2 = sinI2.multiply(1.5).negate().add(1.0);
 
         // Compute Differentials
         // δa
-        final DerivativeStructure dakT1 = b.multiply(2.0).multiply(om3o2xSinI2).multiply(lCosLk.add(hSinLk));
-        final DerivativeStructure dakT2 = b.multiply(sinI2).multiply(hSinLk.multiply(0.5).subtract(lCosLk.multiply(0.5)).
+        final UnivariateDerivative2 dakT1 = b.multiply(2.0).multiply(om3o2xSinI2).multiply(lCosLk.add(hSinLk));
+        final UnivariateDerivative2 dakT2 = b.multiply(sinI2).multiply(hSinLk.multiply(0.5).subtract(lCosLk.multiply(0.5)).
                                                                      add(cos2Lk).add(lCos3Lk.multiply(3.5)).add(hSin3Lk.multiply(3.5)));
-        final DerivativeStructure dak = dakT1.add(dakT2);
+        final UnivariateDerivative2 dak = dakT1.add(dakT2);
 
         // δh
-        final DerivativeStructure dhkT1 = b.multiply(om3o2xSinI2).multiply(sinLk.add(lSin2Lk.multiply(1.5)).subtract(hCos2Lk.multiply(1.5)));
-        final DerivativeStructure dhkT2 = b.multiply(sinI2).multiply(0.25).multiply(sinLk.subtract(sin3Lk.multiply(SEVEN_THIRD)).add(lSin2Lk.multiply(5.0)).
+        final UnivariateDerivative2 dhkT1 = b.multiply(om3o2xSinI2).multiply(sinLk.add(lSin2Lk.multiply(1.5)).subtract(hCos2Lk.multiply(1.5)));
+        final UnivariateDerivative2 dhkT2 = b.multiply(sinI2).multiply(0.25).multiply(sinLk.subtract(sin3Lk.multiply(SEVEN_THIRD)).add(lSin2Lk.multiply(5.0)).
                                                                                     subtract(lSin4Lk.multiply(8.5)).add(hCos4Lk.multiply(8.5)).add(hCos2Lk));
-        final DerivativeStructure dhkT3 = lSin2Lk.multiply(cosI2).multiply(b).multiply(0.5).negate();
-        final DerivativeStructure dhk = dhkT1.subtract(dhkT2).add(dhkT3);
+        final UnivariateDerivative2 dhkT3 = lSin2Lk.multiply(cosI2).multiply(b).multiply(0.5).negate();
+        final UnivariateDerivative2 dhk = dhkT1.subtract(dhkT2).add(dhkT3);
 
         // δl
-        final DerivativeStructure dlkT1 = b.multiply(om3o2xSinI2).multiply(cosLk.add(lCos2Lk.multiply(1.5)).add(hSin2Lk.multiply(1.5)));
-        final DerivativeStructure dlkT2 = b.multiply(sinI2).multiply(0.25).multiply(cosLk.negate().subtract(cos3Lk.multiply(SEVEN_THIRD)).subtract(hSin2Lk.multiply(5.0)).
+        final UnivariateDerivative2 dlkT1 = b.multiply(om3o2xSinI2).multiply(cosLk.add(lCos2Lk.multiply(1.5)).add(hSin2Lk.multiply(1.5)));
+        final UnivariateDerivative2 dlkT2 = b.multiply(sinI2).multiply(0.25).multiply(cosLk.negate().subtract(cos3Lk.multiply(SEVEN_THIRD)).subtract(hSin2Lk.multiply(5.0)).
                                                                                     subtract(lCos4Lk.multiply(8.5)).subtract(hSin4Lk.multiply(8.5)).add(lCos2Lk));
-        final DerivativeStructure dlkT3 = hSin2Lk.multiply(cosI2).multiply(b).multiply(0.5);
-        final DerivativeStructure dlk = dlkT1.subtract(dlkT2).add(dlkT3);
+        final UnivariateDerivative2 dlkT3 = hSin2Lk.multiply(cosI2).multiply(b).multiply(0.5);
+        final UnivariateDerivative2 dlk = dlkT1.subtract(dlkT2).add(dlkT3);
 
         // δλ
-        final DerivativeStructure dokT1 = b.negate().multiply(cosI);
-        final DerivativeStructure dokT2 = lSinLk.multiply(3.5).subtract(hCosLk.multiply(2.5)).subtract(sin2Lk.multiply(0.5)).
+        final UnivariateDerivative2 dokT1 = b.negate().multiply(cosI);
+        final UnivariateDerivative2 dokT2 = lSinLk.multiply(3.5).subtract(hCosLk.multiply(2.5)).subtract(sin2Lk.multiply(0.5)).
                                           subtract(lSin3Lk.multiply(SEVEN_SIXTH)).add(hCos3Lk.multiply(SEVEN_SIXTH));
-        final DerivativeStructure dok = dokT1.multiply(dokT2);
+        final UnivariateDerivative2 dok = dokT1.multiply(dokT2);
 
         // δi
-        final DerivativeStructure dik = b.multiply(sinI).multiply(cosI).multiply(0.5).
+        final UnivariateDerivative2 dik = b.multiply(sinI).multiply(cosI).multiply(0.5).
                         multiply(lCosLk.negate().add(hSinLk).add(cos2Lk).add(lCos3Lk.multiply(SEVEN_THIRD)).add(hSin3Lk.multiply(SEVEN_THIRD)));
 
         // δL
-        final DerivativeStructure dLkT1 = b.multiply(2.0).multiply(om3o2xSinI2).multiply(lSinLk.multiply(1.75).subtract(hCosLk.multiply(1.75)));
-        final DerivativeStructure dLkT2 = b.multiply(sinI2).multiply(3.0).multiply(hCosLk.multiply(SEVEN_24TH).negate().subtract(lSinLk.multiply(SEVEN_24TH)).
+        final UnivariateDerivative2 dLkT1 = b.multiply(2.0).multiply(om3o2xSinI2).multiply(lSinLk.multiply(1.75).subtract(hCosLk.multiply(1.75)));
+        final UnivariateDerivative2 dLkT2 = b.multiply(sinI2).multiply(3.0).multiply(hCosLk.multiply(SEVEN_24TH).negate().subtract(lSinLk.multiply(SEVEN_24TH)).
                                                                                    subtract(hCos3Lk.multiply(FN_72TH)).add(lSin3Lk.multiply(FN_72TH)).add(sin2Lk.multiply(0.25)));
-        final DerivativeStructure dLkT3 = b.multiply(cosI2).multiply(lSinLk.multiply(3.5).subtract(hCosLk.multiply(2.5)).subtract(sin2Lk.multiply(0.5)).
+        final UnivariateDerivative2 dLkT3 = b.multiply(cosI2).multiply(lSinLk.multiply(3.5).subtract(hCosLk.multiply(2.5)).subtract(sin2Lk.multiply(0.5)).
                                                                      subtract(lSin3Lk.multiply(SEVEN_SIXTH)).add(hCos3Lk.multiply(SEVEN_SIXTH)));
-        final DerivativeStructure dLk = dLkT1.add(dLkT2).add(dLkT3);
+        final UnivariateDerivative2 dLk = dLkT1.add(dLkT2).add(dLkT3);
 
         // Final array
-        final DerivativeStructure[] differentials = MathArrays.buildArray(a.getField(), 6);
+        final UnivariateDerivative2[] differentials = MathArrays.buildArray(a.getField(), 6);
         differentials[0] = dak.multiply(a);
         differentials[1] = dhk;
         differentials[2] = dlk;
@@ -697,7 +635,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @return the Earth gravity coefficient.
      */
     public static double getMU() {
-        return GLONASSOrbitalElements.GLONASS_MU;
+        return GNSSConstants.GLONASS_MU;
     }
 
     /**
@@ -747,7 +685,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         // Transforms the PVCoordinates to ECI frame
         final PVCoordinates pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
         // Returns the Cartesian orbit
-        return new CartesianOrbit(pvaInECI, eci, date, GLONASSOrbitalElements.GLONASS_MU);
+        return new CartesianOrbit(pvaInECI, eci, date, GNSSConstants.GLONASS_MU);
     }
 
 }

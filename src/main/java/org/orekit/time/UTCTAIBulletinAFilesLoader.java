@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -31,6 +31,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -60,16 +63,29 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
+public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
+        implements UTCTAIOffsetsLoader {
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Build a loader for IERS bulletins A files.
-    * @param supportedNames regular expression for supported files names
-    */
+    /**
+     * Build a loader for IERS bulletins A files. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @param supportedNames regular expression for supported files names
+     */
+    @DefaultDataContext
     public UTCTAIBulletinAFilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Build a loader for IERS bulletins A files.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param manager        provides access to the bulletin A files.
+     */
+    public UTCTAIBulletinAFilesLoader(final String supportedNames,
+                                      final DataProvidersManager manager) {
+        super(supportedNames, manager);
     }
 
     /** {@inheritDoc} */
@@ -77,12 +93,12 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
     public List<OffsetModel> loadOffsets() {
 
         final Parser parser = new Parser();
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         final SortedMap<Integer, Integer> taiUtc = parser.getTaiUtc();
         final SortedMap<Integer, Double>  ut1Utc = parser.getUt1Utc();
 
         // identify UT1-UTC discontinuities
-        final List<Integer> leapDays = new ArrayList<Integer>();
+        final List<Integer> leapDays = new ArrayList<>();
         Map.Entry<Integer, Double> previous = null;
         for (final Map.Entry<Integer, Double> entry : ut1Utc.entrySet()) {
             if (previous != null) {
@@ -95,7 +111,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
             previous = entry;
         }
 
-        final List<OffsetModel> offsets = new ArrayList<OffsetModel>();
+        final List<OffsetModel> offsets = new ArrayList<>();
 
         if (!taiUtc.isEmpty()) {
 
@@ -207,58 +223,58 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
                               STORED_REAL_FIELD  + IGNORED_REAL_FIELD +
                               LINE_END_REGEXP),
 
-           /** Earth Orientation Parameters final values. */
-           // the first bulletin A of each month also includes final values for the
-           // period covering from day 2 of month m-2 to day 1 of month m-1.
-           //                                IERS Final Values
-           //                                 MJD        x        y      UT1-UTC
-           //                                            "        "         s
-           //             13  7  2           56475    0.1441   0.3901   0.05717
-           //             13  7  3           56476    0.1457   0.3895   0.05716
-           //             13  7  4           56477    0.1467   0.3887   0.05728
-           //             13  7  5           56478    0.1477   0.3875   0.05755
-           //             13  7  6           56479    0.1490   0.3862   0.05793
-           //             13  7  7           56480    0.1504   0.3849   0.05832
-           //             13  7  8           56481    0.1516   0.3835   0.05858
-           //             13  7  9           56482    0.1530   0.3822   0.05877
-           EOP_FINAL_VALUES("^ *IERS Final Values *$",
-                            LINE_START_REGEXP +
-                            STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
-                            STORED_MJD_FIELD +
-                            IGNORED_REAL_FIELD +
-                            IGNORED_REAL_FIELD +
-                            STORED_REAL_FIELD +
-                            LINE_END_REGEXP),
+            /** Earth Orientation Parameters final values. */
+            // the first bulletin A of each month also includes final values for the
+            // period covering from day 2 of month m-2 to day 1 of month m-1.
+            //                                IERS Final Values
+            //                                 MJD        x        y      UT1-UTC
+            //                                            "        "         s
+            //             13  7  2           56475    0.1441   0.3901   0.05717
+            //             13  7  3           56476    0.1457   0.3895   0.05716
+            //             13  7  4           56477    0.1467   0.3887   0.05728
+            //             13  7  5           56478    0.1477   0.3875   0.05755
+            //             13  7  6           56479    0.1490   0.3862   0.05793
+            //             13  7  7           56480    0.1504   0.3849   0.05832
+            //             13  7  8           56481    0.1516   0.3835   0.05858
+            //             13  7  9           56482    0.1530   0.3822   0.05877
+            EOP_FINAL_VALUES("^ *IERS Final Values *$",
+                             LINE_START_REGEXP +
+                             STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
+                             STORED_MJD_FIELD +
+                             IGNORED_REAL_FIELD +
+                             IGNORED_REAL_FIELD +
+                             STORED_REAL_FIELD +
+                             LINE_END_REGEXP),
 
-           /** TAI-UTC part of the Earth Orientation Parameters prediction.. */
-           // section 3 always contain prediction data without error fields
-           //
-           //         PREDICTIONS:
-           //         The following formulas will not reproduce the predictions given below,
-           //         but may be used to extend the predictions beyond the end of this table.
-           //
-           //         x =  0.0969 + 0.1110 cos A - 0.0103 sin A - 0.0435 cos C - 0.0171 sin C
-           //         y =  0.3457 - 0.0061 cos A - 0.1001 sin A - 0.0171 cos C + 0.0435 sin C
-           //            UT1-UTC = -0.0052 - 0.00104 (MJD - 56548) - (UT2-UT1)
-           //
-           //         where A = 2*pi*(MJD-56540)/365.25 and C = 2*pi*(MJD-56540)/435.
-           //
-           //            TAI-UTC(MJD 56541) = 35.0
-           //         The accuracy may be estimated from the expressions:
-           //         S x,y = 0.00068 (MJD-56540)**0.80   S t = 0.00025 (MJD-56540)**0.75
-           //         Estimated accuracies are:  Predictions     10 d   20 d   30 d   40 d
-           //                                    Polar coord's  0.004  0.007  0.010  0.013
-           //                                    UT1-UTC        0.0014 0.0024 0.0032 0.0040
-           //
-           //                       MJD      x(arcsec)   y(arcsec)   UT1-UTC(sec)
-           //          2013  9  6  56541       0.1638      0.3185      0.03517
-           //          2013  9  7  56542       0.1633      0.3175      0.03420
-           //          2013  9  8  56543       0.1628      0.3164      0.03322
-           //          2013  9  9  56544       0.1623      0.3153      0.03229
-           //          2013  9 10  56545       0.1618      0.3142      0.03144
-           //          2013  9 11  56546       0.1612      0.3131      0.03071
-           //          2013  9 12  56547       0.1607      0.3119      0.03008
-           TAI_UTC("^ *PREDICTIONS: *$",
+            /** TAI-UTC part of the Earth Orientation Parameters prediction.. */
+            // section 3 always contain prediction data without error fields
+            //
+            //         PREDICTIONS:
+            //         The following formulas will not reproduce the predictions given below,
+            //         but may be used to extend the predictions beyond the end of this table.
+            //
+            //         x =  0.0969 + 0.1110 cos A - 0.0103 sin A - 0.0435 cos C - 0.0171 sin C
+            //         y =  0.3457 - 0.0061 cos A - 0.1001 sin A - 0.0171 cos C + 0.0435 sin C
+            //            UT1-UTC = -0.0052 - 0.00104 (MJD - 56548) - (UT2-UT1)
+            //
+            //         where A = 2*pi*(MJD-56540)/365.25 and C = 2*pi*(MJD-56540)/435.
+            //
+            //            TAI-UTC(MJD 56541) = 35.0
+            //         The accuracy may be estimated from the expressions:
+            //         S x,y = 0.00068 (MJD-56540)**0.80   S t = 0.00025 (MJD-56540)**0.75
+            //         Estimated accuracies are:  Predictions     10 d   20 d   30 d   40 d
+            //                                    Polar coord's  0.004  0.007  0.010  0.013
+            //                                    UT1-UTC        0.0014 0.0024 0.0032 0.0040
+            //
+            //                       MJD      x(arcsec)   y(arcsec)   UT1-UTC(sec)
+            //          2013  9  6  56541       0.1638      0.3185      0.03517
+            //          2013  9  7  56542       0.1633      0.3175      0.03420
+            //          2013  9  8  56543       0.1628      0.3164      0.03322
+            //          2013  9  9  56544       0.1623      0.3153      0.03229
+            //          2013  9 10  56545       0.1618      0.3142      0.03144
+            //          2013  9 11  56546       0.1612      0.3131      0.03071
+            //          2013  9 12  56547       0.1607      0.3119      0.03008
+            TAI_UTC("^ *PREDICTIONS: *$",
                     LINE_START_REGEXP +
                     "TAI-UTC\\(MJD *" +
                     STORED_MJD_FIELD +
@@ -360,8 +376,8 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
         /** Simple constructor.
          */
         Parser() {
-            this.taiUtc     = new TreeMap<Integer, Integer>();
-            this.ut1Utc     = new TreeMap<Integer, Double>();
+            this.taiUtc     = new TreeMap<>();
+            this.ut1Utc     = new TreeMap<>();
             this.lineNumber = 0;
         }
 
@@ -390,28 +406,29 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
         public void loadData(final InputStream input, final String name)
             throws IOException {
 
+            final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
             // set up a reader for line-oriented bulletin A files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-            lineNumber =  0;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            // loop over sections
-            final List<Section> remaining = new ArrayList<Section>();
-            remaining.addAll(Arrays.asList(Section.values()));
-            for (Section section = nextSection(remaining, reader, name);
-                    section != null;
-                    section = nextSection(remaining, reader, name)) {
+                // loop over sections
+                for (Section section = nextSection(remaining, reader);
+                     section != null;
+                     section = nextSection(remaining, reader)) {
 
-                if (section == Section.TAI_UTC) {
-                    loadTaiUtc(section, reader, name);
-                } else {
-                    // load the values
-                    loadTimeSteps(section, reader, name);
+                    if (section == Section.TAI_UTC) {
+                        loadTaiUtc(section, reader, name);
+                    } else {
+                        // load the values
+                        loadTimeSteps(section, reader, name);
+                    }
+
+                    // remove the already parsed section from the list
+                    remaining.remove(section);
+
                 }
 
-                // remove the already parsed section from the list
-                remaining.remove(section);
-
             }
+            lineNumber =  0;
 
             // check that the mandatory sections have been parsed
             if (remaining.contains(Section.EOP_RAPID_SERVICE) || remaining.contains(Section.EOP_PREDICTION)) {
@@ -423,11 +440,10 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
         /** Skip to next section header.
          * @param sections sections to check for
          * @param reader reader from where file content is obtained
-         * @param name name of the file (or zip entry)
          * @return the next section or null if no section is found until end of file
          * @exception IOException if data can't be read
          */
-        private Section nextSection(final List<Section> sections, final BufferedReader reader, final String name)
+        private Section nextSection(final List<Section> sections, final BufferedReader reader)
             throws IOException {
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {

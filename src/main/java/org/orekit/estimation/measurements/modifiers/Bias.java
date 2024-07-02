@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,9 +21,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a measurement bias.
  * @param <T> the type of the measurement
@@ -76,20 +78,39 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<T> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated) {
 
         // apply the bias to the measurement value
         final double[] value = estimated.getEstimatedValue();
-        for (int i = 0; i < drivers.size(); ++i) {
-            final ParameterDriver driver = drivers.get(i);
-            value[i] += driver.getValue();
-            if (driver.isSelected()) {
-                // add the partial derivatives
-                estimated.setParameterDerivatives(driver, derivatives[i]);
+        int nb = 0;
+        for (final ParameterDriver driver : drivers) {
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan();
+                 span != null; span = span.next()) {
+                value[nb++] += driver.getValue(span.getStart());
             }
         }
-        estimated.setEstimatedValue(value);
+        estimated.modifyEstimatedValue(this, value);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modify(final EstimatedMeasurement<T> estimated) {
+
+        // apply the bias to the measurement value
+        int nb = 0;
+        for (final ParameterDriver driver : drivers) {
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan();
+                 span != null; span = span.next()) {
+                if (driver.isSelected()) {
+                    // add the partial derivatives
+                    estimated.setParameterDerivatives(driver, span.getStart(),
+                                                      derivatives[nb++]);
+                }
+            }
+        }
+
+        modifyWithoutDerivatives(estimated);
 
     }
 

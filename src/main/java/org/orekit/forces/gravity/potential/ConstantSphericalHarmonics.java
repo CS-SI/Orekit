@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,7 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 /** Simple implementation of {@link RawSphericalHarmonicsProvider} for constant gravity fields.
@@ -35,37 +34,70 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** Tide system. */
     private final TideSystem tideSystem;
 
-    /** Raw tesseral-sectorial coefficients matrix. */
-    private final double[][] rawC;
+    /** Converter from triangular to flatten array.
+     * @since 11.1
+     */
+    private final Flattener flattener;
 
     /** Raw tesseral-sectorial coefficients matrix. */
-    private final double[][] rawS;
+    private final double[] rawC;
+
+    /** Raw tesseral-sectorial coefficients matrix. */
+    private final double[] rawS;
 
     /** Simple constructor.
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
      * @param tideSystem tide system
+     * @param flattener flattener from triangular to flatten array
      * @param rawC raw tesseral-sectorial coefficients
      * @param rawS raw tesseral-sectorial coefficients
+     * @since 11.1
      */
-    ConstantSphericalHarmonics(final double ae, final double mu,
-                                      final TideSystem tideSystem,
-                                      final double[][] rawC, final double[][] rawS) {
+    ConstantSphericalHarmonics(final double ae, final double mu, final TideSystem tideSystem,
+                               final Flattener flattener, final double[] rawC, final double[] rawS) {
         this.ae         = ae;
         this.mu         = mu;
         this.tideSystem = tideSystem;
+        this.flattener  = flattener;
         this.rawC       = rawC;
         this.rawS       = rawS;
     }
 
+    /** Create a constant provider by freezing a regular provider.
+     * @param freezingDate freezing date
+     * @param raw raw provider to freeze
+     * @since 11.1
+     */
+    ConstantSphericalHarmonics(final AbsoluteDate freezingDate, final RawSphericalHarmonicsProvider raw) {
+
+        this.ae         = raw.getAe();
+        this.mu         = raw.getMu();
+        this.tideSystem = raw.getTideSystem();
+        this.flattener  = new Flattener(raw.getMaxDegree(), raw.getMaxOrder());
+        this.rawC       = new double[flattener.arraySize()];
+        this.rawS       = new double[flattener.arraySize()];
+
+        // freeze the raw provider
+        final RawSphericalHarmonics frozen = raw.onDate(freezingDate);
+        for (int n = 0; n <= flattener.getDegree(); ++n) {
+            for (int m = 0; m <= FastMath.min(n, flattener.getOrder()); ++m) {
+                final int index = flattener.index(n, m);
+                rawC[index] = frozen.getRawCnm(n, m);
+                rawS[index] = frozen.getRawSnm(n, m);
+            }
+        }
+
+    }
+
     /** {@inheritDoc} */
     public int getMaxDegree() {
-        return rawC.length - 1;
+        return flattener.getDegree();
     }
 
     /** {@inheritDoc} */
     public int getMaxOrder() {
-        return rawC[rawC.length - 1].length - 1;
+        return flattener.getOrder();
     }
 
     /** {@inheritDoc} */
@@ -88,11 +120,6 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
-    public double getOffset(final AbsoluteDate date) {
-        return 0.0;
-    }
-
-    /** {@inheritDoc} */
     public TideSystem getTideSystem() {
         return tideSystem;
     }
@@ -108,35 +135,15 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
             /** {@inheritDoc} */
             public double getRawCnm(final int n, final int m) {
-                checkLimits(n, m);
-                return rawC[n][m];
+                return rawC[flattener.index(n, m)];
             }
 
             /** {@inheritDoc} */
             public double getRawSnm(final int n, final int m) {
-                checkLimits(n, m);
-                return rawS[n][m];
+                return rawS[flattener.index(n, m)];
             }
 
         };
-    }
-
-    /** Check limits.
-     * @param degree degree
-     * @param order order
-     */
-    private void checkLimits(final int degree, final int order) {
-
-        if (degree >= rawC.length) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
-                                      degree, rawC.length - 1);
-        }
-
-        if (order >= rawC[degree].length) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
-                                      order, rawC[degree].length - 1);
-        }
-
     }
 
 }

@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.hipparchus #ECEBD8 {
 
@@ -43,7 +44,7 @@
 
     package estimation #DDEBD8 {
 
-      package measurements #CEEBD8 {
+      package measurements #CBDBC8 {
         class EstimatedMeasurement
         interface ObservedMeasurement {
           +estimate(state)
@@ -51,9 +52,9 @@
         EstimatedMeasurement <-left- ObservedMeasurement
       }
 
-      package sequential #CEEBD8 {
+      package sequential #CBDBC8 {
 
-        interface ProcessNoiseMatrixProvider
+        interface CovarianceMatrixProvider
 
         class KalmanEstimator {
           +getOrbitalParametersDrivers()
@@ -63,29 +64,35 @@
           +estimationStep(measurement)
         }
 
-        class Model {
-          +estimationStep(measurement)
+        abstract AbstractKalmanModel {
+          #updateReferenceTrajectories(propagators, pType, sType)
+          #analyticalDerivativeComputations(mapper, state)
+          +ProcessEstimate getEstimate()
+          +EstimatedMeasurement<?> getCorrectedMeasurement()
+          +SpacecraftState[] getCorrectedSpacecraftStates()
         }
 
-        Model <-left-* KalmanEstimator
+        class KalmanModel
+        class DSSTKalmanModel
+        class TLEKalmanModel
+
+        AbstractKalmanModel <-left-* KalmanEstimator
         KalmanEstimator *-right-> ExtendedKalmanFilter_T
-        Model *--> ProcessNoiseMatrixProvider
-        EstimatedMeasurement <-- Model
+        AbstractKalmanModel *--> CovarianceMatrixProvider
+        EstimatedMeasurement <-- AbstractKalmanModel
+        KalmanModel     --|> AbstractKalmanModel
+        DSSTKalmanModel --|> AbstractKalmanModel
+        TLEKalmanModel  --|> AbstractKalmanModel
 
       }
 
-    }
-
-    package propagation #DDEBD8 {
-      interface Propagator
-      Propagator <-- Model : run
     }
 
   }
 
   package user.application #F3EDF7 {
     class MyProcessNoiseMatrixProvider #EAE6F7/B9B3D2
-    ProcessNoiseMatrixProvider <|-- MyProcessNoiseMatrixProvider
+    CovarianceMatrixProvider <|-- MyProcessNoiseMatrixProvider
   }
 
 @enduml

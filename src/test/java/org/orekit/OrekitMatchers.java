@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,22 +16,29 @@
  */
 package org.orekit;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.SelfDescribing;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
+import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
-import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.array;
 
 /**
  * A set of matchers specific to the Orekit value classes.
@@ -355,8 +362,231 @@ public class OrekitMatchers {
      */
     public static Matcher<Double> numberCloseTo(double number, double absTol,
                                                 int ulps) {
-        return either(closeTo(number, absTol)).or(
-                relativelyCloseTo(number, ulps));
+        Collection<Matcher<Double>> matchers = new ArrayList<>(2);
+        matchers.add(closeTo(number, absTol));
+        matchers.add(relativelyCloseTo(number, ulps));
+        return anyOf(matchers);
+    }
+
+    /**
+     * match a double array based on matchers for each element.
+     *
+     * @param matchers matcher for each element.
+     * @return a matcher for a double[]
+     * @see org.hamcrest.collection.IsArray
+     */
+    @SafeVarargs
+    public static Matcher<double[]> doubleArrayContaining(
+            Matcher<? super Double>... matchers) {
+        return new TypeSafeDiagnosingMatcher<double[]>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendList("[", ", ", "]", Arrays.<Matcher<?>>asList(matchers));
+            }
+
+            @Override
+            protected boolean matchesSafely(double[] actual,
+                                            Description mismatchDescription) {
+                if (actual.length != matchers.length) {
+                    mismatchDescription.appendText("array length was " + actual.length);
+                    return false;
+                }
+                for (int i = 0; i < actual.length; i++) {
+                    if (!matchers[i].matches(actual[i])) {
+                        mismatchDescription.appendText("in element " + i + " ");
+                        matchers[i].describeMismatch(actual[i],
+                                mismatchDescription);
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+    }
+
+    /**
+     * Check that the double[] contains exactly the specified values.
+     *
+     * @param values the expected values.
+     * @return matcher for double[]s
+     * @see Matchers#arrayContaining(Object...)
+     */
+    public static Matcher<double[]> doubleArrayContaining(double... values) {
+        @SuppressWarnings("unchecked")
+        Matcher<Double>[] elementMatchers = new Matcher[values.length];
+        for (int i = 0; i < elementMatchers.length; i++) {
+            elementMatchers[i] = Matchers.is(values[i]);
+        }
+        return doubleArrayContaining(elementMatchers);
+    }
+
+    /**
+     * Check that a double[] contains the specified values to within an absolute
+     * tolerance.
+     *
+     * @param values the expected values
+     * @param absTol the absolute tolerance used in comparisons
+     * @return a {@link Matcher} for double[]'s
+     */
+    public static Matcher<double[]> doubleArrayContaining(
+            final double[] values, final double absTol) {
+        @SuppressWarnings("unchecked")
+        Matcher<Double>[] elementMatchers = new Matcher[values.length];
+        for (int i = 0; i < elementMatchers.length; i++) {
+            elementMatchers[i] = closeTo(values[i], absTol);
+        }
+        return doubleArrayContaining(elementMatchers);
+    }
+
+    /**
+     * Check that a double[] contains the specified values to within a relative
+     * tolerance.
+     *
+     * @param values the expected values
+     * @param ulps   the units in last place the values can be off by. These are ulps of
+     *               the expected values. Specifying 1 ulp corresponds to ~16 decimal
+     *               digits of accuracy.
+     * @return a {@link Matcher} for a double[]
+     */
+    public static Matcher<double[]> doubleArrayContaining(
+            final double[] values, final int ulps) {
+        @SuppressWarnings("unchecked")
+        Matcher<Double>[] elementMatchers = new Matcher[values.length];
+        for (int i = 0; i < elementMatchers.length; i++) {
+            elementMatchers[i] = relativelyCloseTo(values[i], ulps);
+        }
+        return doubleArrayContaining(elementMatchers);
+    }
+
+    /**
+     * Check that a double[] contains the specified values to within a relative tolerance
+     * or absolute tolerance. Specifically, each comparison will pass if the difference is
+     * less than {@code absTol} <em>Or</em> the difference, expressed in ulps is less than
+     * {@code ulps}.
+     *
+     * @param values the expected values
+     * @param absTol absolute tolerance on comparisons
+     * @param ulps   relative tolerance, in units in last place
+     * @return matcher for the double array
+     */
+    public static Matcher<double[]> doubleArrayContaining(
+            final double[] values, final double absTol, final int ulps) {
+        @SuppressWarnings("unchecked")
+        Matcher<Double>[] elementMatchers = new Matcher[values.length];
+        for (int i = 0; i < elementMatchers.length; i++) {
+            elementMatchers[i] = numberCloseTo(values[i], absTol, ulps);
+        }
+        return doubleArrayContaining(elementMatchers);
+    }
+
+    /**
+     * Match a {@link RealMatrix#getData()} as a double[][].
+     *
+     * @param dataMatcher matcher for the data as a double[][]
+     * @return a {@link RealMatrix} matcher
+     */
+    public static Matcher<RealMatrix> matrix(
+            final Matcher<double[][]> dataMatcher) {
+        return new TypeSafeDiagnosingMatcher<RealMatrix>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("matrix that ").appendDescriptionOf(
+                        dataMatcher);
+            }
+
+            @Override
+            protected boolean matchesSafely(RealMatrix item,
+                                            Description mismatchDescription) {
+                if (dataMatcher.matches(item.getData())) {
+                    return true;
+                } else {
+                    mismatchDescription.appendText("matrix did not match ");
+                    dataMatcher.describeMismatch(item.getData(),
+                            mismatchDescription);
+                    return false;
+                }
+            }
+        };
+    }
+
+    /**
+     * Match a {@link RealMatrix} to within the given absolute tolerance
+     *
+     * @param expected the expected values
+     * @param absTol   the absolute tolerance on the comparison
+     * @return a matrix matcher
+     * @see #matrix(Matcher)
+     * @see #doubleArrayContaining(double[], double)
+     */
+    public static Matcher<RealMatrix> matrixCloseTo(RealMatrix expected,
+                                                    double absTol) {
+        @SuppressWarnings("rawtypes")
+        Matcher[] rowMatchers = new Matcher[expected.getRowDimension()];
+        for (int i = 0; i < rowMatchers.length; i++) {
+            rowMatchers[i] = doubleArrayContaining(expected.getRow(i), absTol);
+        }
+        @SuppressWarnings("unchecked")
+        Matcher<double[][]> dataMatcher = array(rowMatchers);
+        return matrix(dataMatcher);
+    }
+
+    /**
+     * Match a {@link RealMatrix} to within the given absolute tolerance
+     *
+     * @param expected the expected values
+     * @param absTol   the absolute tolerance on the comparison
+     * @param ulps     the maximum allowable difference, in units in last place
+     * @return a matrix matcher
+     * @see #matrix(Matcher)
+     * @see #doubleArrayContaining(double[], double)
+     */
+    public static Matcher<RealMatrix> matrixCloseTo(RealMatrix expected,
+                                                    double absTol, int ulps) {
+        @SuppressWarnings("rawtypes")
+        Matcher[] rowMatchers = new Matcher[expected.getRowDimension()];
+        for (int i = 0; i < rowMatchers.length; i++) {
+            rowMatchers[i] = doubleArrayContaining(expected.getRow(i), absTol,
+                    ulps);
+        }
+        @SuppressWarnings("unchecked")
+        Matcher<double[][]> dataMatcher = array(rowMatchers);
+        return matrix(dataMatcher);
+    }
+
+    /**
+     * Create a matcher that matches if at least one of the given matchers match. Gives
+     * better descriptions that {@link org.hamcrest.CoreMatchers#anyOf(Iterable)}.
+     *
+     * @param matchers to try.
+     * @param <T>      type of object to match.
+     * @return a new matcher.
+     */
+    public static <T> Matcher<T> anyOf(Collection<? extends Matcher<? super T>> matchers) {
+        return new TypeSafeDiagnosingMatcher<T>() {
+            @Override
+            protected boolean matchesSafely(final T item,
+                                            final Description mismatchDescription) {
+                boolean first = true;
+                for (Matcher<? super T> matcher : matchers) {
+                    if (matcher.matches(item)) {
+                        return true;
+                    } else {
+                        if (!first) {
+                            mismatchDescription.appendText(" and ");
+                        }
+                        matcher.describeMismatch(item, mismatchDescription);
+                    }
+                    first = false;
+                }
+                return false;
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendList("(", " or ", ")", matchers);
+            }
+        };
     }
 
     /* Copid from Hamcrest's IsCloseTo under the new BSD license.
@@ -403,5 +633,162 @@ public class OrekitMatchers {
         };
 
     }
+
+    /* Replace with Matchers.greaterThan(...) if hamcrest becomes available. */
+
+    /**
+     * Create a matcher to see if a value is greater than another one using {@link
+     * Comparable#compareTo(Object)}.
+     *
+     * @param expected value.
+     * @param <T>      type of value.
+     * @return matcher of value.
+     */
+    public static <T extends Comparable<T>> Matcher<T> greaterThan(final T expected) {
+        return new TypeSafeDiagnosingMatcher<T>() {
+            @Override
+            protected boolean matchesSafely(T item, Description mismatchDescription) {
+                if (expected.compareTo(item) >= 0) {
+                    mismatchDescription.appendText("less than or equal to ")
+                            .appendValue(expected);
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("greater than ").appendValue(expected);
+            }
+        };
+    }
+
+
+    /**
+     * Matcher for the distance in seconds between two {@link AbsoluteDate}s. Uses {@link
+     * AbsoluteDate#durationFrom(AbsoluteDate)}.
+     *
+     * @param date         the date to compare with.
+     * @param valueMatcher the matcher for the delta. For example, {@code closeTo(0,
+     *                     1e-10)}.
+     * @return a matcher that checks the time difference between two {@link
+     * AbsoluteDate}s.
+     */
+    public static Matcher<AbsoluteDate> durationFrom(final AbsoluteDate date,
+                                                     final Matcher<Double> valueMatcher) {
+        return new TypeSafeDiagnosingMatcher<AbsoluteDate>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("delta from ");
+                description.appendValue(date);
+                description.appendText(" is ");
+                description.appendDescriptionOf(valueMatcher);
+            }
+
+            @Override
+            protected boolean matchesSafely(AbsoluteDate item,
+                                            Description mismatchDescription) {
+                double delta = item.durationFrom(date);
+                boolean matched = valueMatcher.matches(delta);
+                if (!matched) {
+                    mismatchDescription.appendText("delta to ");
+                    mismatchDescription.appendValue(item);
+                    mismatchDescription.appendText(" ");
+                    valueMatcher.describeMismatch(delta, mismatchDescription);
+                }
+                return matched;
+            }
+        };
+    }
+
+    /**
+     * Matcher that compares to {@link Rotation}s using {@link Rotation#distance(Rotation,
+     * Rotation)}.
+     *
+     * @param from         one of the rotations to compare
+     * @param valueMatcher matcher for the distances. For example {@code closeTo(0,
+     *                     1e-10)}.
+     * @return a matcher for rotations.
+     */
+    public static Matcher<Rotation> distanceIs(final Rotation from,
+                                               final Matcher<Double> valueMatcher) {
+        return new TypeSafeDiagnosingMatcher<Rotation>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("distance from ");
+                description.appendValue(from);
+                description.appendText(" is ");
+                description.appendDescriptionOf(valueMatcher);
+            }
+
+            @Override
+            protected boolean matchesSafely(Rotation item,
+                                            Description mismatchDescription) {
+                double distance = Rotation.distance(from, item);
+                boolean matched = valueMatcher.matches(distance);
+                if (!matched) {
+                    mismatchDescription.appendText("distance to ");
+                    mismatchDescription.appendValue(item);
+                    mismatchDescription.appendText(" was ");
+                    valueMatcher
+                            .describeMismatch(distance, mismatchDescription);
+                }
+                return matched;
+            }
+        };
+    }
+
+    /**
+     * Check that two attitudes are equivalent.
+     *
+     * @param expected attitude.
+     * @return attitude matcher.
+     */
+    public static Matcher<Attitude> attitudeIs(final Attitude expected) {
+        final Matcher<AbsoluteDate> dateMatcher = durationFrom(expected.getDate(), is(0.0));
+        final Matcher<Rotation> rotationMatcher = distanceIs(expected.getRotation(), is(0.0));
+        final Matcher<Vector3D> spinMatcher = vectorCloseTo(expected.getSpin(), 0);
+        final Matcher<Vector3D> accelerationMatcher =
+                vectorCloseTo(expected.getRotationAcceleration(), 0);
+        final Rotation r = expected.getRotation();
+        return new TypeSafeDiagnosingMatcher<Attitude>() {
+
+            @Override
+            protected boolean matchesSafely(Attitude item,
+                                            final Description mismatchDescription) {
+                item = item.withReferenceFrame(expected.getReferenceFrame());
+                if (!dateMatcher.matches(item)) {
+                    mismatchDescription.appendText("date ")
+                            .appendDescriptionOf(dateMatcher);
+                }
+                if (!rotationMatcher.matches(item.getRotation())) {
+                    mismatchDescription.appendText("rotation ")
+                            .appendDescriptionOf(rotationMatcher);
+                    return false;
+                }
+                if (!spinMatcher.matches(item.getSpin())) {
+                    mismatchDescription.appendText("spin ")
+                            .appendDescriptionOf(spinMatcher);
+                    return false;
+                }
+                if (!accelerationMatcher.matches(item.getRotationAcceleration())) {
+                    mismatchDescription.appendText("rotation acceleration ")
+                            .appendDescriptionOf(accelerationMatcher);
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("attitude on ").appendValue(expected.getDate())
+                        .appendText(" rotation ").appendValueList("[", ",", "]", r.getQ0(), r.getQ1(), r.getQ2(), r.getQ3())
+                        .appendText(" spin ").appendDescriptionOf(spinMatcher)
+                        .appendText(" acceleration ").appendDescriptionOf(accelerationMatcher);
+            }
+        };
+    }
+
 
 }

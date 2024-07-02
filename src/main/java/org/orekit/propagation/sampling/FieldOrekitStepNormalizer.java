@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -28,8 +28,9 @@ import org.orekit.time.FieldAbsoluteDate;
  * href="http://commons.apache.org/math/">commons-math</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
-public class FieldOrekitStepNormalizer <T extends RealFieldElement<T>> implements FieldOrekitStepHandler<T> {
+public class FieldOrekitStepNormalizer <T extends CalculusFieldElement<T>> implements FieldOrekitStepHandler<T> {
 
     /** Fixed time step. */
     private T h;
@@ -54,6 +55,22 @@ public class FieldOrekitStepNormalizer <T extends RealFieldElement<T>> implement
         forward   = true;
     }
 
+    /** Get the fixed time step.
+     * @return fixed time step
+     * @since 11.0
+     */
+    public T getFixedTimeStep() {
+        return h;
+    }
+
+    /** Get the underlying fixed step handler.
+     * @return underlying fixed step handler
+     * @since 11.0
+     */
+    public FieldOrekitFixedStepHandler<T> getFixedStepHandler() {
+        return handler;
+    }
+
     /** Determines whether this handler needs dense output.
      * This handler needs dense output in order to provide data at
      * regularly spaced steps regardless of the steps the propagator
@@ -65,24 +82,16 @@ public class FieldOrekitStepNormalizer <T extends RealFieldElement<T>> implement
     }
 
     /** {@inheritDoc} */
+    @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         lastState = null;
         forward   = true;
         handler.init(s0, t, h);
     }
 
-    /**
-     * Handle the last accepted step.
-     * @param interpolator interpolator for the last accepted step. For
-     * efficiency purposes, the various propagators reuse the same
-     * object on each call, so if the instance wants to keep it across
-     * all calls (for example to provide at the end of the propagation a
-     * continuous model valid throughout the propagation range), it
-     * should build a local copy using the clone method and store this
-     * copy.
-     * @param isLast true if the step is the last one
-     */
-    public void handleStep(final FieldOrekitStepInterpolator<T> interpolator, final boolean isLast) {
+    /** {@inheritDoc} */
+    @Override
+    public void handleStep(final FieldOrekitStepInterpolator<T> interpolator) {
 
         if (lastState == null) {
             // initialize lastState in the first step case
@@ -98,26 +107,32 @@ public class FieldOrekitStepNormalizer <T extends RealFieldElement<T>> implement
 
         // use the interpolator to push fixed steps events to the underlying handler
         FieldAbsoluteDate<T> nextTime = lastState.getDate().shiftedBy(step);
-        boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
+        boolean nextInStep = forward ^ nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0;
         while (nextInStep) {
 
             // output the stored previous step
-            handler.handleStep(lastState, false);
+            handler.handleStep(lastState);
 
             // store the next step
             lastState = interpolator.getInterpolatedState(nextTime);
 
             // prepare next iteration
             nextTime = nextTime.shiftedBy(step);
-            nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
+            nextInStep = forward ^ nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0;
 
         }
+    }
 
-        if (isLast) {
-            // there will be no more steps,
-            // the stored one should be flagged as being the last
-            handler.handleStep(lastState, true);
-        }
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final FieldSpacecraftState<T> finalState) {
+
+        // there will be no more steps,
+        // the stored one should be handled now
+        handler.handleStep(lastState);
+
+        // and the final state handled too
+        handler.finish(finalState);
 
     }
 

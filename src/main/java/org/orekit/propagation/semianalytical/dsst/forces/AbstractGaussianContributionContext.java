@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,26 +27,26 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class AbstractGaussianContributionContext extends ForceModelContext {
+public class AbstractGaussianContributionContext extends ForceModelContext {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** 2 / (n² * a) . */
     protected double ton2a;
 
-    /** 1 / A .*/
+    /** 1 / A . */
     protected double ooA;
 
-    /** 1 / (A * B) .*/
+    /** 1 / (A * B) . */
     protected double ooAB;
 
-    /** C / (2 * A * B) .*/
+    /** C / (2 * A * B) . */
     protected double co2AB;
 
-    /** 1 / (1 + B) .*/
+    /** 1 / (1 + B) . */
     protected double ooBpo;
 
-    /** 1 / μ .*/
+    /** 1 / μ . */
     protected double ooMu;
 
     /** A = sqrt(μ * a). */
@@ -64,7 +64,8 @@ class AbstractGaussianContributionContext extends ForceModelContext {
      * Simple constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param parameters parameters values of the force model parameters
+     * @param parameters        parameters values of the force model parameters
+     *                          only 1 value for each parameterDriver
      */
     AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
@@ -90,7 +91,7 @@ class AbstractGaussianContributionContext extends ForceModelContext {
         // 2 / (n² * a)
         ton2a = 2. / (n * n * auxiliaryElements.getSma());
         // 1 / mu
-        ooMu  = 1. / mu;
+        ooMu = 1. / mu;
 
     }
 

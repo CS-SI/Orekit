@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,17 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -50,11 +50,11 @@ public class ShapiroRangeModifierTest {
 
     private void doTestShapiro(final boolean twoWay,
                                final double expectedMin, final double expectedMean, final double expectedMax) {
- 
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -62,7 +62,7 @@ public class ShapiroRangeModifierTest {
                                                                            propagatorBuilder);
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         if (!twoWay) {
             // convert default two way measurements to one way measurements
@@ -77,7 +77,7 @@ public class ShapiroRangeModifierTest {
             }
             measurements = converted;
         }
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
 
         final ShapiroRangeModifier modifier = new ShapiroRangeModifier(context.initialOrbit.getMu());
@@ -89,9 +89,9 @@ public class ShapiroRangeModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             Range range = (Range) measurement;
-            EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             range.addModifier(modifier);
@@ -99,16 +99,16 @@ public class ShapiroRangeModifierTest {
             for (final EstimationModifier<Range> existing : range.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
-            EstimatedMeasurement<Range> eval = range.estimate(0, 0,  new SpacecraftState[] { refstate });
+            Assertions.assertTrue(found);
+            EstimatedMeasurementBase<Range> eval = range.estimateWithoutDerivatives( new SpacecraftState[] { refstate });
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 
         }
 
-        Assert.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
-        Assert.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
-        Assert.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
+        Assertions.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
+        Assertions.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
+        Assertions.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
 
     }
 

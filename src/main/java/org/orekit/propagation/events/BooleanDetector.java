@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -76,12 +76,12 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @param newMaxIter   max iterations.
      * @param newHandler   event handler.
      */
-    private BooleanDetector(final List<EventDetector> detectors,
-                            final Operator operator,
-                            final double newMaxCheck,
-                            final double newThreshold,
-                            final int newMaxIter,
-                            final EventHandler<? super BooleanDetector> newHandler) {
+    protected BooleanDetector(final List<EventDetector> detectors,
+                              final Operator operator,
+                              final AdaptableInterval newMaxCheck,
+                              final double newThreshold,
+                              final int newMaxIter,
+                              final EventHandler newHandler) {
         super(newMaxCheck, newThreshold, newMaxIter, newHandler);
         this.detectors = detectors;
         this.operator = operator;
@@ -133,14 +133,20 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
                 Operator.AND,
-                detectors.stream().map(EventDetector::getMaxCheckInterval).min(Double::compareTo).get(),
+                s -> {
+                    double minInterval = Double.POSITIVE_INFINITY;
+                    for (final EventDetector detector : detectors) {
+                        minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s));
+                    }
+                    return minInterval;
+                },
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
-                new ContinueOnEvent<>());
+                new ContinueOnEvent());
     }
 
     /**
-     * Create a new event detector that is the logical OR or the given event detectors.
+     * Create a new event detector that is the logical OR of the given event detectors.
      *
      * <p> The created event detector's g function is positive if and only if at least
      * one of g functions of the event detectors in {@code detectors} is positive.
@@ -163,7 +169,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     /**
-     * Create a new event detector that is the logical OR or the given event detectors.
+     * Create a new event detector that is the logical OR of the given event detectors.
      *
      * <p> The created event detector's g function is positive if and only if at least
      * one of g functions of the event detectors in {@code detectors} is positive.
@@ -185,10 +191,16 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
                 Operator.OR,
-                detectors.stream().map(EventDetector::getMaxCheckInterval).min(Double::compareTo).get(),
+                s -> {
+                    double minInterval = Double.POSITIVE_INFINITY;
+                    for (final EventDetector detector : detectors) {
+                        minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s));
+                    }
+                    return minInterval;
+                },
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
-                new ContinueOnEvent<>());
+                new ContinueOnEvent());
     }
 
     /**
@@ -230,10 +242,10 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     @Override
-    protected BooleanDetector create(final double newMaxCheck,
+    protected BooleanDetector create(final AdaptableInterval newMaxCheck,
                                      final double newThreshold,
                                      final int newMaxIter,
-                                     final EventHandler<? super BooleanDetector> newHandler) {
+                                     final EventHandler newHandler) {
         return new BooleanDetector(detectors, operator, newMaxCheck, newThreshold,
                 newMaxIter, newHandler);
     }
@@ -245,6 +257,15 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
         for (final EventDetector detector : detectors) {
             detector.init(s0, t);
         }
+    }
+
+    /**
+     * Get the list of original detectors.
+     * @return the list of original detectors
+     * @since 10.2
+     */
+    public List<EventDetector> getDetectors() {
+        return new ArrayList<EventDetector>(detectors);
     }
 
     /** Local class for operator. */

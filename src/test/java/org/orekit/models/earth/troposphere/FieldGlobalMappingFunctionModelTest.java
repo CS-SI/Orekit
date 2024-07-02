@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,22 +16,23 @@
  */
 package org.orekit.models.earth.troposphere;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -39,11 +40,12 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -51,26 +53,28 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TrackingCoordinates;
 
 public class FieldGlobalMappingFunctionModelTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(Decimal64Field.getInstance());
+        doTestMappingFactors(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
         final T zero = field.getZero();
         // Site (NRAO, Green Bank, WV): latitude:  0.6708665767 radians
         //                              longitude: -1.393397187 radians
@@ -85,41 +89,55 @@ public class FieldGlobalMappingFunctionModelTest {
         //                                    wet -> 3.449589 (Ref)
 
         final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createMJDDate(55055, zero, TimeScalesFactory.getUTC());
-        
+
         final double latitude    = 0.6708665767;
         final double longitude   = -1.393397187;
         final double height      = 844.715;
+        final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<T>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
-        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
+        final FieldTrackingCoordinates<T> trackingCoordinates =
+                        new FieldTrackingCoordinates<>(zero,
+                                                       zero.newInstance(0.5 * FastMath.PI - 1.278564131),
+                                                       zero);
         final double expectedHydro = 3.425246;
         final double expectedWet   = 3.449589;
 
-        final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
-        
-        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height), model.getParameters(field), date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-6);
-        Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
+        final TroposphereMappingFunction model = new GlobalMappingFunctionModel();
+        final FieldPressureTemperatureHumidity<T> weather =
+                        new FieldPressureTemperatureHumidity<>(field,
+                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE);
+
+        final T[] computedMapping = model.mappingFactors(trackingCoordinates, point, weather, date);
+
+        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-6);
+        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
     }
 
     @Test
     public void testFixedHeight() {
-        doTestFixedHeight(Decimal64Field.getInstance());
+        doTestFixedHeight(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        MappingFunction model = new GlobalMappingFunctionModel(FastMath.toRadians(45.0), FastMath.toRadians(45.0));
+        TroposphereMappingFunction model = new GlobalMappingFunctionModel();
+        final FieldPressureTemperatureHumidity<T> weather =
+                        new FieldPressureTemperatureHumidity<>(field,
+                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE);
+        FieldGeodeticPoint<T> point = new FieldGeodeticPoint<T>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(350.0));
         final T[] lastFactors = MathArrays.buildArray(field, 2);
         lastFactors[0] = zero.add(Double.MAX_VALUE);
         lastFactors[1] = zero.add(Double.MAX_VALUE);
 
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final T[] factors = model.mappingFactors(zero.add(FastMath.toRadians(elev)), zero.add(350), model.getParameters(field), date);
-            Assert.assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
-            Assert.assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
+            final T[] factors = model.mappingFactors(new FieldTrackingCoordinates<>(zero,
+                                                                                    zero.newInstance(FastMath.toRadians(elev)),
+                                                                                    zero),
+                                                     point, weather, date);
+            Assertions.assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
+            Assertions.assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
             lastFactors[0] = factors[0];
             lastFactors[1] = factors[1];
         }
@@ -141,10 +159,11 @@ public class FieldGlobalMappingFunctionModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Station
-        final GroundStation station = new GroundStation(baseFrame);
-        
+        final GroundStation station = new GroundStation(baseFrame,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+
         // Mapping Function model
-        final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
+        final TroposphereMappingFunction model = new GlobalMappingFunctionModel();
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -157,22 +176,28 @@ public class FieldGlobalMappingFunctionModelTest {
         final Field<DerivativeStructure> field = a0.getField();
         final DerivativeStructure zero = field.getZero();
 
+        final FieldPressureTemperatureHumidity<DerivativeStructure> weather =
+                        new FieldPressureTemperatureHumidity<>(field,
+                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE);
+
         // Field Date
         final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field);
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
-                                                                                  PositionAngle.MEAN, frame,
+                                                                                  PositionAngleType.MEAN, frame,
                                                                                   dsDate, zero.add(3.9860047e14));
         // Field State
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
         // Initial satellite elevation
-        final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
-        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
+        final FieldTrackingCoordinates<DerivativeStructure> dsTrackingCoordinates =
+                        baseFrame.getTrackingCoordinates(position, frame, dsDate);
 
         // Compute mapping factors state derivatives
-        final DerivativeStructure[] factors = model.mappingFactors(dsElevation, zero, model.getParameters(field), dsDate);
+        final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
+        final DerivativeStructure[] factors = model.mappingFactors(dsTrackingCoordinates, dsPoint, weather, dsDate);
 
         final double[] compMFH = factors[0].getAllDerivatives();
         final double[] compMFW = factors[1].getAllDerivatives();
@@ -184,63 +209,87 @@ public class FieldGlobalMappingFunctionModelTest {
         // Finite differences for reference values
         final double[][] refMF = new double[2][6];
         final OrbitType orbitType = OrbitType.KEPLERIAN;
-        final PositionAngle angleType = PositionAngle.MEAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
-            final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
-            final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
-            double[]  delayM4 = model.mappingFactors(elevationM4, height, model.getParameters(), stateM4.getDate());
-            
+            final Vector3D positionM4 = stateM4.getPosition();
+            final TrackingCoordinates trackingCoordinatesM4  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM4, stateM4.getFrame(), stateM4.getDate());
+            double[]  delayM4 = model.mappingFactors(trackingCoordinatesM4, point,
+                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                     stateM4.getDate());
+
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
-            final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
-            final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
-            double[]  delayM3 = model.mappingFactors(elevationM3, height, model.getParameters(), stateM3.getDate());
-            
+            final Vector3D positionM3 = stateM3.getPosition();
+            final TrackingCoordinates trackingCoordinatesM3  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM3, stateM3.getFrame(), stateM3.getDate());
+            double[]  delayM3 = model.mappingFactors(trackingCoordinatesM3, point,
+                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                     stateM3.getDate());
+
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
-            final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
-            final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
-            double[]  delayM2 = model.mappingFactors(elevationM2, height, model.getParameters(), stateM2.getDate());
- 
+            final Vector3D positionM2 = stateM2.getPosition();
+            final TrackingCoordinates trackingCoordinatesM2  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM2, stateM2.getFrame(), stateM2.getDate());
+            double[]  delayM2 = model.mappingFactors(trackingCoordinatesM2, point,
+                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                     stateM2.getDate());
+
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
-            final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
-            final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
-            double[]  delayM1 = model.mappingFactors(elevationM1, height, model.getParameters(), stateM1.getDate());
-           
+            final Vector3D positionM1 = stateM1.getPosition();
+            final TrackingCoordinates trackingCoordinatesM1  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM1, stateM1.getFrame(), stateM1.getDate());
+            double[]  delayM1 = model.mappingFactors(trackingCoordinatesM1, point,
+                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                     stateM1.getDate());
+
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
-            final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
-            final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
-            double[]  delayP1 = model.mappingFactors(elevationP1, height, model.getParameters(), stateP1.getDate());
-            
+            final Vector3D positionP1 = stateP1.getPosition();
+            final TrackingCoordinates trackingCoordinatesP1  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP1, stateP1.getFrame(), stateP1.getDate());
+            double[]  delayP1 = model.mappingFactors(trackingCoordinatesP1, point,
+                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                     stateP1.getDate());
+
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
-            final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
-            final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
-            double[]  delayP2 = model.mappingFactors(elevationP2, height, model.getParameters(), stateP2.getDate());
-            
+            final Vector3D positionP2 = stateP2.getPosition();
+            final TrackingCoordinates trackingCoordinatesP2  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP2, stateP2.getFrame(), stateP2.getDate());
+            double[]  delayP2 = model.mappingFactors(trackingCoordinatesP2, point,
+                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                     stateP2.getDate());
+
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
-            final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
-            final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
-            double[]  delayP3 = model.mappingFactors(elevationP3, height, model.getParameters(), stateP3.getDate());
-            
+            final Vector3D positionP3 = stateP3.getPosition();
+            final TrackingCoordinates trackingCoordinatesP3  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP3, stateP3.getFrame(), stateP3.getDate());
+            double[]  delayP3 = model.mappingFactors(trackingCoordinatesP3, point,
+                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                     stateP3.getDate());
+
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
-            final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
-            final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
-            double[]  delayP4 = model.mappingFactors(elevationP4, height, model.getParameters(), stateP4.getDate());
-            
+            final Vector3D positionP4 = stateP4.getPosition();
+            final TrackingCoordinates trackingCoordinatesP4  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP4, stateP4.getFrame(), stateP4.getDate());
+            double[]  delayP4 = model.mappingFactors(trackingCoordinatesP4, point,
+                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                     stateP4.getDate());
+
             fillJacobianColumn(refMF, i, orbitType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compMFH[i + 1], refMF[0][i], 2.1e-11);
-            Assert.assertEquals(compMFW[i + 1], refMF[1][i], 1.7e-11);
+            Assertions.assertEquals(compMFH[i + 1], refMF[0][i], 2.1e-11);
+            Assertions.assertEquals(compMFW[i + 1], refMF[1][i], 1.7e-11);
         }
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngle angleType, double h,
+                                    OrbitType orbitType, PositionAngleType angleType, double h,
                                     double[] sM4h, double[] sM3h,
                                     double[] sM2h, double[] sM1h,
                                     double[] sP1h, double[] sP2h,
@@ -253,7 +302,7 @@ public class FieldGlobalMappingFunctionModelTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                        double delta, int column) {
 
         double[][] array = stateToArray(state, orbitType, angleType, true);
@@ -264,7 +313,7 @@ public class FieldGlobalMappingFunctionModelTest {
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                   boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
@@ -274,7 +323,7 @@ public class FieldGlobalMappingFunctionModelTest {
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +70,9 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Reference epoch for QZSS weeks: 1980-01-06. */
     public static final DateComponents QZSS_EPOCH;
 
+    /** Reference epoch for IRNSS weeks: 1999-08-22. */
+    public static final DateComponents IRNSS_EPOCH;
+
     /** Reference epoch for BeiDou weeks: 2006-01-01. */
     public static final DateComponents BEIDOU_EPOCH;
 
@@ -116,23 +121,26 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Factory for non-leap years. */
     private static final MonthDayFactory COMMON_YEAR_FACTORY  = new CommonYearFactory();
 
+    /** Formatting symbols used in {@link #toString()}. */
+    private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
+
     /** Format for years. */
-    private static final DecimalFormat FOUR_DIGITS = new DecimalFormat("0000");
+    private static final DecimalFormat FOUR_DIGITS = new DecimalFormat("0000", US_SYMBOLS);
 
     /** Format for months and days. */
-    private static final DecimalFormat TWO_DIGITS  = new DecimalFormat("00");
+    private static final DecimalFormat TWO_DIGITS  = new DecimalFormat("00", US_SYMBOLS);
 
     /** Offset between J2000 epoch and modified julian day epoch. */
     private static final int MJD_TO_J2000 = 51544;
 
     /** Basic and extended format calendar date. */
-    private static Pattern CALENDAR_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)$");
+    private static final Pattern CALENDAR_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)$");
 
     /** Basic and extended format ordinal date. */
-    private static Pattern ORDINAL_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d\\d)$");
+    private static final Pattern ORDINAL_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d\\d)$");
 
     /** Basic and extended format week date. */
-    private static Pattern WEEK_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?W(\\d\\d)-?(\\d)$");
+    private static final Pattern WEEK_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?W(\\d\\d)-?(\\d)$");
 
     static {
         // this static statement makes sure the reference epoch are initialized
@@ -144,6 +152,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         GALILEO_EPOCH         = new DateComponents(1999, 8, 22);
         GPS_EPOCH             = new DateComponents(1980, 1, 6);
         QZSS_EPOCH            = new DateComponents(1980, 1, 6);
+        IRNSS_EPOCH           = new DateComponents(1999, 8, 22);
         BEIDOU_EPOCH          = new DateComponents(2006, 1, 1);
         GLONASS_EPOCH         = new DateComponents(1996, 1, 1);
         J2000_EPOCH           = new DateComponents(2000, 1, 1);
@@ -174,7 +183,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         // very rough range check
         // (just to avoid ArrayOutOfboundException in MonthDayFactory later)
-        if ((month < 1) || (month > 12)) {
+        if (month < 1 || month > 12) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_MONTH, month);
         }
 
@@ -188,7 +197,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         // check the parameters for mismatch
         // (i.e. invalid date components, like 29 february on non-leap years)
-        if ((year != check.year) || (month != check.month) || (day != check.day)) {
+        if (year != check.year || month != check.month || day != check.day) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_YEAR_MONTH_DAY,
                                                       year, month, day);
         }
@@ -289,7 +298,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         final DateComponents d = new DateComponents(firstWeekMonday, 7 * week + dayOfWeek - 8);
 
         // check the parameters for invalid date components
-        if ((week != d.getCalendarWeek()) || (dayOfWeek != d.getDayOfWeek())) {
+        if (week != d.getCalendarWeek() || dayOfWeek != d.getDayOfWeek()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_WEEK_DATE,
                                                      wYear, week, dayOfWeek);
         }
@@ -387,7 +396,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         if (year < 1583) {
             if (year < 1) {
                 yFactory = PROLEPTIC_JULIAN_FACTORY;
-            } else if ((year < 1582) || (month < 10) || ((month < 11) && (day < 5))) {
+            } else if (year < 1582 || month < 10 || month < 11 && day < 5) {
                 yFactory = JULIAN_FACTORY;
             }
         }
@@ -464,7 +473,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * @return string representation of the date.
      */
     public String toString() {
-        return new StringBuffer().
+        return new StringBuilder().
                append(FOUR_DIGITS.format(year)).append('-').
                append(TWO_DIGITS.format(month)).append('-').
                append(TWO_DIGITS.format(day)).
@@ -487,8 +496,8 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     public boolean equals(final Object other) {
         try {
             final DateComponents otherDate = (DateComponents) other;
-            return (otherDate != null) && (year == otherDate.year) &&
-                   (month == otherDate.month) && (day == otherDate.day);
+            return otherDate != null && year == otherDate.year &&
+                   month == otherDate.month && day == otherDate.day;
         } catch (ClassCastException cce) {
             return false;
         }
@@ -589,7 +598,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public boolean isLeap(final int year) {
-            return ((year % 4) == 0) && (((year % 400) == 0) || ((year % 100) != 0));
+            return (year % 4) == 0 && ((year % 400) == 0 || (year % 100) != 0);
         }
 
     }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,12 +22,12 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -37,18 +37,18 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 
-public class AngularAzElTest {
+class AngularAzElTest {
 
     /** Compare observed values and estimated values.
      *  Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
@@ -59,7 +59,7 @@ public class AngularAzElTest {
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Prepare statistics for right-ascension/declination values difference
         final StreamingStatistics azDiffStat = new StreamingStatistics();
@@ -70,33 +70,35 @@ public class AngularAzElTest {
             // Propagate to measurement date
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            
+
             // Estimate the AZEL value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
+
             // Store the difference between estimated and observed values in the stats
             azDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
             elDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[1] - measurement.getObservedValue()[1]));
         }
 
         // Mean and std errors check
-        Assert.assertEquals(0.0, azDiffStat.getMean(), 6.9e-9);
-        Assert.assertEquals(0.0, azDiffStat.getStandardDeviation(), 7.2e-9);
-        
-        Assert.assertEquals(0.0, elDiffStat.getMean(), 5.4e-9);
-        Assert.assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
+        Assertions.assertEquals(0.0, azDiffStat.getMean(), 6.9e-9);
+        Assertions.assertEquals(0.0, azDiffStat.getStandardDeviation(), 7.2e-9);
+        Assertions.assertEquals(0.0, elDiffStat.getMean(), 5.4e-9);
+        Assertions.assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
+
+        // Test measurement type
+        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
-    
+
     /** Test the values of the state derivatives using a numerical.
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect azimuth-elevation measurements
@@ -107,7 +109,7 @@ public class AngularAzElTest {
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Compute measurements.
         double[] AzerrorsP = new double[3 * measurements.size()];
@@ -133,26 +135,30 @@ public class AngularAzElTest {
             // not on the current velocity.
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas).transformPosition(Vector3D.ZERO);
-            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP, datemeas);
+            final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
+            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP,
+                                                                                  datemeas, state.getFrame());
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assert.assertEquals(2, estimated.getParticipants().length);
+            Assertions.assertEquals(2, estimated.getParticipants().length);
             final double[][]   jacobian  = estimated.getStateDerivatives(0);
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
-                Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                    }
-                }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                   PositionAngle.TRUE, 250.0, 4).value(state);
+                Differentiation.differentiate(state1 ->
+                                                  measurement.
+                                                      estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                      getEstimatedValue(),
+                                              measurement.getDimension(),
+                                              propagator.getAttitudeProvider(),
+                                              OrbitType.CARTESIAN,
+                                              PositionAngleType.TRUE, 250.0, 4).
+                    value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             final double smallest = FastMath.ulp((double) 1.0);
 
@@ -183,24 +189,24 @@ public class AngularAzElTest {
         }
 
         // median errors on Azimuth
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 1.1e-10);
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 5.7e-5);
+        Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsP), 1.2e-10);
+        Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.1e-5);
 
         // median errors on Elevation
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 3.5e-11);
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 1.4e-5);
+        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsP), 7.5e-11);
+        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.3e-5);
     }
 
     /** Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect azimuth-elevation measurements
@@ -216,7 +222,7 @@ public class AngularAzElTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
 
@@ -232,8 +238,9 @@ public class AngularAzElTest {
             // not on the current velocity.
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
-            final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas).transformPosition(Vector3D.ZERO);
-            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
+            final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
+            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP,
+                                                                                     datemeas, stateini.getFrame());
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
@@ -244,22 +251,24 @@ public class AngularAzElTest {
             };
             for (int i = 0; i < 3; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(2, measurement.getDimension());
-                Assert.assertEquals(2, gradient.length);
+                Assertions.assertEquals(2, measurement.getDimension());
+                Assertions.assertEquals(2, gradient.length);
 
                 for (final int k : new int[] {0, 1}) {
                     final ParameterFunction dMkdP =
                                     Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
-                                        public double value(final ParameterDriver parameterDriver) {
-                                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[k];
+                                        public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                            return measurement.
+                                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
+                                                   getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());
-                    final double ref = dMkdP.value(drivers[i]);
+                    final double ref = dMkdP.value(drivers[i], date);
 
                     if (ref > 1.e-12) {
-                        Assert.assertEquals(ref, gradient[k], 3e-10 * FastMath.abs(ref));
+                        Assertions.assertEquals(ref, gradient[k], 3e-10 * FastMath.abs(ref));
                     }
                 }
             }

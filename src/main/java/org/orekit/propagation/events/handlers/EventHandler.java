@@ -22,19 +22,13 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 
 
-/**
- * An interface defining how to override event handling behavior in the standard
- * propagator eventing classes without requiring subclassing.  In cases where
- * one wishes to use anonymous classes rather than explicit subclassing this
- * allows for a more direct way to override the behavior.  Event classes have to
- * specifically support this capability.
+/** An interface defining how to handle events occurring during propagation.
  *
  * @author Hank Grabowski
  *
- * @param <T> object type that the handler is called from
  * @since 6.1
  */
-public interface EventHandler<T extends EventDetector> {
+public interface EventHandler {
 
     /** Initialize event handler at the start of a propagation.
      * <p>
@@ -47,18 +41,14 @@ public interface EventHandler<T extends EventDetector> {
      * </p>
      * @param initialState initial state
      * @param target target date for the propagation
+     * @param detector event detector related to the event handler
      *
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    default void init(SpacecraftState initialState, AbsoluteDate target, final EventDetector detector) {
         // nothing by default
     }
 
-    /**
-     * eventOccurred method mirrors the same interface method as in {@link EventDetector}
-     * and its subclasses, but with an additional parameter that allows the calling
-     * method to pass in an object from the detector which would have potential
-     * additional data to allow the implementing class to determine the correct
-     * return state.
+    /** Handle an event.
      *
      * @param s SpaceCraft state to be used in the evaluation
      * @param detector object with appropriate type that can be used in determining correct return state
@@ -66,7 +56,7 @@ public interface EventHandler<T extends EventDetector> {
      * @return the Action that the calling detector should pass back to the evaluation system
      *
      */
-    Action eventOccurred(SpacecraftState s, T detector, boolean increasing);
+    Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing);
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
@@ -83,7 +73,7 @@ public interface EventHandler<T extends EventDetector> {
      * @param oldState old state
      * @return new state
      */
-    default SpacecraftState resetState(T detector, SpacecraftState oldState) {
+    default SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
         return oldState;
     }
 

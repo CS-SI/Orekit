@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * <h1> Propagation </h1>
+ * <h2> Propagation </h2>
  *
  * This package provides tools to propagate orbital states with different methods.
  *
@@ -33,7 +33,7 @@
  * the state.
  * </p>
  *
- * <h2> Keplerian propagation </h2>
+ * <h3> Keplerian propagation </h3>
  *
  * <p> The {@link org.orekit.propagation.analytical.KeplerianPropagator}
  * implements the {@link org.orekit.propagation.Propagator}
@@ -43,7 +43,7 @@
  * {@link org.orekit.orbits.EquinoctialOrbit}
  * representation: only the mean anomaly value changes.
  *
- * <h2> Eckstein-Hechler propagation </h2>
+ * <h3> Eckstein-Hechler propagation </h3>
  *
  * <p> This analytical model is suited for near circular orbits and inclination
  * neither equatorial nor critical. It considers J2 to J6 potential
@@ -51,7 +51,22 @@
  * position. As the Keplerian propagator, it implements the
  * {@link org.orekit.propagation.Propagator} interface.
  *
- * <h2> Numerical propagation </h2>
+ * <h3> TLE propagation </h3>
+ *
+ * <p> This analytical model allows propagating {org.orekit.propagation.analytical.tle.TLE}
+ * data using SGP4 or SDP4 models. It is very easy to initialize, only the initial
+ * TLE is needed. As the other analytical propagators, it implements the
+ * {@link org.orekit.propagation.Propagator} interface.
+ *
+ * <h3> GNSS propagation </h3>
+ *
+ * <p> These analytical models allow propagating navigation messages such as
+ * in GNSS almanacs available thanks to {@link org.orekit.gnss.SEMParser SEM}
+ * or {@link org.orekit.gnss.YUMAParser YUMA} files. Each GNSS constellation
+ * has its own propagation model availables in {@link org.orekit.propagation.analytical.gnss}
+ * package.
+ *
+ * <h3> Numerical propagation </h3>
  *
  * <p> It is the most important part of the OREKIT project. Based on Hipparchus
  * integrators, the {@link org.orekit.propagation.numerical.NumericalPropagator}
@@ -60,10 +75,10 @@
  * fact quite clear and intuitive.
  *
  * <p>
- * The mathematical problem to integrate is a seven dimension time derivative
+ * The mathematical problem to integrate is a 6 dimension time derivative
  * equations system. The six first equations are given by the Gauss equations
- * (expressed in {@link org.orekit.orbits.EquinoctialOrbit}) and the seventh
- * is simply the flow rate and mass equation. This first order system is computed
+ * (expressed in {@link org.orekit.orbits.EquinoctialOrbit}).
+ * This first order system is computed
  * by the {@link org.orekit.propagation.numerical.TimeDerivativesEquations}
  * class. It will be instanced by the propagator and then be modified at each
  * step (a fixed t value) by all the needed {@link
@@ -76,6 +91,16 @@
  * time derivate at t0, and then calculates the next step state vector, and ask
  * for the next first time derivative, etc. until it reaches the final asked date.
  * </p>
+ *
+ * <h3> Semi-analytical propagation </h3>
+ *
+ * <p> Semi-analytical propagation in Orekit is based on Draper Semi-analytical
+ * Satellite Theory (DSST), which is applicable to all orbit types. DSST divides
+ * the computation of the osculating orbital elements into two contributions: the
+ * mean orbital elements and the short-periodic terms. Both models are developed
+ * in the equinoctial orbital elements via the Method of Averaging. Mean orbital
+ * elements are computed numerically while short period motion is computed using
+ * a combination of analytical and numerical techniques.
  *
  * @author Luc Maisonobe
  * @author Fabien Maussion

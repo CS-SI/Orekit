@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,30 +18,32 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TrackingCoordinates;
 
 public class GlobalMappingFunctionModelTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
     public void testMappingFactors() {
-        
+
         // Site (NRAO, Green Bank, WV): latitude:  0.6708665767 radians
         //                              longitude: -1.393397187 radians
         //                              height:    844.715 m
@@ -55,36 +57,43 @@ public class GlobalMappingFunctionModelTest {
         //                                    wet -> 3.449589 (Ref)
 
         final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC());
-        
+
         final double latitude    = 0.6708665767;
         final double longitude   = -1.393397187;
         final double height      = 844.715;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
-        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
+        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, 0.5 * FastMath.PI - 1.278564131, 0.0);
         final double expectedHydro = 3.425246;
         final double expectedWet   = 3.449589;
 
-        final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
-        
-        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
-        Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
+        final TroposphereMappingFunction model = new GlobalMappingFunctionModel();
+
+        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
+                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                              date);
+
+        Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
+        Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
     }
 
     @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction model = new GlobalMappingFunctionModel(FastMath.toRadians(45.0), FastMath.toRadians(45.0));
+        TroposphereMappingFunction model = new GlobalMappingFunctionModel();
         double[] lastFactors = new double[] {
             Double.MAX_VALUE,
             Double.MAX_VALUE
         };
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), 350, model.getParameters(), date);
-            Assert.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
-            Assert.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
+            final double[] factors = model.mappingFactors(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
+                                                          point,
+                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                          date);
+            Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
+            Assertions.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];
             lastFactors[1] = factors[1];
         }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.gnss.antenna;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 
 /**
  * Pattern for GNSS antenna model on one frequency.
@@ -29,18 +29,24 @@ import org.hipparchus.util.FastMath;
  */
 public class FrequencyPattern {
 
+    /** Pattern with zero correction (i.e. zero eccentricities and no variations).
+     * @since 12.0
+     */
+    public static final FrequencyPattern ZERO_CORRECTION = new FrequencyPattern(Vector3D.ZERO, null);
+
     /** Phase center eccentricities (m). */
     private final Vector3D eccentricities;
 
-    /** Phase center variation function. */
+    /** Phase center variation function (may be null if phase center does not depend on signal direction). */
     private final PhaseCenterVariationFunction phaseCenterVariationFunction;
 
     /** Simple constructor.
      * @param eccentricities phase center eccentricities (m)
      * @param phaseCenterVariationFunction phase center variation function
+     * (may be null if phase center does not depend on signal direction)
      */
-    protected FrequencyPattern(final Vector3D eccentricities,
-                               final PhaseCenterVariationFunction phaseCenterVariationFunction) {
+    public FrequencyPattern(final Vector3D eccentricities,
+                            final PhaseCenterVariationFunction phaseCenterVariationFunction) {
         this.eccentricities               = eccentricities;
         this.phaseCenterVariationFunction = phaseCenterVariationFunction;
     }
@@ -52,13 +58,25 @@ public class FrequencyPattern {
         return eccentricities;
     }
 
+    /** Get the phase center variation function.
+     * @return phase center variation function (may be null if phase center does not depend on signal direction)
+     * @since 12.0
+     */
+    public PhaseCenterVariationFunction getPhaseCenterVariationFunction() {
+        return phaseCenterVariationFunction;
+    }
+
     /** Get the value of the phase center variation in a signal direction.
      * @param direction signal direction in antenna reference frame
      * @return value of the phase center variation
      */
     public double getPhaseCenterVariation(final Vector3D direction) {
-        return phaseCenterVariationFunction.value(0.5 * FastMath.PI - direction.getDelta(),
-                                                  direction.getAlpha());
+        if (phaseCenterVariationFunction == null) {
+            return 0.0;
+        } else {
+            return phaseCenterVariationFunction.value(MathUtils.SEMI_PI - direction.getDelta(),
+                                                      direction.getAlpha());
+        }
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -24,23 +23,23 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
-import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.UT1Scale;
 
 
@@ -48,7 +47,7 @@ public class IERSConventionsTest {
 
     @Test
     public void testConventionsNumber() {
-        Assert.assertEquals(3, IERSConventions.values().length);
+        Assertions.assertEquals(3, IERSConventions.values().length);
     }
 
     @Test
@@ -107,11 +106,11 @@ public class IERSConventionsTest {
         // in low Earth orbit).
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double[] angles= IERSConventions.IERS_1996.getNutationFunction().value(date);
-        Assert.assertEquals(-5.3059154211478291722e-05, angles[0], 4.8e-11); // 3e-13 with SOFA values
-        Assert.assertEquals(3.2051803135750973851e-05,  angles[1], 1.3e-11); // 7e-14 with SOFA values
+        Assertions.assertEquals(-5.3059154211478291722e-05, angles[0], 4.8e-11); // 3e-13 with SOFA values
+        Assertions.assertEquals(3.2051803135750973851e-05,  angles[1], 1.3e-11); // 7e-14 with SOFA values
 
         double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(date);
-        Assert.assertEquals(0.40908345528446415917,     epsilonA, 1.0e-16);
+        Assertions.assertEquals(0.40908345528446415917,     epsilonA, 1.0e-16);
 
     }
 
@@ -120,7 +119,7 @@ public class IERSConventionsTest {
         final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_1996, true);
         checkScalarFunctionConsistency(IERSConventions.IERS_1996.getGMSTFunction(ut1),
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 9.0e-16, 8.0e-13);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.8e-15, 8.0e-13);
     }
 
     @Test
@@ -155,10 +154,10 @@ public class IERSConventionsTest {
         final TimeScalarFunction gmst82 = IERSConventions.IERS_1996.getGMSTFunction(ut1);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gmst = MathUtils.normalizeAngle(gmst82.value(date), 0.0);
-        Assert.assertEquals(2.5021977627453466653, gmst, 2.0e-13);
+        Assertions.assertEquals(2.5021977627453466653, gmst, 2.0e-13);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gmst = MathUtils.normalizeAngle(gmst82.value(date), 0.0);
-        Assert.assertEquals(2.7602390405411441066, gmst, 4.0e-13);
+        Assertions.assertEquals(2.7602390405411441066, gmst, 4.0e-13);
 
     }
 
@@ -208,10 +207,10 @@ public class IERSConventionsTest {
         final TimeScalarFunction gmst00 = IERSConventions.IERS_2003.getGMSTFunction(ut1);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gmst = MathUtils.normalizeAngle(gmst00.value(date), 0.0);
-        Assert.assertEquals(2.5021977786243789765, gmst, 1.0e-15);
+        Assertions.assertEquals(2.5021977786243789765, gmst, 1.0e-15);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gmst = MathUtils.normalizeAngle(gmst00.value(date), 0.0);
-        Assert.assertEquals(2.7602390558728311376, gmst, 1.0e-15);
+        Assertions.assertEquals(2.7602390558728311376, gmst, 1.0e-15);
 
     }
 
@@ -261,10 +260,10 @@ public class IERSConventionsTest {
         final TimeScalarFunction gmst06 = IERSConventions.IERS_2010.getGMSTFunction(ut1);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gmst = MathUtils.normalizeAngle(gmst06.value(date), 0.0);
-        Assert.assertEquals(2.5021977784096232078, gmst, 1.0e-15);
+        Assertions.assertEquals(2.5021977784096232078, gmst, 1.0e-15);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gmst = MathUtils.normalizeAngle(gmst06.value(date), 0.0);
-        Assert.assertEquals(2.7602390556555129741, gmst, 3.0e-15);
+        Assertions.assertEquals(2.7602390556555129741, gmst, 3.0e-15);
 
     }
 
@@ -326,10 +325,10 @@ public class IERSConventionsTest {
                 IERSConventions.IERS_2003.getEarthOrientationAngleFunction(ut1);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double era  = MathUtils.normalizeAngle(era00.value(date), 0.0);
-        Assert.assertEquals(2.5012766511308228701, era, 1.0e-15);
+        Assertions.assertEquals(2.5012766511308228701, era, 1.0e-15);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         era  = MathUtils.normalizeAngle(era00.value(date), 0.0);
-        Assert.assertEquals(2.7593087452455264952, era, 1.0e-15);
+        Assertions.assertEquals(2.7593087452455264952, era, 1.0e-15);
 
     }
 
@@ -455,10 +454,10 @@ public class IERSConventionsTest {
                                                           eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst94.value(date), 0.0);
-        Assert.assertEquals(2.5021490911406645274, gst, 4.4e-11); // 4.2e-13 with SOFA values
+        Assertions.assertEquals(2.5021490911406645274, gst, 4.4e-11); // 4.2e-13 with SOFA values
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gst = MathUtils.normalizeAngle(gst94.value(date), 0.0);
-        Assert.assertEquals(2.7601901474864534158, gst, 9.0e-11); // 4.7e-13 with SOFA values
+        Assertions.assertEquals(2.7601901474864534158, gst, 9.0e-11); // 4.7e-13 with SOFA values
 
     }
 
@@ -536,10 +535,10 @@ public class IERSConventionsTest {
                 IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst00a.value(date), 0.0);
-        Assert.assertEquals(2.5021491024360624778, gst, 2.0e-13);
+        Assertions.assertEquals(2.5021491024360624778, gst, 2.0e-13);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gst = MathUtils.normalizeAngle(gst00a.value(date), 0.0);
-        Assert.assertEquals(2.7601901615614221619, gst, 3.0e-13);
+        Assertions.assertEquals(2.7601901615614221619, gst, 3.0e-13);
 
     }
 
@@ -617,10 +616,10 @@ public class IERSConventionsTest {
                 IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst06.value(date), 0.0);
-        Assert.assertEquals(2.5021491022006503435, gst, 1.3e-12);
+        Assertions.assertEquals(2.5021491022006503435, gst, 1.3e-12);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gst = MathUtils.normalizeAngle(gst06.value(date), 0.0);
-        Assert.assertEquals(2.7601901613234058885, gst, 1.2e-12);
+        Assertions.assertEquals(2.7601901613234058885, gst, 1.2e-12);
 
     }
 
@@ -638,8 +637,8 @@ public class IERSConventionsTest {
             FieldAbsoluteDate<DerivativeStructure> date = ds2000.shiftedBy(factory.variable(0, dt));
             DerivativeStructure delta = gmst00.value(date).subtract(gmst82.value(date));
             // GMST82 and GMST2000 are similar to about 15 milli-arcseconds between 2000 and 2010
-            Assert.assertEquals(0.0, MathUtils.normalizeAngle(delta.getValue(), 0.0), 7.1e-8);
-            Assert.assertEquals(0.0, delta.getPartialDerivative(1), 1.0e-15);
+            Assertions.assertEquals(0.0, MathUtils.normalizeAngle(delta.getValue(), 0.0), 7.1e-8);
+            Assertions.assertEquals(0.0, delta.getPartialDerivative(1), 1.0e-15);
         }
     }
 
@@ -656,8 +655,8 @@ public class IERSConventionsTest {
             FieldAbsoluteDate<DerivativeStructure> date = ds2000.shiftedBy(factory.variable(0, dt));
             DerivativeStructure delta = gmst06.value(date).subtract(gmst00.value(date));
             // GMST2006 and GMST2000 are similar to about 0.15 milli-arcseconds between 2000 and 2010
-            Assert.assertEquals(0.0, MathUtils.normalizeAngle(delta.getValue(), 0.0), 7e-10);
-            Assert.assertEquals(0.0, delta.getPartialDerivative(1), 3.0e-18);
+            Assertions.assertEquals(0.0, MathUtils.normalizeAngle(delta.getValue(), 0.0), 7e-10);
+            Assertions.assertEquals(0.0, delta.getPartialDerivative(1), 3.0e-18);
         }
     }
 
@@ -670,9 +669,9 @@ public class IERSConventionsTest {
             AbsoluteDate d = switchDate.shiftedBy(dt);
             final double currentCorr = nutation.value(d)[2];
                 if (dt < 0) {
-                    Assert.assertEquals(0.0, currentCorr, 1.0e-20);
+                    Assertions.assertEquals(0.0, currentCorr, 1.0e-20);
                 } else {
-                    Assert.assertEquals(-7.87098e-12, currentCorr, 1.0e-15);
+                    Assertions.assertEquals(-7.87098e-12, currentCorr, 1.0e-15);
                 }
         }
     }
@@ -741,11 +740,11 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874248853173840, -0.12308592577174847,  0.22161565557764881 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 8.8e-11);
-            Assert.assertEquals(row[2] * Constants.ARC_SECONDS_TO_RADIANS,
+            Assertions.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 8.8e-11);
+            Assertions.assertEquals(row[2] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
                                 3.2e-14);
-            Assert.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
+            Assertions.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getYp(),
                                 8.2e-15);
         }
@@ -820,12 +819,12 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874235341010519,  0.00035460263868306, -0.12312252389660779,  0.22161364352515728 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 4.3e-8);
-            Assert.assertEquals(row[2], eopHistory.getLOD(date), 1.4e-7);
-            Assert.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
+            Assertions.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 4.3e-8);
+            Assertions.assertEquals(row[2], eopHistory.getLOD(date), 1.4e-7);
+            Assertions.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
                                 1.6e-10);
-            Assert.assertEquals(row[4] * Constants.ARC_SECONDS_TO_RADIANS,
+            Assertions.assertEquals(row[4] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getYp(),
                                 0.7e-10);
         }
@@ -900,12 +899,12 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874235341010519,  0.00035460263868306, -0.12312252389660779,  0.22161364352515728 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 2.5e-12);
-            Assert.assertEquals(row[2], eopHistory.getLOD(date), 4.3e-11);
-            Assert.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
+            Assertions.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 2.5e-12);
+            Assertions.assertEquals(row[2], eopHistory.getLOD(date), 4.3e-11);
+            Assertions.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
                                 1.6e-10);
-            Assert.assertEquals(row[4] * Constants.ARC_SECONDS_TO_RADIANS,
+            Assertions.assertEquals(row[4] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getYp(),
                                 0.7e-10);
         }
@@ -957,7 +956,7 @@ public class IERSConventionsTest {
             double rate    = gmstRate.value(date.shiftedBy(dt));
             maxRateError   = FastMath.max(maxRateError, FastMath.abs(rateRef - rate));
         }
-        Assert.assertEquals(0, maxRateError, tolerance);
+        Assertions.assertEquals(0, maxRateError, tolerance);
     }
 
     @Test
@@ -993,11 +992,11 @@ public class IERSConventionsTest {
         {
         double maxError = 0;
         for (double dt = 0; dt < span; dt += sampleStep) {
-            double rateDouble    = gmstRate.value(date.shiftedBy(dt));
-            double rateDecimal64 = gmstRate.value(new FieldAbsoluteDate<>(date, new Decimal64(dt))).doubleValue();
-            maxError = FastMath.max(maxError, FastMath.abs(rateDouble - rateDecimal64));
+            double rateDouble   = gmstRate.value(date.shiftedBy(dt));
+            double rateBinary64 = gmstRate.value(new FieldAbsoluteDate<>(date, new Binary64(dt))).doubleValue();
+            maxError = FastMath.max(maxError, FastMath.abs(rateDouble - rateBinary64));
         }
-        Assert.assertEquals(0, maxError, tolerance);
+        Assertions.assertEquals(0, maxError, tolerance);
     }
 
     @Test
@@ -1142,7 +1141,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2003.getSolidPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-25, 3.0e-26);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.5e-14, 6.9e-19);
     }
 
     @Test
@@ -1150,7 +1149,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2010.getSolidPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-25, 2.0e-26);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.5e-14, 6.9e-19);
     }
 
     @Test
@@ -1174,7 +1173,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2010.getOceanPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-26, 2.0e-27);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.9e-15, 8.9e-20);
     }
 
     private void checkScalarFunctionConsistency(final TimeScalarFunction function,
@@ -1202,8 +1201,8 @@ public class IERSConventionsTest {
             maxDerivativeError = FastMath.max(maxDerivativeError,
                                               FastMath.abs(yRef.getPartialDerivative(1) - y.getPartialDerivative(1)));
         }
-        Assert.assertEquals(0, maxValueError,      valueTolerance);
-        Assert.assertEquals(0, maxDerivativeError, derivativeTolerance);
+        Assertions.assertEquals(0, maxValueError,      valueTolerance);
+        Assertions.assertEquals(0, maxDerivativeError, derivativeTolerance);
 
     }
 
@@ -1227,8 +1226,8 @@ public class IERSConventionsTest {
             DerivativeStructure dsdt = factory.variable(0, dt);
             DerivativeStructure[] yRef = differentiated.value(dsdt);
             DerivativeStructure[] y    = function.value(dsDate.shiftedBy(dsdt));
-            Assert.assertEquals(dimension, yRef.length);
-            Assert.assertEquals(dimension, y.length);
+            Assertions.assertEquals(dimension, yRef.length);
+            Assertions.assertEquals(dimension, y.length);
             for (int i = 0; i < dimension; ++i) {
                 maxValueError      = FastMath.max(maxValueError,
                                                   FastMath.abs(yRef[i].getValue() - y[i].getValue()));
@@ -1236,12 +1235,12 @@ public class IERSConventionsTest {
                                                   FastMath.abs(yRef[i].getPartialDerivative(1) - y[i].getPartialDerivative(1)));
             }
         }
-        Assert.assertEquals(0, maxValueError,      valueTolerance);
-        Assert.assertEquals(0, maxDerivativeError, derivativeTolerance);
+        Assertions.assertEquals(0, maxValueError,      valueTolerance);
+        Assertions.assertEquals(0, maxDerivativeError, derivativeTolerance);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }

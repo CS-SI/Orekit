@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,9 +22,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -37,10 +37,16 @@ import org.orekit.utils.Constants;
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected gravity field file.</p>
  *
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Fabien Maussion
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
+
+    /** Start degree and order for coefficients container. */
+    private static final int START_DEGREE_ORDER = 120;
 
     /** Flag for using WGS84 values for equatorial radius and central attraction coefficient. */
     private final boolean useWgs84Coefficients;
@@ -64,7 +70,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      */
     public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed,
                            final boolean useWgs84Coefficients) {
-        super(supportedNames, missingCoefficientsAllowed);
+        super(supportedNames, missingCoefficientsAllowed, null);
         this.useWgs84Coefficients = useWgs84Coefficients;
     }
 
@@ -95,52 +101,69 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             setTideSystem(TideSystem.TIDE_FREE);
         }
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        final List<List<Double>> c = new ArrayList<List<Double>>();
-        final List<List<Double>> s = new ArrayList<List<Double>>();
+        Container container = new Container(START_DEGREE_ORDER, START_DEGREE_ORDER,
+                                            missingCoefficientsAllowed() ? 0.0 : Double.NaN);
         boolean okFields = true;
-        for (String line = r.readLine(); okFields && line != null; line = r.readLine()) {
-            if (line.length() >= 15) {
+        int       maxDegree  = -1;
+        int       maxOrder   = -1;
+        int lineNumber = 0;
+        String line = null;
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            for (line = r.readLine(); okFields && line != null; line = r.readLine()) {
+                lineNumber++;
+                if (line.length() >= 15) {
 
-                // get the fields defining the current the potential terms
-                final String[] tab = line.trim().split("\\s+");
-                if (tab.length != 6) {
-                    okFields = false;
-                }
-
-                final int i = Integer.parseInt(tab[0]);
-                final int j = Integer.parseInt(tab[1]);
-                if (i <= getMaxParseDegree() && j <= getMaxParseOrder()) {
-                    for (int k = 0; k <= i; ++k) {
-                        extendListOfLists(c, k, FastMath.min(k, getMaxParseOrder()),
-                                          missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-                        extendListOfLists(s, k, FastMath.min(k, getMaxParseOrder()),
-                                          missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                    // get the fields defining the current potential terms
+                    final String[] tab = SEPARATOR.split(line.trim());
+                    if (tab.length != 6) {
+                        okFields = false;
                     }
-                    parseCoefficient(tab[2], c, i, j, "C", name);
-                    parseCoefficient(tab[3], s, i, j, "S", name);
-                }
 
+                    final int i = Integer.parseInt(tab[0]);
+                    final int j = Integer.parseInt(tab[1]);
+                    if (i < 0 || j < 0) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, name, line);
+                    }
+
+                    if (i <= getMaxParseDegree() && j <= getMaxParseOrder()) {
+
+                        while (!container.flattener.withinRange(i, j)) {
+                            // we need to resize the container
+                            container = container.resize(container.flattener.getDegree() * 2,
+                                                         container.flattener.getOrder() * 2);
+                        }
+
+                        parseCoefficient(tab[2], container.flattener, container.c, i, j, "C", name);
+                        parseCoefficient(tab[3], container.flattener, container.s, i, j, "S", name);
+                        maxDegree = FastMath.max(maxDegree, i);
+                        maxOrder  = FastMath.max(maxOrder,  j);
+
+                    }
+
+                }
             }
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
 
         if (missingCoefficientsAllowed() && getMaxParseDegree() > 0 && getMaxParseOrder() > 0) {
             // ensure at least the (0, 0) element is properly set
-            extendListOfLists(c, 0, 0, 0.0);
-            extendListOfLists(s, 0, 0, 0.0);
-            if (Precision.equals(c.get(0).get(0), 0.0, 0)) {
-                c.get(0).set(0, 1.0);
+            if (Precision.equals(container.c[container.flattener.index(0, 0)], 0.0, 0)) {
+                container.c[container.flattener.index(0, 0)] = 1.0;
             }
         }
 
-        if ((!okFields) || (c.size() < 1)) {
+        if (!(okFields && maxDegree >= 0)) {
             String loaderName = getClass().getName();
             loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
             throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
                                       name, loaderName);
         }
 
-        setRawCoefficients(true, toArray(c), toArray(s), name);
+        container = container.resize(maxDegree, maxOrder);
+        setRawCoefficients(true, container.flattener, container.c, container.s, name);
         setReadComplete(true);
 
     }
@@ -159,7 +182,60 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      */
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
                                                      final int degree, final int order) {
-        return getConstantProvider(wantNormalized, degree, order);
+        return getBaseProvider(wantNormalized, degree, order);
+    }
+
+    /** Temporary container for reading coefficients.
+     * @since 11.1
+     */
+    private static class Container {
+
+        /** Converter from triangular to flat form. */
+        private final Flattener flattener;
+
+        /** Cosine coefficients. */
+        private final double[] c;
+
+        /** Sine coefficients. */
+        private final double[] s;
+
+        /** Initial value for coefficients. */
+        private final double initialValue;
+
+        /** Build a container with given degree and order.
+         * @param degree degree of the container
+         * @param order order of the container
+         * @param initialValue initial value for coefficients
+         */
+        Container(final int degree, final int order, final double initialValue) {
+            this.flattener    = new Flattener(degree, order);
+            this.c            = new double[flattener.arraySize()];
+            this.s            = new double[flattener.arraySize()];
+            this.initialValue = initialValue;
+            Arrays.fill(c, initialValue);
+            Arrays.fill(s, initialValue);
+        }
+
+        /** Build a resized container.
+         * @param degree degree of the resized container
+         * @param order order of the resized container
+         * @return resized container
+         */
+        Container resize(final int degree, final int order) {
+            final Container resized = new Container(degree, order, initialValue);
+            for (int n = 0; n <= degree; ++n) {
+                for (int m = 0; m <= FastMath.min(n, order); ++m) {
+                    if (flattener.withinRange(n, m)) {
+                        final int rIndex = resized.flattener.index(n, m);
+                        final int index  = flattener.index(n, m);
+                        resized.c[rIndex] = c[index];
+                        resized.s[rIndex] = s[index];
+                    }
+                }
+            }
+            return resized;
+        }
+
     }
 
 }

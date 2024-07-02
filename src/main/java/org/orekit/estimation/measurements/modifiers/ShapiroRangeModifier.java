@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.utils.ParameterDriver;
@@ -49,8 +49,8 @@ public class ShapiroRangeModifier extends AbstractShapiroBaseModifier implements
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Range> estimated) {
-        doModify(estimated);
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
+        doModify(this, estimated);
     }
 
 }

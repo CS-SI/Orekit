@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,28 +17,26 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
-import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeStamped;
 
 /** Position - Velocity - Acceleration linked to a date and a frame.
  */
 public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
-    implements TimeStamped, TimeInterpolable<AbsolutePVCoordinates>,
-               Serializable, PVCoordinatesProvider {
+    implements TimeStamped, Serializable, PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20150824L;
@@ -190,7 +188,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         this.frame = absPv1.getFrame();
     }
 
-    /** Builds a AbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a AbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.
@@ -198,9 +196,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param frame the frame in which the parameters are defined
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
-            final FieldVector3D<DerivativeStructure> p) {
+    public <U extends Derivative<U>> AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
+                                                           final FieldVector3D<U> p) {
         super(date, p);
         this.frame = frame;
     }
@@ -244,6 +243,12 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     public PVCoordinatesProvider toTaylorProvider() {
         return new PVCoordinatesProvider() {
             /** {@inheritDoc} */
+            public Vector3D getPosition(final AbsoluteDate d,  final Frame f) {
+                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
+                final StaticTransform          transform = frame.getStaticTransformTo(f, d);
+                return transform.transformPosition(shifted.getPosition());
+            }
+            /** {@inheritDoc} */
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
                 final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
                 final Transform                transform = frame.getTransformTo(f, d);
@@ -264,6 +269,24 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
         return this;
+    }
+
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position
+     * @see #getPVCoordinates(Frame)
+     * @since 12.0
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        // If output frame requested is the same as definition frame,
+        // Position vector is returned directly
+        if (outputFrame == frame) {
+            return getPosition();
+        }
+
+        // Else, position vector is transformed to output frame
+        final StaticTransform t = frame.getStaticTransformTo(outputFrame, getDate());
+        return t.transformPosition(getPosition());
     }
 
     /** Get the TimeStampedPVCoordinates in a specified frame.
@@ -289,91 +312,16 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
     }
 
-    @Override
-    public AbsolutePVCoordinates interpolate(final AbsoluteDate date, final Stream<AbsolutePVCoordinates> sample) {
-        return interpolate(getFrame(), date, CartesianDerivativesFilter.USE_PVA, sample);
-    }
-
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param frame frame for the interpolted instance
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @return a new position-velocity, interpolated at specified date
-     * @exception OrekitIllegalArgumentException if some elements in the sample do not
-     * have the same defining frame as other
-     */
-    public static AbsolutePVCoordinates interpolate(final Frame frame, final AbsoluteDate date,
-                                                    final CartesianDerivativesFilter filter,
-                                                    final Stream<AbsolutePVCoordinates> sample) {
-
-
-        // set up an interpolator taking derivatives into account
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
-
-        // add sample points
-        switch (filter) {
-            case USE_P :
-                // populate sample with position data, ignoring velocity
-                sample.forEach(pv -> {
-                    final Vector3D position = pv.getPosition();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray());
-                });
-                break;
-            case USE_PV :
-                // populate sample with position and velocity data
-                sample.forEach(pv -> {
-                    final Vector3D position = pv.getPosition();
-                    final Vector3D velocity = pv.getVelocity();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray());
-                });
-                break;
-            case USE_PVA :
-                // populate sample with position, velocity and acceleration data
-                sample.forEach(pv -> {
-                    final Vector3D position     = pv.getPosition();
-                    final Vector3D velocity     = pv.getVelocity();
-                    final Vector3D acceleration = pv.getAcceleration();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray(), acceleration.toArray());
-                });
-                break;
-            default :
-                // this should never happen
-                throw new OrekitInternalError(null);
-        }
-
-        // interpolate
-        final double[][] p = interpolator.derivatives(0.0, 2);
-
-        // build a new interpolated instance
-        return new AbsolutePVCoordinates(frame, date, new Vector3D(p[0]), new Vector3D(p[1]), new Vector3D(p[2]));
-
-    }
-
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
@@ -391,8 +339,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         private DTO(final AbsolutePVCoordinates absPva) {
 
             // decompose date
-            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(j2000Epoch));
+            final double offset = absPva.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             this.d = new double[] {
                 epoch, offset,
@@ -408,8 +358,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
          * @return replacement {@link AbsolutePVCoordinates}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             return new AbsolutePVCoordinates(frame,
-                                             AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              new Vector3D(d[2], d[3], d[ 4]),
                                              new Vector3D(d[5], d[6], d[ 7]),
                                              new Vector3D(d[8], d[9], d[10]));

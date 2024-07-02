@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.TreeMap;
+import java.util.SortedMap;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
@@ -29,8 +29,9 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.
  *  L<sub>n</sub><sup>s</sup>(γ) = ( R / a )<sup>n</sup>V<sub>ns</sub>Q<sup>ns</sup>(γ)
  *  </p>
  *  @author Lucian Barbulescu
+ * @param <T> type of the field elements
  */
-public class FieldLnsCoefficients <T extends RealFieldElement<T>> {
+public class FieldLnsCoefficients <T extends CalculusFieldElement<T>> {
 
     /** The coefficients L<sub>n</sub><sup>s</sup>(γ). */
     private final T[][] lns;
@@ -48,7 +49,7 @@ public class FieldLnsCoefficients <T extends RealFieldElement<T>> {
     * @param field field used by default
     */
     public FieldLnsCoefficients(final int nMax, final int sMax,
-                                final T[][] Qns, final TreeMap<NSKey, Double> Vns, final T roa,
+                                final T[][] Qns, final SortedMap<NSKey, Double> Vns, final T roa,
                                 final Field<T> field) {
         final T zero      = field.getZero();
         final int rows    = nMax + 1;
@@ -57,7 +58,7 @@ public class FieldLnsCoefficients <T extends RealFieldElement<T>> {
         this.dlns         = MathArrays.buildArray(field, rows, columns);
 
         final T[] roaPow = MathArrays.buildArray(field, rows);
-        roaPow[0] = zero.add(1.);
+        roaPow[0] = zero.newInstance(1.);
         for (int i = 1; i <= nMax; i++) {
             roaPow[i] = roa.multiply(roaPow[i - 1]);
         }

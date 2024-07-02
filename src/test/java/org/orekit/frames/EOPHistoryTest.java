@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,17 +16,11 @@
  */
 package org.orekit.frames;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -36,6 +30,12 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 
 public class EOPHistoryTest {
 
@@ -43,7 +43,7 @@ public class EOPHistoryTest {
     public void testRegular() {
         AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
         double dt = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getUT1MinusUTC(date);
-        Assert.assertEquals(-0.3906070, dt, 1.0e-10);
+        Assertions.assertEquals(-0.3906070, dt, 1.0e-10);
     }
 
     @Test
@@ -54,11 +54,11 @@ public class EOPHistoryTest {
             AbsoluteDate date = endDate.shiftedBy(t);
             double dt = history.getUT1MinusUTC(date);
             if (t <= 0) {
-                Assert.assertTrue(dt < 0.29236);
-                Assert.assertTrue(dt > 0.29233);
+                Assertions.assertTrue(dt < 0.29236);
+                Assertions.assertTrue(dt > 0.29233);
             } else {
                 // no more data after end date
-                Assert.assertEquals(0.0, dt, 1.0e-10);
+                Assertions.assertEquals(0.0, dt, 1.0e-10);
             }
         }
     }
@@ -66,17 +66,17 @@ public class EOPHistoryTest {
     @Test
     public void testFieldOutOfRange() {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-        FieldAbsoluteDate<Decimal64> endDate = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        FieldAbsoluteDate<Binary64> endDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                        2006, 3, 5, TimeScalesFactory.getUTC());
         for (double t = -1000; t < 1000 ; t += 3) {
-            FieldAbsoluteDate<Decimal64> date = endDate.shiftedBy(t);
-            Decimal64 dt = history.getUT1MinusUTC(date);
+            FieldAbsoluteDate<Binary64> date = endDate.shiftedBy(t);
+            Binary64 dt = history.getUT1MinusUTC(date);
             if (t <= 0) {
-                Assert.assertTrue(dt.getReal() < 0.29236);
-                Assert.assertTrue(dt.getReal() > 0.29233);
+                Assertions.assertTrue(dt.getReal() < 0.29236);
+                Assertions.assertTrue(dt.getReal() > 0.29233);
             } else {
                 // no more data after end date
-                Assert.assertEquals(0.0, dt.getReal(), 1.0e-10);
+                Assertions.assertEquals(0.0, dt.getReal(), 1.0e-10);
             }
         }
     }
@@ -87,9 +87,9 @@ public class EOPHistoryTest {
             FramesFactory.setEOPContinuityThreshold(0.5 * Constants.JULIAN_DAY);
             AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getUT1MinusUTC(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
+            Assertions.assertEquals(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP,
                                 oe.getSpecifier());
         }
     }
@@ -102,9 +102,9 @@ public class EOPHistoryTest {
             final AbsoluteDate date = endLeap.shiftedBy(dt);
             double dtu1 = history.getUT1MinusUTC(date);
             if (dt <= 0) {
-                Assert.assertEquals(-0.6612, dtu1, 3.0e-5);
+                Assertions.assertEquals(-0.6612, dtu1, 3.0e-5);
             } else {
-                Assert.assertEquals(0.3388, dtu1, 3.0e-5);
+                Assertions.assertEquals(0.3388, dtu1, 3.0e-5);
             }
         }
     }
@@ -112,15 +112,15 @@ public class EOPHistoryTest {
     @Test
     public void testFieldUTCLeap() {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-        FieldAbsoluteDate<Decimal64> endLeap = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        FieldAbsoluteDate<Binary64> endLeap = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                        2006, 1, 1, TimeScalesFactory.getUTC());
         for (double dt = -200; dt < 200; dt += 3) {
-            final FieldAbsoluteDate<Decimal64> date = endLeap.shiftedBy(dt);
-            Decimal64 dtu1 = history.getUT1MinusUTC(date);
+            final FieldAbsoluteDate<Binary64> date = endLeap.shiftedBy(dt);
+            Binary64 dtu1 = history.getUT1MinusUTC(date);
             if (dt <= 0) {
-                Assert.assertEquals(-0.6612, dtu1.getReal(), 3.0e-5);
+                Assertions.assertEquals(-0.6612, dtu1.getReal(), 3.0e-5);
             } else {
-                Assert.assertEquals(0.3388, dtu1.getReal(), 3.0e-5);
+                Assertions.assertEquals(0.3388, dtu1.getReal(), 3.0e-5);
             }
         }
     }
@@ -133,28 +133,28 @@ public class EOPHistoryTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(history);
 
-        Assert.assertTrue(bos.size() > 150000);
-        Assert.assertTrue(bos.size() < 155000);
+        Assertions.assertTrue(bos.size() > 135000);
+        Assertions.assertTrue(bos.size() < 140000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         EOPHistory deserialized  = (EOPHistory) ois.readObject();
-        Assert.assertEquals(history.getStartDate(), deserialized.getStartDate());
-        Assert.assertEquals(history.getEndDate(), deserialized.getEndDate());
-        Assert.assertEquals(history.getEntries().size(), deserialized.getEntries().size());
+        Assertions.assertEquals(history.getStartDate(), deserialized.getStartDate());
+        Assertions.assertEquals(history.getEndDate(), deserialized.getEndDate());
+        Assertions.assertEquals(history.getEntries().size(), deserialized.getEntries().size());
         for (int i = 0; i < history.getEntries().size(); ++i) {
             EOPEntry e1 = history.getEntries().get(i);
             EOPEntry e2 = deserialized.getEntries().get(i);
-            Assert.assertEquals(e1.getMjd(),         e2.getMjd());
-            Assert.assertEquals(e1.getDate(),        e2.getDate());
-            Assert.assertEquals(e1.getUT1MinusUTC(), e2.getUT1MinusUTC(), 1.0e-10);
-            Assert.assertEquals(e1.getLOD(),         e2.getLOD(),         1.0e-10);
-            Assert.assertEquals(e1.getDdEps(),       e2.getDdEps(),       1.0e-10);
-            Assert.assertEquals(e1.getDdPsi(),       e2.getDdPsi(),       1.0e-10);
-            Assert.assertEquals(e1.getDx(),          e2.getDx(),          1.0e-10);
-            Assert.assertEquals(e1.getDy(),          e2.getDy(),          1.0e-10);
-            Assert.assertEquals(e1.getX(),           e2.getX(),           1.0e-10);
-            Assert.assertEquals(e1.getY(),           e2.getY(),           1.0e-10);
+            Assertions.assertEquals(e1.getMjd(),         e2.getMjd());
+            Assertions.assertEquals(e1.getDate(),        e2.getDate());
+            Assertions.assertEquals(e1.getUT1MinusUTC(), e2.getUT1MinusUTC(), 1.0e-10);
+            Assertions.assertEquals(e1.getLOD(),         e2.getLOD(),         1.0e-10);
+            Assertions.assertEquals(e1.getDdEps(),       e2.getDdEps(),       1.0e-10);
+            Assertions.assertEquals(e1.getDdPsi(),       e2.getDdPsi(),       1.0e-10);
+            Assertions.assertEquals(e1.getDx(),          e2.getDx(),          1.0e-10);
+            Assertions.assertEquals(e1.getDy(),          e2.getDy(),          1.0e-10);
+            Assertions.assertEquals(e1.getX(),           e2.getX(),           1.0e-10);
+            Assertions.assertEquals(e1.getY(),           e2.getY(),           1.0e-10);
         }
 
     }
@@ -163,7 +163,7 @@ public class EOPHistoryTest {
     public void testTidalInterpolationEffects() throws IOException, OrekitException {
 
         final EOPHistory h1 = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
-        final EOPHistory h2 = h1.getNonInterpolatingEOPHistory();
+        final EOPHistory h2 = h1.getEOPHistoryWithoutCachedTidalCorrection();
         final AbsoluteDate date0 = new AbsoluteDate(2004, 8, 16, 20, 0, 0, TimeScalesFactory.getUTC());
 
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 10) {
@@ -174,15 +174,15 @@ public class EOPHistoryTest {
             final PoleCorrection p2 = h2.getPoleCorrection(date);
             final double interpolationErrorXp  = (p1.getXp() - p2.getXp()) / Constants.ARC_SECONDS_TO_RADIANS;
             final double interpolationErrorYp  = (p1.getYp() - p2.getYp()) / Constants.ARC_SECONDS_TO_RADIANS;
-            Assert.assertEquals(0.0, interpolationErrorUT1, 1.2e-10); // seconds
-            Assert.assertEquals(0.0, interpolationErrorLOD, 1.5e-9);  // seconds
-            Assert.assertEquals(0.0, interpolationErrorXp,  2.3e-9);  // arcseconds
-            Assert.assertEquals(0.0, interpolationErrorYp,  1.5e-9);  // arcseconds
+            Assertions.assertEquals(0.0, interpolationErrorUT1, 1.2e-10); // seconds
+            Assertions.assertEquals(0.0, interpolationErrorLOD, 1.5e-9);  // seconds
+            Assertions.assertEquals(0.0, interpolationErrorXp,  2.3e-9);  // arcseconds
+            Assertions.assertEquals(0.0, interpolationErrorYp,  1.5e-9);  // arcseconds
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,17 +16,16 @@
  */
 package org.orekit.forces.radiation;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
@@ -50,8 +49,8 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
      */
     private final double SCALE = FastMath.scalb(1.0, -3);
 
-    /** Driver for reflection coefficient. */
-    private final ParameterDriver reflectionParameterDriver;
+    /** Drivers for radiation coefficient. */
+    private final List<ParameterDriver> radiationParametersDrivers;
 
     /** Cross section (m²). */
     private final double crossSection;
@@ -72,16 +71,19 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     */
     public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr,
                                                final double crMin, final double crMax) {
-        try {
-            // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
-            // the single coefficient may be arbitrary, and even negative
-            reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                            cr, SCALE,
-                                                            crMin, crMax);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
+        // the single coefficient may be arbitrary, and even negative
+        // the REFLECTION_COEFFICIENT parameter should be sufficient, but GLOBAL_RADIATION_FACTOR
+        // was added as of 12.0 for consistency with BoxAndSolarArraySpacecraft
+        // that only has a global multiplicatof factor, hence allowing this name
+        // to be used for both models
+        this.radiationParametersDrivers = new ArrayList<>(2);
+        radiationParametersDrivers.add(new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
+                                                           1.0, SCALE,
+                                                           0.0, Double.POSITIVE_INFINITY));
+        radiationParametersDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                           cr, SCALE,
+                                                           crMin, crMax));
 
         this.crossSection = crossSection;
 
@@ -89,31 +91,27 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getRadiationParametersDrivers() {
-        return new ParameterDriver[] {
-            reflectionParameterDriver
-        };
+    public List<ParameterDriver> getRadiationParametersDrivers() {
+        return Collections.unmodifiableList(radiationParametersDrivers);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                  final Rotation rotation, final double mass, final Vector3D flux,
+    public Vector3D radiationPressureAcceleration(final SpacecraftState state, final Vector3D flux,
                                                   final double[] parameters) {
-        final double cr = parameters[0];
-        return new Vector3D(crossSection * cr / mass, flux);
+        final double cr = parameters[1];
+        return new Vector3D(parameters[0] * crossSection * cr / state.getMass(), flux);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
-        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
-                                      final FieldVector3D<T> position,
-                                      final FieldRotation<T> rotation, final T mass,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T>
+        radiationPressureAcceleration(final FieldSpacecraftState<T> state,
                                       final FieldVector3D<T> flux,
                                       final T[] parameters) {
-        final T cr = parameters[0];
-        return new FieldVector3D<>(mass.reciprocal().multiply(crossSection).multiply(cr), flux);
+        final T cr = parameters[1];
+        return new FieldVector3D<>(state.getMass().reciprocal().multiply(parameters[0]).multiply(crossSection).multiply(cr),
+                                   flux);
 
     }
 }

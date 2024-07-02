@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,20 +18,21 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UT1Scale;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** Terrestrial Intermediate Reference Frame.
@@ -50,19 +51,22 @@ class TIRFProvider implements EOPBasedTransformProvider {
     private final EOPHistory eopHistory;
 
     /** UT1 time scale. */
-    private final transient UT1Scale ut1;
+    private final transient TimeScale ut1;
 
     /** ERA function. */
     private final transient TimeScalarFunction era;
 
     /** Simple constructor.
      * @param eopHistory EOP history
+     * @param ut1 the UT1 time scale.
      */
-    protected TIRFProvider(final EOPHistory eopHistory) {
+    protected TIRFProvider(final EOPHistory eopHistory, final TimeScale ut1) {
 
-        this.ut1        = TimeScalesFactory.getUT1(eopHistory);
+        this.ut1        = ut1;
         this.eopHistory = eopHistory;
-        this.era        = eopHistory.getConventions().getEarthOrientationAngleFunction(ut1);
+        this.era        = eopHistory.getConventions().getEarthOrientationAngleFunction(
+                ut1,
+                eopHistory.getTimeScales().getTAI());
 
     }
 
@@ -75,45 +79,97 @@ class TIRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public TIRFProvider getNonInterpolatingProvider() {
-        return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
+        return new TIRFProvider(eopHistory.getEOPHistoryWithoutCachedTidalCorrection(), ut1);
     }
 
     /** {@inheritDoc} */
     @Override
     public Transform getTransform(final AbsoluteDate date) {
-
-        // compute proper rotation
-        final double correctedERA = era.value(date);
-
-        // compute true angular rotation of Earth, in rad/s
-        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
-        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
-        final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
-
-        // set up the transform from parent CIRF
-        final Rotation rotation     = new Rotation(Vector3D.PLUS_K, correctedERA, RotationConvention.FRAME_TRANSFORM);
-        return new Transform(date, rotation, rotationRate);
-
+        return new Transform(date, getRotation(date), getRotationRate(date));
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+        return KinematicTransform.of(date, getRotation(date), getRotationRate(date));
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        return StaticTransform.of(date, getRotation(date));
+    }
+
+    /** Form rotation to parent CIRF.
+     * @param date transform date
+     * @return rotation to parent at date
+     * @since 12.1
+     */
+    private Rotation getRotation(final AbsoluteDate date) {
+        // compute proper rotation
+        final double correctedERA = era.value(date);
+        // set up the transform from parent CIRF
+        return new Rotation(Vector3D.PLUS_K, correctedERA, RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /** Form rotation rate w.r.t. parent CIRF.
+     * @param date transform date
+     * @return rotation rate at date
+     * @since 12.1
+     */
+    private Vector3D getRotationRate(final AbsoluteDate date) {
+        // compute true angular rotation of Earth, in rad/s
+        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
+        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
+        return new Vector3D(omp, Vector3D.PLUS_K);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        return new FieldTransform<>(date, getRotation(date), getRotationRate(date));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+        return FieldKinematicTransform.of(date, getRotation(date), getRotationRate(date));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        return FieldStaticTransform.of(date, getRotation(date));
+    }
+
+    /** Form rotation to parent CIRF.
+     * @param <T> type of the elements
+     * @param date transform date
+     * @return rotation to parent at date
+     * @since 12.1
+     */
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
         // compute proper rotation
         final T correctedERA = era.value(date);
 
+        // set up the transform from parent CIRF
+        return new FieldRotation<>(
+                FieldVector3D.getPlusK(date.getField()),
+                correctedERA,
+                RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /** Form rotation rate w.r.t. parent CIRF.
+     * @param <T> type of the elements
+     * @param date transform date
+     * @return rotation rate at date
+     * @since 12.1
+     */
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> getRotationRate(final FieldAbsoluteDate<T> date) {
         // compute true angular rotation of Earth, in rad/s
         final T lod = (eopHistory == null) ? date.getField().getZero() : eopHistory.getLOD(date);
         final T omp = lod.divide(Constants.JULIAN_DAY).subtract(1).multiply(-AVE);
-        final FieldVector3D<T> rotationRate = new FieldVector3D<>(omp, Vector3D.PLUS_K);
-
-        // set up the transform from parent CIRF
-        final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
-                                                              correctedERA,
-                                                              RotationConvention.FRAME_TRANSFORM);
-        return new FieldTransform<>(date, rotation, rotationRate);
-
+        return new FieldVector3D<>(omp, Vector3D.PLUS_K);
     }
 
     /** Get the Earth Rotation Angle at the current date.
@@ -130,11 +186,13 @@ class TIRFProvider implements EOPBasedTransformProvider {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(eopHistory);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -156,7 +214,8 @@ class TIRFProvider implements EOPBasedTransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new TIRFProvider(eopHistory);
+                return new TIRFProvider(eopHistory,
+                        DataContext.getDefault().getTimeScales().getUT1(eopHistory));
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

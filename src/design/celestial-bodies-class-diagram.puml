@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,24 +25,20 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
-
-  package data #DDEBD8 {
-    interface DataLoader
-  }
 
   package frames #DDEBD8 {
     class Frame
   }
 
   package utils #DDEBD8 {
-    interface PVCoordinatesProvider
+    interface ExtendedPVCoordinatesProvider
   }
 
   package bodies #DDEBD8 {
     interface CelestialBody {
-      +Frame getFrame()
       +Frame getInertiallyOrientedFrame()
       +Frame getBodyOrientedFrame()
       +String getName()
@@ -74,26 +70,28 @@
 
     interface IAUPole {
       +Vector3D getPole(AbsoluteDate date)
+      +Vector3D getNode(AbsoluteDate date)
       +double getPrimeMeridianAngle(AbsoluteDate date)
     }
 
-    class IAUPoleFactory {
+    abstract class PredefinedIAUPoles {
       +IAUPole getIAUPole(EphemerisType body)
     }
 
-    abstract class AbstractCelestialBody
-
-    DataLoader           <|.. CelestialBodyLoader
-    CelestialBodyLoader  <|-- JPLEphemeridesLoader
+    CelestialBodyLoader     <|..         JPLEphemeridesLoader
     CelestialBody "*"       <-left-o "1" CelestialBodyFactory
-    CelestialBodyFactory "1" o--> "*" CelestialBodyLoader
-    PVCoordinatesProvider <|.. CelestialBody
-    CelestialBody         -up-> Frame
-    CelestialBody         <|-- AbstractCelestialBody
-    IAUPole "*" <-left-* "1" IAUPoleFactory  : creates
-    AbstractCelestialBody "1" *--> IAUPole
-    AbstractCelestialBody <-left- JPLEphemeridesLoader : creates
+    CelestialBodyFactory "1" o--> "*"    CelestialBodyLoader
+    ExtendedPVCoordinatesProvider <|--   CelestialBody
+    CelestialBody         -up->          Frame
+    IAUPole "*" <-left-* "1"             PredefinedIAUPoles  : creates
+    CelestialBody "1" *-->               IAUPole
+    CelestialBody <-left-                JPLEphemeridesLoader : creates
 
+  }
+
+  package data #DDEBD8 {
+    abstract class AbstractSelfFeedingLoader
+    JPLEphemeridesLoader --|> AbstractSelfFeedingLoader
   }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,46 +16,51 @@
  */
 package org.orekit.orbits;
 
-import static org.orekit.OrekitMatchers.relativelyCloseTo;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
+import java.util.Objects;
+import java.util.function.Function;
 
-public class FieldEquinoctialOrbitTest {
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
+
+class FieldEquinoctialOrbitTest {
 
     // Body mu
     private double mu;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         Utils.setDataRoot("regular-data");
@@ -65,132 +70,269 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test
-    public void testEquinoctialToEquinoctialEll() {
-        doTestEquinoctialToEquinoctialEll(Decimal64Field.getInstance());
+    void testEquinoctialToEquinoctialEll() {
+        doTestEquinoctialToEquinoctialEll(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEquinoctialToEquinoctialCirc() {
-        doTestEquinoctialToEquinoctialCirc(Decimal64Field.getInstance());
+    void testEquinoctialToEquinoctialCirc() {
+        doTestEquinoctialToEquinoctialCirc(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEquinoctialToCartesian() {
-        doTestEquinoctialToCartesian(Decimal64Field.getInstance());
+    void testEquinoctialToCartesian() {
+        doTestEquinoctialToCartesian(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEquinoctialToKeplerian() {
-        doTestEquinoctialToKeplerian(Decimal64Field.getInstance());
+    void testEquinoctialToKeplerian() {
+        doTestEquinoctialToKeplerian(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNumericalIssue25() {
-        doTestNumericalIssue25(Decimal64Field.getInstance());
+    void testNumericalIssue25() {
+        doTestNumericalIssue25(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAnomaly() {
-        doTestAnomaly(Decimal64Field.getInstance());
+    void testAnomaly() {
+        doTestAnomaly(Binary64Field.getInstance());
     }
 
     @Test
-    public void testPositionVelocityNorms() {
-        doTestPositionVelocityNorms(Decimal64Field.getInstance());
+    void testPositionVelocityNorms() {
+        doTestPositionVelocityNorms(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGeometry() {
-        doTestGeometry(Decimal64Field.getInstance());
+    void testGeometry() {
+        doTestGeometry(Binary64Field.getInstance());
     }
 
     @Test
-    public void testRadiusOfCurvature() {
-        doTestRadiusOfCurvature(Decimal64Field.getInstance());
+    void testRadiusOfCurvature() {
+        doTestRadiusOfCurvature(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSymmetry() {
-        doTestSymmetry(Decimal64Field.getInstance());
+    void testSymmetry() {
+        doTestSymmetry(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJacobianReference() {
-        doTestJacobianReference(Decimal64Field.getInstance());
+    void testJacobianReference() {
+        doTestJacobianReference(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJacobianFinitedifferences() {
-        doTestJacobianFinitedifferences(Decimal64Field.getInstance());
+    void testJacobianFinitedifferences() {
+        doTestJacobianFinitedifferences(Binary64Field.getInstance());
     }
 
     @Test
-    public void testInterpolationWithDerivatives() {
-        doTestInterpolation(Decimal64Field.getInstance(), true,
-                            397, 1.28e-8,
-                            610, 3.95e-6,
-                            4870, 115);
+    void testHyperbolic1() {
+        doTestHyperbolic1(Binary64Field.getInstance());
     }
 
     @Test
-    public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(Decimal64Field.getInstance(), false,
-                            397, 0.0372,
-                            610.0, 1.23,
-                            4879, 8871);
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testHyperbolic() {
-        doTestHyperbolic(Decimal64Field.getInstance());
+    void testHyperbolic2() {
+        doTestHyperbolic2(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToOrbitWithoutDerivatives() {
-        doTestToOrbitWithoutDerivatives(Decimal64Field.getInstance());
+    void testToOrbitWithoutDerivatives() {
+        doTestToOrbitWithoutDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToOrbitWithDerivatives() {
-        doTestToOrbitWithDerivatives(Decimal64Field.getInstance());
+    void testToOrbitWithDerivatives() {
+        doTestToOrbitWithDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() {
-        doTestDerivativesConversionSymmetry(Decimal64Field.getInstance());
+    void testDerivativesConversionSymmetry() {
+        doTestDerivativesConversionSymmetry(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToString() {
-        doTestToString(Decimal64Field.getInstance());
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testNonInertialFrame() {
-        doTestNonInertialFrame(Decimal64Field.getInstance());
+    void testToString() {
+        doTestToString(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNonKeplerianDerivatives() {
-        doTestNonKeplerianDerivatives(Decimal64Field.getInstance());
+    void testNonInertialFrame() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> doTestNonInertialFrame(Binary64Field.getInstance()));
     }
 
     @Test
-    public void testPositionAngleDerivatives() {
-        doTestPositionAngleDerivatives(Decimal64Field.getInstance());
+    void testNonKeplerianDerivatives() {
+        doTestNonKeplerianDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEquatorialRetrograde() {
-        doTestEquatorialRetrograde(Decimal64Field.getInstance());
+    void testPositionAngleDerivatives() {
+        doTestPositionAngleDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() {
-        doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
+    void testEquatorialRetrograde() {
+        doTestEquatorialRetrograde(Binary64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquinoctialToEquinoctialEll(Field<T> field) {
+    @Test
+    void testCopyNonKeplerianAcceleration() {
+        doTestCopyNonKeplerianAcceleration(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testNormalize() {
+        doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testRemoveRates() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final EquinoctialOrbit expectedOrbit = createOrbitTestFromEquinoctialOrbit(true);
+        final FieldEquinoctialOrbit<Complex> fieldOrbit = new FieldEquinoctialOrbit<>(field, expectedOrbit);
+        // WHEN
+        final FieldEquinoctialOrbit<Complex> actualFieldOrbit = fieldOrbit.removeRates();
+        // THEN
+        Assertions.assertFalse(actualFieldOrbit.hasRates());
+        Assertions.assertTrue(Objects.isNull(actualFieldOrbit.getADot()));
+        Assertions.assertEquals(fieldOrbit.getMu(), actualFieldOrbit.getMu());
+        Assertions.assertEquals(fieldOrbit.getDate(), actualFieldOrbit.getDate());
+        Assertions.assertEquals(fieldOrbit.getFrame(), actualFieldOrbit.getFrame());
+        Assertions.assertEquals(fieldOrbit.getPosition(), actualFieldOrbit.getPosition());
+    }
+
+    @Test
+    void testFromEquinoctialOrbitWithDerivatives() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final EquinoctialOrbit expectedOrbit = createOrbitTestFromEquinoctialOrbit(true);
+        // WHEN
+        final FieldEquinoctialOrbit<Complex> fieldOrbit = new FieldEquinoctialOrbit<>(field, expectedOrbit);
+        // THEN
+        compareFieldOrbitToOrbit(fieldOrbit, expectedOrbit);
+    }
+
+    @Test
+    void testFromEquinoctialOrbitWithoutDerivatives() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final EquinoctialOrbit expectedOrbit = createOrbitTestFromEquinoctialOrbit(false);
+        // WHEN
+        final FieldEquinoctialOrbit<Complex> fieldOrbit = new FieldEquinoctialOrbit<>(field, expectedOrbit);
+        // THEN
+        compareFieldOrbitToOrbit(fieldOrbit, expectedOrbit);
+    }
+
+    private EquinoctialOrbit createOrbitTestFromEquinoctialOrbit(final boolean withDerivatives) {
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getEME2000();
+        final double a = 10000.e3;
+        final double ex = 1e-4;
+        final double ey = 1e-3;
+        final double hx = 1.e-2;
+        final double hy = -2.e-3;
+        final double lv = 0.5;
+        if (withDerivatives) {
+            final double derivative = 0.;
+            return new EquinoctialOrbit(a, ex, ey, hx, hy, lv, derivative, derivative, derivative, derivative,
+                    derivative, derivative, positionAngleType, frame, date, mu);
+        } else {
+            return new EquinoctialOrbit(a, ex, ey, hx, hy, lv, positionAngleType, frame, date, mu);
+        }
+    }
+
+    @Test
+    void testCoverageCachedPositionAngleTypeWithRates() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double ex = 0.;
+        final double ey = 0.;
+        final double expectedL = 0.;
+        final double expectedLDot = 0.;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64 zero = field.getZero();
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final FieldEquinoctialOrbit<Binary64> fieldOrbit = new FieldEquinoctialOrbit<>(
+                        zero.newInstance(semiMajorAxis), zero.newInstance(ex), zero.newInstance(ey), zero, zero,
+                        zero.newInstance(expectedL), zero, zero, zero, zero, zero, zero.newInstance(expectedLDot),
+                        inputPositionAngleType, cachedPositionAngleType,
+                        FramesFactory.getGCRF(), new FieldAbsoluteDate<>(field, date), zero.newInstance(mu));
+                Assertions.assertEquals(cachedPositionAngleType, fieldOrbit.getCachedPositionAngleType());
+                Assertions.assertEquals(expectedL, fieldOrbit.getLv().getReal());
+                Assertions.assertEquals(expectedL, fieldOrbit.getLM().getReal());
+                Assertions.assertEquals(expectedL, fieldOrbit.getLE().getReal());
+                Assertions.assertEquals(expectedLDot, fieldOrbit.getLvDot().getReal());
+                Assertions.assertEquals(expectedLDot, fieldOrbit.getLMDot().getReal());
+                Assertions.assertEquals(expectedLDot, fieldOrbit.getLEDot().getReal());
+            }
+        }
+    }
+
+    private <T extends CalculusFieldElement<T>> void compareFieldOrbitToOrbit(final FieldEquinoctialOrbit<T> fieldOrbit,
+                                                                              final EquinoctialOrbit orbit) {
+        Assertions.assertEquals(orbit.getFrame(), fieldOrbit.getFrame());
+        Assertions.assertEquals(orbit.getMu(), fieldOrbit.getMu().getReal());
+        Assertions.assertEquals(orbit.getDate(), fieldOrbit.getDate().toAbsoluteDate());
+        Assertions.assertEquals(orbit.getA(), fieldOrbit.getA().getReal());
+        Assertions.assertEquals(orbit.getEquinoctialEx(), fieldOrbit.getEquinoctialEx().getReal());
+        Assertions.assertEquals(orbit.getEquinoctialEy(), fieldOrbit.getEquinoctialEy().getReal());
+        Assertions.assertEquals(orbit.getHx(), fieldOrbit.getHx().getReal());
+        Assertions.assertEquals(orbit.getHy(), fieldOrbit.getHy().getReal());
+        Assertions.assertEquals(orbit.getLv(), fieldOrbit.getLv().getReal());
+        Assertions.assertEquals(orbit.hasDerivatives(), fieldOrbit.hasDerivatives());
+        if (orbit.hasDerivatives()) {
+            Assertions.assertEquals(orbit.getADot(), fieldOrbit.getADot().getReal());
+            Assertions.assertEquals(orbit.getEquinoctialExDot(), fieldOrbit.getEquinoctialExDot().getReal());
+            Assertions.assertEquals(orbit.getEquinoctialEyDot(), fieldOrbit.getEquinoctialEyDot().getReal());
+            Assertions.assertEquals(orbit.getHxDot(), fieldOrbit.getHxDot().getReal());
+            Assertions.assertEquals(orbit.getHyDot(), fieldOrbit.getHyDot().getReal());
+            Assertions.assertEquals(orbit.getLvDot(), fieldOrbit.getLvDot().getReal());
+        } else {
+            Assertions.assertNull(fieldOrbit.getADot());
+            Assertions.assertNull(fieldOrbit.getEquinoctialExDot());
+            Assertions.assertNull(fieldOrbit.getEquinoctialEyDot());
+            Assertions.assertNull(fieldOrbit.getHxDot());
+            Assertions.assertNull(fieldOrbit.getHyDot());
+            Assertions.assertNull(fieldOrbit.getLvDot());
+        }
+    }
+
+    @Test
+    void testGetLVersusDouble() {
+        // GIVEN
+        final double semiMajorAxis = 1e7;
+        final double ex = 1e-2;
+        final double ey = 1e-3;
+        final double expectedL = 2;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64 zero = field.getZero();
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final FieldEquinoctialOrbit<Binary64> fieldOrbit = new FieldEquinoctialOrbit<>(
+                        zero.newInstance(semiMajorAxis), zero.newInstance(ex), zero.newInstance(ey), zero, zero,
+                        zero.newInstance(expectedL), inputPositionAngleType, cachedPositionAngleType,
+                        FramesFactory.getGCRF(), new FieldAbsoluteDate<>(field, date), zero.newInstance(mu));
+                final EquinoctialOrbit equinoctialOrbit = fieldOrbit.toOrbit();
+                Assertions.assertEquals(equinoctialOrbit.getLE(), fieldOrbit.getLE().getReal());
+                Assertions.assertEquals(equinoctialOrbit.getLv(), fieldOrbit.getLv().getReal());
+                Assertions.assertEquals(equinoctialOrbit.getLM(), fieldOrbit.getLM().getReal());
+            }
+        }
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestEquinoctialToEquinoctialEll(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -202,30 +344,30 @@ public class FieldEquinoctialOrbitTest {
 
         // elliptic orbit
         FieldEquinoctialOrbit<T> equi =
-            new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add( 0.5), zero.add(-0.5), hx, hy,
-                                        zero.add(5.300), PositionAngle.MEAN,
+            new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add( 0.5), zero.add(-0.5), hx, hy,
+                                        zero.add(5.300), PositionAngleType.MEAN,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
-        FieldVector3D<T> pos = equi.getPVCoordinates().getPosition();
+        FieldVector3D<T> pos = equi.getPosition();
         FieldVector3D<T> vit = equi.getPVCoordinates().getVelocity();
 
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>(pos, vit);
 
         FieldEquinoctialOrbit<T> param = new FieldEquinoctialOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
-        Assert.assertEquals(param.getA().getReal(), equi.getA().getReal(), Utils.epsilonTest * equi.getA().getReal());
-        Assert.assertEquals(param.getEquinoctialEx().getReal(), equi.getEquinoctialEx().getReal(),
+        Assertions.assertEquals(param.getA().getReal(), equi.getA().getReal(), Utils.epsilonTest * equi.getA().getReal());
+        Assertions.assertEquals(param.getEquinoctialEx().getReal(), equi.getEquinoctialEx().getReal(),
                      Utils.epsilonE * FastMath.abs(equi.getE().getReal()));
-        Assert.assertEquals(param.getEquinoctialEy().getReal(), equi.getEquinoctialEy().getReal(),
+        Assertions.assertEquals(param.getEquinoctialEy().getReal(), equi.getEquinoctialEy().getReal(),
                      Utils.epsilonE * FastMath.abs(equi.getE().getReal()));
-        Assert.assertEquals(param.getHx().getReal(), equi.getHx().getReal(), Utils.epsilonAngle
+        Assertions.assertEquals(param.getHx().getReal(), equi.getHx().getReal(), Utils.epsilonAngle
                      * FastMath.abs(equi.getI().getReal()));
-        Assert.assertEquals(param.getHy().getReal(), equi.getHy().getReal(), Utils.epsilonAngle
+        Assertions.assertEquals(param.getHy().getReal(), equi.getHy().getReal(), Utils.epsilonAngle
                      * FastMath.abs(equi.getI().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(param.getLv().getReal(), equi.getLv().getReal()), equi.getLv().getReal(),
-                     Utils.epsilonAngle * FastMath.abs(equi.getLv().getReal()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(param.getLv().getReal(), equi.getLv().getReal()), equi.getLv().getReal(),
+            Utils.epsilonAngle * FastMath.abs(equi.getLv().getReal()));
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquinoctialToEquinoctialCirc(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEquinoctialToEquinoctialCirc(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -237,32 +379,32 @@ public class FieldEquinoctialOrbitTest {
 
         // circular orbit
         FieldEquinoctialOrbit<T> equiCir =
-            new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(0.1e-10), zero.add(-0.1e-10), hx, hy,
-                                        zero.add(5.300), PositionAngle.MEAN,
+            new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(0.1e-10), zero.add(-0.1e-10), hx, hy,
+                                        zero.add(5.300), PositionAngleType.MEAN,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
-        FieldVector3D<T> posCir = equiCir.getPVCoordinates().getPosition();
+        FieldVector3D<T> posCir = equiCir.getPosition();
         FieldVector3D<T> vitCir = equiCir.getPVCoordinates().getVelocity();
 
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>(posCir, vitCir);
 
         FieldEquinoctialOrbit<T> paramCir = new FieldEquinoctialOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                          date, zero.add(mu));
-        Assert.assertEquals(paramCir.getA().getReal(), equiCir.getA().getReal(), Utils.epsilonTest
+        Assertions.assertEquals(paramCir.getA().getReal(), equiCir.getA().getReal(), Utils.epsilonTest
                      * equiCir.getA().getReal());
-        Assert.assertEquals(paramCir.getEquinoctialEx().getReal(), equiCir.getEquinoctialEx().getReal(),
+        Assertions.assertEquals(paramCir.getEquinoctialEx().getReal(), equiCir.getEquinoctialEx().getReal(),
                      Utils.epsilonEcir * FastMath.abs(equiCir.getE().getReal()));
-        Assert.assertEquals(paramCir.getEquinoctialEy().getReal(), equiCir.getEquinoctialEy().getReal(),
+        Assertions.assertEquals(paramCir.getEquinoctialEy().getReal(), equiCir.getEquinoctialEy().getReal(),
                      Utils.epsilonEcir * FastMath.abs(equiCir.getE().getReal()));
-        Assert.assertEquals(paramCir.getHx().getReal(), equiCir.getHx().getReal(), Utils.epsilonAngle
+        Assertions.assertEquals(paramCir.getHx().getReal(), equiCir.getHx().getReal(), Utils.epsilonAngle
                      * FastMath.abs(equiCir.getI().getReal()));
-        Assert.assertEquals(paramCir.getHy().getReal(), equiCir.getHy().getReal(), Utils.epsilonAngle
+        Assertions.assertEquals(paramCir.getHy().getReal(), equiCir.getHy().getReal(), Utils.epsilonAngle
                      * FastMath.abs(equiCir.getI().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(paramCir.getLv().getReal(), equiCir.getLv().getReal()), equiCir
+        Assertions.assertEquals(MathUtils.normalizeAngle(paramCir.getLv().getReal(), equiCir.getLv().getReal()), equiCir
                      .getLv().getReal(), Utils.epsilonAngle * FastMath.abs(equiCir.getLv().getReal()));
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquinoctialToCartesian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEquinoctialToCartesian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -273,32 +415,32 @@ public class FieldEquinoctialOrbitTest {
         T hy = inc.divide(2.).tan().multiply(iy).divide(inc.divide(2.).sin().multiply(2));
 
         FieldEquinoctialOrbit<T> equi =
-                        new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(-7.900e-06), zero.add(1.100e-04), hx, hy,
-                                                    zero.add(5.300), PositionAngle.MEAN,
+                        new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(-7.900e-06), zero.add(1.100e-04), hx, hy,
+                                                    zero.add(5.300), PositionAngleType.MEAN,
                                                    FramesFactory.getEME2000(), date, zero.add(mu));
-        FieldVector3D<T> pos = equi.getPVCoordinates().getPosition();
+        FieldVector3D<T> pos = equi.getPosition();
         FieldVector3D<T> vit = equi.getPVCoordinates().getVelocity();
 
         // verif of 1/a = 2/X - V2/mu
         T oneovera = (pos.getNorm().reciprocal().multiply(2)).subtract(vit.getNorm().multiply(vit.getNorm()).divide(mu));
-        Assert.assertEquals(oneovera.getReal(), 1. / equi.getA().getReal(), 1.0e-7);
+        Assertions.assertEquals(oneovera.getReal(), 1. / equi.getA().getReal(), 1.0e-7);
 
-        Assert.assertEquals(0.233745668678733e+05, pos.getX().getReal(), Utils.epsilonTest
+        Assertions.assertEquals(0.233745668678733e+08, pos.getX().getReal(), Utils.epsilonTest
                      * FastMath.abs(pos.getX().getReal()));
-        Assert.assertEquals(-0.350998914352669e+05, pos.getY().getReal(), Utils.epsilonTest
+        Assertions.assertEquals(-0.350998914352669e+08, pos.getY().getReal(), Utils.epsilonTest
                      * FastMath.abs(pos.getY().getReal()));
-        Assert.assertEquals(-0.150053723123334e+01, pos.getZ().getReal(), Utils.epsilonTest
+        Assertions.assertEquals(-0.150053723123334e+04, pos.getZ().getReal(), Utils.epsilonTest
                      * FastMath.abs(pos.getZ().getReal()));
 
-        Assert.assertEquals(0.809135038364960e+05, vit.getX().getReal(), Utils.epsilonTest
+        Assertions.assertEquals(2558.7096558809967, vit.getX().getReal(), Utils.epsilonTest
                      * FastMath.abs(vit.getX().getReal()));
-        Assert.assertEquals(0.538902268252598e+05, vit.getY().getReal(), Utils.epsilonTest
+        Assertions.assertEquals(1704.1586039092576, vit.getY().getReal(), Utils.epsilonTest
                      * FastMath.abs(vit.getY().getReal()));
-        Assert.assertEquals(0.158527938296630e+02, vit.getZ().getReal(), Utils.epsilonTest
+        Assertions.assertEquals(0.5013093577879, vit.getZ().getReal(), Utils.epsilonTest
                      * FastMath.abs(vit.getZ().getReal()));
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquinoctialToKeplerian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEquinoctialToKeplerian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -309,37 +451,56 @@ public class FieldEquinoctialOrbitTest {
         T hy = inc.divide(2.).tan().multiply(iy).divide(inc.divide(2.).sin().multiply(2));
 
         FieldEquinoctialOrbit<T> equi =
-                        new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(-7.900e-06), zero.add(1.100e-04), hx, hy,
-                                                    zero.add(5.300), PositionAngle.MEAN,
+                        new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(-7.900e-06), zero.add(1.100e-04), hx, hy,
+                                                    zero.add(5.300), PositionAngleType.MEAN,
                                                     FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldKeplerianOrbit<T> kep = new FieldKeplerianOrbit<>(equi);
 
-        Assert.assertEquals(42166.71200, equi.getA().getReal(), Utils.epsilonTest * kep.getA().getReal());
-        Assert.assertEquals(0.110283316961361e-03, kep.getE().getReal(), Utils.epsilonE
+        Assertions.assertEquals(42166712.000, equi.getA().getReal(), Utils.epsilonTest * kep.getA().getReal());
+        Assertions.assertEquals(0.110283316961361e-03, kep.getE().getReal(), Utils.epsilonE
                      * FastMath.abs(kep.getE().getReal()));
-        Assert.assertEquals(0.166901168553917e-03, kep.getI().getReal(), Utils.epsilonAngle
+        Assertions.assertEquals(0.166901168553917e-03, kep.getI().getReal(), Utils.epsilonAngle
                      * FastMath.abs(kep.getI().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument().getReal()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument().getReal()),
                      kep.getPerigeeArgument().getReal(), Utils.epsilonTest
                      * FastMath.abs(kep.getPerigeeArgument().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep
+        Assertions.assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep
                                      .getRightAscensionOfAscendingNode().getReal()), kep
                                      .getRightAscensionOfAscendingNode().getReal(), Utils.epsilonTest
                                      * FastMath.abs(kep.getRightAscensionOfAscendingNode().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(3.65750858649982, kep.getMeanAnomaly().getReal()), kep
+        Assertions.assertEquals(MathUtils.normalizeAngle(3.65750858649982, kep.getMeanAnomaly().getReal()), kep
                      .getMeanAnomaly().getReal(), Utils.epsilonTest * FastMath.abs(kep.getMeanAnomaly().getReal()));
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestHyperbolic(Field<T> field) {
-        T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(0.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add(5.300),
-                             PositionAngle.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
+    private <T extends CalculusFieldElement<T>> void doTestHyperbolic1(Field<T> field) {
+        try {
+            T zero = field.getZero();
+            FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+            new FieldEquinoctialOrbit<>(zero.add(-42166712.0), zero.add(1.9), zero.add(0.5), zero.add(0.01), zero.add(-0.02), zero.add(5.300),
+                                        PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
+        }
     }
 
-    private <T extends RealFieldElement<T>> void doTestToOrbitWithoutDerivatives(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestHyperbolic2(Field<T> field) {
+            T zero = field.getZero();
+            FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+            FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-42166712.0), zero.add(1.9), zero.add(0.5),
+                                                            zero.add(0.01), zero.add(-0.02), zero.add(5.300),
+                                                            PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, zero.add(mu));
+        try {
+            new FieldEquinoctialOrbit<>(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
+        }
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestToOrbitWithoutDerivatives(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -348,29 +509,29 @@ public class FieldEquinoctialOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
         FieldEquinoctialOrbit<T>  fieldOrbit = new FieldEquinoctialOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
         EquinoctialOrbit orbit = fieldOrbit.toOrbit();
-        Assert.assertFalse(orbit.hasDerivatives());
-        Assert.assertThat(orbit.getA(),                             relativelyCloseTo(fieldOrbit.getA().getReal(),             0));
-        Assert.assertThat(orbit.getEquinoctialEx(),                 relativelyCloseTo(fieldOrbit.getEquinoctialEx().getReal(), 0));
-        Assert.assertThat(orbit.getEquinoctialEy(),                 relativelyCloseTo(fieldOrbit.getEquinoctialEy().getReal(), 0));
-        Assert.assertThat(orbit.getHx(),                            relativelyCloseTo(fieldOrbit.getHx().getReal(),            0));
-        Assert.assertThat(orbit.getHy(),                            relativelyCloseTo(fieldOrbit.getHy().getReal(),            0));
-        Assert.assertThat(orbit.getLv(),                            relativelyCloseTo(fieldOrbit.getLv().getReal(),            0));
-        Assert.assertTrue(Double.isNaN(orbit.getADot()));
-        Assert.assertTrue(Double.isNaN(orbit.getEquinoctialExDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getEquinoctialEyDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getHxDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getHyDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getLvDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getLEDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getLMDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getEDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getIDot()));
-        Assert.assertTrue(Double.isNaN(orbit.getLDot(PositionAngle.TRUE)));
-        Assert.assertTrue(Double.isNaN(orbit.getLDot(PositionAngle.ECCENTRIC)));
-        Assert.assertTrue(Double.isNaN(orbit.getLDot(PositionAngle.MEAN)));
+        Assertions.assertFalse(orbit.hasDerivatives());
+        MatcherAssert.assertThat(orbit.getA(),                             relativelyCloseTo(fieldOrbit.getA().getReal(),             0));
+        MatcherAssert.assertThat(orbit.getEquinoctialEx(),                 relativelyCloseTo(fieldOrbit.getEquinoctialEx().getReal(), 0));
+        MatcherAssert.assertThat(orbit.getEquinoctialEy(),                 relativelyCloseTo(fieldOrbit.getEquinoctialEy().getReal(), 0));
+        MatcherAssert.assertThat(orbit.getHx(),                            relativelyCloseTo(fieldOrbit.getHx().getReal(),            0));
+        MatcherAssert.assertThat(orbit.getHy(),                            relativelyCloseTo(fieldOrbit.getHy().getReal(),            0));
+        MatcherAssert.assertThat(orbit.getLv(),                            relativelyCloseTo(fieldOrbit.getLv().getReal(),            0));
+        Assertions.assertTrue(Double.isNaN(orbit.getADot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getEquinoctialExDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getEquinoctialEyDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getHxDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getHyDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getLvDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getLEDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getLMDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getEDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getIDot()));
+        Assertions.assertTrue(Double.isNaN(orbit.getLDot(PositionAngleType.TRUE)));
+        Assertions.assertTrue(Double.isNaN(orbit.getLDot(PositionAngleType.ECCENTRIC)));
+        Assertions.assertTrue(Double.isNaN(orbit.getLDot(PositionAngleType.MEAN)));
     }
 
-    private <T extends RealFieldElement<T>> void doTestToOrbitWithDerivatives(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToOrbitWithDerivatives(Field<T> field) {
         T zero =  field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -378,34 +539,35 @@ public class FieldEquinoctialOrbitTest {
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
         T r2 = position.getNormSq();
         T r = r2.sqrt();
-        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,
-                                                                       new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu),
-                                                                                           position));
-        FieldEquinoctialOrbit<T>  fieldOrbit = new FieldEquinoctialOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()),
+                position);
+        final FieldVector3D<T> nonKeplerianAcceleration = keplerianAcceleration.scalarMultiply(1.1);
+        final FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity, nonKeplerianAcceleration);
+        final FieldEquinoctialOrbit<T>  fieldOrbit = new FieldEquinoctialOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
         EquinoctialOrbit orbit = fieldOrbit.toOrbit();
-        Assert.assertTrue(orbit.hasDerivatives());
-        Assert.assertThat(orbit.getA(),                             relativelyCloseTo(fieldOrbit.getA().getReal(),                           0));
-        Assert.assertThat(orbit.getEquinoctialEx(),                 relativelyCloseTo(fieldOrbit.getEquinoctialEx().getReal(),               0));
-        Assert.assertThat(orbit.getEquinoctialEy(),                 relativelyCloseTo(fieldOrbit.getEquinoctialEy().getReal(),               0));
-        Assert.assertThat(orbit.getHx(),                            relativelyCloseTo(fieldOrbit.getHx().getReal(),                          0));
-        Assert.assertThat(orbit.getHy(),                            relativelyCloseTo(fieldOrbit.getHy().getReal(),                          0));
-        Assert.assertThat(orbit.getLv(),                            relativelyCloseTo(fieldOrbit.getLv().getReal(),                          0));
-        Assert.assertThat(orbit.getADot(),                          relativelyCloseTo(fieldOrbit.getADot().getReal(),                        0));
-        Assert.assertThat(orbit.getEquinoctialExDot(),              relativelyCloseTo(fieldOrbit.getEquinoctialExDot().getReal(),            0));
-        Assert.assertThat(orbit.getEquinoctialEyDot(),              relativelyCloseTo(fieldOrbit.getEquinoctialEyDot().getReal(),            0));
-        Assert.assertThat(orbit.getHxDot(),                         relativelyCloseTo(fieldOrbit.getHxDot().getReal(),                       0));
-        Assert.assertThat(orbit.getHyDot(),                         relativelyCloseTo(fieldOrbit.getHyDot().getReal(),                       0));
-        Assert.assertThat(orbit.getLvDot(),                         relativelyCloseTo(fieldOrbit.getLvDot().getReal(),                       0));
-        Assert.assertThat(orbit.getLEDot(),                         relativelyCloseTo(fieldOrbit.getLEDot().getReal(),                       0));
-        Assert.assertThat(orbit.getLMDot(),                         relativelyCloseTo(fieldOrbit.getLMDot().getReal(),                       0));
-        Assert.assertThat(orbit.getEDot(),                          relativelyCloseTo(fieldOrbit.getEDot().getReal(),                        0));
-        Assert.assertThat(orbit.getIDot(),                          relativelyCloseTo(fieldOrbit.getIDot().getReal(),                        0));
-        Assert.assertThat(orbit.getLDot(PositionAngle.TRUE),        relativelyCloseTo(fieldOrbit.getLDot(PositionAngle.TRUE).getReal(),      0));
-        Assert.assertThat(orbit.getLDot(PositionAngle.ECCENTRIC),   relativelyCloseTo(fieldOrbit.getLDot(PositionAngle.ECCENTRIC).getReal(), 0));
-        Assert.assertThat(orbit.getLDot(PositionAngle.MEAN),        relativelyCloseTo(fieldOrbit.getLDot(PositionAngle.MEAN).getReal(),      0));
+        Assertions.assertTrue(orbit.hasDerivatives());
+        MatcherAssert.assertThat(orbit.getA(),                             relativelyCloseTo(fieldOrbit.getA().getReal(),                           0));
+        MatcherAssert.assertThat(orbit.getEquinoctialEx(),                 relativelyCloseTo(fieldOrbit.getEquinoctialEx().getReal(),               0));
+        MatcherAssert.assertThat(orbit.getEquinoctialEy(),                 relativelyCloseTo(fieldOrbit.getEquinoctialEy().getReal(),               0));
+        MatcherAssert.assertThat(orbit.getHx(),                            relativelyCloseTo(fieldOrbit.getHx().getReal(),                          0));
+        MatcherAssert.assertThat(orbit.getHy(),                            relativelyCloseTo(fieldOrbit.getHy().getReal(),                          0));
+        MatcherAssert.assertThat(orbit.getLv(),                            relativelyCloseTo(fieldOrbit.getLv().getReal(),                          0));
+        MatcherAssert.assertThat(orbit.getADot(),                          relativelyCloseTo(fieldOrbit.getADot().getReal(),                        0));
+        MatcherAssert.assertThat(orbit.getEquinoctialExDot(),              relativelyCloseTo(fieldOrbit.getEquinoctialExDot().getReal(),            0));
+        MatcherAssert.assertThat(orbit.getEquinoctialEyDot(),              relativelyCloseTo(fieldOrbit.getEquinoctialEyDot().getReal(),            0));
+        MatcherAssert.assertThat(orbit.getHxDot(),                         relativelyCloseTo(fieldOrbit.getHxDot().getReal(),                       0));
+        MatcherAssert.assertThat(orbit.getHyDot(),                         relativelyCloseTo(fieldOrbit.getHyDot().getReal(),                       0));
+        MatcherAssert.assertThat(orbit.getLvDot(),                         relativelyCloseTo(fieldOrbit.getLvDot().getReal(),                       0));
+        MatcherAssert.assertThat(orbit.getLEDot(),                         relativelyCloseTo(fieldOrbit.getLEDot().getReal(),                       0));
+        MatcherAssert.assertThat(orbit.getLMDot(),                         relativelyCloseTo(fieldOrbit.getLMDot().getReal(),                       0));
+        MatcherAssert.assertThat(orbit.getEDot(),                          relativelyCloseTo(fieldOrbit.getEDot().getReal(),                        0));
+        MatcherAssert.assertThat(orbit.getIDot(),                          relativelyCloseTo(fieldOrbit.getIDot().getReal(),                        0));
+        MatcherAssert.assertThat(orbit.getLDot(PositionAngleType.TRUE),        relativelyCloseTo(fieldOrbit.getLDot(PositionAngleType.TRUE).getReal(),      0));
+        MatcherAssert.assertThat(orbit.getLDot(PositionAngleType.ECCENTRIC),   relativelyCloseTo(fieldOrbit.getLDot(PositionAngleType.ECCENTRIC).getReal(), 0));
+        MatcherAssert.assertThat(orbit.getLDot(PositionAngleType.MEAN),        relativelyCloseTo(fieldOrbit.getLDot(PositionAngleType.MEAN).getReal(),      0));
     }
 
-    private <T extends RealFieldElement<T>> void doTestNumericalIssue25(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNumericalIssue25(Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(3782116.14107698), zero.add(416663.11924914), zero.add(5875541.62103057));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-6349.7848910501), zero.add(288.4061811651), zero.add(4066.9366759691));
@@ -414,10 +576,10 @@ public class FieldEquinoctialOrbitTest {
                                                                      new FieldAbsoluteDate<>(field, "2004-01-01T23:00:00.000",
                                                                                              TimeScalesFactory.getUTC()),
                                                                      zero.add(3.986004415E14));
-        Assert.assertEquals(0.0, orbit.getE().getReal(), 2.0e-14);
+        Assertions.assertEquals(0.0, orbit.getE().getReal(), 2.0e-14);
     }
 
-    private <T extends RealFieldElement<T>> void doTestAnomaly(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestAnomaly(Field<T> field) {
 
         T one = field.getOne();
         T zero = field.getZero();
@@ -440,76 +602,76 @@ public class FieldEquinoctialOrbitTest {
         T lM = lE.subtract(e.multiply(lE.subtract(paPraan).sin()));
 
         p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngle.TRUE,
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngleType.TRUE,
                                         p.getFrame(), p.getDate(), p.getMu());
-        Assert.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
-        Assert.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
-        Assert.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
+        Assertions.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
+        Assertions.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
+        Assertions.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
         p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , zero , PositionAngle.TRUE,
-                                        p.getFrame(), p.getDate(), p.getMu());
-
-        p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , PositionAngle.ECCENTRIC,
-                                        p.getFrame(), p.getDate(), p.getMu());
-        Assert.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
-        Assert.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
-        Assert.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
-        p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , zero , PositionAngle.TRUE,
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , zero , PositionAngleType.TRUE,
                                         p.getFrame(), p.getDate(), p.getMu());
 
         p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , PositionAngle.MEAN,
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , PositionAngleType.ECCENTRIC,
+                                        p.getFrame(), p.getDate(), p.getMu());
+        Assertions.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
+        Assertions.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
+        Assertions.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
+        p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , zero , PositionAngleType.TRUE,
+                                        p.getFrame(), p.getDate(), p.getMu());
+
+        p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , PositionAngleType.MEAN,
                                       p.getFrame(), p.getDate(), p.getMu());
-        Assert.assertEquals(p.getLv  ().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
-        Assert.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
-        Assert.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
+        Assertions.assertEquals(p.getLv  ().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
+        Assertions.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
+        Assertions.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
 
         // circular orbit
         p = new FieldEquinoctialOrbit<>(p.getA(), zero ,
-                                        zero, p.getHx(), p.getHy() , p.getLv() , PositionAngle.TRUE,
+                                        zero, p.getHx(), p.getHy() , p.getLv() , PositionAngleType.TRUE,
                                         p.getFrame(), p.getDate(), p.getMu());
 
         lE = lv;
         lM = lE;
 
         p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngle.TRUE,
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngleType.TRUE,
                                         p.getFrame(), p.getDate(), p.getMu());
-        Assert.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
-        Assert.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
-        Assert.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
+        Assertions.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
+        Assertions.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
+        Assertions.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
         p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , zero , PositionAngle.TRUE,
-                                        p.getFrame(), p.getDate(), p.getMu());
-
-        p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , PositionAngle.ECCENTRIC,
-                                        p.getFrame(), p.getDate(), p.getMu());
-        Assert.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
-        Assert.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
-        Assert.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
-        p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , zero , PositionAngle.TRUE,
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , zero , PositionAngleType.TRUE,
                                         p.getFrame(), p.getDate(), p.getMu());
 
         p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , PositionAngle.MEAN, p.getFrame(), p.getDate(), p.getMu());
-        Assert.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
-        Assert.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
-        Assert.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , PositionAngleType.ECCENTRIC,
+                                        p.getFrame(), p.getDate(), p.getMu());
+        Assertions.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
+        Assertions.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
+        Assertions.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
+        p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , zero , PositionAngleType.TRUE,
+                                        p.getFrame(), p.getDate(), p.getMu());
+
+        p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
+                                        p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , PositionAngleType.MEAN, p.getFrame(), p.getDate(), p.getMu());
+        Assertions.assertEquals(p.getLv().getReal(), lv.getReal(), Utils.epsilonAngle * FastMath.abs(lv.getReal()));
+        Assertions.assertEquals(p.getLE().getReal(), lE.getReal(), Utils.epsilonAngle * FastMath.abs(lE.getReal()));
+        Assertions.assertEquals(p.getLM().getReal(), lM.getReal(), Utils.epsilonAngle * FastMath.abs(lM.getReal()));
     }
 
-    private <T extends RealFieldElement<T>> void doTestPositionVelocityNorms(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPositionVelocityNorms(Field<T> field) {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
         // elliptic and non equatorial (i retrograde) orbit
         FieldEquinoctialOrbit<T> p =
-            new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(0.5), zero.add(-0.5), zero.add(1.200), zero.add(2.1),
-                                        zero.add(0.67), PositionAngle.TRUE,
+            new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(0.5), zero.add(-0.5), zero.add(1.200), zero.add(2.1),
+                                        zero.add(0.67), PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
         T ex = p.getEquinoctialEx();
@@ -522,17 +684,17 @@ public class FieldEquinoctialOrbitTest {
         T a = p.getA();
         T na = a.reciprocal().multiply(p.getMu()).sqrt();
 
-        Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(),
-                            p.getPVCoordinates().getPosition().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getPosition().getNorm().getReal()));
-        Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
+        Assertions.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(),
+                            p.getPosition().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm().getReal()));
+        Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
                             p.getPVCoordinates().getVelocity().getNorm().getReal(),
                             Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm().getReal()));
 
         // circular and equatorial orbit
         FieldEquinoctialOrbit<T> pCirEqua =
-            new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(0.1e-8), zero.add(0.1e-8), zero.add(0.1e-8), zero.add(0.1e-8),
-                                        zero.add(0.67), PositionAngle.TRUE,
+            new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(0.1e-8), zero.add(0.1e-8), zero.add(0.1e-8), zero.add(0.1e-8),
+                                        zero.add(0.67), PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
         ex = pCirEqua.getEquinoctialEx();
@@ -545,15 +707,15 @@ public class FieldEquinoctialOrbitTest {
         a = pCirEqua.getA();
         na = a.reciprocal().multiply(p.getMu()).sqrt();
 
-        Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(), pCirEqua.getPVCoordinates().getPosition()
+        Assertions.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(), pCirEqua.getPosition()
                             .getNorm().getReal(), Utils.epsilonTest
-                            * FastMath.abs(pCirEqua.getPVCoordinates().getPosition().getNorm().getReal()));
-        Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
+                            * FastMath.abs(pCirEqua.getPosition().getNorm().getReal()));
+        Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
                             pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal(), Utils.epsilonTest
                             * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal()));
     }
 
-    private <T extends RealFieldElement<T>> void doTestGeometry(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestGeometry(Field<T> field) {
 
 
         T one = field.getOne();
@@ -563,11 +725,11 @@ public class FieldEquinoctialOrbitTest {
 
         // elliptic and non equatorial (i retrograde) orbit
         FieldEquinoctialOrbit<T> p =
-            new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(0.5), zero.add(-0.5), zero.add(1.200), zero.add(2.1),
-                                        zero.add(0.67), PositionAngle.TRUE,
+            new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(0.5), zero.add(-0.5), zero.add(1.200), zero.add(2.1),
+                                        zero.add(0.67), PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
-        FieldVector3D<T> position = p.getPVCoordinates().getPosition();
+        FieldVector3D<T> position = p.getPosition();
         FieldVector3D<T> velocity = p.getPVCoordinates().getVelocity();
         FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
@@ -576,15 +738,15 @@ public class FieldEquinoctialOrbitTest {
 
         for (T lv = zero; lv.getReal() <= 2 * FastMath.PI; lv = lv.add(2 * FastMath.PI / 100.)) {
             p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(),
-                                            p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngle.TRUE,
+                                            p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngleType.TRUE,
                                             p.getFrame(), p.getDate(), p.getMu());
-            position = p.getPVCoordinates().getPosition();
+            position = p.getPosition();
 
             // test if the norm of the position is in the range [perigee radius,
             // apogee radius]
             // Warning: these tests are without absolute value by choice
-            Assert.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal()) <= (apogeeRadius.getReal() * Utils.epsilonTest));
-            Assert.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal()) <= (apogeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = p.getPVCoordinates().getVelocity();
@@ -594,19 +756,19 @@ public class FieldEquinoctialOrbitTest {
             // momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            Assert.assertTrue(FastMath.abs(FieldVector3D.dotProduct(position, momentum).getReal()) < Utils.epsilonTest);
+            Assertions.assertTrue(FastMath.abs(FieldVector3D.dotProduct(position, momentum).getReal()) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            Assert.assertTrue(FastMath.abs(FieldVector3D.dotProduct(velocity, momentum).getReal()) < Utils.epsilonTest);
+            Assertions.assertTrue(FastMath.abs(FieldVector3D.dotProduct(velocity, momentum).getReal()) < Utils.epsilonTest);
         }
 
 
         // circular and equatorial orbit
         FieldEquinoctialOrbit<T> pCirEqua =
-            new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(0.1e-8), zero.add(0.1e-8), zero.add(0.1e-8), zero.add(0.1e-8),
-                                        zero.add(0.67), PositionAngle.TRUE,
+            new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(0.1e-8), zero.add(0.1e-8), zero.add(0.1e-8), zero.add(0.1e-8),
+                                        zero.add(0.67), PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
-        position = pCirEqua.getPVCoordinates().getPosition();
+        position = pCirEqua.getPosition();
         velocity = pCirEqua.getPVCoordinates().getVelocity();
 
         momentum = FieldVector3D.crossProduct(position, velocity).normalize();
@@ -614,19 +776,19 @@ public class FieldEquinoctialOrbitTest {
         apogeeRadius = pCirEqua.getA().multiply(pCirEqua.getE().add(1));
         perigeeRadius = pCirEqua.getA().multiply(one.subtract(pCirEqua.getE()));
         // test if apogee equals perigee
-        Assert.assertEquals(perigeeRadius.getReal(), apogeeRadius.getReal(), 1.e+4 * Utils.epsilonTest
+        Assertions.assertEquals(perigeeRadius.getReal(), apogeeRadius.getReal(), 1.e+4 * Utils.epsilonTest
                      * apogeeRadius.getReal());
 
         for (T lv = zero; lv.getReal() <= 2 * FastMath.PI; lv =lv.add(2 * FastMath.PI / 100.)) {
             pCirEqua = new FieldEquinoctialOrbit<>(pCirEqua.getA(), pCirEqua.getEquinoctialEx(),
-                                                   pCirEqua.getEquinoctialEy() , pCirEqua.getHx(), pCirEqua.getHy() , lv , PositionAngle.TRUE,
+                                                   pCirEqua.getEquinoctialEy() , pCirEqua.getHx(), pCirEqua.getHy() , lv , PositionAngleType.TRUE,
                                                    pCirEqua.getFrame(), p.getDate(), p.getMu());
-            position = pCirEqua.getPVCoordinates().getPosition();
+            position = pCirEqua.getPosition();
 
             // test if the norm pf the position is in the range [perigee radius,
             // apogee radius]
-            Assert.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal()) <= (apogeeRadius.getReal() * Utils.epsilonTest));
-            Assert.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal()) <= (apogeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = pCirEqua.getPVCoordinates().getVelocity();
@@ -636,21 +798,21 @@ public class FieldEquinoctialOrbitTest {
             // momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            Assert.assertTrue(FastMath.abs(FieldVector3D.dotProduct(position, momentum).getReal()) < Utils.epsilonTest);
+            Assertions.assertTrue(FastMath.abs(FieldVector3D.dotProduct(position, momentum).getReal()) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            Assert.assertTrue(FastMath.abs(FieldVector3D.dotProduct(velocity, momentum).getReal()) < Utils.epsilonTest);
+            Assertions.assertTrue(FastMath.abs(FieldVector3D.dotProduct(velocity, momentum).getReal()) < Utils.epsilonTest);
         }
     }
 
-    private <T extends RealFieldElement<T>> void doTestRadiusOfCurvature(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestRadiusOfCurvature(Field<T> field) {
         T one = field.getOne();
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
         // elliptic and non equatorial (i retrograde) orbit
         FieldEquinoctialOrbit<T> p =
-            new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(0.5), zero.add(-0.5), zero.add(1.200), zero.add(2.1),
-                                        zero.add(0.67), PositionAngle.TRUE,
+            new FieldEquinoctialOrbit<>(zero.add(42166712.0), zero.add(0.5), zero.add(-0.5), zero.add(1.200), zero.add(2.1),
+                                        zero.add(0.67), PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
         // arbitrary orthogonal vectors in the orbital plane
@@ -676,15 +838,15 @@ public class FieldEquinoctialOrbitTest {
                                          one.subtract(ex.multiply(ex).add(ey.multiply(ey)))).sqrt());
 
         // both methods to compute radius of curvature should match
-        Assert.assertEquals(rCart.getReal(), rOrb.getReal(), 2.0e-15 * p.getA().getReal());
+        Assertions.assertEquals(rCart.getReal(), rOrb.getReal(), 2.0e-15 * p.getA().getReal());
 
         // at this place for such an eccentric orbit,
         // the radius of curvature is much smaller than semi major axis
-        Assert.assertEquals(0.8477 * p.getA().getReal(), rCart.getReal(), 1.0e-4 * p.getA().getReal());
+        Assertions.assertEquals(0.8477 * p.getA().getReal(), rCart.getReal(), 1.0e-4 * p.getA().getReal());
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestSymmetry(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestSymmetry(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -695,11 +857,11 @@ public class FieldEquinoctialOrbitTest {
         FieldEquinoctialOrbit<T> p = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
-        FieldVector3D<T> positionOffset = p.getPVCoordinates().getPosition().subtract(position);
+        FieldVector3D<T> positionOffset = p.getPosition().subtract(position);
         FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assert.assertTrue(positionOffset.getNorm().getReal() < Utils.epsilonTest);
-        Assert.assertTrue(velocityOffset.getNorm().getReal() < Utils.epsilonTest);
+        Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 7.5e-12);
+        Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
 
         // circular and equatorial orbit
         position = new FieldVector3D<>(zero.add(33051.2), zero.add(26184.9), zero.add(-1.3E-5));
@@ -708,14 +870,14 @@ public class FieldEquinoctialOrbitTest {
         p = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
-        positionOffset = p.getPVCoordinates().getPosition().subtract(position);
+        positionOffset = p.getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assert.assertTrue(positionOffset.getNorm().getReal() < Utils.epsilonTest);
-        Assert.assertTrue(velocityOffset.getNorm().getReal() < Utils.epsilonTest);
+        Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 1.1e-11);
+        Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void doTestNonInertialFrame(Field<T> field) throws IllegalArgumentException {
+    private <T extends CalculusFieldElement<T>> void doTestNonInertialFrame(Field<T> field) throws IllegalArgumentException {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -728,13 +890,13 @@ public class FieldEquinoctialOrbitTest {
                                     date, zero.add(mu));
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianReference(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestJacobianReference(Field<T> field) {
 
         T zero = field.getZero();
-        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 4, 1, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         FieldEquinoctialOrbit<T> orbEqu = new FieldEquinoctialOrbit<>(zero.add(7000000.0), zero.add(0.01), zero.add(-0.02), zero.add(1.2), zero.add(2.1),
-                                                                      zero.add(FastMath.toRadians(40.)), PositionAngle.MEAN,
+                                                                      zero.add(FastMath.toRadians(40.)), PositionAngleType.MEAN,
                                                                       FramesFactory.getEME2000(), dateTca, zero.add(mu));
 
         // the following reference values have been computed using the free software
@@ -823,33 +985,33 @@ public class FieldEquinoctialOrbitTest {
             }
         }
         FieldPVCoordinates<T> pv = orbEqu.getPVCoordinates();
-        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal(), 2.0e-16 * pRef.getNorm().getReal());
-        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal(), 2.0e-16 * vRef.getNorm().getReal());
+        Assertions.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal(), 2.0e-16 * pRef.getNorm().getReal());
+        Assertions.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal(), 2.0e-16 * vRef.getNorm().getReal());
 
         T[][] jacobian = MathArrays.buildArray(field, 6, 6);
-        orbEqu.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+        orbEqu.getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
 
         for (int i = 0; i < jacobian.length; i++) {
             T[] row    = jacobian[i];
             T[] rowRef = jRef[i];
             for (int j = 0; j < row.length; j++) {
-                Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 4.0e-15);
+                Assertions.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 4.0e-15);
             }
         }
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianFinitedifferences(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestJacobianFinitedifferences(Field<T> field) {
 
         T zero = field.getZero();
-        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 4, 1, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         FieldEquinoctialOrbit<T> orbEqu = new FieldEquinoctialOrbit<>(zero.add(7000000.0), zero.add(0.01), zero.add(-0.02), zero.add(1.2), zero.add(2.1),
-                                                                      zero.add(FastMath.toRadians(40.)), PositionAngle.MEAN,
+                                                                      zero.add(FastMath.toRadians(40.)), PositionAngleType.MEAN,
                                                                       FramesFactory.getEME2000(), dateTca, zero.add(mu));
 
-        for (PositionAngle type : PositionAngle.values()) {
+        for (PositionAngleType type : PositionAngleType.values()) {
             T hP = zero.add(2.0);
             T[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbEqu, hP);
             T[][] jacobian = MathArrays.buildArray(field, 6, 6);
@@ -859,7 +1021,7 @@ public class FieldEquinoctialOrbitTest {
                 T[] row    = jacobian[i];
                 T[] rowRef = finiteDiffJacobian[i];
                 for (int j = 0; j < row.length; j++) {
-                    Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 8.0e-9);
+                    Assertions.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 8.0e-9);
                 }
             }
 
@@ -873,7 +1035,7 @@ public class FieldEquinoctialOrbitTest {
                 }
 
                 public void visit(int row, int column, T value) {
-                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.0e-9);
+                    Assertions.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.4e-9);
                 }
 
                 public T end() {
@@ -885,7 +1047,7 @@ public class FieldEquinoctialOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>>  T[][] finiteDifferencesJacobian(PositionAngle type, FieldEquinoctialOrbit<T> orbit, T hP)
+    private <T extends CalculusFieldElement<T>>  T[][] finiteDifferencesJacobian(PositionAngleType type, FieldEquinoctialOrbit<T> orbit, T hP)
         {
         Field<T> field = hP.getField();
         T[][] jacobian = MathArrays.buildArray(field, 6, 6);
@@ -895,11 +1057,11 @@ public class FieldEquinoctialOrbitTest {
         return jacobian;
     }
 
-    private <T extends RealFieldElement<T>> void fillColumn(PositionAngle type, int i, FieldEquinoctialOrbit<T> orbit, T hP, T[][] jacobian) {
+    private <T extends CalculusFieldElement<T>> void fillColumn(PositionAngleType type, int i, FieldEquinoctialOrbit<T> orbit, T hP, T[][] jacobian) {
         T zero = hP.getField().getZero();
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
-        FieldVector3D<T> p = orbit.getPVCoordinates().getPosition();
+        FieldVector3D<T> p = orbit.getPosition();
         FieldVector3D<T> v = orbit.getPVCoordinates().getVelocity();
         T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
 
@@ -977,92 +1139,7 @@ public class FieldEquinoctialOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field, boolean useDerivatives,
-                                                                     double shiftErrorWithin, double interpolationErrorWithin,
-                                                                     double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
-                                                                     double shiftErrorFarPast, double interpolationErrorFarPast)
-        {
-
-        T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-
-        final double ehMu = 3.9860047e14;
-        final double ae   = 6.378137e6;
-        final double c20  = -1.08263e-3;
-        final double c30  =  2.54e-6;
-        final double c40  =  1.62e-6;
-        final double c50  =  2.3e-7;
-        final double c60  =  -5.5e-7;
-
-        date = date.shiftedBy(584.);
-        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
-        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
-        final FieldEquinoctialOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                                                  FramesFactory.getEME2000(), date, zero.add(ehMu));
-
-        FieldEcksteinHechlerPropagator<T> propagator =
-                new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, zero.add(ehMu), c20, c30, c40, c50, c60);
-
-        // set up a 5 points sample
-        List<FieldOrbit<T>> sample = new ArrayList<FieldOrbit<T>>();
-        for (double dt = 0; dt < 300.0; dt += 60.0) {
-            FieldOrbit<T> orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
-            if (!useDerivatives) {
-                // remove derivatives
-                T[] stateVector = MathArrays.buildArray(field, 6);
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
-            }
-            sample.add(orbit);
-        }
-
-        // well inside the sample, interpolation should be much better than Keplerian shift
-        double maxShiftError = 0;
-        double maxInterpolationError = 0;
-        for (T dt = zero; dt.getReal() < 241.0; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt.getReal()).getPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
-        }
-        Assert.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
-        Assert.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
-
-        // slightly past sample end, interpolation should quickly increase, but remain reasonable
-        maxShiftError = 0;
-        maxInterpolationError = 0;
-        for (T dt = zero.add(240); dt.getReal() < 300.0; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
-        }
-        Assert.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
-        Assert.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError, 0.01 * interpolationErrorSlightlyPast);
-
-        // far past sample end, interpolation should become really wrong
-        // (in this test case, break even occurs at around 863 seconds, with a 3.9 km error)
-        maxShiftError = 0;
-        maxInterpolationError = 0;
-        for (T dt = zero.add(300); dt.getReal() < 1000; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
-        }
-        Assert.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
-        Assert.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
-
-    }
-
-    private <T extends RealFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) {
         final T zero = field.getZero();
 
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
@@ -1074,61 +1151,59 @@ public class FieldEquinoctialOrbitTest {
         final T mu   = zero.add(Constants.EIGEN5C_EARTH_MU);
         final FieldEquinoctialOrbit<T> orbit = new FieldEquinoctialOrbit<>(pv, frame, mu);
 
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getA),
                             orbit.getADot().getReal(),
                             4.3e-8);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getEquinoctialEx),
                             orbit.getEquinoctialExDot().getReal(),
                             2.1e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getEquinoctialEy),
                             orbit.getEquinoctialEyDot().getReal(),
                             5.3e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getHx),
                             orbit.getHxDot().getReal(),
                             4.4e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getHy),
                             orbit.getHyDot().getReal(),
                             1.5e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getLv),
                             orbit.getLvDot().getReal(),
                             1.2e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getLE),
                             orbit.getLEDot().getReal(),
                             7.7e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getLM),
                             orbit.getLMDot().getReal(),
                             8.8e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getE),
                             orbit.getEDot().getReal(),
                             6.9e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, FieldEquinoctialOrbit::getI),
                             orbit.getIDot().getReal(),
                             3.5e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngle.TRUE)),
-                            orbit.getLDot(PositionAngle.TRUE).getReal(),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngleType.TRUE)),
+                            orbit.getLDot(PositionAngleType.TRUE).getReal(),
                             1.2e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngle.ECCENTRIC)),
-                            orbit.getLDot(PositionAngle.ECCENTRIC).getReal(),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngleType.ECCENTRIC)),
+                            orbit.getLDot(PositionAngleType.ECCENTRIC).getReal(),
                             7.7e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngle.MEAN)),
-                            orbit.getLDot(PositionAngle.MEAN).getReal(),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngleType.MEAN)),
+                            orbit.getLDot(PositionAngleType.MEAN).getReal(),
                             8.8e-16);
 
     }
 
-    private <T extends RealFieldElement<T>, S extends Function<FieldEquinoctialOrbit<T>, T>>
+    private <T extends CalculusFieldElement<T>, S extends Function<FieldEquinoctialOrbit<T>, T>>
     double differentiate(TimeStampedFieldPVCoordinates<T> pv, Frame frame, T mu, S picker) {
         final DSFactory factory = new DSFactory(1, 1);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
-        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return picker.apply(new FieldEquinoctialOrbit<>(pv.shiftedBy(dt), frame, mu)).getReal();
-            }
-        });
+        UnivariateDifferentiableFunction diff =
+                differentiator.differentiate((UnivariateFunction) dt -> picker.apply(new FieldEquinoctialOrbit<>(pv.shiftedBy(dt),
+                                                                                                                 frame, mu)).getReal());
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
      }
 
-    private <T extends RealFieldElement<T>> void doTestPositionAngleDerivatives(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPositionAngleDerivatives(final Field<T> field) {
         final T zero = field.getZero();
 
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
@@ -1140,7 +1215,7 @@ public class FieldEquinoctialOrbitTest {
         final double mu   = Constants.EIGEN5C_EARTH_MU;
         final FieldEquinoctialOrbit<T> orbit = new FieldEquinoctialOrbit<>(pv, frame, zero.add(mu));
 
-        for (PositionAngle type : PositionAngle.values()) {
+        for (PositionAngleType type : PositionAngleType.values()) {
             final FieldEquinoctialOrbit<T> rebuilt = new FieldEquinoctialOrbit<>(orbit.getA(),
                                                                                  orbit.getEquinoctialEx(),
                                                                                  orbit.getEquinoctialEy(),
@@ -1154,25 +1229,25 @@ public class FieldEquinoctialOrbitTest {
                                                                                  orbit.getHyDot(),
                                                                                  orbit.getLDot(type),
                                                                                  type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
-            Assert.assertThat(rebuilt.getA().getReal(),                                relativelyCloseTo(orbit.getA().getReal(),                1));
-            Assert.assertThat(rebuilt.getEquinoctialEx().getReal(),                    relativelyCloseTo(orbit.getEquinoctialEx().getReal(),    1));
-            Assert.assertThat(rebuilt.getEquinoctialEy().getReal(),                    relativelyCloseTo(orbit.getEquinoctialEy().getReal(),    1));
-            Assert.assertThat(rebuilt.getHx().getReal(),                               relativelyCloseTo(orbit.getHx().getReal(),               1));
-            Assert.assertThat(rebuilt.getHy().getReal(),                               relativelyCloseTo(orbit.getHy().getReal(),               1));
-            Assert.assertThat(rebuilt.getADot().getReal(),                             relativelyCloseTo(orbit.getADot().getReal(),             1));
-            Assert.assertThat(rebuilt.getEquinoctialExDot().getReal(),                 relativelyCloseTo(orbit.getEquinoctialExDot().getReal(), 1));
-            Assert.assertThat(rebuilt.getEquinoctialEyDot().getReal(),                 relativelyCloseTo(orbit.getEquinoctialEyDot().getReal(), 1));
-            Assert.assertThat(rebuilt.getHxDot().getReal(),                            relativelyCloseTo(orbit.getHxDot().getReal(),            1));
-            Assert.assertThat(rebuilt.getHyDot().getReal(),                            relativelyCloseTo(orbit.getHyDot().getReal(),            1));
-            for (PositionAngle type2 : PositionAngle.values()) {
-                Assert.assertThat(rebuilt.getL(type2).getReal(),    relativelyCloseTo(orbit.getL(type2).getReal(),    1));
-                Assert.assertThat(rebuilt.getLDot(type2).getReal(), relativelyCloseTo(orbit.getLDot(type2).getReal(), 1));
+            MatcherAssert.assertThat(rebuilt.getA().getReal(),                                relativelyCloseTo(orbit.getA().getReal(),                1));
+            MatcherAssert.assertThat(rebuilt.getEquinoctialEx().getReal(),                    relativelyCloseTo(orbit.getEquinoctialEx().getReal(),    1));
+            MatcherAssert.assertThat(rebuilt.getEquinoctialEy().getReal(),                    relativelyCloseTo(orbit.getEquinoctialEy().getReal(),    1));
+            MatcherAssert.assertThat(rebuilt.getHx().getReal(),                               relativelyCloseTo(orbit.getHx().getReal(),               1));
+            MatcherAssert.assertThat(rebuilt.getHy().getReal(),                               relativelyCloseTo(orbit.getHy().getReal(),               1));
+            MatcherAssert.assertThat(rebuilt.getADot().getReal(),                             relativelyCloseTo(orbit.getADot().getReal(),             1));
+            MatcherAssert.assertThat(rebuilt.getEquinoctialExDot().getReal(),                 relativelyCloseTo(orbit.getEquinoctialExDot().getReal(), 1));
+            MatcherAssert.assertThat(rebuilt.getEquinoctialEyDot().getReal(),                 relativelyCloseTo(orbit.getEquinoctialEyDot().getReal(), 1));
+            MatcherAssert.assertThat(rebuilt.getHxDot().getReal(),                            relativelyCloseTo(orbit.getHxDot().getReal(),            1));
+            MatcherAssert.assertThat(rebuilt.getHyDot().getReal(),                            relativelyCloseTo(orbit.getHyDot().getReal(),            1));
+            for (PositionAngleType type2 : PositionAngleType.values()) {
+                MatcherAssert.assertThat(rebuilt.getL(type2).getReal(),    relativelyCloseTo(orbit.getL(type2).getReal(),    1));
+                MatcherAssert.assertThat(rebuilt.getLDot(type2).getReal(), relativelyCloseTo(orbit.getLDot(type2).getReal(), 1));
             }
         }
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestEquatorialRetrograde(final Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEquatorialRetrograde(final Field<T> field) {
             final T zero = field.getZero();
             FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(10000000.0), field.getZero(), field.getZero());
             FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero());
@@ -1190,20 +1265,20 @@ public class FieldEquinoctialOrbitTest {
                                                                                                    FramesFactory.getEME2000(),
                                                                                                    FieldAbsoluteDate.getJ2000Epoch(field),
                                                                                                    zero.add(mu)));
-            Assert.assertEquals(10637829.465, orbit.getA().getReal(), 1.0e-3);
-            Assert.assertEquals(-738.145, orbit.getADot().getReal(), 1.0e-3);
-            Assert.assertEquals(0.05995861, orbit.getE().getReal(), 1.0e-8);
-            Assert.assertEquals(-6.523e-5, orbit.getEDot().getReal(), 1.0e-8);
-            Assert.assertTrue(Double.isNaN(orbit.getI().getReal()));
-            Assert.assertTrue(Double.isNaN(orbit.getIDot().getReal()));
-            Assert.assertTrue(Double.isNaN(orbit.getHx().getReal()));
-            Assert.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
-            Assert.assertTrue(Double.isNaN(orbit.getHy().getReal()));
-            Assert.assertTrue(Double.isNaN(orbit.getHyDot().getReal()));
+            Assertions.assertEquals(10637829.465, orbit.getA().getReal(), 1.0e-3);
+            Assertions.assertEquals(-738.145, orbit.getADot().getReal(), 1.0e-3);
+            Assertions.assertEquals(0.05995861, orbit.getE().getReal(), 1.0e-8);
+            Assertions.assertEquals(-6.523e-5, orbit.getEDot().getReal(), 1.0e-8);
+            Assertions.assertTrue(Double.isNaN(orbit.getI().getReal()));
+            Assertions.assertTrue(Double.isNaN(orbit.getIDot().getReal()));
+            Assertions.assertTrue(Double.isNaN(orbit.getHx().getReal()));
+            Assertions.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
+            Assertions.assertTrue(Double.isNaN(orbit.getHy().getReal()));
+            Assertions.assertTrue(Double.isNaN(orbit.getHyDot().getReal()));
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) {
         T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         FieldVector3D<T> position     = new FieldVector3D<>(zero.add(6893443.400234382),
@@ -1218,29 +1293,29 @@ public class FieldEquinoctialOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity, acceleration);
         FieldEquinoctialOrbit<T> orbit = new FieldEquinoctialOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                      date, zero.add(Constants.EIGEN5C_EARTH_MU));
-        Assert.assertTrue(orbit.hasDerivatives());
+        Assertions.assertTrue(orbit.hasDerivatives());
         T r2 = position.getNormSq();
         T r  = r2.sqrt();
         FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);
-        Assert.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
+        Assertions.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
 
         for (OrbitType type : OrbitType.values()) {
             FieldOrbit<T> converted = type.convertType(orbit);
-            Assert.assertTrue(converted.hasDerivatives());
+            Assertions.assertTrue(converted.hasDerivatives());
             FieldEquinoctialOrbit<T> rebuilt = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(converted);
-            Assert.assertTrue(rebuilt.hasDerivatives());
-            Assert.assertEquals(orbit.getADot().getReal(),             rebuilt.getADot().getReal(),             3.0e-13);
-            Assert.assertEquals(orbit.getEquinoctialExDot().getReal(), rebuilt.getEquinoctialExDot().getReal(), 1.0e-15);
-            Assert.assertEquals(orbit.getEquinoctialEyDot().getReal(), rebuilt.getEquinoctialEyDot().getReal(), 1.0e-15);
-            Assert.assertEquals(orbit.getHxDot().getReal(),            rebuilt.getHxDot().getReal(),            1.0e-15);
-            Assert.assertEquals(orbit.getHyDot().getReal(),            rebuilt.getHyDot().getReal(),            1.0e-15);
-            Assert.assertEquals(orbit.getLvDot().getReal(),            rebuilt.getLvDot().getReal(),            1.0e-15);
+            Assertions.assertTrue(rebuilt.hasDerivatives());
+            Assertions.assertEquals(orbit.getADot().getReal(),             rebuilt.getADot().getReal(),             3.0e-13);
+            Assertions.assertEquals(orbit.getEquinoctialExDot().getReal(), rebuilt.getEquinoctialExDot().getReal(), 1.0e-15);
+            Assertions.assertEquals(orbit.getEquinoctialEyDot().getReal(), rebuilt.getEquinoctialEyDot().getReal(), 1.0e-15);
+            Assertions.assertEquals(orbit.getHxDot().getReal(),            rebuilt.getHxDot().getReal(),            1.0e-15);
+            Assertions.assertEquals(orbit.getHyDot().getReal(),            rebuilt.getHyDot().getReal(),            1.0e-15);
+            Assertions.assertEquals(orbit.getLvDot().getReal(),            rebuilt.getLvDot().getReal(),            1.0e-15);
         }
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestToString(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestToString(Field<T> field) {
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(-29536113.0),
                                                         field.getZero().add(30329259.0),
                                                         field.getZero().add(-100125.0));
@@ -1250,12 +1325,11 @@ public class FieldEquinoctialOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
         FieldEquinoctialOrbit<T> orbit = new FieldEquinoctialOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                      FieldAbsoluteDate.getJ2000Epoch(field), field.getZero().add(mu));
-        Assert.assertEquals("equinoctial parameters: {a: 4.225517000282565E7; ex: 5.927324978565528E-4; ey: -0.002062743969643666; hx: 6.401103130239252E-5; hy: -0.0017606836670756732; lv: 134.24111947709974;}",
+        Assertions.assertEquals("equinoctial parameters: {a: 4.225517000282565E7; ex: 5.927324978565528E-4; ey: -0.002062743969643666; hx: 6.401103130239252E-5; hy: -0.0017606836670756732; lv: 134.24111947709974;}",
                             orbit.toString());
     }
 
-    private <T extends RealFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field) {
 
         final Frame eme2000     = FramesFactory.getEME2000();
 
@@ -1279,14 +1353,72 @@ public class FieldEquinoctialOrbitTest {
         final FieldOrbit<T> shiftedOrbit     = orbit.shiftedBy(10); // This works good
         final FieldOrbit<T> shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
 
-        Assert.assertEquals(0.0,
-                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
-                                                   shiftedOrbitCopy.getPVCoordinates().getPosition()).getReal(),
+        Assertions.assertEquals(0.0,
+                            FieldVector3D.distance(shiftedOrbit.getPosition(),
+                                                   shiftedOrbitCopy.getPosition()).getReal(),
                             1.0e-10);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
                                                    shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-10);
+
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNormalize(Field<T> field) {
+        final T zero = field.getZero();
+        FieldEquinoctialOrbit<T> withoutDerivatives =
+                        new FieldEquinoctialOrbit<>(zero.newInstance(42166712.0), zero.newInstance(0.005),
+                                                    zero.newInstance(-0.025), zero.newInstance(0.17),
+                                                    zero.newInstance(0.34), zero.newInstance(0.4), PositionAngleType.MEAN,
+                                                    FramesFactory.getEME2000(), FieldAbsoluteDate.getJ2000Epoch(field),
+                                                    zero.newInstance(mu));
+        FieldEquinoctialOrbit<T> ref =
+                        new FieldEquinoctialOrbit<>(zero.newInstance(24000000.0), zero.newInstance(-0.012),
+                                                    zero.newInstance(0.01), zero.newInstance(0.2),
+                                                    zero.newInstance(0.1), zero.newInstance(-6.28), PositionAngleType.MEAN,
+                                                    FramesFactory.getEME2000(), FieldAbsoluteDate.getJ2000Epoch(field),
+                                                    zero.newInstance(mu));
+
+        FieldEquinoctialOrbit<T> normalized1 = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.normalize(withoutDerivatives, ref);
+        Assertions.assertFalse(normalized1.hasDerivatives());
+        Assertions.assertEquals(0.0, normalized1.getA().subtract(withoutDerivatives.getA()).getReal(),          1.0e-6);
+        Assertions.assertEquals(0.0, normalized1.getEquinoctialEx().subtract(withoutDerivatives.getEquinoctialEx()).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, normalized1.getEquinoctialEy().subtract(withoutDerivatives.getEquinoctialEy()).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, normalized1.getHx().subtract(withoutDerivatives.getHx()).getReal(),          1.0e-10);
+        Assertions.assertEquals(0.0, normalized1.getHy().subtract(withoutDerivatives.getHy()).getReal(), 1.0e-10);
+        Assertions.assertEquals(-MathUtils.TWO_PI, normalized1.getLv().subtract(withoutDerivatives.getLv()).getReal(), 1.0e-10);
+        Assertions.assertNull(normalized1.getADot());
+        Assertions.assertNull(normalized1.getEquinoctialExDot());
+        Assertions.assertNull(normalized1.getEquinoctialEyDot());
+        Assertions.assertNull(normalized1.getHxDot());
+        Assertions.assertNull(normalized1.getHyDot());
+        Assertions.assertNull(normalized1.getLDot(normalized1.getCachedPositionAngleType()));
+
+        T[] p    = MathArrays.buildArray(field, 6);
+        T[] pDot = MathArrays.buildArray(field, 6);
+        for (int i = 0; i < pDot.length; ++i) {
+            pDot[i] = zero.newInstance(i);
+        }
+        OrbitType.EQUINOCTIAL.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
+        FieldEquinoctialOrbit<T> withDerivatives = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.mapArrayToOrbit(p, pDot,
+                                                                                                                    PositionAngleType.TRUE,
+                                                                                                                    withoutDerivatives.getDate(),
+                                                                                                                    withoutDerivatives.getMu(),
+                                                                                                                    withoutDerivatives.getFrame());
+        FieldEquinoctialOrbit<T> normalized2 = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.normalize(withDerivatives, ref);
+        Assertions.assertTrue(normalized2.hasDerivatives());
+        Assertions.assertEquals(0.0, normalized2.getA().subtract(withDerivatives.getA()).getReal(),          1.0e-6);
+        Assertions.assertEquals(0.0, normalized2.getEquinoctialEx().subtract(withDerivatives.getEquinoctialEx()).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getEquinoctialEy().subtract(withDerivatives.getEquinoctialEy()).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getHx().subtract(withDerivatives.getHx()).getReal(),          1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getHy().subtract(withDerivatives.getHy()).getReal(), 1.0e-10);
+        Assertions.assertEquals(-MathUtils.TWO_PI, normalized2.getLv().subtract(withDerivatives.getLv()).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getADot().subtract(withDerivatives.getADot()).getReal(),          1.0e-6);
+        Assertions.assertEquals(0.0, normalized2.getEquinoctialExDot().subtract(withDerivatives.getEquinoctialExDot()).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getEquinoctialEyDot().subtract(withDerivatives.getEquinoctialEyDot()).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getHxDot().subtract(withDerivatives.getHxDot()).getReal(),          1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getHyDot().subtract(withDerivatives.getHyDot()).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, normalized2.getLvDot().subtract(withDerivatives.getLvDot()).getReal(), 1.0e-10);
 
     }
 

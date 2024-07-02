@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,13 @@
  */
 package org.orekit.frames;
 
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -50,14 +49,14 @@ public class ITRFProviderTest {
         for (double dt = 0; dt < 3 * Constants.JULIAN_DAY; dt += 60) {
             final AbsoluteDate date = date0.shiftedBy(dt);
             final Transform t = itrfWith.getTransformTo(itrfWithout, date);
-            Assert.assertEquals(0, t.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0, t.getTranslation().getNorm(), 1.0e-15);
             final double milliarcSeconds = FastMath.toDegrees(t.getRotation().getAngle()) * 3600000.0;
             minCorrection = FastMath.min(minCorrection, milliarcSeconds);
             maxCorrection = FastMath.max(maxCorrection, milliarcSeconds);
         }
 
-        Assert.assertEquals(0.064, minCorrection, 0.001);
-        Assert.assertEquals(0.613, maxCorrection, 0.001);
+        Assertions.assertEquals(0.064, minCorrection, 0.001);
+        Assertions.assertEquals(0.613, maxCorrection, 0.001);
 
     }
 
@@ -236,16 +235,16 @@ public class ITRFProviderTest {
 
         // time scales checks
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2007, 4, 5), TimeComponents.H12, utc);
-        Assert.assertEquals(0.50075444444444,
+        Assertions.assertEquals(0.50075444444444,
                             date.getComponents(tt).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             5.0e-15);
-        Assert.assertEquals(0.499999165813831,
+        Assertions.assertEquals(0.499999165813831,
                             date.getComponents(ut1).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             1.0e-15);
 
         // sidereal time check
         double era = IERSConventions.IERS_2010.getEarthOrientationAngleFunction(ut1).value(date);
-        Assert.assertEquals(13.318492966097 * 3600 * 1.0e6,
+        Assertions.assertEquals(13.318492966097 * 3600 * 1.0e6,
                             radToMicroAS(MathUtils.normalizeAngle(era, 0)),
                             0.0022);
 
@@ -256,7 +255,7 @@ public class ITRFProviderTest {
             { +0.000712264729708, +0.000044385250265, +0.999999745354420 }
         }, 1.0e-13);
         Rotation npb = gcrf.getTransformTo(tod, date).getRotation();
-        Assert.assertEquals(0.0, radToMicroAS(Rotation.distance(refNPB, npb)), 0.31);
+        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refNPB, npb)), 0.31);
 
         // celestial to terrestrial frames matrix, without polar motion
         Rotation refWithoutPolarMotion = new Rotation(new double[][] {
@@ -265,7 +264,7 @@ public class ITRFProviderTest {
             { +0.000712264729708, +0.000044385250265, +0.999999745354420 }
         }, 1.0e-13);
         Rotation withoutPM = gcrf.getTransformTo(gtod, date).getRotation();
-        Assert.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithoutPolarMotion, withoutPM)), 0.31);
+        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithoutPolarMotion, withoutPM)), 0.31);
 
         // celestial to terrestrial frames matrix, with polar motion
         Rotation refWithPolarMotion = new Rotation(new double[][] {
@@ -274,11 +273,11 @@ public class ITRFProviderTest {
             { +0.000711560162777, +0.000046626403835, +0.999999745754024 }
         }, 1.0e-13);
         Rotation withPM = gcrf.getTransformTo(itrf, date).getRotation();
-        Assert.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithPolarMotion, withPM)), 0.31);
+        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithPolarMotion, withPM)), 0.31);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }
@@ -288,8 +287,8 @@ public class ITRFProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     double radToMicroAS(double deltaRad) {

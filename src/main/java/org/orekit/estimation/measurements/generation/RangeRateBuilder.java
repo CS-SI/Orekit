@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,15 +16,14 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.RangeRate;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-
 
 /** Builder for {@link RangeRate} measurements.
  * @author Luc Maisonobe
@@ -57,45 +56,11 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
 
     /** {@inheritDoc} */
     @Override
-    public RangeRate build(final SpacecraftState[] states) {
-
-        final ObservableSatellite satellite = getSatellites()[0];
-        final double sigma                  = getTheoreticalStandardDeviation()[0];
-        final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
-
-        // create a dummy measurement
-        final RangeRate dummy = new RangeRate(station, state.getDate(), Double.NaN, sigma, baseWeight, twoway, satellite);
-        for (final EstimationModifier<RangeRate> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        double rangeRate = dummy.estimate(0, 0, states).getEstimatedValue()[0];
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            rangeRate += noise[0];
-        }
-
-        // generate measurement
-        final RangeRate measurement = new RangeRate(station, state.getDate(), rangeRate,
-                                                    sigma, baseWeight, twoway, satellite);
-        for (final EstimationModifier<RangeRate> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected RangeRate buildObserved(final AbsoluteDate date,
+                                      final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new RangeRate(station, date, Double.NaN,
+                             getTheoreticalStandardDeviation()[0],
+                             getBaseWeight()[0], twoway, getSatellites()[0]);
     }
 
 }

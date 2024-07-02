@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -34,15 +34,26 @@ public class UnixCompressFilter implements DataFilter {
     /** Suffix for Unix compressed files. */
     private static final String SUFFIX = ".Z";
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public UnixCompressFilter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
-    public NamedData filter(final NamedData original) {
-        final String                 oName   = original.getName();
-        final NamedData.StreamOpener oOpener = original.getStreamOpener();
+    public DataSource filter(final DataSource original) {
+        final String            oName   = original.getName();
+        final DataSource.Opener oOpener = original.getOpener();
         if (oName.endsWith(SUFFIX)) {
-            final String                 fName   = oName.substring(0, oName.length() - SUFFIX.length());
-            final NamedData.StreamOpener fOpener = () -> new ZInputStream(oName, oOpener.openStream());
-            return new NamedData(fName, fOpener);
+            final String                  fName   = oName.substring(0, oName.length() - SUFFIX.length());
+            final DataSource.StreamOpener fOpener = () -> new ZInputStream(oName, new Buffer(oOpener.openStreamOnce()));
+            return new DataSource(fName, fOpener);
         } else {
             return original;
         }
@@ -71,9 +82,6 @@ public class UnixCompressFilter implements DataFilter {
 
         /** File name. */
         private final String name;
-
-        /** Underlying compressed stream. */
-        private final InputStream input;
 
         /** Indicator for end of input. */
         private boolean endOfInput;
@@ -105,6 +113,9 @@ public class UnixCompressFilter implements DataFilter {
         /** Number of bits in the lookahead byte. */
         private int lookAheadWidth;
 
+        /** Input buffer. */
+        private Buffer input;
+
         /** Previous uncompressed sequence output. */
         private UncompressedSequence previousSequence;
 
@@ -119,7 +130,7 @@ public class UnixCompressFilter implements DataFilter {
          * @param input underlying compressed stream
          * @exception IOException if first bytes cannot be read
          */
-        ZInputStream(final String name, final InputStream input)
+        ZInputStream(final String name, final Buffer input)
             throws IOException {
 
             this.name       = name;
@@ -127,11 +138,11 @@ public class UnixCompressFilter implements DataFilter {
             this.endOfInput = false;
 
             // check header
-            if (input.read() != MAGIC_HEADER_1 || input.read() != MAGIC_HEADER_2) {
+            if (input.getByte() != MAGIC_HEADER_1 || input.getByte() != MAGIC_HEADER_2) {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE, name);
             }
 
-            final int header3 = input.read();
+            final int header3 = input.getByte();
             this.blockMode = (header3 & 0x80) != 0;
             this.maxWidth  = header3 & 0x1f;
 
@@ -174,7 +185,7 @@ public class UnixCompressFilter implements DataFilter {
 
                 // read more bits until key is complete
                 for (int remaining = currentWidth - lookAheadWidth; remaining > 0; remaining -= BYTE_WIDTH) {
-                    lookAhead       = input.read();
+                    lookAhead       = input.getByte();
                     lookAheadWidth += BYTE_WIDTH;
                     if (lookAhead < 0) {
                         if (key == 0 || key == keyMask) {
@@ -201,7 +212,7 @@ public class UnixCompressFilter implements DataFilter {
                     final int superSize = currentWidth * 8;
                     int padding = (superSize - 1 - (bitsRead + superSize - 1) % superSize) / 8;
                     while (padding-- > 0) {
-                        input.read();
+                        input.getByte();
                     }
 
                     // reset the table to handle a new block and read again next key
@@ -266,6 +277,13 @@ public class UnixCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         @Override
         public int read() throws IOException {
+            final byte[] b = new byte[1];
+            return read(b, 0, 1) < 0 ? -1 : b[0];
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int read(final byte[] b, final int offset, final int len) throws IOException {
 
             if (currentSequence == null) {
                 if (endOfInput || !selectNext()) {
@@ -275,7 +293,11 @@ public class UnixCompressFilter implements DataFilter {
                 }
             }
 
-            final int value = currentSequence.getByte(alreadyOutput++);
+            // copy as many bytes as possible from current sequence
+            final int n = FastMath.min(len, currentSequence.length() - alreadyOutput);
+            for (int i = 0; i < n; ++i) {
+                b[offset + i] = currentSequence.getByte(alreadyOutput++);
+            }
             if (alreadyOutput >= currentSequence.length()) {
                 // we have just exhausted the current sequence
                 previousSequence = currentSequence;
@@ -283,8 +305,14 @@ public class UnixCompressFilter implements DataFilter {
                 alreadyOutput    = 0;
             }
 
-            return value;
+            return n;
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int available() {
+            return currentSequence == null ? 0 : currentSequence.length() - alreadyOutput;
         }
 
     }
@@ -328,4 +356,52 @@ public class UnixCompressFilter implements DataFilter {
 
     }
 
+    /** Buffer for reading input data. */
+    private static class Buffer {
+
+        /** Size of input/output buffers. */
+        private static final int BUFFER_SIZE = 4096;
+
+        /** Underlying compressed stream. */
+        private final InputStream input;
+
+        /** Buffer data. */
+        private final byte[] data;
+
+        /** Start of pending data. */
+        private int start;
+
+        /** End of pending data. */
+        private int end;
+
+        /** Simple constructor.
+         * @param input input stream
+         */
+        Buffer(final InputStream input) {
+            this.input = input;
+            this.data  = new byte[BUFFER_SIZE];
+            this.start = 0;
+            this.end   = start;
+        }
+
+        /** Get one input byte.
+         * @return input byte, or -1 if end of input has been reached
+         * @throws IOException if input data cannot be read
+         */
+        private int getByte() throws IOException {
+
+            if (start == end) {
+                // the buffer is empty
+                start = 0;
+                end   = input.read(data);
+                if (end == -1) {
+                    return -1;
+                }
+            }
+
+            return data[start++] & 0xFF;
+
+        }
+
+    }
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,14 +26,14 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
-import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -42,7 +42,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 public class TurnAroundRangeAnalyticTest {
 
@@ -94,7 +93,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    5.9e-9, 2.0e-8, 3.5e-7, 7.3e-5, 3.4e-4, 1.2e-2);
+                                    7.0e-9, 2.5e-8, 3.9e-7, 8.2e-5, 3.1e-4, 7.3e-3);
     }
 
     /**
@@ -130,7 +129,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    3.1e-8, 9.9e-8, 1.8e-6, 7.5e-5, 2.6e-4, 0.5e-2);
+                                    3.1e-8, 9.9e-8, 1.8e-6, 8.5e-5, 3.2e-4, 1.2e-2);
     }
 
     /**
@@ -213,7 +212,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
-                                        3.0e-06, 5.9e-06, 1.3e-04, 2.9e-6, 5.0e-6, 3.9e-5);
+                                        2.8e-06, 5.9e-06, 1.2e-04, 4.3e-6, 2.3e-5, 2.2e-4);
 
     }
 
@@ -221,14 +220,13 @@ public class TurnAroundRangeAnalyticTest {
      * Generic test function for values of the TAR
      * @param printResults Print the results ?
      */
-    void genericTestValues(final boolean printResults)
-                    {
+    void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -238,7 +236,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] absoluteErrors = new double[measurements.size()];
         double[] relativeErrors = new double[measurements.size()];
@@ -247,7 +245,7 @@ public class TurnAroundRangeAnalyticTest {
         // Print the results ? Header
         if (printResults) {
            System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17s  %17s  %13s %13s%n",
-                              "Master Station", "Slave Station",
+                              "Primary Station", "secondary Station",
                               "Measurement Date", "State Date",
                               "TAR observed [m]", "TAR estimated [m]",
                               "|ΔTAR| [m]", "rel |ΔTAR|");
@@ -273,10 +271,10 @@ public class TurnAroundRangeAnalyticTest {
             if (printResults) {
                 final AbsoluteDate measurementDate = measurement.getDate();
 
-                String masterStationName = ((TurnAroundRange) measurement).getMasterStation().getBaseFrame().getName();
-                String slaveStationName = ((TurnAroundRange) measurement).getSlaveStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
+                String secondaryStationName = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17.6f  %17.6f  %13.6e %13.6e%n",
-                                  masterStationName, slaveStationName, measurementDate, date,
+                                  primaryStationName, secondaryStationName, measurementDate, date,
                                  TARobserved, TARestimated,
                                  FastMath.abs(TARestimated-TARobserved),
                                  FastMath.abs((TARestimated-TARobserved)/TARobserved));
@@ -302,11 +300,16 @@ public class TurnAroundRangeAnalyticTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 8.4e-08);
-        Assert.assertEquals(0.0, absErrorsMin,    9.0e-08);
-        Assert.assertEquals(0.0, absErrorsMax,    2.0e-07);
-        Assert.assertEquals(0.0, relErrorsMedian, 5.1e-15);
-        Assert.assertEquals(0.0, relErrorsMax,    1.2e-14);
+        Assertions.assertEquals(0.0, absErrorsMedian, 8.5e-08);
+        Assertions.assertEquals(0.0, absErrorsMin,    9.0e-08);
+        Assertions.assertEquals(0.0, absErrorsMax,    2.0e-07);
+        Assertions.assertEquals(0.0, relErrorsMedian, 5.1e-15);
+        Assertions.assertEquals(0.0, relErrorsMax,    1.2e-14);
+ 
+        // Test measurement type
+        final TurnAroundRangeAnalytic taRangeAnalytic =
+                        new TurnAroundRangeAnalytic((TurnAroundRange) measurements.get(0));
+        Assertions.assertEquals(TurnAroundRangeAnalytic.MEASUREMENT_TYPE, taRangeAnalytic.getMeasurementType());
     }
 
     /**
@@ -325,7 +328,7 @@ public class TurnAroundRangeAnalyticTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range2 measurements
@@ -335,7 +338,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         double[] errorsP = new double[3 * measurements.size()];
         double[] errorsV = new double[3 * measurements.size()];
@@ -349,7 +352,7 @@ public class TurnAroundRangeAnalyticTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Master Station", "Slave Station",
+                            "Primary Station", "secondary Station",
                             "Measurement Date", "State Date",
                             "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
                             "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
@@ -361,7 +364,7 @@ public class TurnAroundRangeAnalyticTest {
 
             // Add modifiers if test implies it
             final TurnAroundRangeTroposphericDelayModifier modifier =
-                            new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                            new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
             if (isModifier) {
                 ((TurnAroundRange) measurement).addModifier(modifier);
             }
@@ -388,12 +391,11 @@ public class TurnAroundRangeAnalyticTest {
 
             if (isFiniteDifferences) {
                 // Compute a reference value using finite differences
-                jacobianRef = Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                    }
-                }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                   OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                jacobianRef = Differentiation.differentiate(
+                    state1 -> measurement.
+                           estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                           getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
+                    OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
             } else {
                 // Compute a reference value using TurnAroundRange class function
                 jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
@@ -406,8 +408,8 @@ public class TurnAroundRangeAnalyticTest {
 //            }
 //            //Test
 
-            Assert.assertEquals(jacobianRef.length, jacobian.length);
-            Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
+            Assertions.assertEquals(jacobianRef.length, jacobian.length);
+            Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
             double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
             double [][] dJacobianRelative = new double[jacobian.length][jacobian[0].length];
@@ -425,14 +427,14 @@ public class TurnAroundRangeAnalyticTest {
             }
             // Print results on the console ? Print the Jacobian
             if (printResults) {
-                String masterStationName = ((TurnAroundRange) measurement).getMasterStation().getBaseFrame().getName();
-                String slaveStationName  = ((TurnAroundRange) measurement).getSlaveStation().getBaseFrame().getName();
+                String primaryStationName = ((TurnAroundRange) measurement).getPrimaryStation().getBaseFrame().getName();
+                String secondaryStationName  = ((TurnAroundRange) measurement).getSecondaryStation().getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e%n",
-                                masterStationName, slaveStationName, measurement.getDate(), date,
+                                primaryStationName, secondaryStationName, measurement.getDate(), date,
                                 dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
                                 dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
                                 dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
@@ -459,12 +461,12 @@ public class TurnAroundRangeAnalyticTest {
         }
 
         // Assert the results / max values depend on the test
-        Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
+        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
+        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
+        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
 
@@ -482,21 +484,21 @@ public class TurnAroundRangeAnalyticTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect TAR measurements
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
-            final GroundStation    masterStation = entry.getKey();
-            final GroundStation    slaveStation  = entry.getValue();
-            masterStation.getClockOffsetDriver().setSelected(false);
-            masterStation.getEastOffsetDriver().setSelected(true);
-            masterStation.getNorthOffsetDriver().setSelected(true);
-            masterStation.getZenithOffsetDriver().setSelected(true);
-            slaveStation.getClockOffsetDriver().setSelected(false);
-            slaveStation.getEastOffsetDriver().setSelected(true);
-            slaveStation.getNorthOffsetDriver().setSelected(true);
-            slaveStation.getZenithOffsetDriver().setSelected(true);
+            final GroundStation    primaryStation = entry.getKey();
+            final GroundStation    secondaryStation  = entry.getValue();
+            primaryStation.getClockOffsetDriver().setSelected(false);
+            primaryStation.getEastOffsetDriver().setSelected(true);
+            primaryStation.getNorthOffsetDriver().setSelected(true);
+            primaryStation.getZenithOffsetDriver().setSelected(true);
+            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getEastOffsetDriver().setSelected(true);
+            secondaryStation.getNorthOffsetDriver().setSelected(true);
+            secondaryStation.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -504,7 +506,7 @@ public class TurnAroundRangeAnalyticTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new TurnAroundRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
+        propagator.clearStepHandlers();
 
         // Print results on console ? Header
         if (printResults) {
@@ -513,7 +515,7 @@ public class TurnAroundRangeAnalyticTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Master Station", "Slave Station",
+                            "Primary Station", "secondary Station",
                             "Measurement Date", "State Date",
                             "ΔdQMx", "rel ΔdQMx",
                             "ΔdQMy", "rel ΔdQMy",
@@ -523,22 +525,23 @@ public class TurnAroundRangeAnalyticTest {
                             "ΔdQSz", "rel ΔdQSz");
          }
 
-        // List to store the results for master and slave station
-        final List<Double> relErrorQMList = new ArrayList<Double>();
-        final List<Double> relErrorQSList = new ArrayList<Double>();
+        // List to store the results for primary and secondary station
+        final List<Double> relErrorQMList = new ArrayList<>();
+        final List<Double> relErrorQSList = new ArrayList<>();
 
         // Loop on the measurements
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // Add modifiers if test implies it
-            final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+            final TurnAroundRangeTroposphericDelayModifier modifier =
+                new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
             if (isModifier) {
                 ((TurnAroundRange) measurement).addModifier(modifier);
             }
 
             // parameter corresponding to station position offset
-            final GroundStation masterStationParameter = ((TurnAroundRange) measurement).getMasterStation();
-            final GroundStation slaveStationParameter = ((TurnAroundRange) measurement).getSlaveStation();
+            final GroundStation primaryStationParameter = ((TurnAroundRange) measurement).getPrimaryStation();
+            final GroundStation secondaryStationParameter = ((TurnAroundRange) measurement).getSecondaryStation();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -551,20 +554,20 @@ public class TurnAroundRangeAnalyticTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
-                                                                     masterStationParameter.getEastOffsetDriver(),
-                                                                     masterStationParameter.getNorthOffsetDriver(),
-                                                                     masterStationParameter.getZenithOffsetDriver(),
-                                                                     slaveStationParameter.getEastOffsetDriver(),
-                                                                     slaveStationParameter.getNorthOffsetDriver(),
-                                                                     slaveStationParameter.getZenithOffsetDriver(),
+                                                                     primaryStationParameter.getEastOffsetDriver(),
+                                                                     primaryStationParameter.getNorthOffsetDriver(),
+                                                                     primaryStationParameter.getZenithOffsetDriver(),
+                                                                     secondaryStationParameter.getEastOffsetDriver(),
+                                                                     secondaryStationParameter.getNorthOffsetDriver(),
+                                                                     secondaryStationParameter.getZenithOffsetDriver(),
             };
 
             // Print results on console ? Stations' names
             if (printResults) {
-                String masterStationName  = masterStationParameter.getBaseFrame().getName();
-                String slaveStationName  = slaveStationParameter.getBaseFrame().getName();
+                String primaryStationName  = primaryStationParameter.getBaseFrame().getName();
+                String secondaryStationName  = secondaryStationParameter.getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s %-15s %-23s  %-23s  ",
-                                  masterStationName, slaveStationName, measurement.getDate(), date);
+                                  primaryStationName, secondaryStationName, measurement.getDate(), date);
             }
 
             // Loop on the parameters
@@ -577,10 +580,10 @@ public class TurnAroundRangeAnalyticTest {
                 if (isModifier) {
                   modifier.modify(TAR);
                 }
-                final double[] gradient  = TAR.getParameterDerivatives(drivers[i]);
+                final double[] gradient  = TAR.getParameterDerivatives(drivers[i], new AbsoluteDate());
 
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 // Reference value
                 double ref;
@@ -590,14 +593,16 @@ public class TurnAroundRangeAnalyticTest {
                                     Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
-                                        public double value(final ParameterDriver parameterDriver) {
-                                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                        public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                            return measurement.
+                                                   estimateWithoutDerivatives(new SpacecraftState[] { state }).
+                                                   getEstimatedValue()[0];
                                         }
                                     }, 3, 20.0 * drivers[i].getScale());
-                    ref = dMkdP.value(drivers[i]);
+                    ref = dMkdP.value(drivers[i], date);
                 } else {
                     // Compute a reference value using TurnAroundRange function
-                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i])[0];
+                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate())[0];
                 }
 
                 // Deltas
@@ -620,8 +625,8 @@ public class TurnAroundRangeAnalyticTest {
         } // End for loop on the measurements
 
         // Convert error list to double[]
-        final double relErrorQM[] = relErrorQMList.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorQS[] = relErrorQSList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorQM = relErrorQMList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorQS = relErrorQSList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsQMMedian = new Median().evaluate(relErrorQM);
@@ -636,19 +641,19 @@ public class TurnAroundRangeAnalyticTest {
         // Print the results on console ?
         if (printResults) {
             System.out.println();
-            System.out.format(Locale.US, "Relative errors dR/dQ master station -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ primary station -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQMMedian, relErrorsQMMean, relErrorsQMMax);
-            System.out.format(Locale.US, "Relative errors dR/dQ slave station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ secondary station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQSMedian, relErrorsQSMean, relErrorsQSMax);
         }
 
         // Check values
-        Assert.assertEquals(0.0, relErrorsQMMedian, refErrorQMMedian);
-        Assert.assertEquals(0.0, relErrorsQMMean, refErrorQMMean);
-        Assert.assertEquals(0.0, relErrorsQMMax, refErrorQMMax);
-        Assert.assertEquals(0.0, relErrorsQSMedian, refErrorQSMedian);
-        Assert.assertEquals(0.0, relErrorsQSMean, refErrorQSMean);
-        Assert.assertEquals(0.0, relErrorsQSMax, refErrorQSMax);
+        Assertions.assertEquals(0.0, relErrorsQMMedian, refErrorQMMedian);
+        Assertions.assertEquals(0.0, relErrorsQMMean, refErrorQMMean);
+        Assertions.assertEquals(0.0, relErrorsQMMax, refErrorQMMax);
+        Assertions.assertEquals(0.0, relErrorsQSMedian, refErrorQSMedian);
+        Assertions.assertEquals(0.0, relErrorsQSMean, refErrorQSMean);
+        Assertions.assertEquals(0.0, relErrorsQSMax, refErrorQSMax);
 
     }
 

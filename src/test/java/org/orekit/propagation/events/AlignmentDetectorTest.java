@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,10 +20,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -51,16 +51,16 @@ public class AlignmentDetectorTest {
         AlignmentDetector alignDetector =
             new AlignmentDetector(initialState.getOrbit(), sun, alignAngle).
             withMaxCheck(60.0);
-        Assert.assertEquals(alignAngle, alignDetector.getAlignAngle(), 1.0e-15);
-        Assert.assertSame(sun, alignDetector.getPVCoordinatesProvider());
-        Assert.assertEquals(60.0, alignDetector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(alignAngle, alignDetector.getAlignAngle(), 1.0e-15);
+        Assertions.assertSame(sun, alignDetector.getPVCoordinatesProvider());
+        Assertions.assertEquals(60.0, alignDetector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         propagator.addEventDetector(alignDetector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(383.3662, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertEquals(383.3662, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
@@ -83,11 +83,11 @@ public class AlignmentDetectorTest {
             propagator = new NumericalPropagator(integrator);
             propagator.setInitialState(initialState);
         } catch (OrekitException oe) {
-            Assert.fail(oe.getLocalizedMessage());
+            Assertions.fail(oe.getLocalizedMessage());
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         iniDate = null;
         initialState = null;

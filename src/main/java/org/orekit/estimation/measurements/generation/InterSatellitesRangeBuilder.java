@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,13 +17,12 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
+import java.util.Map;
 
 /** Builder for {@link InterSatellitesRange} measurements.
  * @author Luc Maisonobe
@@ -47,51 +46,17 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
                                        final ObservableSatellite local, final ObservableSatellite remote,
                                        final boolean twoWay, final double sigma, final double baseWeight) {
         super(noiseSource, sigma, baseWeight, local, remote);
-        this.twoway  = twoWay;
+        this.twoway = twoWay;
     }
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesRange build(final SpacecraftState[] states) {
-
-        final ObservableSatellite[] satellites = getSatellites();
-        final double sigma                     = getTheoreticalStandardDeviation()[0];
-        final double baseWeight                = getBaseWeight()[0];
-        final SpacecraftState state            = states[satellites[0].getPropagatorIndex()];
-
-        // create a dummy measurement
-        final InterSatellitesRange dummy = new InterSatellitesRange(satellites[0], satellites[1], twoway, state.getDate(),
-                                                                    Double.NaN, sigma, baseWeight);
-        for (final EstimationModifier<InterSatellitesRange> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        double range = dummy.estimate(0, 0, states).getEstimatedValue()[0];
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            range += noise[0];
-        }
-
-        // generate measurement
-        final InterSatellitesRange measurement = new InterSatellitesRange(satellites[0], satellites[1], twoway, state.getDate(),
-                                                                          range, sigma, baseWeight);
-        for (final EstimationModifier<InterSatellitesRange> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected InterSatellitesRange buildObserved(final AbsoluteDate date,
+                                                 final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new InterSatellitesRange(getSatellites()[0], getSatellites()[1],
+                                        twoway, date, Double.NaN,
+                                        getTheoreticalStandardDeviation()[0],
+                                        getBaseWeight()[0]);
     }
 
 }

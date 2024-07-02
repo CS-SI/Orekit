@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,16 +16,12 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
 
+import java.util.function.Predicate;
 
 /** {@link Scheduler} generating measurements sequences continuously.
  * <p>
@@ -47,41 +43,43 @@ public class ContinuousScheduler<T extends ObservedMeasurement<T>> extends Abstr
      * reusable across several {@link EventBasedScheduler instances}. A separate selector
      * should be used for each scheduler.
      * </p>
+     * <p>
+     * This constructor calls {@link #ContinuousScheduler(MeasurementBuilder, DatesSelector, Predicate)}
+     * whith the predicate set to accept all generated measurements.
+     * </p>
      * @param builder builder for individual measurements
      * @param selector selector for dates (beware that selectors are generally not
      * reusable across several {@link EventBasedScheduler instances}, each selector should
      * be dedicated to one scheduler
      */
     public ContinuousScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector) {
-        super(builder, selector);
+        super(builder, selector, e -> true);
+    }
+
+    /** Simple constructor.
+     * <p>
+     * BEWARE! Dates selectors often store internally the last selected dates, so they are not
+     * reusable across several {@link EventBasedScheduler instances}. A separate selector
+     * should be used for each scheduler.
+     * </p>
+     * @param builder builder for individual measurements
+     * @param selector selector for dates (beware that selectors are generally not
+     * reusable across several {@link EventBasedScheduler instances}, each selector should
+     * be dedicated to one scheduler
+     * @param filter predicate for a posteriori filtering of generated measurements
+     *               (measurements are accepted if the predicates evaluates to {@code true})
+     * @since 13.0
+     */
+    public ContinuousScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector,
+                               final Predicate<EstimatedMeasurementBase<T>> filter) {
+        super(builder, selector, filter);
     }
 
     /** {@inheritDoc} */
     @Override
-    public SortedSet<T> generate(final List<OrekitStepInterpolator> interpolators) {
-
-        // select dates in the current step, using arbitrarily interpolator 0
-        // as all interpolators cover the same range
-        final List<AbsoluteDate> dates = getSelector().selectDates(interpolators.get(0).getPreviousState().getDate(),
-                                                                   interpolators.get(0).getCurrentState().getDate());
-
-        // generate measurements when feasible
-        final SortedSet<T> measurements = new TreeSet<>();
-        for (final AbsoluteDate date : dates) {
-
-            // interpolate states at measurement date
-            final SpacecraftState[] states = new SpacecraftState[interpolators.size()];
-            for (int i = 0; i < states.length; ++i) {
-                states[i] = interpolators.get(i).getInterpolatedState(date);
-            }
-
-            // generate measurement
-            measurements.add(getBuilder().build(states));
-
-        }
-
-        return measurements;
-
+    public boolean measurementIsFeasible(final AbsoluteDate date) {
+        return true;
     }
+
 
 }

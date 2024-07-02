@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 
@@ -28,7 +28,7 @@ import org.orekit.time.FieldTimeStamped;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public class FieldDelaunayArguments<T extends RealFieldElement<T>> implements FieldTimeStamped<T> {
+public class FieldDelaunayArguments<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 
     /** Date. */
     private final FieldAbsoluteDate<T> date;

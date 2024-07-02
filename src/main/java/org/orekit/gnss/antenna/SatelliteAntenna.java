@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.gnss.antenna;
 
 import java.util.Map;
 
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
@@ -68,7 +68,7 @@ public class SatelliteAntenna extends Antenna {
      * @param validUntil end of validity
      */
     public SatelliteAntenna(final String type, final String sinexCode,
-                            final Map<Frequency, FrequencyPattern> patterns,
+                            final Map<RadioWave, FrequencyPattern> patterns,
                             final SatelliteSystem satelliteSystem, final int prnNumber,
                             final SatelliteType satelliteType, final int satelliteCode,
                             final String cosparID,

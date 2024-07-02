@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.GenericTimeStampedCache;
@@ -31,8 +31,9 @@ import org.orekit.utils.TimeStampedGenerator;
  * @see GenericTimeStampedCache
  * @since 9.0
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
-public class FieldTransformGenerator<T extends RealFieldElement<T>> implements TimeStampedGenerator<FieldTransform<T>> {
+public class FieldTransformGenerator<T extends CalculusFieldElement<T>> implements TimeStampedGenerator<FieldTransform<T>> {
 
     /** Field to which the elements belong. */
     private final Field<T> field;

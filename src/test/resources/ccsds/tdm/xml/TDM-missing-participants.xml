@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tdm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="fdsxml-1.0-master.xsd"
+     id="CCSDS_TDM_VERS" version="1.0">
+  <header>
+    <CREATION_DATE>2005-06-10T15:45:00.000</CREATION_DATE>
+    <ORIGINATOR>NASA/JPL</ORIGINATOR>
+  </header>
+  <body>
+    <segment>
+      <metadata>
+        <TIME_SYSTEM>UTC</TIME_SYSTEM>
+        <START_TIME>2005-05-22T12:00:00.000</START_TIME>
+        <STOP_TIME>2005-05-25T12:00:00.000</STOP_TIME>
+      </metadata>
+      <data>
+        <observation>
+          <EPOCH>2005-05-22T12:00:00.000</EPOCH>
+          <CLOCK_BIAS>-1.782E-6</CLOCK_BIAS>
+        </observation>
+      </data>
+    </segment>
+  </body>
+</tdm>

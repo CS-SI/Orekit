@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,6 @@
  */
 package org.orekit.data;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -29,6 +23,10 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
+import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 
 /** Simple swing-based dialog window to ask username/password.
  * <p>
@@ -51,7 +49,7 @@ public class AuthenticatorDialog extends Authenticator {
     /** Simple constructor.
      */
     public AuthenticatorDialog() {
-        userName = new String();
+        userName = "";
         password = new char[0];
     }
 
@@ -130,19 +128,17 @@ public class AuthenticatorDialog extends Authenticator {
                              SpringLayout.EAST,  passwordField);
         dialog.pack();
 
-        ActionListener al = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == cancelButton) {
-                    userName = new String();
-                    password = new char[0];
-                } else {
-                    userName = userNameField.getText();
-                    password = passwordField.getPassword();
-                }
-                userNameField.setText(null);
-                passwordField.setText(null);
-                dialog.setVisible(false);
+        ActionListener al = e -> {
+            if (e.getSource() == cancelButton) {
+                userName = "";
+                password = new char[0];
+            } else {
+                userName = userNameField.getText();
+                password = passwordField.getPassword();
             }
+            userNameField.setText(null);
+            passwordField.setText(null);
+            dialog.setVisible(false);
         };
         passwordField.addActionListener(al);
         okButton.addActionListener(al);
@@ -154,7 +150,7 @@ public class AuthenticatorDialog extends Authenticator {
         // to prevent credentials lying around in memory
         PasswordAuthentication authentication =
             new PasswordAuthentication(userName, password);
-        userName = new String();
+        userName = "";
         password = new char[0];
 
         return authentication;

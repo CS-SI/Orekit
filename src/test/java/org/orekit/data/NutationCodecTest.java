@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,12 @@
  */
 package org.orekit.data;
 
-
-import java.util.Arrays;
-
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 
 public class NutationCodecTest {
 
@@ -44,7 +42,7 @@ public class NutationCodecTest {
             long key = NutationCodec.encode(multipliers);
             int[] rebuilt = NutationCodec.decode(key);
             for (int k = 0; k < multipliers.length; ++k) {
-                Assert.assertEquals(multipliers[k], rebuilt[k]);
+                Assertions.assertEquals(multipliers[k], rebuilt[k]);
             }
         }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,122 +16,71 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.utils.ParameterDriver;
 
 public class TLEConverterTest {
 
-    private TLE geoTLE;
-
-    private TLE leoTLE;
-
     @Test
-    public void testConversionGeoPositionVelocity() {
-        checkFit(geoTLE, 86400, 300, 1.0e-3, false, false, 9.350e-8);
+    public void testDeselectOrbitals() {
+
+        final TLE tle = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
+                                "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
+
+        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0,
+                                                                new FixedPointTleGenerationAlgorithm());
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assertions.assertTrue(driver.isSelected());
+        }
+        builder.deselectDynamicParameters();
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assertions.assertFalse(driver.isSelected());
+        }
     }
 
     @Test
-    public void testConversionGeoPositionOnly() {
-        checkFit(geoTLE, 86400, 300, 1.0e-3, true, false, 1.328e-7);
-    }
+    public void testIssue859() {
 
-    @Test
-    public void testConversionLeoPositionVelocityWithoutBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, false, false, 10.77);
-    }
+        // INTELSAT 25 TLE taken from Celestrak the 2021-11-24T07:45:00.000
+        // Because the satellite eccentricity and inclination are closed to zero, this satellite
+        // reach convergence issues when converting the spacecraft's state to TLE.
+        final TLE tle = new TLE("1 33153U 08034A   21327.46310733 -.00000207  00000+0  00000+0 0  9990",
+                                "2 33153   0.0042  20.7353 0003042 213.9370 323.2156  1.00270917 48929");
 
-    @Test
-    public void testConversionLeoPositionOnlyWithoutBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, true, false, 15.23);
-    }
-
-    @Test
-    public void testConversionLeoPositionVelocityWithBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 2.646e-8);
-    }
-
-    @Test
-    public void testConversionLeoPositionOnlyWithBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 4.102e-8);
-    }
-
-    protected void checkFit(final TLE tle,
-                            final double duration,
-                            final double stepSize,
-                            final double threshold,
-                            final boolean positionOnly,
-                            final boolean withBStar,
-                            final double expectedRMS)
-        {
-
-        Propagator p = TLEPropagator.selectExtrapolator(tle);
-        List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
-        for (double dt = 0; dt < duration; dt += stepSize) {
-            sample.add(p.propagate(tle.getDate().shiftedBy(dt)));
+        // Verify convergence issue
+        final TLEPropagatorBuilder propagatorBuilderError = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.,
+                                                                                     new FixedPointTleGenerationAlgorithm());
+        try {
+            propagatorBuilderError.buildPropagator();
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_TLE, oe.getSpecifier());
         }
 
-        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.TRUE, 1.0);
+        // Now try using different convergence threshold
+        FixedPointTleGenerationAlgorithm algorithm =
+                        new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+                                                             1000, 0.5);
+        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1., algorithm);
+        final TLEPropagator propagator = propagatorBuilder.buildPropagator(propagatorBuilderError.getSelectedNormalizedParameters());
+        final TLE newTLE = propagator.getTLE();
 
-        List<DelegatingDriver> drivers = builder.getPropagationParametersDrivers().getDrivers();
-
-        // there should *not* be any drivers for central attraction coefficient (see issue #313)
-        Assert.assertEquals(1, drivers.size());
-        Assert.assertEquals("BSTAR", drivers.get(0).getName());
-
-        FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
-
-        if (withBStar) {
-            fitter.convert(sample, positionOnly, TLEPropagatorBuilder.B_STAR);
-        } else {
-            fitter.convert(sample, positionOnly);
-        }
-
-        TLEPropagator prop = (TLEPropagator)fitter.getAdaptedPropagator();
-        TLE fitted = prop.getTLE();
-
-        Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.001 * expectedRMS);
-
-        Assert.assertEquals(tle.getSatelliteNumber(),         fitted.getSatelliteNumber());
-        Assert.assertEquals(tle.getClassification(),          fitted.getClassification());
-        Assert.assertEquals(tle.getLaunchYear(),              fitted.getLaunchYear());
-        Assert.assertEquals(tle.getLaunchNumber(),            fitted.getLaunchNumber());
-        Assert.assertEquals(tle.getLaunchPiece(),             fitted.getLaunchPiece());
-        Assert.assertEquals(tle.getElementNumber(),           fitted.getElementNumber());
-        Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), fitted.getRevolutionNumberAtEpoch());
-
-        final double eps = 1.0e-5;
-        Assert.assertEquals(tle.getMeanMotion(), fitted.getMeanMotion(), eps * tle.getMeanMotion());
-        Assert.assertEquals(tle.getE(), fitted.getE(), eps * tle.getE());
-        Assert.assertEquals(tle.getI(), fitted.getI(), eps * tle.getI());
-        Assert.assertEquals(tle.getPerigeeArgument(), fitted.getPerigeeArgument(), eps * tle.getPerigeeArgument());
-        Assert.assertEquals(tle.getRaan(), fitted.getRaan(), eps * tle.getRaan());
-        Assert.assertEquals(tle.getMeanAnomaly(), fitted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
-
-        if (withBStar) {
-            Assert.assertEquals(tle.getBStar(), fitted.getBStar(), eps * tle.getBStar());
-        }
+        // Verify
+        Assertions.assertEquals(0.0, newTLE.getDate().durationFrom(tle.getDate()), Utils.epsilonTest);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
-                         "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
-        leoTLE = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
-                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
     }
 
 }
-

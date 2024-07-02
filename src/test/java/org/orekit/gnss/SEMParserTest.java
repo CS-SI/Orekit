@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,24 +16,25 @@
  */
 package org.orekit.gnss;
 
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
+import org.orekit.time.GNSSDate;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Locale;
 
-import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
-import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
-import org.orekit.time.GNSSDate;
-
 
 public class SEMParserTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("gnss");
     }
@@ -46,7 +47,7 @@ public class SEMParserTest {
         try {
             reader.loadData();
         } catch (OrekitException oe) {
-            Assert.assertEquals("aucun fichier d'almanach SEM n'a été trouvé", oe.getMessage(Locale.FRANCE));
+            Assertions.assertEquals("aucun fichier d'almanach SEM n'a été trouvé", oe.getMessage(Locale.FRANCE));
         }
     }
 
@@ -62,7 +63,7 @@ public class SEMParserTest {
         try {
             reader.loadData(in, fileName);
         } catch (OrekitException oe) {
-            Assert.assertEquals("le fichier /gnss/wrong_sem.txt n'est pas un fichier d'almanach SEM supporté",
+            Assertions.assertEquals("le fichier /gnss/wrong_sem.txt n'est pas un fichier d'almanach SEM supporté",
                                 oe.getMessage(Locale.FRANCE));
         }
     }
@@ -77,40 +78,40 @@ public class SEMParserTest {
         // Reads the SEM file
         reader.loadData(in, fileName);
 
-        Assert.assertEquals(".*\\.sem$", reader.getSupportedNames());
+        Assertions.assertEquals(".*\\.sem$", reader.getSupportedNames());
 
         // Checks the number of almanacs read
-        Assert.assertEquals(31, reader.getAlmanacs().size());
-        Assert.assertEquals(31, reader.getPRNNumbers().size());
+        Assertions.assertEquals(31, reader.getAlmanacs().size());
+        Assertions.assertEquals(31, reader.getPRNNumbers().size());
 
         // Checks the first almanac read
         final GPSAlmanac alm = reader.getAlmanacs().get(0);
-        Assert.assertEquals(1, alm.getPRN());
-        Assert.assertEquals(63, alm.getSVN());
-        Assert.assertEquals(862, alm.getWeek());
-        Assert.assertEquals(319488.0, alm.getTime(), 0.);
-        Assert.assertEquals(5.15360253906250E+03, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assert.assertEquals(5.10072708129883E-03, alm.getE(), FastMath.ulp(8E-05));
-        Assert.assertEquals(6.84547424316406E-03,  (alm.getI0() / GPSOrbitalElements.GPS_PI) - 0.30, 1.E-17);
-        Assert.assertEquals(0., alm.getIDot(), 0.);
-        Assert.assertEquals(-2.08778738975525E-01, alm.getOmega0() / GPSOrbitalElements.GPS_PI, FastMath.ulp(-2E-01));
-        Assert.assertEquals(-2.48837750405073E-09, alm.getOmegaDot() / GPSOrbitalElements.GPS_PI, FastMath.ulp(-3E-09));
-        Assert.assertEquals(1.46086812019348E-01, alm.getPa() / GPSOrbitalElements.GPS_PI, FastMath.ulp(1E-01));
-        Assert.assertEquals(4.55284833908081E-01, alm.getM0() / GPSOrbitalElements.GPS_PI, FastMath.ulp(4E-01));
-        Assert.assertEquals(1.33514404296875E-05, alm.getAf0(), FastMath.ulp(1E-05));
-        Assert.assertEquals(0., alm.getAf1(), 0.);
-        Assert.assertEquals(0, alm.getHealth());
-        Assert.assertEquals(0, alm.getURA());
-        Assert.assertEquals(11, alm.getSatConfiguration());
-        Assert.assertEquals("SEM", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(new GNSSDate(862, 319488 * 1000., SatelliteSystem.GPS).getDate()) == 0);
-        Assert.assertEquals(0., alm.getCic(), 0.);
-        Assert.assertEquals(0., alm.getCis(), 0.);
-        Assert.assertEquals(0., alm.getCrc(), 0.);
-        Assert.assertEquals(0., alm.getCrs(), 0.);
-        Assert.assertEquals(0., alm.getCuc(), 0.);
-        Assert.assertEquals(0., alm.getCus(), 0.);
-        Assert.assertEquals(1.4585998186870066E-4, alm.getMeanMotion(), 0.);
+        Assertions.assertEquals(1, alm.getPRN());
+        Assertions.assertEquals(63, alm.getSVN());
+        Assertions.assertEquals(862, alm.getWeek());
+        Assertions.assertEquals(319488.0, alm.getTime(), 0.);
+        Assertions.assertEquals(5.15360253906250E+03, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
+        Assertions.assertEquals(5.10072708129883E-03, alm.getE(), FastMath.ulp(8E-05));
+        Assertions.assertEquals(6.84547424316406E-03,  (alm.getI0() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
+        Assertions.assertEquals(0., alm.getIDot(), 0.);
+        Assertions.assertEquals(-2.08778738975525E-01, alm.getOmega0() / GNSSConstants.GNSS_PI, FastMath.ulp(-2E-01));
+        Assertions.assertEquals(-2.48837750405073E-09, alm.getOmegaDot() / GNSSConstants.GNSS_PI, FastMath.ulp(-3E-09));
+        Assertions.assertEquals(1.46086812019348E-01, alm.getPa() / GNSSConstants.GNSS_PI, FastMath.ulp(1E-01));
+        Assertions.assertEquals(4.55284833908081E-01, alm.getM0() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
+        Assertions.assertEquals(1.33514404296875E-05, alm.getAf0(), FastMath.ulp(1E-05));
+        Assertions.assertEquals(0., alm.getAf1(), 0.);
+        Assertions.assertEquals(0, alm.getHealth());
+        Assertions.assertEquals(0, alm.getURA());
+        Assertions.assertEquals(11, alm.getSatConfiguration());
+        Assertions.assertEquals("SEM", alm.getSource());
+        Assertions.assertEquals(alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()), 0, 0);
+        Assertions.assertEquals(0., alm.getCic(), 0.);
+        Assertions.assertEquals(0., alm.getCis(), 0.);
+        Assertions.assertEquals(0., alm.getCrc(), 0.);
+        Assertions.assertEquals(0., alm.getCrs(), 0.);
+        Assertions.assertEquals(0., alm.getCuc(), 0.);
+        Assertions.assertEquals(0., alm.getCus(), 0.);
+        Assertions.assertEquals(1.4585998186870066E-4, alm.getMeanMotion(), 0.);
     }
 
     @Test
@@ -120,40 +121,40 @@ public class SEMParserTest {
         // Reads the SEM file
         reader.loadData();
 
-        Assert.assertEquals(".*\\.al3$", reader.getSupportedNames());
+        Assertions.assertEquals(".*\\.al3$", reader.getSupportedNames());
 
         // Checks the number of almanacs read
-        Assert.assertEquals(31, reader.getAlmanacs().size());
-        Assert.assertEquals(31, reader.getPRNNumbers().size());
+        Assertions.assertEquals(31, reader.getAlmanacs().size());
+        Assertions.assertEquals(31, reader.getPRNNumbers().size());
 
         // Checks the last almanac read
         final GPSAlmanac alm = reader.getAlmanacs().get(reader.getAlmanacs().size() - 1);
-        Assert.assertEquals(32, alm.getPRN());
-        Assert.assertEquals(70, alm.getSVN());
-        Assert.assertEquals(862, alm.getWeek());
-        Assert.assertEquals(319488.0, alm.getTime(), 0.);
-        Assert.assertEquals(5.16559130859375E+03, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assert.assertEquals(7.96318054199219E-05, alm.getE(), FastMath.ulp(8E-05));
-        Assert.assertEquals(5.53321838378906E-03,  (alm.getI0() / GPSOrbitalElements.GPS_PI) - 0.30, 1.E-17);
-        Assert.assertEquals(0., alm.getIDot(), 0.);
-        Assert.assertEquals(4.53996539115906E-01, alm.getOmega0() / GPSOrbitalElements.GPS_PI, FastMath.ulp(5E-01));
-        Assert.assertEquals(-2.46291165240109E-09, alm.getOmegaDot() / GPSOrbitalElements.GPS_PI, FastMath.ulp(-3E-09));
-        Assert.assertEquals(7.92368650436401E-02, alm.getPa() / GPSOrbitalElements.GPS_PI, FastMath.ulp(8E-02));
-        Assert.assertEquals(3.84885787963867E-01, alm.getM0() / GPSOrbitalElements.GPS_PI, FastMath.ulp(4E-01));
-        Assert.assertEquals(9.5367431640625E-6, alm.getAf0(), 0.);
-        Assert.assertEquals(3.63797880709171E-12, alm.getAf1(), 0.);
-        Assert.assertEquals(63, alm.getHealth());
-        Assert.assertEquals(0, alm.getURA());
-        Assert.assertEquals(11, alm.getSatConfiguration());
-        Assert.assertEquals("SEM", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(new GNSSDate(862, 319488 * 1000., SatelliteSystem.GPS).getDate()) == 0);
-        Assert.assertEquals(0., alm.getCic(), 0.);
-        Assert.assertEquals(0., alm.getCis(), 0.);
-        Assert.assertEquals(0., alm.getCrc(), 0.);
-        Assert.assertEquals(0., alm.getCrs(), 0.);
-        Assert.assertEquals(0., alm.getCuc(), 0.);
-        Assert.assertEquals(0., alm.getCus(), 0.);
-        Assert.assertEquals(1.4484676213604242E-4, alm.getMeanMotion(), 0.);
+        Assertions.assertEquals(32, alm.getPRN());
+        Assertions.assertEquals(70, alm.getSVN());
+        Assertions.assertEquals(862, alm.getWeek());
+        Assertions.assertEquals(319488.0, alm.getTime(), 0.);
+        Assertions.assertEquals(5.16559130859375E+03, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
+        Assertions.assertEquals(7.96318054199219E-05, alm.getE(), FastMath.ulp(8E-05));
+        Assertions.assertEquals(5.53321838378906E-03,  (alm.getI0() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
+        Assertions.assertEquals(0., alm.getIDot(), 0.);
+        Assertions.assertEquals(4.53996539115906E-01, alm.getOmega0() / GNSSConstants.GNSS_PI, FastMath.ulp(5E-01));
+        Assertions.assertEquals(-2.46291165240109E-09, alm.getOmegaDot() / GNSSConstants.GNSS_PI, FastMath.ulp(-3E-09));
+        Assertions.assertEquals(7.92368650436401E-02, alm.getPa() / GNSSConstants.GNSS_PI, FastMath.ulp(8E-02));
+        Assertions.assertEquals(3.84885787963867E-01, alm.getM0() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
+        Assertions.assertEquals(9.5367431640625E-6, alm.getAf0(), 0.);
+        Assertions.assertEquals(3.63797880709171E-12, alm.getAf1(), 0.);
+        Assertions.assertEquals(63, alm.getHealth());
+        Assertions.assertEquals(0, alm.getURA());
+        Assertions.assertEquals(11, alm.getSatConfiguration());
+        Assertions.assertEquals("SEM", alm.getSource());
+        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()) == 0);
+        Assertions.assertEquals(0., alm.getCic(), 0.);
+        Assertions.assertEquals(0., alm.getCis(), 0.);
+        Assertions.assertEquals(0., alm.getCrc(), 0.);
+        Assertions.assertEquals(0., alm.getCrs(), 0.);
+        Assertions.assertEquals(0., alm.getCuc(), 0.);
+        Assertions.assertEquals(0., alm.getCus(), 0.);
+        Assertions.assertEquals(1.4484676213604242E-4, alm.getMeanMotion(), 0.);
     }
 
 }

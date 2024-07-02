@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,18 +16,19 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
 /**
  * This class is a container for the common "field" parameters used in {@link DSSTNewtonianAttraction}.
  * <p>
  * It performs parameters initialization at each integration step for the central body attraction.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 10.0
+ * @param <T> type of the field elements
  */
-class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
+public class FieldDSSTNewtonianAttractionContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Standard gravitational parameter μ for the body in m³/s². */
     private final T gm;
@@ -36,7 +37,7 @@ class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extend
      * Simple constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param parameters values of the force model parameters
+     * @param parameters        values of the force model parameters
      */
     FieldDSSTNewtonianAttractionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
 
@@ -45,7 +46,7 @@ class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extend
     }
 
     /** Get standard gravitational parameter μ for the body in m³/s².
-     *  @return gm
+     * @return gm
      */
     public T getGM() {
         return gm;

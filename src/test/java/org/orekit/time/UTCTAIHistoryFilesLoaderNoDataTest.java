@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,16 +16,19 @@
  */
 package org.orekit.time;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class UTCTAIHistoryFilesLoaderNoDataTest {
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNoData() {
-        Utils.setDataRoot("no-data");
-        TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+        });
     }
 
 }

@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,31 +25,17 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
-    package utils #DDEBD8 {
-
-      interface PVCoordinatesProvider {
-        +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
-      }
-
-    }
-
-
     package time #DDEBD8 {
 
-      interface TimeStamped {
-        +AbsoluteDate getDate()
-      }
+      interface TimeStamped
 
-      interface "TimeShiftable<T>" as TimeShiftable_T_ {
-        +T shiftedBy(double dt)
-      }
+      interface "TimeShiftable<T>" as TimeShiftable_T_
 
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_ {
-        +T interpolate(AbsoluteDate date, Collection<T> sample)
-      }
+      interface "TimeInterpolable<T>" as TimeInterpolable_T_
 
     }
 
@@ -62,20 +48,27 @@
         +SpacecraftState addAdditionalState(final String name, final double ... value)
         +boolean hasAdditionalState(final String name)
         +double[] getAdditionalState(final String name)
-        +Map<String, double[]> getAdditionalStates()
+        +DoubleArrayDictionary getAdditionalStates()
+        +SpacecraftState addAdditionalStateDerivative(final String name, final double ... value)
+        +boolean hasAdditionalStateDerivative(final String name)
+        +double[] getAdditionalStateDerivative(final String name)
+        +DoubleArrayDictionary getAdditionalStatesDerivatives()
       }
       note bottom
-        always immutable
-        addAdditionalState creates new instances
+        always immutable addAdditionalState and
+        addAdditionalStateDerivative create new instances
       end note
 
+      interface BoundedPropagator {
+        +AbsoluteDate getMinDate()
+        +AbsoluteDate getMaxDate()
+      }
+
       interface Propagator {
-        +int getMode()
-        +void setSlaveMode()
-        +void setMasterMode(double h, OrekitFixedStepHandler handler)
-        +void setMasterMode(OrekitStepHandler handler)
-        +void setEphemerisMode()
-        +BoundedPropagator getGeneratedEphemeris()
+        +StepHandlerMultiplexer getMultiplexer()
+        +void clearStepHandlers()
+        +void setStepHandler(double h, OrekitFixedStepHandler handler)
+        +void setStepHandler(OrekitStepHandler handler)
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
         +void addEventDetector(EventDetector detector)
@@ -84,23 +77,28 @@
         +AttitudeProvider getAttitudeProvider()
         +void setAttitudeProvider(AttitudeProvider attitudeProvider)
         +Frame getFrame()
+        +MatricesHarvester setupMatricesComputation(String stmName, RealMatrix initialStm, DoubleArrayDictionary initialJacobianColumns)
         +SpacecraftState propagate(AbsoluteDate target)
         +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
       }
 
-      interface BoundedPropagator {
-        +AbsoluteDate getMinDate()
-        +AbsoluteDate getMaxDate()
-      }
+      BoundedPropagator ..|> Propagator
+      SpacecraftState <-- Propagator : create
 
-      Propagator            <|..     BoundedPropagator
-      PVCoordinatesProvider <|.down. Propagator
-      Propagator            ->       SpacecraftState : create
-      TimeStamped           <|.right. SpacecraftState
-      TimeShiftable_T_      <|.right. SpacecraftState
-      TimeInterpolable_T_   <|.right. SpacecraftState
+     TimeStamped         ..|> SpacecraftState
+     TimeShiftable_T_    ..|> SpacecraftState
+     TimeInterpolable_T_ ..|> SpacecraftState
 
    }
+
+    package utils #DDEBD8 {
+
+      interface PVCoordinatesProvider {
+        +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+      }
+
+      Propagator ..|> PVCoordinatesProvider
+    }
 
  }
 

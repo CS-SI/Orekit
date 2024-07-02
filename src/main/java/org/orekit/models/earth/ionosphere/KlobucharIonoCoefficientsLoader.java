@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,7 +23,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -57,32 +61,61 @@ import org.orekit.time.DateComponents;
  *     1.0840D+05 -1.3197D+05 -2.6331D+05  4.0570D+05          ION BETA
  *                                                             END OF HEADER
  * </pre>
+ *
+ * <p>It is not safe for multiple threads to share a single instance of this class.
+ *
  * @author Maxime Journot
  */
-public class KlobucharIonoCoefficientsLoader implements DataLoader {
+public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
+        implements DataLoader {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "CGIM*0\\.*N$";
 
-    /** Regular expression for supported file name. */
-    private String supportedNames;
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** The alpha coefficients loaded. */
-    private double alpha[];
+    private double[] alpha;
 
     /** The beta coefficients loaded. */
-    private double beta[];
+    private double[] beta;
 
-    /** Constructor with supported names given by user.
-     * @param supportedNames Supported names
+    /**
+     * Constructor with supported names given by user. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @param supportedNames regular expression that matches the names of the RINEX files
+     *                       with Klobuchar coefficients.
+     * @see #KlobucharIonoCoefficientsLoader(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public KlobucharIonoCoefficientsLoader(final String supportedNames) {
-        this.alpha = null;
-        this.beta = null;
-        this.supportedNames = supportedNames;
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
     }
 
-    /** Constructor with default supported names. */
+    /**
+     * Constructor that uses user defined supported names and data context.
+     *
+     * @param supportedNames       regular expression that matches the names of the RINEX
+     *                             files with Klobuchar coefficients.
+     * @param dataProvidersManager provides access to auxiliary data files.
+     */
+    public KlobucharIonoCoefficientsLoader(final String supportedNames,
+                                           final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
+        this.alpha = null;
+        this.beta = null;
+    }
+
+    /**
+     * Constructor with default supported names. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @see #KlobucharIonoCoefficientsLoader(String, DataProvidersManager)
+     * @see #KlobucharIonoCoefficientsLoader(String)
+     */
+    @DefaultDataContext
     public KlobucharIonoCoefficientsLoader() {
         this(DEFAULT_SUPPORTED_NAMES);
     }
@@ -101,21 +134,20 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
         return beta.clone();
     }
 
-    /** Returns the supported names of the loader.
-     * @return the supported names
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /** Load the data using supported names .
      */
     public void loadKlobucharIonosphericCoefficients() {
-        DataProvidersManager.getInstance().feed(supportedNames, this);
+        feed(this);
 
         // Throw an exception if alphas or betas were not loaded properly
         if (alpha == null || beta == null) {
-            throw new OrekitException(OrekitMessages.KLOBUCHAR_ALPHA_BETA_NOT_LOADED, supportedNames);
+            throw new OrekitException(OrekitMessages.KLOBUCHAR_ALPHA_BETA_NOT_LOADED,
+                    getSupportedNames());
         }
     }
 
@@ -128,7 +160,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
         final int    doy        = dateComponents.getDayOfYear();
         final String yearString = String.valueOf(dateComponents.getYear());
 
-        this.supportedNames = String.format("CGIM%03d0.%2sN", doy, yearString.substring(yearString.length() - 2));
+        this.setSupportedNames(String.format("CGIM%03d0.%2sN", doy, yearString.substring(yearString.length() - 2)));
 
         try {
             this.loadKlobucharIonosphericCoefficients();
@@ -153,36 +185,37 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException {
 
-        // Open stream and parse data
-        final BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
-        final String splitter = "\\s+";
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            ++lineNumber;
-            line = line.trim();
+        String line = null;
+        // Open stream and parse data
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            try {
+            for (line = br.readLine(); line != null; line = br.readLine()) {
+                ++lineNumber;
+                line = line.trim();
+
                 // Read alphas
                 if (line.length() > 0 && line.endsWith("ALPHA")) {
-                    final String[] alpha_line = line.split(splitter);
+                    final String[] alpha_line = SEPARATOR.split(line);
                     alpha = new double[4];
                     for (int j = 0; j < 4; j++) {
-                        alpha[j] = Double.valueOf(alpha_line[j].replace("D", "E"));
+                        alpha[j] = Double.parseDouble(alpha_line[j].replace("D", "E"));
                     }
                 }
 
                 // Read betas
                 if (line.length() > 0 && line.endsWith("BETA")) {
-                    final String[] beta_line = line.split(splitter);
+                    final String[] beta_line = SEPARATOR.split(line);
                     beta = new double[4];
                     for (int j = 0; j < 4; j++) {
-                        beta[j] = Double.valueOf(beta_line[j].replace("D", "E"));
+                        beta[j] = Double.parseDouble(beta_line[j].replace("D", "E"));
                     }
                 }
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
             }
+
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
 
         // Check that alphas and betas were found
@@ -190,7 +223,5 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
             throw new OrekitException(OrekitMessages.NO_KLOBUCHAR_ALPHA_BETA_IN_FILE, name);
         }
 
-        // Close the stream after reading
-        input.close();
     }
 }

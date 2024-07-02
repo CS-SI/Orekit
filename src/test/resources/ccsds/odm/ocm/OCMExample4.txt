@@ -1,0 +1,372 @@
+CCSDS_OCM_VERS            = 3.0
+
+COMMENT  This file is a dummy example with inconsistent data
+COMMENT  it is used to exercise all possible keys in Key-Value Notation
+
+CLASSIFICATION            = dummy-classification
+CREATION_DATE             = 2019-07-23T10:29:31.576Z
+ORIGINATOR                = JPL
+MESSAGE_ID                = ABC-12_34
+
+META_START
+COMMENT Metadata comment
+OBJECT_NAME               = POLYSAT
+INTERNATIONAL_DESIGNATOR  = 2000-053A
+CATALOG_NAME              = COMSPOC
+OBJECT_DESIGNATOR         = 18SPCS 18571
+ALTERNATE_NAMES           = ALTERNATE, OTHER, RELATED
+ORIGINATOR_POC            = Mr. Rodgers
+ORIGINATOR_POSITION       = Flight Dynamics Mission Design Lead
+ORIGINATOR_PHONE          = +12345678901
+ORIGINATOR_EMAIL          = JOHN.DOE@EXAMPLE.ORG
+ORIGINATOR_ADDRESS        = 5040 Spaceflight Ave., Cocoa Beach, FL, USA, 12345
+TECH_ORG                  = NASA
+TECH_POC                  = Maxwell Smart
+TECH_POSITION             = Flight Dynamics Mission Design Lead
+TECH_PHONE                = +98765432109
+TECH_EMAIL                = MAX@EXAMPLE.ORG
+TECH_ADDRESS              = 34 Orekit avenue, Earth
+PREVIOUS_MESSAGE_ID       = ABC-12_33
+NEXT_MESSAGE_ID           = ABC-12_35
+ADM_MSG_LINK              = ADM_MSG_35132.TXT
+CDM_MSG_LINK              = CDM_MSG_35132.TXT
+PRM_MSG_LINK              = PRM_MSG_35132.TXT
+RDM_MSG_LINK              = RDM_MSG_35132.TXT
+TDM_MSG_LINK              = TDM_MSG_35132.TXT
+OPERATOR                  = INTELSAT
+OWNER                     = SIRIUS
+COUNTRY                   = FRANCE
+CONSTELLATION             = SPIRE
+OBJECT_TYPE               = PAYLOAD
+TIME_SYSTEM               = UTC
+EPOCH_TZERO               = 2019-07-23T00:00:00
+OPS_STATUS                = OPERATIONAL
+ORBIT_CATEGORY            = EGO
+OCM_DATA_ELEMENTS         = ORB, PHYS, COV, MAN, PERT, OD, USER
+SCLK_OFFSET_AT_EPOCH      = 28800 [s]
+SCLK_SEC_PER_SI_SEC       = 2.5 [s]
+PREVIOUS_MESSAGE_EPOCH    = 2019-07-23T09:29:31.576
+NEXT_MESSAGE_EPOCH        = 2019-07-23T11:29:31.576
+START_TIME                = 2019-204T09:30:00Z
+STOP_TIME                 = 2019-204T10:29:50Z
+TIME_SPAN                 = 0.041550925925 [d]
+TAIMUTC_AT_TZERO          = 37 [s]
+NEXT_LEAP_EPOCH           = 2050-12-31T23:59:60
+NEXT_LEAP_TAIMUTC         = 38 [s]
+UT1MUTC_AT_TZERO          = -0.1642060 [s]
+EOP_SOURCE                = IERS
+INTERP_METHOD_EOP         = LAGRANGE_ORDER_5
+CELESTIAL_SOURCE          = JPL_DE_430
+META_STOP
+
+TRAJ_START
+COMMENT                   this is number 1 ORB comment
+TRAJ_ID                   = orbit 1
+TRAJ_PREV_ID              = orbit 0
+TRAJ_NEXT_ID              = orbit 2
+TRAJ_BASIS                = DETERMINED_OD
+TRAJ_BASIS_ID             = OD_17
+INTERPOLATION             = HERMITE
+INTERPOLATION_DEGREE      = 3
+PROPAGATOR                = Orekit
+CENTER_NAME               = EARTH
+TRAJ_REF_FRAME            = TOD
+TRAJ_FRAME_EPOCH          = 2019-07-23T00:00:00.000
+USEABLE_START_TIME        = 2019-204T09:30:00Z
+USEABLE_STOP_TIME         = 2019-204T09:59:59.999Z
+ORB_REVNUM                = 17
+ORB_REVNUM_BASIS          = 1
+TRAJ_TYPE                 = CARTPVA
+TRAJ_UNITS                = [km,km,km,km/s,km/s,km/s,km/s**2,km/s**2,km/s**2]
+  0.0 1000.0 2000.0 3000.0 3.0 2.0 1.0 0.002 -0.003 -0.004
+300.0 2000.0 3000.0 4000.0 4.0 3.0 2.0 0.003 -0.004 -0.005
+600.0 3000.0 4000.0 5000.0 5.0 4.0 3.0 0.004 -0.005 -0.006
+TRAJ_STOP
+
+TRAJ_START
+COMMENT                   this is number 2 ORB comment
+TRAJ_ID                   = orbit 2
+TRAJ_PREV_ID              = orbit 1
+TRAJ_NEXT_ID              = orbit 3
+TRAJ_BASIS                = PREDICTED
+TRAJ_BASIS_ID             = SIMULATION
+INTERPOLATION             = LAGRANGE
+INTERPOLATION_DEGREE      = 8
+CENTER_NAME               = EARTH
+TRAJ_REF_FRAME            = TOD
+TRAJ_FRAME_EPOCH          = 2019-07-23T00:00:00.000
+USEABLE_START_TIME        = 2019-204T10:00:00Z
+USEABLE_STOP_TIME         = 2019-204T10:29:59.999Z
+TRAJ_TYPE                 = CARTP
+TRAJ_UNITS                = [km,km,km]
+1800.0 4000.0 5000.0 6000.0
+2100.0 5000.0 6000.0 7000.0
+2400.0 6000.0 7000.0 8000.0
+TRAJ_STOP
+
+TRAJ_START
+COMMENT                   this is number 3 ORB comment
+TRAJ_ID                   = orbit 3
+TRAJ_PREV_ID              = orbit 2
+TRAJ_NEXT_ID              = orbit 4
+TRAJ_BASIS                = SIMULATED
+TRAJ_BASIS_ID             = ce6898a2-db5f-11ec-8d7c-03ee8546e2d3
+INTERPOLATION             = LAGRANGE
+INTERPOLATION_DEGREE      = 8
+ORB_AVERAGING             = OSCULATING
+CENTER_NAME               = EARTH
+TRAJ_REF_FRAME            = TOD
+TRAJ_FRAME_EPOCH          = 2019-07-23T00:00:00.000
+USEABLE_START_TIME        = 2019-204T10:00:00Z
+USEABLE_STOP_TIME         = 2019-204T10:29:59.999Z
+TRAJ_TYPE                 = KEPLERIAN
+ORB_AVERAGING             = OSCULATING
+TRAJ_UNITS                = [km,n/a,deg,deg,deg,deg]
+2800.0 24464.560 0.7311 0.122138 3.10686 1.00681  0.048363
+3100.0 24464.560 0.7311 0.122138 3.10686 1.00681 10.048363
+3400.0 24464.560 0.7311 0.122138 3.10686 1.00681 20.048363
+TRAJ_STOP
+
+PHYS_START
+COMMENT                   this is PHYS comment
+MANUFACTURER              = AIRBUS
+BUS_MODEL                 = EUROSTAR
+DOCKED_WITH               = A1,A2,A3
+DRAG_CONST_AREA           = 5            [m**2]
+DRAG_COEFF_NOM            = 2.1
+DRAG_UNCERTAINTY          = 10.0         [%]
+INITIAL_WET_MASS          = 700          [kg]
+WET_MASS                  = 600          [kg]
+DRY_MASS                  = 500          [kg]
+OEB_PARENT_FRAME          = TOD
+OEB_PARENT_FRAME_EPOCH    = 2019-204T09:00:00.000Z
+OEB_Q1                    = 0.64
+OEB_Q2                    = 0.48
+OEB_Q3                    = 0.48
+OEB_QC                    = 0.36
+OEB_MAX                   = 3.0          [m]
+OEB_INT                   = 2.0          [m]
+OEB_MIN                   = 1.0          [m]
+AREA_ALONG_OEB_MAX        = 2.2          [m**2]
+AREA_ALONG_OEB_INT        = 3.2          [m**2]
+AREA_ALONG_OEB_MIN        = 6.2          [m**2]
+AREA_MIN_FOR_PC           = 4.3          [m**2]
+AREA_MAX_FOR_PC           = 6.3          [m**2]
+AREA_TYP_FOR_PC           = 5.3          [m**2]
+RCS                       = 2.4          [m**2]
+RCS_MIN                   = 1.4          [m**2]
+RCS_MAX                   = 3.4          [m**2]
+SRP_CONST_AREA            = 3.5          [m**2]
+SOLAR_RAD_COEFF           = 1.7
+SOLAR_RAD_UNCERTAINTY     = 20.0         [%]
+VM_ABSOLUTE               = 15.0
+VM_APPARENT_MIN           = 19.0
+VM_APPARENT               = 15.4
+VM_APPARENT_MAX           = 14.0
+REFLECTANCE               = 0.7
+ATT_CONTROL_MODE          = THREE_AXIS
+ATT_ACTUATOR_TYPE         = REACTION_WHEELS
+ATT_KNOWLEDGE             = 0.3          [deg]
+ATT_CONTROL               = 2.0          [deg]
+ATT_POINTING              = 2.3          [deg]
+AVG_MANEUVER_FREQ         = 20.0         [#/yr]
+MAX_THRUST                = 6.8          [N]
+DV_BOL                    = 1.9          [km/s]
+DV_REMAINING              = 0.2          [km/s]
+IXX                       = 1000.0       [kg*m**2]
+IYY                       =  800.0       [kg*m**2]
+IZZ                       =  400.0       [kg*m**2]
+IXY                       =  20.0        [kg*m**2]
+IXZ                       =  40.0        [kg*m**2]
+IYZ                       =  60.0        [kg*m**2]
+PHYS_STOP
+
+COV_START
+COMMENT                   this is number 1 COV comment
+COV_ID                    = covariance 1
+COV_PREV_ID               = covariance 0
+COV_NEXT_ID               = covariance 2
+COV_BASIS                 = EMPIRICAL
+COV_BASIS_ID              = basis 1
+COV_REF_FRAME             = MOD
+COV_FRAME_EPOCH           = 2019-204T09:10:00.000Z
+COV_SCALE_MIN             = 0.5
+COV_SCALE_MAX             = 5.0
+COV_CONFIDENCE            = 25           [%]
+COV_TYPE                  = CARTPV
+COV_ORDERING              = LTM
+COV_UNITS                 = [km,km,km,km/s,km/s,km/s]
+  0.0  1.1    2.1  2.2    3.1  3.2  3.3    4.1  4.2  4.3  4.4    5.1  5.2  5.3  5.4  5.5   6.1  6.2  6.3  6.4  6.5  6.6
+300.0 11.1   12.1 12.2   13.1 13.2 13.3   14.1 14.2 14.3 14.4   15.1 15.2 15.3 15.4 15.5  16.1 16.2 16.3 16.4 16.5 16.6
+600.0 21.1   22.1 22.2   23.1 23.2 23.3   24.1 24.2 24.3 24.4   25.1 25.2 25.3 25.4 25.5  26.1 26.2 26.3 26.4 26.5 26.6
+COV_STOP
+
+COV_START
+COMMENT                   this is number 2 COV comment
+COV_ID                    = covariance 2
+COV_PREV_ID               = covariance 1
+COV_NEXT_ID               = covariance 3
+COV_BASIS                 = SIMULATED
+COV_BASIS_ID              = basis 2
+COV_REF_FRAME             = TNW_INERTIAL
+COV_SCALE_MIN             = 0.5
+COV_SCALE_MAX             = 5.0
+COV_CONFIDENCE            = 50           [%]
+COV_TYPE                  = CARTPV
+COV_ORDERING              = UTMWCC
+COV_UNITS                 = [km,km,km,km/s,km/s,km/s]
+1800.0 43.0 20.0 3.0 -14.0 -2.0 6.0 0.56636547178859903876 29.0 8.0 2.0 -1.0 16.0 0.15249857033260466633 0.4951875684721383017 9.0 -5.0 0.0 10.0 -0.41087708961862444729 0.071474168989186322187 -0.32075014954979209141 27.0 2.0 3.0 -0.30499714066520933266 -0.18569533817705186314 0. 0.38490017945975050968 1.0 4.0 0.1569197342897824416 0.509543804238785612 0.57166195047502945793 0.099014754297667430918 0.68599434057003534952 34.0
+COV_STOP
+
+MAN_START
+COMMENT                   this is number 1 MAN comment
+MAN_ID                    = maneuver 1
+MAN_PREV_ID               = maneuver 0
+MAN_NEXT_ID               = maneuver 2
+MAN_BASIS                 = DETERMINED_TLM
+MAN_BASIS_ID              = TLM 203
+MAN_DEVICE_ID             = THR_02
+MAN_PREV_EPOCH            = -100.0
+MAN_NEXT_EPOCH            = +100.0
+MAN_PURPOSE               = ORBIT
+MAN_PRED_SOURCE           = OD_5
+MAN_REF_FRAME             = TOD
+MAN_FRAME_EPOCH           = 2.3
+GRAV_ASSIST_NAME          = MOON
+DC_TYPE                   = TIME
+DC_WIN_OPEN               = 2.0
+DC_WIN_CLOSE              = 100.0
+DC_MIN_CYCLES             = 5
+DC_MAX_CYCLES             = 30
+DC_EXEC_START             = 5.0
+DC_EXEC_STOP              = 95.0
+DC_REF_TIME               = 8000.0
+DC_TIME_PULSE_DURATION    = 10.0          [s]
+DC_TIME_PULSE_PERIOD      = 200.0         [s]
+MAN_COMPOSITION           = TIME_ABSOLUTE,TIME_RELATIVE,MAN_DURA,DELTA_MASS,ACC_X,ACC_Y,ACC_Z,ACC_INTERP,ACC_MAG_SIGMA,ACC_DIR_SIGMA,DV_X,DV_Y,DV_Z,DV_MAG_SIGMA,DV_DIR_SIGMA,THR_X,THR_Y,THR_Z,THR_EFFIC,THR_INTERP,THR_ISP,THR_MAG_SIGMA,THR_DIR_SIGMA
+MAN_UNITS                 = [s,kg,km/s**2,km/s**2,km/s**2,n/a,%,deg,km/s,km/s,km/s,%,deg,N,N,N,n/a,n/a,s,%,deg]
+2019-07-23T00:00:00   0.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 ON 1.0 3.1 0.025 0.0015 0.00029 2.0 5.2 1.0 2.0 3.0 0.95 ON 330.0 2.0 4.3
+2019-07-23T00:10:00 600.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 ON 1.0 3.1 0.025 0.0015 0.00029 2.0 5.2 1.0 2.0 3.0 0.95 ON 330.0 2.0 4.3
+MAN_STOP
+
+MAN_START
+COMMENT                   this is number 2 MAN comment
+MAN_ID                    = maneuver 2
+MAN_PREV_ID               = maneuver 1
+MAN_NEXT_ID               = maneuver 3
+MAN_BASIS                 = PLANNED
+MAN_BASIS_ID              = analysis 17
+MAN_DEVICE_ID             = THR_07
+MAN_PREV_EPOCH            = 200.0
+MAN_NEXT_EPOCH            = 300.0
+MAN_PURPOSE               = PERIOD
+MAN_PRED_SOURCE           = OD_5
+MAN_REF_FRAME             = TNW_INERTIAL
+GRAV_ASSIST_NAME          = EARTH
+DC_TYPE                   = TIME_AND_ANGLE
+DC_WIN_OPEN               = 1002.0
+DC_WIN_CLOSE              = 1100.0
+DC_MIN_CYCLES             = 14
+DC_MAX_CYCLES             = 60
+DC_EXEC_START             = 1005.0
+DC_EXEC_STOP              = 1095.0
+DC_REF_TIME               = 12000.0
+DC_TIME_PULSE_DURATION    = 20.0             [s]
+DC_TIME_PULSE_PERIOD      = 400.0            [s]
+DC_REF_DIR                = 1.0 0.0 0.0
+DC_BODY_FRAME             = SENSOR_3
+DC_BODY_TRIGGER           = 0.707 0.0 0.707
+DC_PA_START_ANGLE         = 25.0             [deg]
+DC_PA_STOP_ANGLE          = 35.0             [deg]
+MAN_COMPOSITION           = TIME_RELATIVE,MAN_DURA,DELTA_MASS,ACC_X,ACC_Y,ACC_Z,ACC_INTERP,ACC_MAG_SIGMA,ACC_DIR_SIGMA,DV_X,DV_Y,DV_Z,DV_MAG_SIGMA,DV_DIR_SIGMA,THR_X,THR_Y,THR_Z,THR_EFFIC,THR_INTERP,THR_ISP,THR_MAG_SIGMA,THR_DIR_SIGMA
+MAN_UNITS                 = [s,kg,km/s**2,km/s**2,km/s**2,n/a,%,deg,km/s,km/s,km/s,%,deg,N,N,N,n/a,n/a,s,%,deg]
+1000.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 OFF 1.0 3.1 0.025 0.0015 0.00029 2.0 5.2 1.0 2.0 3.0 0.95 ON 330.0 2.0 4.3
+1600.0 200.0 -5.0 0.000734092785 0.000189779834 0.0000794872502 OFF 1.0 3.1 0.025 0.0015 0.00029 2.0 4.2 1.0 2.0 3.0 0.95 ON 330.0 2.0 4.3
+MAN_STOP
+
+MAN_START
+COMMENT                   this is number 3 MAN comment
+MAN_ID                    = maneuver 3
+MAN_DEVICE_ID             = DEPLOYMENT
+MAN_COMPOSITION           = TIME_ABSOLUTE,DEPLOY_ID,DEPLOY_DV_X,DEPLOY_DV_Y,DEPLOY_DV_Z,DEPLOY_MASS,DEPLOY_DV_SIGMA,DEPLOY_DIR_SIGMA,DEPLOY_DV_RATIO,DEPLOY_DV_CDA
+MAN_UNITS                 = [n/a,km/s,km/s,km/s,kg,%,deg,n/a,m**2]
+2019-07-23T09:45:00 BEE_1  0.0001  0.0003  0.0002 -0.4 5.0 7.2 -0.05 0.022
+2019-07-23T09:46:00 BEE_2  0.0001  0.0003 -0.0002 -0.4 5.0 7.2 -0.05 0.022
+2019-07-23T09:47:00 BEE_3  0.0001 -0.0003  0.0002 -0.4 5.0 7.2 -0.05 0.022
+2019-07-23T09:48:00 BEE_4  0.0001 -0.0003 -0.0002 -0.4 5.0 7.2 -0.05 0.022
+2019-07-23T09:49:00 BEE_5 -0.0001  0.0003  0.0002 -0.4 5.0 7.2 -0.05 0.022
+2019-07-23T09:50:00 BEE_6 -0.0001  0.0003 -0.0002 -0.4 5.0 7.2 -0.05 0.022
+2019-07-23T09:51:00 BEE_7 -0.0001 -0.0003  0.0002 -0.4 5.0 7.2 -0.05 0.022
+2019-07-23T09:52:00 BEE_8 -0.0001 -0.0003 -0.0002 -0.4 5.0 7.2 -0.05 0.022
+MAN_STOP
+
+PERT_START
+COMMENT                   this is PERT comment
+ATMOSPHERIC_MODEL         = NRLMSIS00
+GRAVITY_MODEL             = TEG-4: 36D 12O
+EQUATORIAL_RADIUS         = 6378.137           [km]
+GM                        = 398600.4415        [km**3/s**2]
+N_BODY_PERTURBATIONS      = MOON,SUN
+CENTRAL_BODY_ROTATION     = 4.17807421629e-3   [deg/s]
+OBLATE_FLATTENING         = 0.00335281066475
+OCEAN_TIDES_MODEL         = SEMI-DIURNAL
+SOLID_TIDES_MODEL         = DIURNAL
+REDUCTION_THEORY          = IERS2010
+ALBEDO_MODEL              = KNOCKE
+ALBEDO_GRID_SIZE          = 100
+SHADOW_MODEL              = DUAL CONE
+SHADOW_BODIES             = EARTH,MOON
+SRP_MODEL                 = BOX_WING
+SW_DATA_SOURCE            = CELESTRAK
+SW_DATA_EPOCH             = 2019-07-22T00:00:00.000
+SW_INTERP_METHOD          = LAGRANGE_ORDER_5
+FIXED_GEOMAG_KP           = 3.2                [nT]
+FIXED_GEOMAG_AP           = 2.1                [nT]
+FIXED_GEOMAG_DST          = -20                [nT]
+FIXED_F10P7               = 120.0              [SFU]
+FIXED_F10P7_MEAN          = 132.0              [SFU]
+FIXED_M10P7               = 130.0              [SFU]
+FIXED_M10P7_MEAN          = 142.0              [SFU]
+FIXED_S10P7               = 140.0              [SFU]
+FIXED_S10P7_MEAN          = 152.0              [SFU]
+FIXED_Y10P7               = 150.0              [SFU]
+FIXED_Y10P7_MEAN          = 162.0              [SFU]
+PERT_STOP
+
+OD_START
+COMMENT                   this is OD comment
+OD_ID                     = OD_24
+OD_PREV_ID                = OD_23
+OD_METHOD                 = BWLS: OREKIT
+OD_EPOCH                  = 2019-07-22T17:32:27
+DAYS_SINCE_FIRST_OBS      = 3.5                 [d]
+DAYS_SINCE_LAST_OBS       = 1.2                 [d]
+RECOMMENDED_OD_SPAN       = 5.2                 [d]
+ACTUAL_OD_SPAN            = 2.3                 [d]
+OBS_AVAILABLE             = 100
+OBS_USED                  =  90
+TRACKS_AVAILABLE          =  33
+TRACKS_USED               =  30
+MAXIMUM_OBS_GAP           = 1.0                 [d]
+OD_EPOCH_EIGMAJ           = 58.73               [m]
+OD_EPOCH_EIGINT           = 35.7                [m]
+OD_EPOCH_EIGMIN           = 21.5                [m]
+OD_MAX_PRED_EIGMAJ        = 32.5                [m]
+OD_MIN_PRED_EIGMIN        = 22.0                [m]
+OD_CONFIDENCE             = 95.3                [%]
+GDOP                      = .857
+SOLVE_N                   = 6
+SOLVE_STATES              = POS[3], VEL[3]
+CONSIDER_N                = 2
+CONSIDER_PARAMS           = DRAG, SRP
+SENSORS_N                 = 3
+SENSORS                   = EGLIN,FYLINGDALES,PLAGNOLE
+WEIGHTED_RMS              = 1.3
+DATA_TYPES                = RANGE,DOPPLER,AZEL
+OD_STOP
+
+USER_START
+COMMENT                   this is USER comment
+USER_DEFINED_LIBRARY      = OREKIT
+USER_STOP
+

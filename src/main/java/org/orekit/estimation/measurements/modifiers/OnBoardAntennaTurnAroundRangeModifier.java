@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,10 +20,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.TurnAroundRange;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -53,23 +53,23 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TurnAroundRange> estimated) {
 
-        // the participants are master station at emission, spacecraft during leg 1,
-        // slave station at rebound, spacecraft during leg 2, master station at reception
-        final TimeStampedPVCoordinates[] participants     = estimated.getParticipants();
-        final Vector3D                   pMasterEmission  = participants[0].getPosition();
-        final AbsoluteDate               transitDateLeg1  = participants[1].getDate();
-        final Vector3D                   pSlaveRebound    = participants[2].getPosition();
-        final AbsoluteDate               transitDateLeg2  = participants[3].getDate();
-        final Vector3D                   pMasterReception = participants[4].getPosition();
+        // the participants are primary station at emission, spacecraft during leg 1,
+        // secondary station at rebound, spacecraft during leg 2, primary station at reception
+        final TimeStampedPVCoordinates[] participants      = estimated.getParticipants();
+        final Vector3D                   pPrimaryEmission  = participants[0].getPosition();
+        final AbsoluteDate               transitDateLeg1   = participants[1].getDate();
+        final Vector3D                   pSecondaryRebound = participants[2].getPosition();
+        final AbsoluteDate               transitDateLeg2   = participants[3].getDate();
+        final Vector3D                   pPrimaryReception = participants[4].getPosition();
 
         // transforms from spacecraft to inertial frame at transit dates
         final SpacecraftState refState              = estimated.getStates()[0];
         final SpacecraftState transitStateLeg1      = refState.shiftedBy(transitDateLeg1.durationFrom(refState.getDate()));
-        final Transform       spacecraftToInertLeg1 = transitStateLeg1.toTransform().getInverse();
+        final StaticTransform spacecraftToInertLeg1 = transitStateLeg1.toStaticTransform().getInverse();
         final SpacecraftState transitStateLeg2      = refState.shiftedBy(transitDateLeg2.durationFrom(refState.getDate()));
-        final Transform       spacecraftToInertLeg2 = transitStateLeg2.toTransform().getInverse();
+        final StaticTransform spacecraftToInertLeg2 = transitStateLeg2.toStaticTransform().getInverse();
 
         // compute the geometrical value of the turn-around range directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),
@@ -77,27 +77,27 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
         final Vector3D pSpacecraftLeg1 = spacecraftToInertLeg1.transformPosition(Vector3D.ZERO);
         final Vector3D pSpacecraftLeg2 = spacecraftToInertLeg2.transformPosition(Vector3D.ZERO);
         final double turnAroundRangeUsingSpacecraftCenter =
-                        0.5 * (Vector3D.distance(pMasterEmission, pSpacecraftLeg1) +
-                               Vector3D.distance(pSpacecraftLeg1, pSlaveRebound)   +
-                               Vector3D.distance(pSlaveRebound,   pSpacecraftLeg2) +
-                               Vector3D.distance(pSpacecraftLeg2, pMasterReception));
+                        0.5 * (Vector3D.distance(pPrimaryEmission,  pSpacecraftLeg1) +
+                               Vector3D.distance(pSpacecraftLeg1,   pSecondaryRebound)   +
+                               Vector3D.distance(pSecondaryRebound, pSpacecraftLeg2) +
+                               Vector3D.distance(pSpacecraftLeg2,   pPrimaryReception));
 
         // compute the geometrical value of the range replacing
         // the spacecraft positions with antenna phase center positions
         final Vector3D pAPCLeg1 = spacecraftToInertLeg1.transformPosition(antennaPhaseCenter);
         final Vector3D pAPCLeg2 = spacecraftToInertLeg2.transformPosition(antennaPhaseCenter);
         final double turnAroundRangeUsingAntennaPhaseCenter =
-                        0.5 * (Vector3D.distance(pMasterEmission, pAPCLeg1)      +
-                               Vector3D.distance(pAPCLeg1,        pSlaveRebound) +
-                               Vector3D.distance(pSlaveRebound,   pAPCLeg2)      +
-                               Vector3D.distance(pAPCLeg2,        pMasterReception));
+                        0.5 * (Vector3D.distance(pPrimaryEmission,  pAPCLeg1)          +
+                               Vector3D.distance(pAPCLeg1,          pSecondaryRebound) +
+                               Vector3D.distance(pSecondaryRebound, pAPCLeg2)          +
+                               Vector3D.distance(pAPCLeg2,          pPrimaryReception));
 
         // get the estimated value before this modifier is applied
         final double[] value = estimated.getEstimatedValue();
 
         // modify the value
         value[0] += turnAroundRangeUsingAntennaPhaseCenter - turnAroundRangeUsingSpacecraftCenter;
-        estimated.setEstimatedValue(value);
+        estimated.modifyEstimatedValue(this, value);
 
     }
 

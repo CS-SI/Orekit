@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,18 +18,23 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
@@ -122,14 +127,14 @@ class JPLCelestialBody implements CelestialBody {
     /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
      */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
-                                                                                             final Frame frame) {
+    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
+                                                                                                 final Frame frame) {
 
         // apply the scale factor to raw position-velocity
-        final FieldPVCoordinates<T> rawPV    = rawPVProvider.getRawPV(date);
+        final FieldPVCoordinates<T>            rawPV    = rawPVProvider.getRawPV(date);
         final TimeStampedFieldPVCoordinates<T> scaledPV = new TimeStampedFieldPVCoordinates<>(date, scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
@@ -140,6 +145,37 @@ class JPLCelestialBody implements CelestialBody {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+
+        // apply the scale factor to raw position
+        final Vector3D rawPosition    = rawPVProvider.getRawPosition(date);
+        final Vector3D scaledPosition = rawPosition.scalarMultiply(scale);
+
+        // the raw position is relative to the parent of the body centered inertially oriented frame
+        final StaticTransform transform = getInertiallyOrientedFrame().getParent().getStaticTransformTo(frame, date);
+
+        // convert to requested frame
+        return transform.transformPosition(scaledPosition);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+
+        // apply the scale factor to raw position
+        final FieldVector3D<T> rawPosition     = rawPVProvider.getRawPosition(date);
+        final FieldVector3D<T> scaledPosition  = rawPosition.scalarMultiply(scale);
+
+        // the raw position is relative to the parent of the body centered inertially oriented frame
+        final FieldStaticTransform<T> transform = getInertiallyOrientedFrame().getParent().getStaticTransformTo(frame, date);
+
+        // convert to requested frame
+        return transform.transformPosition(scaledPosition);
+    }
+
+
     /** Replace the instance with a data transfer object for serialization.
      * <p>
      * This intermediate class serializes the files supported names, the ephemeris type
@@ -147,6 +183,7 @@ class JPLCelestialBody implements CelestialBody {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTOCelestialBody(supportedNames, generateType, name);
     }
@@ -171,7 +208,7 @@ class JPLCelestialBody implements CelestialBody {
         return bodyFrame;
     }
 
-   /** Inertially oriented body centered frame. */
+    /** Inertially oriented body centered frame. */
     private class InertiallyOriented extends Frame {
 
         /** Serializable UID. */
@@ -209,15 +246,38 @@ class JPLCelestialBody implements CelestialBody {
                     final Vector3D pole  = iauPole.getPole(date);
                     final Vector3D qNode = iauPole.getNode(date);
                     final Transform rotation =
-                            new Transform(date, new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
+                                    new Transform(date, new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
 
                     // update transform from parent to self
                     return new Transform(date, translation, rotation);
 
                 }
 
+                @Override
+                public StaticTransform getStaticTransform(final AbsoluteDate date) {
+                    // compute translation from parent frame to self
+                    final Vector3D position = getPosition(date, definingFrame);
+
+                    // compute rotation from ICRF frame to self,
+                    // as per the "Report of the IAU/IAG Working Group on Cartographic
+                    // Coordinates and Rotational Elements of the Planets and Satellites"
+                    // These definitions are common for all recent versions of this report
+                    // published every three years, the precise values of pole direction
+                    // and W angle coefficients may vary from publication year as models are
+                    // adjusted. These coefficients are not in this class, they are in the
+                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
+                    // methods
+                    final Vector3D pole  = iauPole.getPole(date);
+                    final Vector3D qNode = iauPole.getNode(date);
+                    final Rotation rotation =
+                                    new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
+
+                    // update transform from parent to self
+                    return StaticTransform.of(date, position.negate(), rotation);
+                }
+
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
                     // compute translation from parent frame to self
                     final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
@@ -238,15 +298,40 @@ class JPLCelestialBody implements CelestialBody {
                         qNode = FieldVector3D.getPlusI(date.getField());
                     }
                     final FieldTransform<T> rotation =
-                            new FieldTransform<>(date,
-                                                 new FieldRotation<>(pole,
-                                                                     qNode,
-                                                                     FieldVector3D.getPlusK(date.getField()),
-                                                                     FieldVector3D.getPlusI(date.getField())));
+                                    new FieldTransform<>(date,
+                                                    new FieldRotation<>(pole,
+                                                                    qNode,
+                                                                    FieldVector3D.getPlusK(date.getField()),
+                                                                    FieldVector3D.getPlusI(date.getField())));
 
                     // update transform from parent to self
                     return new FieldTransform<>(date, translation, rotation);
 
+                }
+
+                @Override
+                public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+                    // field
+                    final Field<T> field = date.getField();
+                    // compute translation from parent frame to self
+                    final FieldVector3D<T> position = getPosition(date, definingFrame);
+
+                    // compute rotation from ICRF frame to self,
+                    // as per the "Report of the IAU/IAG Working Group on Cartographic
+                    // Coordinates and Rotational Elements of the Planets and Satellites"
+                    // These definitions are common for all recent versions of this report
+                    // published every three years, the precise values of pole direction
+                    // and W angle coefficients may vary from publication year as models are
+                    // adjusted. These coefficients are not in this class, they are in the
+                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
+                    // methods
+                    final FieldVector3D<T> pole  = iauPole.getPole(date);
+                    final FieldVector3D<T> qNode = iauPole.getNode(date);
+                    final FieldRotation<T> rotation =
+                                    new FieldRotation<>(pole, qNode, FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field));
+
+                    // update transform from parent to self
+                    return FieldStaticTransform.of(date, position.negate(), rotation);
                 }
 
             }, frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);
@@ -259,6 +344,7 @@ class JPLCelestialBody implements CelestialBody {
          * </p>
          * @return data transfer object that will be serialized
          */
+        @DefaultDataContext
         private Object writeReplace() {
             return new DTOInertialFrame(supportedNames, generateType, name);
         }
@@ -294,14 +380,14 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                     final double dt = 10.0;
                     final T w0 = iauPole.getPrimeMeridianAngle(date);
                     final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
                     return new FieldTransform<>(date,
-                                                new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
-                                                                    RotationConvention.FRAME_TRANSFORM),
-                                                new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
+                                    new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
+                                                    RotationConvention.FRAME_TRANSFORM),
+                                    new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
                 }
 
             }, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);
@@ -314,6 +400,7 @@ class JPLCelestialBody implements CelestialBody {
          * </p>
          * @return data transfer object that will be serialized
          */
+        @DefaultDataContext
         private Object writeReplace() {
             return new DTOBodyFrame(supportedNames, generateType, name);
         }
@@ -321,6 +408,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private abstract static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -354,7 +442,8 @@ class JPLCelestialBody implements CelestialBody {
             try {
                 // first try to use the factory, in order to avoid building a new instance
                 // each time we deserialize and have the object properly cached
-                final CelestialBody factoryProvided = CelestialBodyFactory.getBody(name);
+                final CelestialBody factoryProvided =
+                                DataContext.getDefault().getCelestialBodies().getBody(name);
                 if (factoryProvided instanceof JPLCelestialBody) {
                     final JPLCelestialBody jplBody = (JPLCelestialBody) factoryProvided;
                     if (supportedNames.equals(jplBody.supportedNames) && generateType == jplBody.generateType) {
@@ -376,6 +465,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for complete celestial body serialization. */
+    @DefaultDataContext
     private static class DTOCelestialBody extends DataTransferObject {
 
         /** Serializable UID. */
@@ -400,6 +490,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for inertially oriented frame serialization. */
+    @DefaultDataContext
     private static class DTOInertialFrame extends DataTransferObject {
 
         /** Serializable UID. */
@@ -424,6 +515,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for body oriented frame serialization. */
+    @DefaultDataContext
     private static class DTOBodyFrame extends DataTransferObject {
 
         /** Serializable UID. */

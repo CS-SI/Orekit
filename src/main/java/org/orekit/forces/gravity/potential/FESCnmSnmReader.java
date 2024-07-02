@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -44,6 +44,9 @@ public class FESCnmSnmReader extends OceanTidesReader {
 
     /** Pattern for fields with Doodson number. */
     private static final String  DOODSON_TYPE_PATTERN = "\\p{Digit}{2,3}[.,]\\p{Digit}{3}";
+
+    /** Pattern for regular data. */
+    private static final Pattern PATTERN = Pattern.compile("[.,]");
 
     /** Scale of the Cnm, Snm parameters. */
     private final double scale;
@@ -93,39 +96,40 @@ public class FESCnmSnmReader extends OceanTidesReader {
 
         // parse the file
         startParse(name);
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        int lineNumber      = 0;
-        boolean dataStarted = false;
-        for (String line = r.readLine(); line != null; line = r.readLine()) {
-            ++lineNumber;
-            final Matcher regularMatcher = regularLinePattern.matcher(line);
-            if (regularMatcher.matches()) {
-                // we have found a regular data line
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            int lineNumber      = 0;
+            boolean dataStarted = false;
+            for (String line = r.readLine(); line != null; line = r.readLine()) {
+                ++lineNumber;
+                final Matcher regularMatcher = regularLinePattern.matcher(line);
+                if (regularMatcher.matches()) {
+                    // we have found a regular data line
 
-                // parse Doodson, degree and order fields
-                final int doodson = Integer.parseInt(regularMatcher.group(1).replaceAll("[.,]", ""));
-                final int n       = Integer.parseInt(regularMatcher.group(3));
-                final int m       = Integer.parseInt(regularMatcher.group(4));
+                    // parse Doodson, degree and order fields
+                    final int doodson = Integer.parseInt(PATTERN.matcher(regularMatcher.group(1)).replaceAll(""));
+                    final int n       = Integer.parseInt(regularMatcher.group(3));
+                    final int m       = Integer.parseInt(regularMatcher.group(4));
 
-                if (canAdd(n, m)) {
+                    if (canAdd(n, m)) {
 
-                    // parse coefficients
-                    final double cPlus  = scale * Double.parseDouble(regularMatcher.group(5));
-                    final double sPlus  = scale * Double.parseDouble(regularMatcher.group(6));
-                    final double cMinus = scale * Double.parseDouble(regularMatcher.group(7));
-                    final double sMinus = scale * Double.parseDouble(regularMatcher.group(8));
+                        // parse coefficients
+                        final double cPlus  = scale * Double.parseDouble(regularMatcher.group(5));
+                        final double sPlus  = scale * Double.parseDouble(regularMatcher.group(6));
+                        final double cMinus = scale * Double.parseDouble(regularMatcher.group(7));
+                        final double sMinus = scale * Double.parseDouble(regularMatcher.group(8));
 
-                    // store parsed fields
-                    addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);
-                    dataStarted = true;
+                        // store parsed fields
+                        addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);
+                        dataStarted = true;
 
+                    }
+
+                } else if (dataStarted) {
+                    // once the first data line has been encountered,
+                    // all remaining lines should also be data lines
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, name, line);
                 }
-
-            } else if (dataStarted) {
-                // once the first data line has been encountered,
-                // all remaining lines should also be data lines
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
             }
         }
         endParse();

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,11 +17,12 @@
 
 package org.orekit.utils;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /**
-** Interface for PV coordinates providers.
+ * Interface for PV coordinates providers.
  * @author Veronique Pommier
  * <p>The PV coordinates provider interface can be used by any class used for position/velocity
  * computation, for example celestial bodies or spacecraft position/velocity propagators,
@@ -30,12 +31,21 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface PVCoordinatesProvider {
 
+    /** Get the position of the body in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the position
+     * @return position of the body (m and)
+     * @since 12.0
+     */
+    default Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        return getPVCoordinates(date, frame).getPosition();
+    }
+
     /** Get the {@link PVCoordinates} of the body in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
      * @return time-stamped position/velocity of the body (m and m/s)
      */
-    TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date,
-                                              Frame frame);
+    TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame);
 
 }

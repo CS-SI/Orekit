@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,19 @@
  */
 package org.orekit;
 
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.exception.Localizable;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,19 +42,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.hipparchus.exception.DummyLocalizable;
-import org.hipparchus.exception.Localizable;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Predefined;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
 
 /** Simple parser for key/value files.
  * @param Key type of the parameter keys
@@ -327,7 +327,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param xKey parameter key for abscissa
      * @param yKey parameter key for ordinate
      * @param zKey parameter key for height
-     * @param scale time scale in which the date is to be parsed
      * @return date value corresponding to the key
      * @exception NoSuchElementException if key is not in the map
      */
@@ -340,7 +339,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param xKey parameter key for abscissa
      * @param yKey parameter key for ordinate
      * @param zKey parameter key for height
-     * @param scale time scale in which the date is to be parsed
      * @return date value corresponding to the key
      * @exception NoSuchElementException if key is not in the map
      */
@@ -422,7 +420,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * We consider Earth frames are the frames with name starting with "ITRF".
      * </p>
      * @param key parameter key
-     * @param parameters key/value map containing the parameters
      * @return Earth frame corresponding to the key
      * @exception NoSuchElementException if key is not in the map
      */

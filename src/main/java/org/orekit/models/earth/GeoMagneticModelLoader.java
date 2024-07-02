@@ -75,6 +75,17 @@ public class GeoMagneticModelLoader implements DataLoader {
     /** The loaded models. */
     private List<GeoMagneticField> models = new LinkedList<GeoMagneticField>();
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public GeoMagneticModelLoader() {
+        // nothing to do
+    }
+
     /** Returns a {@link Collection} of the {@link GeoMagneticField} models that
      * have been successfully loaded. The {@link Collection} is in
      * insertion-order, thus it may not be sorted in order of the model epoch.

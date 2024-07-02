@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,18 +18,16 @@
  *
  * This package provides interfaces and classes dealing with step handling during propagation.
  * <p>
- * It is used when a {@link org.orekit.propagation.Propagator Propagator} is run in
- * {@link org.orekit.propagation.Propagator#MASTER_MODE master mode}. In this mode, the
- * (master) propagator integration loop calls (slave) application callback methods at each
- * finalized step. The callback methods must implement the {@link
- * org.orekit.propagation.sampling.OrekitFixedStepHandler} interface for fixed step sampling or
- * the {@link org.orekit.propagation.sampling.OrekitStepHandler} interface for variable step
- * sampling.
+ * It is used when a {@link org.orekit.propagation.Propagator Propagator} is run. The propagator
+ * takes care of the time loop and application callback methods are called at each finalized step.
+ * The callback methods must implement the {@link org.orekit.propagation.sampling.OrekitFixedStepHandler}
+ * interface for fixed step sampling or the {@link org.orekit.propagation.sampling.OrekitStepHandler}
+ * interface for variable step sampling.
  * </p>
  *
  * <p>
  * Both regular propagators using double numbers for state components and field based propagators
- * using any kind of {@link org.hipparchus.RealFieldElement field} are available. A typical
+ * using any kind of {@link org.hipparchus.CalculusFieldElement field} are available. A typical
  * example is to use {@link org.hipparchus.analysis.differentiation.DerivativeStructure derivative
  * structure} objects to propagate orbits using Taylor Algebra, for either high order uncertainties
  * propagation or very fast Monte-Carlo simulations.

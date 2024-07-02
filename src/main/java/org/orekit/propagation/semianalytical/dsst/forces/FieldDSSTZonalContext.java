@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,21 +16,23 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * This class is a container for the common "field" parameters used in {@link DSSTZonal}.
  * <p>
  * It performs parameters initialization at each integration step for the Zonal contribution
  * to the central body gravitational perturbation.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 10.0
+ * @param <T> type of the field elements
  */
-class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     // Common factors for potential computation
     /** A = sqrt(μ * a). */
@@ -41,19 +43,19 @@ class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceMod
     private T XX;
     /** &Chi;³. */
     private T XXX;
-    /** 1 / (A * B) .*/
+    /** 1 / (A * B) . */
     private T ooAB;
-    /** B / A .*/
+    /** B / A . */
     private T BoA;
-    /** B / A(1 + B) .*/
+    /** B / A(1 + B) . */
     private T BoABpo;
-    /** -C / (2 * A * B) .*/
+    /** -C / (2 * A * B) . */
     private T mCo2AB;
-    /** -2 * a / A .*/
+    /** -2 * a / A . */
     private T m2aoA;
-    /** μ / a .*/
+    /** μ / a . */
     private T muoa;
-    /** R / a .*/
+    /** R / a . */
     private T roa;
 
     /** Keplerian mean motion. */
@@ -78,15 +80,18 @@ class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceMod
     private T cxo2n2a2;
     /** (χ²) / (n² * a² * (χ + 1 ) ). */
     private T x2on2a2xp1;
-    /** B * B.*/
+    /** B * B. */
     private T BB;
 
     /**
      * Simple constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param provider provider for spherical harmonics
-     * @param parameters values of the force model parameters
+     * @param provider          provider for spherical harmonics
+     * @param parameters        values of the force model parameters (only 1 values
+     * for each parameters corresponding to state date) obtained by calling the extract
+     * parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     * to selected the right value for state date or by getting the parameters for a specific date
      */
     FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                  final UnnormalizedSphericalHarmonicsProvider provider,
@@ -103,24 +108,24 @@ class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceMod
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 
         // &Chi; = 1 / B
-        X   = auxiliaryElements.getB().reciprocal();
-        XX  = X.multiply(X);
+        X = auxiliaryElements.getB().reciprocal();
+        XX = X.square();
         XXX = X.multiply(XX);
 
         // 1 / AB
-        ooAB   = (A.multiply(auxiliaryElements.getB())).reciprocal();
+        ooAB = (A.multiply(auxiliaryElements.getB())).reciprocal();
         // B / A
-        BoA    = auxiliaryElements.getB().divide(A);
+        BoA = auxiliaryElements.getB().divide(A);
         // -C / 2AB
         mCo2AB = auxiliaryElements.getC().multiply(ooAB).divide(2.).negate();
         // B / A(1 + B)
         BoABpo = BoA.divide(auxiliaryElements.getB().add(1.));
         // -2 * a / A
-        m2aoA  = auxiliaryElements.getSma().divide(A).multiply(2.).negate();
+        m2aoA = auxiliaryElements.getSma().divide(A).multiply(2.).negate();
         // μ / a
-        muoa   = mu.divide(auxiliaryElements.getSma());
+        muoa = mu.divide(auxiliaryElements.getSma());
         // R / a
-        roa    = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
+        roa = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
 
         // Short period terms
 

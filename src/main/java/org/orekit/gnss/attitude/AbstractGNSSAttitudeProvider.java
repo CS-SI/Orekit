@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,7 +22,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.frames.Frame;
@@ -60,7 +60,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
     private final SortedSet<TimeStamped> turns;
 
     /** Turns already encountered. */
-    private final transient Map<Field<? extends RealFieldElement<?>>, SortedSet<TimeStamped>> fieldTurns;
+    private final transient Map<Field<? extends CalculusFieldElement<?>>, SortedSet<TimeStamped>> fieldTurns;
 
     /** Simple constructor.
      * @param validityStart start of validity for this provider
@@ -113,9 +113,9 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame) {
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
 
         // compute yaw correction
         final FieldTurnSpan<T>                      turnSpan  = getTurnSpan(date);
@@ -156,7 +156,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      * @param <T> type of the field elements
      * @return turn span covering the date, or null if no span covers this date
      */
-    private <T extends RealFieldElement<T>> FieldTurnSpan<T> getTurnSpan(final FieldAbsoluteDate<T> date) {
+    private <T extends CalculusFieldElement<T>> FieldTurnSpan<T> getTurnSpan(final FieldAbsoluteDate<T> date) {
 
         SortedSet<TimeStamped> sortedSet = fieldTurns.get(date.getField());
         if (sortedSet == null) {
@@ -182,6 +182,21 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
 
     }
 
+    /** Get provider for Sun position.
+     * @return provider for Sun position
+     * @since 12.0
+     */
+    protected ExtendedPVCoordinatesProvider getSun() {
+        return sun;
+    }
+
+    /** Get inertial frame where velocity are computed.
+     * @return inertial frame where velocity are computed
+     */
+    protected Frame getInertialFrame() {
+        return inertialFrame;
+    }
+
     /** Select the
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
      * @param context context data for attitude computation
@@ -194,7 +209,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      * @param <T> type of the field elements
      * @return corrected yaw, using inertial frame as the reference
      */
-    protected abstract <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
+    protected abstract <T extends CalculusFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
         correctedYaw(GNSSFieldAttitudeContext<T> context);
 
 }

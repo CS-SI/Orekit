@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -77,17 +77,17 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     public GeographicZoneDetector(final double maxCheck, final double threshold,
                                   final BodyShape body,
                                   final SphericalPolygonsSet zone,  final double margin) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<GeographicZoneDetector>(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, zone, zone.getEnclosingCap(), margin);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -96,12 +96,12 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      * @param cap spherical cap surrounding the zone
      * @param margin angular margin to apply to the zone
      */
-    private GeographicZoneDetector(final double maxCheck, final double threshold,
-                                   final int maxIter, final EventHandler<? super GeographicZoneDetector> handler,
-                                   final BodyShape body,
-                                   final SphericalPolygonsSet zone,
-                                   final EnclosingBall<Sphere2D, S2Point> cap,
-                                   final double margin) {
+    protected GeographicZoneDetector(final AdaptableInterval maxCheck, final double threshold,
+                                     final int maxIter, final EventHandler handler,
+                                     final BodyShape body,
+                                     final SphericalPolygonsSet zone,
+                                     final EnclosingBall<Sphere2D, S2Point> cap,
+                                     final double margin) {
         super(maxCheck, threshold, maxIter, handler);
         this.body   = body;
         this.zone   = zone;
@@ -111,8 +111,8 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
 
     /** {@inheritDoc} */
     @Override
-    protected GeographicZoneDetector create(final double newMaxCheck, final double newThreshold,
-                                            final int newMaxIter, final EventHandler<? super GeographicZoneDetector> newHandler) {
+    protected GeographicZoneDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                            final int newMaxIter, final EventHandler newHandler) {
         return new GeographicZoneDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                           body, zone, cap, margin);
     }
@@ -159,7 +159,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
+        final GeodeticPoint gp = body.transform(s.getPosition(),
                                                 s.getFrame(), s.getDate());
 
         // map the point to a sphere (geodetic coordinates have already taken care of ellipsoid flatness)

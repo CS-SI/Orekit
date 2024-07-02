@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.sequential;
 
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -23,8 +24,8 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -33,22 +34,27 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.MultiplexedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
-import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -62,9 +68,9 @@ public class KalmanEstimatorTest {
         try {
             new KalmanEstimatorBuilder().
             build();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -80,13 +86,13 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect PV measurements
@@ -97,30 +103,28 @@ public class KalmanEstimatorTest {
                                                                new PVMeasurementCreator(),
                                                                0.0, 3.0, 300.0);
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
-        });        
+        });
 
         // Process noise matrix
         RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
         });
-  
+
 
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 5.80e-8;
@@ -131,7 +135,7 @@ public class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {9.478853e-4, 9.910788e-4, 5.0438709e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedsigmasPos, sigmaPosEps,
@@ -150,13 +154,13 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect range measurements
@@ -164,46 +168,44 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Change semi-major axis of 1.2m as in the batch test
         ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
+        // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             100., 100., 100., 1e-2, 1e-2, 1e-2
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Keplerian initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
         // Process noise matrix is set to 0 here
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
-        
+
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 1.77e-4;
@@ -214,7 +216,7 @@ public class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.206636e-4, 1.306656e-4, 1.293981e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
@@ -223,7 +225,7 @@ public class KalmanEstimatorTest {
 
     /**
      * Perfect range measurements with a biased start and an on-board antenna range offset
-     * Keplerian formalism 
+     * Keplerian formalism
      */
     @Test
     public void testKeplerianRangeWithOnBoardAntennaOffset() {
@@ -233,70 +235,73 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
-        
+
         // Antenna phase center definition
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
-        
+
         // Create perfect range measurements with antenna offset
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
+                                                               new TwoWayRangeMeasurementCreator(context,
+                                                                                                 Vector3D.ZERO, null,
+                                                                                                 antennaPhaseCenter, null,
+                                                                                                 0),
                                                                1.0, 3.0, 300.0);
 
         // Add antenna offset to the measurements
-        final OnBoardAntennaRangeModifier obaModifier = new OnBoardAntennaRangeModifier(antennaPhaseCenter);
+        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                                                                    new FrequencyPattern(antennaPhaseCenter,
+                                                                                                         null));
         for (final ObservedMeasurement<?> range : measurements) {
             ((Range) range).addModifier(obaModifier);
         }
-        
+
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Change semi-major axis of 1.2m as in the batch test
         ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
+        // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             10., 10., 10., 1e-3, 1e-3, 1e-3
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = OrbitType.KEPLERIAN.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Keplerian initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
         // Process noise matrix is set to 0 here
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
-        
+
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 4.57e-3;
@@ -307,7 +312,7 @@ public class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {6.193757e-4, 4.088798e-4, 3.299140e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
@@ -326,43 +331,44 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CARTESIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
+        final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
+        // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-4, 1e-4, 1e-4, 1e-10, 1e-10, 1e-10
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
@@ -371,13 +377,12 @@ public class KalmanEstimatorTest {
             1.e-6, 1.e-6, 1.e-6, 1.e-12, 1.e-12, 1.e-12
         });
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
-        
+
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 1.5e-6;
@@ -388,7 +393,7 @@ public class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.85688e-4,  5.765933e-4, 5.056124e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
@@ -407,13 +412,13 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CIRCULAR;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect range measurements
@@ -425,9 +430,8 @@ public class KalmanEstimatorTest {
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
@@ -436,13 +440,13 @@ public class KalmanEstimatorTest {
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-4, 1e-4, 1e-4, 1e-10, 1e-10, 1e-10
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
@@ -451,13 +455,12 @@ public class KalmanEstimatorTest {
             1.e-6, 1.e-6, 1.e-6, 1.e-12, 1.e-12, 1.e-12
         });
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
-        
+
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 4.78e-7;
@@ -468,13 +471,13 @@ public class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.468745e-4, 5.810027e-4, 3.887394e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
     }
-    
+
     /**
      * Perfect right-ascension/declination measurements with a perfect start
      * Equinoctial formalism
@@ -487,13 +490,13 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect range measurements
@@ -505,9 +508,8 @@ public class KalmanEstimatorTest {
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
@@ -516,13 +518,13 @@ public class KalmanEstimatorTest {
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-4, 1e-4, 1e-4, 1e-10, 1e-10, 1e-10
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(positionAngle, dYdC);
+        initialOrbit.getJacobianWrtCartesian(positionAngleType, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Keplerian initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
@@ -531,12 +533,12 @@ public class KalmanEstimatorTest {
             1.e-6, 1.e-6, 1.e-6, 1.e-12, 1.e-12, 1.e-12
         });
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
-        
+
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 4.8e-7;
@@ -547,13 +549,13 @@ public class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.468746e-4, 5.810028e-4, 3.887394e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
     }
-    
+
     /** Perfect Range, Azel and range rate measurements with a biased start
      *  Start: position/velocity biased with: [+1000,0,0] m and [0,0,0.01] m/s
      *  Keplerian formalism
@@ -566,13 +568,13 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder measPropagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect range measurements
@@ -580,7 +582,7 @@ public class KalmanEstimatorTest {
                                                                                 measPropagatorBuilder);
         final List<ObservedMeasurement<?>> rangeMeasurements =
                         EstimationTestUtils.createMeasurements(rangePropagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 4.0, 300.0);
         // Create perfect az/el measurements
         final Propagator angularPropagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -594,44 +596,43 @@ public class KalmanEstimatorTest {
                                                                                     measPropagatorBuilder);
         final List<ObservedMeasurement<?>> rangeRateMeasurements =
                         EstimationTestUtils.createMeasurements(rangeRatePropagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, 3.2e-10),
                                                                0.0, 4.0, 700.0);
 
         // Concatenate measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         measurements.addAll(rangeMeasurements);
         measurements.addAll(angularMeasurements);
         measurements.addAll(rangeRateMeasurements);
         measurements.sort(Comparator.naturalOrder());
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = measPropagatorBuilder.
-                        buildPropagator(measPropagatorBuilder.getSelectedNormalizedParameters());
-        
+        final Propagator referencePropagator = measPropagatorBuilder.buildPropagator();
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Biased propagator for the Kalman
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, false,
+                        context.createBuilder(orbitType, positionAngleType, false,
                                               minStep, maxStep, dP);
-        
+
         // Cartesian covariance matrix initialization
         // Initial sigmas: 1000m on position, 0.01m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e6, 1e6, 1e6, 1e-4, 1e-4, 1e-4
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(positionAngle, dYdC);
+        initialOrbit.getJacobianWrtCartesian(positionAngleType, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Orbital initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
-        
+
         // Process noise matrix
         final RealMatrix cartesianQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
@@ -642,7 +643,7 @@ public class KalmanEstimatorTest {
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 2.94e-2;
@@ -653,13 +654,13 @@ public class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {5.413689e-4, 4.088394e-4, 4.315366e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
     }
-    
+
     /**
      * Perfect range and range rate measurements with a perfect start
      */
@@ -671,13 +672,13 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect range & range rate measurements
@@ -685,39 +686,38 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurementsRange =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, 3.2e-10),
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         measurements.addAll(measurementsRange);
         measurements.addAll(measurementsRangeRate);
 
         // Reference propagator for estimation performances
-        final NumericalPropagator referencePropagator = propagatorBuilder.
-                        buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+        final Propagator referencePropagator = propagatorBuilder.buildPropagator();
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
+        // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-2, 1e-2, 1e-2, 1e-8, 1e-8, 1e-8
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Keplerian initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
@@ -726,23 +726,23 @@ public class KalmanEstimatorTest {
             1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
         });
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
-        
+
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.2e-6;
+        final double   posEps            = 1.6e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 4.2e-10;
+        final double   velEps            = 5.7e-10;
         final double[] expectedSigmasPos = {0.341528, 8.175341, 4.634528};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {1.167859e-3, 1.036492e-3, 2.834413e-3};
         final double   sigmaVelEps       = 1e-9;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
@@ -755,10 +755,10 @@ public class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         final AbsoluteDate referenceDate = propagatorBuilder1.getInitialOrbitDate();
 
@@ -771,21 +771,25 @@ public class KalmanEstimatorTest {
                                                     context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
-        closePropagator.setEphemerisMode();
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
-        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
         propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                            propagatorBuilder1);
         measurements.addAll(EstimationTestUtils.createMeasurements(propagator1,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 60.0));
         measurements.sort(Comparator.naturalOrder());
 
@@ -800,12 +804,12 @@ public class KalmanEstimatorTest {
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assert.assertEquals("a[0]", a0Driver.getName());
+        Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assert.assertEquals("a[1]", a1Driver.getName());
+        Assertions.assertEquals("a[1]", a1Driver.getName());
         a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -815,38 +819,34 @@ public class KalmanEstimatorTest {
                                                     parameters.get( 9).getValue(),
                                                     parameters.get(10).getValue(),
                                                     parameters.get(11).getValue(),
-                                                    PositionAngle.TRUE,
+                                                    PositionAngleType.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assert.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
+        Assertions.assertEquals(4.7246,
+                            Vector3D.distance(closeOrbit.getPosition(),
+                                              before.getPosition()),
                             1.0e-3);
-        Assert.assertEquals(0.0010514,
+        Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
-            propagatorBuilder1.
-            buildPropagator(propagatorBuilder1.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
-            propagatorBuilder2.
-            buildPropagator(propagatorBuilder2.getSelectedNormalizedParameters()).
-            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
         };
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbits, new PositionAngle[] { PositionAngle.TRUE, PositionAngle.TRUE },
+                                           refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
                                            new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
-                                               { 5.6e5, 1.8e5, 1.9e5 },
-                                               { 5.3e5, 1.8e5, 1.8e5 }
+                                               { 6.9e5, 6.0e5, 12.5e5 },
+                                               { 6.8e5, 5.9e5, 12.7e5 }
                                            }, new double[] { 1e4, 1e4 },
                                            new double[][] {
-                                               { 8.8e2, 1.8e2, 3.1e2 },
-                                               { 8.8e2, 1.8e2, 3.1e2 }
+                                               { 5.0e2, 5.3e2, 1.4e2 },
+                                               { 5.0e2, 5.3e2, 1.4e2 }
                                            }, new double[] { 1.0e1, 1.0e1 });
 
         // after the call to estimate, the parameters lacking a user-specified reference date
@@ -854,10 +854,10 @@ public class KalmanEstimatorTest {
         for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
             }
         }
 
@@ -874,13 +874,13 @@ public class KalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                        context.createBuilder(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect range measurements
@@ -888,23 +888,22 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         // Build the Kalman filter
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder,
                                                   new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6)));
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         final KalmanEstimator kalman = kalmanBuilder.build();
         kalman.setObserver(estimation -> {
                 throw new DummyException();
             });
-        
-        
+
+
         try {
             // Filter the measurements and expect an exception to occur
             EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                               context.initialOrbit, positionAngle,
+                                               context.initialOrbit, positionAngleType,
                                                0., 0.,
                                                0., 0.,
                                                new double[3], 0.,
@@ -912,6 +911,232 @@ public class KalmanEstimatorTest {
         } catch (DummyException de) {
             // expected
         }
+
+    }
+
+    @Test
+    public void testIssue695() {
+
+        // Create context
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create a position measurement
+        final Position position = new Position(context.initialOrbit.getDate(),
+                                               new Vector3D(1.0, -1.0, 0.0),
+                                               0.5, 1.0, new ObservableSatellite(0));
+
+        // Decorated measurement
+        MeasurementDecorator decorated = KalmanEstimatorUtil.decorate(position, context.initialOrbit.getDate());
+
+        // Verify time
+        Assertions.assertEquals(0.0, decorated.getTime(), 1.0e-15);
+        // Verify covariance matrix
+        final RealMatrix covariance = decorated.getCovariance();
+        for (int i = 0; i < covariance.getRowDimension(); i++) {
+            for (int j = 0; j < covariance.getColumnDimension(); j++) {
+                if (i == j) {
+                    Assertions.assertEquals(1.0, covariance.getEntry(i, j), 1.0e-15);
+                } else {
+                    Assertions.assertEquals(0.0, covariance.getEntry(i, j), 1.0e-15);
+                }
+            }
+        }
+
+    }
+
+    @Test
+    public void tesIssue696() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder1 =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        final NumericalPropagatorBuilder propagatorBuilder2 =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        final AbsoluteDate referenceDate = propagatorBuilder1.getInitialOrbitDate();
+
+        // Create perfect inter-satellites range measurements
+        final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
+        final Orbit closeOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(context.initialOrbit.getDate(),
+                                                                                 original.getPosition().add(new Vector3D(1000, 2000, 3000)),
+                                                                                 original.getVelocity().add(new Vector3D(-0.03, 0.01, 0.02))),
+                                                    context.initialOrbit.getFrame(),
+                                                    context.initialOrbit.getMu());
+        final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
+                                                                                propagatorBuilder2);
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
+        closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                     propagatorBuilder1);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
+        final InterSatellitesRangeMeasurementCreator creator = new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset);
+
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator1, creator,
+                                                               1.0, 3.0, 300.0);
+
+        // create perfect range measurements for first satellite
+        propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                           propagatorBuilder1);
+        measurements.addAll(EstimationTestUtils.createMeasurements(propagator1,
+                                                               new TwoWayRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 60.0));
+        measurements.sort(Comparator.naturalOrder());
+
+        // Estimate clock drivers
+        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockOffsetDriver().setSelected(true);
+
+        // Estimated measurement parameter
+        final ParameterDriversList estimatedMeasurementParameters = new ParameterDriversList();
+        estimatedMeasurementParameters.add(creator.getLocalSatellite().getClockOffsetDriver());
+        estimatedMeasurementParameters.add(creator.getRemoteSatellite().getClockOffsetDriver());
+
+        // create orbit estimator
+        final RealMatrix processNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(new double[] {
+            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10, 1.e-13, 1.e13
+        });
+        final RealMatrix measurementNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(new double[] {
+           1.e-15, 1.e-15
+        });
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder1, new ConstantProcessNoise(processNoiseMatrix)).
+                        addPropagationConfiguration(propagatorBuilder2, new ConstantProcessNoise(processNoiseMatrix)).
+                        estimatedMeasurementsParameters(estimatedMeasurementParameters, new ConstantProcessNoise(measurementNoiseMatrix)).
+                        build();
+
+        List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
+        ParameterDriver a0Driver = parameters.get(0);
+        Assertions.assertEquals("a[0]", a0Driver.getName());
+        a0Driver.setValue(a0Driver.getValue() + 1.2);
+        a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+
+        ParameterDriver a1Driver = parameters.get(6);
+        Assertions.assertEquals("a[1]", a1Driver.getName());
+        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+
+        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
+                                                    parameters.get( 7).getValue(),
+                                                    parameters.get( 8).getValue(),
+                                                    parameters.get( 9).getValue(),
+                                                    parameters.get(10).getValue(),
+                                                    parameters.get(11).getValue(),
+                                                    PositionAngleType.TRUE,
+                                                    closeOrbit.getFrame(),
+                                                    closeOrbit.getDate(),
+                                                    closeOrbit.getMu());
+        Assertions.assertEquals(4.7246,
+                            Vector3D.distance(closeOrbit.getPosition(),
+                                              before.getPosition()),
+                            1.0e-3);
+        Assertions.assertEquals(0.0010514,
+                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
+                                              before.getPVCoordinates().getVelocity()),
+                            1.0e-6);
+
+        Orbit[] refOrbits = new Orbit[] {
+            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+        };
+        EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
+                                           refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
+                                           new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
+                                           new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
+                                           new double[][] {
+                                               { 6.9e5, 6.0e5, 12.5e5 },
+                                               { 6.8e5, 5.9e5, 12.7e5 }
+                                           }, new double[] { 1e4, 1e4 },
+                                           new double[][] {
+                                               { 5.0e2, 5.3e2, 1.4e2 },
+                                               { 5.0e2, 5.3e2, 1.4e2 }
+                                           }, new double[] { 1.0e1, 1.0e1 });
+
+        // after the call to estimate, the parameters lacking a user-specified reference date
+        // got a default one
+        for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
+            if (driver.getName().startsWith("a[")) {
+                // user-specified reference date
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+            } else {
+                // default reference date
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
+            }
+        }
+
+    }
+
+    @Test
+    public void tesIssue850() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create propagator builder
+        final NumericalPropagatorBuilder propagatorBuilder1 =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        propagatorBuilder1.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
+
+        final NumericalPropagatorBuilder propagatorBuilder2 =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        propagatorBuilder2.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
+
+        // Generate measurement for both propagators
+        final Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder1);
+
+        final List<ObservedMeasurement<?>> measurements1 =
+                        EstimationTestUtils.createMeasurements(propagator1,
+                                                               new PositionMeasurementCreator(),
+                                                               0.0, 3.0, 300.0);
+
+        final Propagator propagator2 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                            propagatorBuilder2);
+
+        final List<ObservedMeasurement<?>> measurements2 =
+                         EstimationTestUtils.createMeasurements(propagator2,
+                                                                new PositionMeasurementCreator(),
+                                                                0.0, 3.0, 300.0);
+
+        // Create a multiplexed measurement
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
+        measurements.add(measurements1.get(0));
+        measurements.add(measurements2.get(0));
+        final ObservedMeasurement<?> multiplexed = new MultiplexedMeasurement(measurements);
+
+        // Covariance matrix initialization
+        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
+        });
+
+        // Process noise matrix
+        RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
+        });
+
+
+        // Build the Kalman filter
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder1, new ConstantProcessNoise(initialP, Q)).
+                        addPropagationConfiguration(propagatorBuilder2, new ConstantProcessNoise(initialP, Q)).
+                        build();
+
+        // Perform an estimation at the first measurment epoch (estimated states must be identical to initial orbit)
+        Propagator[] estimated = kalman.estimationStep(multiplexed);
+        final Vector3D pos1 = estimated[0].getInitialState().getPosition();
+        final Vector3D pos2 = estimated[1].getInitialState().getPosition();
+
+        // Verify
+        Assertions.assertEquals(0.0, pos1.distance(pos2), 1.0e-12);
+        Assertions.assertEquals(0.0, pos1.distance(context.initialOrbit.getPosition()), 1.0e-12);
+        Assertions.assertEquals(0.0, pos2.distance(context.initialOrbit.getPosition()), 1.0e-12);
 
     }
 

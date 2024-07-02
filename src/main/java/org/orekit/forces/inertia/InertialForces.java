@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,25 +16,22 @@
  */
 package org.orekit.forces.inertia;
 
-import java.util.stream.Stream;
+import java.util.Collections;
+import java.util.List;
 
-import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
@@ -64,7 +61,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Guillaume Obrecht
  * @author Luc Maisonobe
  */
-public class InertialForces extends AbstractForceModel  {
+public class InertialForces implements ForceModel {
 
     /** Reference inertial frame to use to compute inertial forces. */
     private Frame referenceInertialFrame;
@@ -99,7 +96,7 @@ public class InertialForces extends AbstractForceModel  {
         final Vector3D  o1                = inertToStateFrame.getAngular().getRotationRate();
         final Vector3D  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
 
-        final Vector3D  p2                = s.getPVCoordinates().getPosition();
+        final Vector3D  p2                = s.getPosition();
         final Vector3D  v2                = s.getPVCoordinates().getVelocity();
 
         final Vector3D crossCrossP        = Vector3D.crossProduct(o1,    Vector3D.crossProduct(o1, p2));
@@ -114,7 +111,7 @@ public class InertialForces extends AbstractForceModel  {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
 
         final FieldTransform<T> inertToStateFrame = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
@@ -123,7 +120,7 @@ public class InertialForces extends AbstractForceModel  {
         final FieldVector3D<T>  o1                = inertToStateFrame.getAngular().getRotationRate();
         final FieldVector3D<T>  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
 
-        final FieldVector3D<T>  p2                = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>  p2                = s.getPosition();
         final FieldVector3D<T>  v2                = s.getPVCoordinates().getVelocity();
 
         final FieldVector3D<T> crossCrossP        = FieldVector3D.crossProduct(o1,    FieldVector3D.crossProduct(o1, p2));
@@ -138,27 +135,7 @@ public class InertialForces extends AbstractForceModel  {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>>
-        getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[0];
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriver getParameterDriver(final String name) {
-        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, "<none>");
-    }
-
 }

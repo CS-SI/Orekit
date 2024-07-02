@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,12 @@
  */
 package org.orekit.files.general;
 
-import java.util.List;
-import java.util.stream.Stream;
-
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
@@ -31,8 +29,12 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ImmutableTimeStampedCache;
+import org.orekit.utils.SortedListTrimmer;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A {@link Propagator} based on a {@link EphemerisSegment}.
@@ -41,23 +43,19 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * {@link #propagate(AbsoluteDate)} methods so using this class as a {@link
  * org.orekit.utils.PVCoordinatesProvider} still behaves as expected when the ephemeris
  * file did not have a valid gravitational parameter.
+ * @param <C> type of the Cartesian coordinates
  *
  * @author Evan Ward
  */
-class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
+public class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
-    /** Default frame to use when creating orbits. */
-    public static final Frame DEFAULT_INERTIAL_FRAME = FramesFactory.getGCRF();
-
-    /**
-     * Sorted cache of state vectors. A duplication of the information in {@link
-     * #ephemeris} that could be avoided by duplicating the logic of {@link
-     * ImmutableTimeStampedCache#getNeighbors(AbsoluteDate)} for a general {@link List}.
-     */
-    private final ImmutableTimeStampedCache<TimeStampedPVCoordinates> cache;
     /** Tabular data from which this propagator is built. */
-    private final EphemerisSegment ephemeris;
+    private final EphemerisSegment<C> ephemeris;
+    /** Interpolator to use.
+     * @since 12.2
+     */
+    private final TimeStampedPVCoordinatesHermiteInterpolator interpolator;
     /** Inertial frame used for creating orbits. */
     private final Frame inertialFrame;
     /** Frame of the ephemeris data. */
@@ -66,26 +64,19 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     /**
      * Create a {@link Propagator} from an ephemeris segment.
      *
-     * <p> If the {@link EphemerisSegment#getFrame() ephemeris frame} is not {@link
-     * Frame#isPseudoInertial() inertial} then {@link #DEFAULT_INERTIAL_FRAME} is used as
-     * the frame for orbits created by this propagator.
-     *
      * @param ephemeris segment containing the data for this propagator.
+     * @param attitudeProvider provider for attitude computation
      */
-    EphemerisSegmentPropagator(final EphemerisSegment ephemeris) {
-        super(Propagator.DEFAULT_LAW);
-        this.cache = new ImmutableTimeStampedCache<>(
-                ephemeris.getInterpolationSamples(),
-                ephemeris.getCoordinates());
-        this.ephemeris = ephemeris;
+    public EphemerisSegmentPropagator(final EphemerisSegment<C> ephemeris,
+                                      final AttitudeProvider attitudeProvider) {
+        super(attitudeProvider);
+        this.ephemeris      = ephemeris;
+        this.interpolator   = new TimeStampedPVCoordinatesHermiteInterpolator(ephemeris.getInterpolationSamples(),
+                                                                              ephemeris.getAvailableDerivatives());
         this.ephemerisFrame = ephemeris.getFrame();
-        if (ephemerisFrame.isPseudoInertial()) {
-            this.inertialFrame = ephemerisFrame;
-        } else {
-            this.inertialFrame = DEFAULT_INERTIAL_FRAME;
-        }
+        this.inertialFrame  = ephemeris.getInertialFrame();
         // set the initial state so getFrame() works
-        final TimeStampedPVCoordinates ic = cache.getEarliest();
+        final TimeStampedPVCoordinates ic = ephemeris.getCoordinates().get(0);
         final TimeStampedPVCoordinates icInertial = ephemerisFrame
                 .getTransformTo(inertialFrame, ic.getDate())
                 .transformPVCoordinates(ic);
@@ -94,7 +85,7 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
                         new CartesianOrbit(
                                 icInertial, inertialFrame, ephemeris.getMu()
                         ),
-                        DEFAULT_LAW.getAttitude(
+                        getAttitudeProvider().getAttitude(
                                 icInertial.toTaylorProvider(inertialFrame),
                                 ic.getDate(),
                                 inertialFrame),
@@ -104,12 +95,15 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
-                                                     final Frame frame) {
-        final Stream<TimeStampedPVCoordinates> neighbors = this.cache.getNeighbors(date);
-        final TimeStampedPVCoordinates point =
-                TimeStampedPVCoordinates.interpolate(date, ephemeris.getAvailableDerivatives(), neighbors);
-        return ephemerisFrame.getTransformTo(frame, date).transformPVCoordinates(point);
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
+        final TimeStampedPVCoordinates interpolatedPVCoordinates = interpolate(date);
+        return ephemerisFrame.getTransformTo(frame, date).transformPVCoordinates(interpolatedPVCoordinates);
+    }
+
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        final Vector3D interpolatedPosition = interpolate(date).getPosition();
+        return ephemerisFrame.getStaticTransformTo(frame, date).transformPosition(interpolatedPosition);
     }
 
     @Override
@@ -147,6 +141,23 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     @Override
     public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    /** Interpolate ephemeris segment at date.
+     *
+     * @param date interpolation date
+     * @return interpolated position-velocity vector
+     */
+    private TimeStampedPVCoordinates interpolate(final AbsoluteDate date) {
+        final List<C> neighbors = new SortedListTrimmer(interpolator.getNbInterpolationPoints()).
+                                  getNeighborsSubList(date, ephemeris.getCoordinates());
+
+        // cast stream to super type
+        final List<TimeStampedPVCoordinates> castedNeighbors = new ArrayList<>(neighbors.size());
+        castedNeighbors.addAll(neighbors);
+
+        // create interpolator
+        return interpolator.interpolate(date, castedNeighbors);
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,11 +18,13 @@ package org.orekit.utils;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Enumerate for selecting which derivatives to use in {@link TimeStampedPVCoordinates} and
  * {@link TimeStampedFieldPVCoordinates} interpolation.
- * @see TimeStampedPVCoordinates#interpolate(org.orekit.time.AbsoluteDate, CartesianDerivativesFilter, java.util.Collection)
- * @see TimeStampedFieldPVCoordinates#interpolate(org.orekit.time.FieldAbsoluteDate, CartesianDerivativesFilter, java.util.Collection)
+ * @see TimeStampedPVCoordinatesHermiteInterpolator#interpolate(AbsoluteDate, java.util.Collection)
+ * @see TimeStampedFieldPVCoordinatesHermiteInterpolator#interpolate(FieldAbsoluteDate, java.util.Collection)
  * @see AngularDerivativesFilter
  * @author Luc Maisonobe
  * @since 7.0

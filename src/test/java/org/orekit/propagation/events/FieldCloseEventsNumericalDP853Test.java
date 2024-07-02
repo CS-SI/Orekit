@@ -19,8 +19,8 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -33,11 +33,11 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  *
  * @author Evan Ward
  */
-public class FieldCloseEventsNumericalDP853Test extends FieldCloseEventsAbstractTest<Decimal64> {
+public class FieldCloseEventsNumericalDP853Test extends FieldCloseEventsAbstractTest<Binary64> {
 
     /** Constructor. */
     public FieldCloseEventsNumericalDP853Test() {
-        super(Decimal64Field.getInstance());
+        super(Binary64Field.getInstance());
     }
 
     /**
@@ -46,10 +46,10 @@ public class FieldCloseEventsNumericalDP853Test extends FieldCloseEventsAbstract
      * @param stepSize of integrator.
      * @return a usable propagator.
      */
-    public FieldPropagator<Decimal64> getPropagator(double stepSize) {
+    public FieldPropagator<Binary64> getPropagator(double stepSize) {
         double[][] tol = FieldNumericalPropagator
                 .tolerances(v(1e-3), initialOrbit, OrbitType.CARTESIAN);
-        final FieldNumericalPropagator<Decimal64> propagator = new FieldNumericalPropagator<>(
+        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(
                 field,
                 new DormandPrince853FieldIntegrator<>(field, stepSize, stepSize, tol[0], tol[1]));
         propagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));

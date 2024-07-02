@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -43,5 +43,22 @@ public interface TimeStamped {
      * @return date attached to the object
      */
     AbsoluteDate getDate();
+
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the number of seconds physically
+     * elapsed between the two instants, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * @param other instant to subtract from the instance
+     * @return offset in seconds between the two instants (positive
+     * if the instance is posterior to the argument)
+     * @see AbsoluteDate#durationFrom(AbsoluteDate)
+     * @since 12.0
+     */
+    default double durationFrom(TimeStamped other) {
+        return getDate().durationFrom(other.getDate());
+    }
 
 }

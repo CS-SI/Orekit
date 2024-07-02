@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
@@ -28,22 +28,22 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIR.txt", 4.9e-13, 9.1e-16, false);
+        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIR.txt", 5.4e-13, 9.6e-16, false);
     }
 
     @Test
     public void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIR.txt", 5.2e-5, 6.1e-16, false);
+        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIR.txt", 5.2e-5, 8.7e-16, false);
     }
 
     @Test
     public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIR.txt", 1.2e-12, 7.9e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIR.txt", 1.2e-12, 9.4e-16, false);
     }
 
     @Test
     public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIR.txt", 6.3e-15, 9.1e-16, false);
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIR.txt", 6.7e-15, 9.1e-16, false);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIR.txt", 6.5e-4, 9.1e-16, false);
+        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIR.txt", 6.5e-4, 9.6e-16, false);
     }
 
     @Test
@@ -65,17 +65,17 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
         // As a conclusion, we consider here that the reference output is wrong and that
         // Orekit behaviour is correct, so we increased the threshold so the test pass,
         // and wrote this big comment to explain the situation
-        doTestAxes("original-eclips/beta-crossing-BLOCK-IIR.txt", 1.68, 6.1e-16, false);
+        doTestAxes("original-eclips/beta-crossing-BLOCK-IIR.txt", 1.68, 8.7e-16, false);
     }
 
     @Test
     public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIR.txt", 7.4e-4, 7.9e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIR.txt", 7.4e-4, 9.4e-16, false);
     }
 
     @Test
     public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIR.txt", 6.3e-15, 9.1e-16, false);
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIR.txt", 6.7e-15, 9.1e-16, false);
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,22 +16,19 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-
-import java.text.ParseException;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -40,6 +37,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.atmosphere.data.JB2008SpaceEnvironmentData;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -49,6 +47,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.text.ParseException;
 
 public class JB2008Test {
 
@@ -167,11 +167,11 @@ public class JB2008Test {
         // alt = 89.999km
         try {
             atm.getDensity(0., 0., 0., 0., 0., 89999.0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, oe.getSpecifier());
-            Assert.assertEquals(89999.0, (Double) oe.getParts()[0], 1.0e-15);
-            Assert.assertEquals(90000.0, (Double) oe.getParts()[1], 1.0e-15);
+            Assertions.assertEquals(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, oe.getSpecifier());
+            Assertions.assertEquals(89999.0, (Double) oe.getParts()[0], 1.0e-15);
+            Assertions.assertEquals(90000.0, (Double) oe.getParts()[1], 1.0e-15);
         }
 
     }
@@ -193,15 +193,15 @@ public class JB2008Test {
 
                     final GeodeticPoint point = new GeodeticPoint(lat, lon, alt * 1000.);
                     final Vector3D pos = earth.transform(point);
-                    Field<Decimal64> field = Decimal64Field.getInstance();
+                    Field<Binary64> field = Binary64Field.getInstance();
 
                     // Run
                     final double    rho = atm.getDensity(date, pos, itrf);
-                    final Decimal64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+                    final Binary64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
                                                            new FieldVector3D<>(field.getOne(), pos),
                                                            itrf);
 
-                    Assert.assertEquals(rho, rho64.getReal(), rho * 4.0e-13);
+                    Assertions.assertEquals(rho, rho64.getReal(), rho * 4.0e-13);
 
                 }
             }
@@ -265,18 +265,57 @@ public class JB2008Test {
                                                                              factory3.variable(2, pos.getZ())),
                                                          itrf);
 
-        Assert.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-14);
-        Assert.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-14);
-        Assert.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-14);
-        Assert.assertEquals(rhoX.getPartialDerivative(1),
+        Assertions.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-14);
+        Assertions.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-14);
+        Assertions.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-14);
+        Assertions.assertEquals(rhoX.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(1, 0, 0),
                             FastMath.abs(6.0e-10 * rhoX.getPartialDerivative(1)));
-        Assert.assertEquals(rhoY.getPartialDerivative(1),
+        Assertions.assertEquals(rhoY.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(0, 1, 0),
                             FastMath.abs(6.0e-10 * rhoY.getPartialDerivative(1)));
-        Assert.assertEquals(rhoZ.getPartialDerivative(1),
+        Assertions.assertEquals(rhoZ.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(0, 0, 1),
                             FastMath.abs(6.0e-10 * rhoY.getPartialDerivative(1)));
+
+    }
+
+    @Test
+    public void testComparisonWithReference() {
+
+        // The objective of this test is to compare Orekit results with
+        // the reference JB2008 Code Files provided by Space Environment
+        // (i.e., JB2008.for and JB08DRVY2K.for)
+
+        // Earth
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+
+        // Input
+        final int    year  = 2004;
+        final int    month = 1;
+        final int    day   = 2;
+        final int    hour  = 12;
+        final int    min   = 0;
+        final double sec   = 0.0;
+        final double lat   = FastMath.toRadians(45.0);
+        final double lon   = FastMath.toRadians(45.0);
+        final double alt   = 250.0e3;
+
+        // Initialize JB2008 model
+        final JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_trunc.txt", "DTCFILE_trunc.TXT");
+        final JB2008 atm = new JB2008(JBData, CelestialBodyFactory.getSun(), earth);
+
+        // Compute density
+        final GeodeticPoint point = new GeodeticPoint(lat, lon, alt);
+        final Vector3D pos = earth.transform(point);
+        final AbsoluteDate date = new AbsoluteDate(year, month, day, hour, min, sec, TimeScalesFactory.getUTC());
+        final double density = atm.getDensity(date, pos, itrf);
+
+        // Verify
+        final double ref = 6.6862e-11;
+        Assertions.assertEquals(ref, density, 1.0e-15);
 
     }
 
@@ -327,7 +366,7 @@ public class JB2008Test {
             System.out.printf("Case #%d\n", nb);
             System.out.printf("Rho:  %12.5e  %12.5e\n", rhoRef[id], rho);
         } else {
-            Assert.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
+            Assertions.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
         }
 
     }
@@ -348,14 +387,14 @@ public class JB2008Test {
           System.out.printf("Case #%d\n", nb);
           System.out.printf("Rho:  %12.5e  %12.5e\n", rhoRef[id], rho);
         } else {
-            Assert.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
+            Assertions.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data:atmosphere");
     }
 
     private static class InputParams implements JB2008InputParameters {

@@ -1,0 +1,17 @@
+     2.00           Clock Data                              RINEX VERSION / TYPE
+tdp2clk v1.13       JPL                 2002 Jan 3 13:36:17 PGM / RUN BY / DATE 
+G11 G13 G14 G18 G20 G28      clk ant z-offset (m):  0.000   COMMENT             
+G01 G03 G04 G05 G06 G07 G08  clk ant z-offset (m):  1.023   COMMENT             
+G09 G10 G21 G22 G23 G24 G25  clk ant z-offset (m):  1.023   COMMENT             
+G26 G27 G29 G30 G31          clk ant z-offset (m):  1.023   COMMENT             
+clk ant z-offset (m): II/IIA 1.023; IIR 0.000               COMMENT             
+Re-alignment to GPS time by broadcast clocks and linear fit COMMENT             
+    13                                                      LEAP SECONDS        
+     1    AR                                                # / TYPES OF DATA   
+JPL  Jet Propulsion Laboratory                              ANALYSIS CENTER     
+     1 2001 12 22  0  0  0.000000 2001 12 22 23 59 59.000000# OF CLK REF        
+USNO 40451S003                                              ANALYSIS CLK REF    
+    1     IGS00                                             # OF SOLN STA / TRF 
+ALGO 40104M002             918129306 -4346071325  4561977803SOLN STA NAME / NUM          
+                                                            END OF HEADER       
+AR ALGO 2001 12 22  0  0  0.000000  2    1.598690662191e-06  1.067405104634e-10

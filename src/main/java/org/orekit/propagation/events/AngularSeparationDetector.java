@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -27,7 +28,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Detects when spacecraft comes close to a moving beacon, as seen from a moving observer.
  * <p>The main use case for this detector is when the observer is in fact a ground
  * station, modeled as a {@link org.orekit.frames.TopocentricFrame} and when the beacon
- * is the {@link org.orekit.bodies.CelestialBodyFactory#getSun() Sun}, for computing
+ * is the {@link CelestialBodies#getSun() Sun}, for computing
  * interferences for the telemetry link. Another similar case is when the beacon is
  * another spacecraft, for interferences computation.</p>
  * <p>The default handler behavior is to {@link Action#STOP stop}
@@ -57,17 +58,17 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
     public AngularSeparationDetector(final PVCoordinatesProvider beacon,
                                      final PVCoordinatesProvider observer,
                                      final double proximityAngle) {
-        this(60.0, 1.0e-3, 100, new StopOnDecreasing<AngularSeparationDetector>(),
+        this(AdaptableInterval.of(60.), 1.0e-3, 100, new StopOnDecreasing(),
              beacon, observer, proximityAngle);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -76,12 +77,12 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * the beacon at the same time if they are too close to each other
      * @param proximityAngle proximity angle as seen from observer, at which events are triggered (rad)
      */
-    private AngularSeparationDetector(final double maxCheck, final double threshold,
-                                      final int maxIter,
-                                      final EventHandler<? super AngularSeparationDetector> handler,
-                                      final PVCoordinatesProvider beacon,
-                                      final PVCoordinatesProvider observer,
-                                      final double proximityAngle) {
+    protected AngularSeparationDetector(final AdaptableInterval maxCheck, final double threshold,
+                                        final int maxIter,
+                                        final EventHandler handler,
+                                        final PVCoordinatesProvider beacon,
+                                        final PVCoordinatesProvider observer,
+                                        final double proximityAngle) {
         super(maxCheck, threshold, maxIter, handler);
         this.beacon         = beacon;
         this.observer       = observer;
@@ -90,8 +91,8 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
 
     /** {@inheritDoc} */
     @Override
-    protected AngularSeparationDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super AngularSeparationDetector> newHandler) {
+    protected AngularSeparationDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                               final int newMaxIter, final EventHandler newHandler) {
         return new AngularSeparationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              beacon, observer, proximityAngle);
     }
@@ -136,10 +137,10 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      */
     public double g(final SpacecraftState s) {
         final PVCoordinates sPV = s.getPVCoordinates();
-        final PVCoordinates bPV = beacon.getPVCoordinates(s.getDate(), s.getFrame());
-        final PVCoordinates oPV = observer.getPVCoordinates(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(sPV.getPosition().subtract(oPV.getPosition()),
-                                                 bPV.getPosition().subtract(oPV.getPosition()));
+        final Vector3D bP = beacon.getPosition(s.getDate(), s.getFrame());
+        final Vector3D oP = observer.getPosition(s.getDate(), s.getFrame());
+        final double separation = Vector3D.angle(sPV.getPosition().subtract(oP),
+                                                 bP.subtract(oP));
         return separation - proximityAngle;
     }
 

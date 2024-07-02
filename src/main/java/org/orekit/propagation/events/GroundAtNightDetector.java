@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -83,8 +83,8 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                  final double dawnDuskElevation,
                                  final AtmosphericRefractionModel refractionModel) {
         this(groundLocation, sun, dawnDuskElevation, refractionModel,
-             DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new ContinueOnEvent<>());
+             AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new ContinueOnEvent());
     }
 
     /** Private constructor.
@@ -93,18 +93,18 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
      * @param dawnDuskElevation Sun elevation below which we consider night is dark enough (rad)
      * (typically {@link #ASTRONOMICAL_DAWN_DUSK_ELEVATION})
      * @param refractionModel reference to refraction model (null if refraction should be ignored),
-     * @param maxCheck  maximum checking interval (s)
+     * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      */
-    private GroundAtNightDetector(final TopocentricFrame groundLocation, final PVCoordinatesProvider sun,
-                                  final double dawnDuskElevation,
-                                  final AtmosphericRefractionModel refractionModel,
-                                  final double maxCheck,
-                                  final double threshold,
-                                  final int maxIter,
-                                  final EventHandler<? super GroundAtNightDetector> handler) {
+    protected GroundAtNightDetector(final TopocentricFrame groundLocation, final PVCoordinatesProvider sun,
+                                    final double dawnDuskElevation,
+                                    final AtmosphericRefractionModel refractionModel,
+                                    final AdaptableInterval maxCheck,
+                                    final double threshold,
+                                    final int maxIter,
+                                    final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.groundLocation    = groundLocation;
         this.sun               = sun;
@@ -114,10 +114,10 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
 
     /** {@inheritDoc} */
     @Override
-    protected GroundAtNightDetector create(final double newMaxCheck,
+    protected GroundAtNightDetector create(final AdaptableInterval newMaxCheck,
                                            final double newThreshold,
                                            final int newMaxIter,
-                                           final EventHandler<? super GroundAtNightDetector> newHandler) {
+                                           final EventHandler newHandler) {
         return new GroundAtNightDetector(groundLocation, sun, dawnDuskElevation, refractionModel,
                                          newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
@@ -136,7 +136,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
 
         final AbsoluteDate  date     = state.getDate();
         final Frame         frame    = state.getFrame();
-        final Vector3D      position = sun.getPVCoordinates(date, frame).getPosition();
+        final Vector3D      position = sun.getPosition(date, frame);
         final double trueElevation   = groundLocation.getElevation(position, frame, date);
 
         final double calculatedElevation;

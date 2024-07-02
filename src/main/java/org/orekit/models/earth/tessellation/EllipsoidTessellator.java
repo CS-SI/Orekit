@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.BSPTree;
 import org.hipparchus.geometry.partitioning.Hyperplane;
@@ -41,6 +42,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 
 /** Class used to tessellate an interest zone on an ellipsoid in either
@@ -64,6 +66,11 @@ import org.orekit.errors.OrekitInternalError;
  * @since 7.1
  */
 public class EllipsoidTessellator {
+
+    /** Safety limit to avoid infinite loops during tesselation due to numerical noise.
+     * @since 10.3.1
+     */
+    private static final int MAX_ITER = 1000;
 
     /** Number of segments tiles sides are split into for tiles fine positioning. */
     private final int quantization;
@@ -159,15 +166,20 @@ public class EllipsoidTessellator {
 
         final double                  splitWidth  = (fullWidth  - widthOverlap)  / quantization;
         final double                  splitLength = (fullLength - lengthOverlap) / quantization;
-        final Map<Mesh, List<Tile>>   map         = new IdentityHashMap<Mesh, List<Tile>>();
-        final RegionFactory<Sphere2D> factory     = new RegionFactory<Sphere2D>();
+        final Map<Mesh, List<Tile>>   map         = new IdentityHashMap<>();
+        final RegionFactory<Sphere2D> factory     = new RegionFactory<>();
         SphericalPolygonsSet          remaining   = (SphericalPolygonsSet) zone.copySelf();
         S2Point                       inside      = getInsidePoint(remaining);
 
+        int count = 0;
         while (inside != null) {
 
+            if (++count > MAX_ITER) {
+                throw new OrekitException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, MAX_ITER);
+            }
+
             // find a mesh covering at least one connected part of the zone
-            final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
+            final List<Mesh.Node> mergingSeeds = new ArrayList<>();
             Mesh mesh = new Mesh(ellipsoid, zone, aiming, splitLength, splitWidth, inside);
             mergingSeeds.add(mesh.getNode(0, 0));
             List<Tile> tiles = null;
@@ -206,7 +218,7 @@ public class EllipsoidTessellator {
         }
 
         // concatenate the lists from the independent meshes
-        final List<List<Tile>> tilesLists = new ArrayList<List<Tile>>(map.size());
+        final List<List<Tile>> tilesLists = new ArrayList<>(map.size());
         for (final Map.Entry<Mesh, List<Tile>> entry : map.entrySet()) {
             tilesLists.add(entry.getValue());
         }
@@ -231,15 +243,20 @@ public class EllipsoidTessellator {
 
         final double                         splitWidth  = width  / quantization;
         final double                         splitLength = length / quantization;
-        final Map<Mesh, List<GeodeticPoint>> map         = new IdentityHashMap<Mesh, List<GeodeticPoint>>();
-        final RegionFactory<Sphere2D>        factory     = new RegionFactory<Sphere2D>();
+        final Map<Mesh, List<GeodeticPoint>> map         = new IdentityHashMap<>();
+        final RegionFactory<Sphere2D>        factory     = new RegionFactory<>();
         SphericalPolygonsSet                 remaining   = (SphericalPolygonsSet) zone.copySelf();
         S2Point                              inside      = getInsidePoint(remaining);
 
+        int count = 0;
         while (inside != null) {
 
+            if (++count > MAX_ITER) {
+                throw new OrekitException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, MAX_ITER);
+            }
+
             // find a mesh covering at least one connected part of the zone
-            final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
+            final List<Mesh.Node> mergingSeeds = new ArrayList<>();
             Mesh mesh = new Mesh(ellipsoid, zone, aiming, splitLength, splitWidth, inside);
             mergingSeeds.add(mesh.getNode(0, 0));
             List<GeodeticPoint> sample = null;
@@ -251,7 +268,7 @@ public class EllipsoidTessellator {
                 // extract the sample from the mesh
                 // this further expands the mesh so sample cells dimensions are multiples of quantization,
                 // hence it must be performed here before checking meshes independence
-                sample = extractSample(mesh, zone);
+                sample = extractSample(mesh);
 
                 // check the mesh is independent from existing meshes
                 mergingSeeds.clear();
@@ -278,7 +295,7 @@ public class EllipsoidTessellator {
         }
 
         // concatenate the lists from the independent meshes
-        final List<List<GeodeticPoint>> sampleLists = new ArrayList<List<GeodeticPoint>>(map.size());
+        final List<List<GeodeticPoint>> sampleLists = new ArrayList<>(map.size());
         for (final Map.Entry<Mesh, List<GeodeticPoint>> entry : map.entrySet()) {
             sampleLists.add(entry.getValue());
         }
@@ -293,7 +310,7 @@ public class EllipsoidTessellator {
      */
     private S2Point getInsidePoint(final SphericalPolygonsSet zone) {
 
-        final InsideFinder finder = new InsideFinder(zone);
+        final InsidePointFinder finder = new InsidePointFinder(zone);
         zone.getTree(false).visit(finder);
         return finder.getInsidePoint();
 
@@ -315,9 +332,13 @@ public class EllipsoidTessellator {
 
         // mesh expansion loop
         boolean expanding = true;
-        final Queue<Mesh.Node> newNodes = new LinkedList<Mesh.Node>();
-        newNodes.addAll(seeds);
+        final Queue<Mesh.Node> newNodes = new LinkedList<>(seeds);
+        int count = 0;
         while (expanding) {
+
+            if (++count > MAX_ITER) {
+                throw new OrekitException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, MAX_ITER);
+            }
 
             // first expansion step: set up the mesh so that all its
             // inside nodes are completely surrounded by at least
@@ -370,8 +391,8 @@ public class EllipsoidTessellator {
                                     final double lengthOverlap, final double widthOverlap,
                                     final boolean truncateLastWidth, final boolean truncateLastLength) {
 
-        final List<Tile>      tiles = new ArrayList<Tile>();
-        final List<RangePair> rangePairs = new ArrayList<RangePair>();
+        final List<Tile>      tiles = new ArrayList<>();
+        final List<RangePair> rangePairs = new ArrayList<>();
 
         final int minAcross = mesh.getMinAcrossIndex();
         final int maxAcross = mesh.getMaxAcrossIndex();
@@ -436,12 +457,13 @@ public class EllipsoidTessellator {
 
     }
 
-    /** Extract a sample of points from a mesh.
+    /**
+     * Extract a sample of points from a mesh.
+     *
      * @param mesh mesh from which grid should be extracted
-     * @param zone zone covered by the mesh
      * @return extracted grid
      */
-    private List<GeodeticPoint> extractSample(final Mesh mesh, final SphericalPolygonsSet zone) {
+    private List<GeodeticPoint> extractSample(final Mesh mesh) {
 
         // find how to select sample points taking quantization into account
         // to have the largest possible number of points while still
@@ -477,7 +499,7 @@ public class EllipsoidTessellator {
         }
 
         // extract the sample points
-        final List<GeodeticPoint> sample = new ArrayList<GeodeticPoint>(selectedCount);
+        final List<GeodeticPoint> sample = new ArrayList<>(selectedCount);
         for (int across = mesh.getMinAcrossIndex() + selectedAcrossModulus;
                 across <= mesh.getMaxAcrossIndex();
                 across += quantization) {
@@ -802,7 +824,7 @@ public class EllipsoidTessellator {
                         final int lower = nextLower;
 
                         nextLower += quantization;
-                        if (truncateLast && nextLower > maxIndex && lower < maxIndex) {
+                        if (truncateLast && nextLower > maxIndex) {
                             // truncate last tile
                             nextLower = maxIndex;
                         }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,21 +16,17 @@
  */
 package org.orekit.utils;
 
-import java.util.Collection;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
-import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link FieldAngularCoordinates}.
@@ -39,8 +35,8 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 7.0
  */
-public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
-    extends FieldAngularCoordinates<T> {
+public class TimeStampedFieldAngularCoordinates<T extends CalculusFieldElement<T>>
+    extends FieldAngularCoordinates<T> implements FieldTimeStamped<T> {
 
     /** The date. */
     private final FieldAbsoluteDate<T> date;
@@ -157,10 +153,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * </p>
      * @param date coordinates date
      * @param r rotation with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      * @since 9.2
      */
-    public TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
-                                              final FieldRotation<FieldDerivativeStructure<T>> r) {
+    public <U extends FieldDerivative<T, U>> TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
+                                                                                final FieldRotation<U> r) {
         super(r);
         this.date = date;
     }
@@ -177,9 +174,8 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                                                         getRotation().applyInverseTo(getRotationAcceleration().negate()));
     }
 
-    /** Get the date.
-     * @return date
-     */
+    /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
         return date;
     }
@@ -195,7 +191,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public TimeStampedFieldAngularCoordinates<T> shiftedBy(final double dt) {
-        return shiftedBy(getDate().getField().getZero().add(dt));
+        return shiftedBy(getDate().getField().getZero().newInstance(dt));
     }
 
     /** Get a time-shifted state.
@@ -264,194 +260,6 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldAngularCoordinates<T> subtractOffset(final FieldAngularCoordinates<T> offset) {
         return addOffset(offset.revert());
-    }
-
-    /** Interpolate angular coordinates.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
-     * </p>
-     * <p>
-     * This method is based on Sergei Tanygin's paper <a
-     * href="http://www.agi.com/resources/white-papers/attitude-interpolation">Attitude
-     * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
-     * vector as described in Malcolm D. Shuster's paper <a
-     * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
-     * Survey of Attitude Representations</a>. This change avoids the singularity at π.
-     * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
-     * when this singularity is detected.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (rotation rates)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the rotations.
-     * </p>
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @param <T> the type of the field elements
-     * @return a new position-velocity, interpolated at specified date
-     */
-    public static <T extends RealFieldElement<T>>
-        TimeStampedFieldAngularCoordinates<T> interpolate(final AbsoluteDate date,
-                                                          final AngularDerivativesFilter filter,
-                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {
-        return interpolate(new FieldAbsoluteDate<>(sample.iterator().next().getRotation().getQ0().getField(), date),
-                           filter, sample);
-    }
-
-    /** Interpolate angular coordinates.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
-     * </p>
-     * <p>
-     * This method is based on Sergei Tanygin's paper <a
-     * href="http://www.agi.com/downloads/resources/white-papers/Attitude-interpolation.pdf">Attitude
-     * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
-     * vector as described in Malcolm D. Shuster's paper <a
-     * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
-     * Survey of Attitude Representations</a>. This change avoids the singularity at π.
-     * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
-     * when this singularity is detected.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (rotation rates)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the rotations.
-     * </p>
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @param <T> the type of the field elements
-     * @return a new position-velocity, interpolated at specified date
-     */
-    public static <T extends RealFieldElement<T>>
-        TimeStampedFieldAngularCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
-                                                          final AngularDerivativesFilter filter,
-                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {
-
-        // get field properties
-        final Field<T> field = sample.iterator().next().getRotation().getQ0().getField();
-
-        // set up safety elements for 2π singularity avoidance
-        final double epsilon   = 2 * FastMath.PI / sample.size();
-        final double threshold = FastMath.min(-(1.0 - 1.0e-4), -FastMath.cos(epsilon / 4));
-
-        // set up a linear model canceling mean rotation rate
-        final FieldVector3D<T> meanRate;
-        if (filter != AngularDerivativesFilter.USE_R) {
-            FieldVector3D<T> sum = FieldVector3D.getZero(field);
-            for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
-                sum = sum.add(datedAC.getRotationRate());
-            }
-            meanRate = new FieldVector3D<>(1.0 / sample.size(), sum);
-        } else {
-            if (sample.size() < 2) {
-                throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
-                                          sample.size());
-            }
-            FieldVector3D<T> sum = FieldVector3D.getZero(field);
-            TimeStampedFieldAngularCoordinates<T> previous = null;
-            for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
-                if (previous != null) {
-                    sum = sum.add(estimateRate(previous.getRotation(), datedAC.getRotation(),
-                                               datedAC.date.durationFrom(previous.getDate())));
-                }
-                previous = datedAC;
-            }
-            meanRate = new FieldVector3D<>(1.0 / (sample.size() - 1), sum);
-        }
-        TimeStampedFieldAngularCoordinates<T> offset =
-                new TimeStampedFieldAngularCoordinates<>(date, FieldRotation.getIdentity(field),
-                                                         meanRate, FieldVector3D.getZero(field));
-
-        boolean restart = true;
-        for (int i = 0; restart && i < sample.size() + 2; ++i) {
-
-            // offset adaptation parameters
-            restart = false;
-
-            // set up an interpolator taking derivatives into account
-            final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
-
-            // add sample points
-            double sign = +1.0;
-            FieldRotation<T> previous = FieldRotation.getIdentity(field);
-
-            for (final TimeStampedFieldAngularCoordinates<T> ac : sample) {
-
-                // remove linear offset from the current coordinates
-                final T dt = ac.date.durationFrom(date);
-                final TimeStampedFieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt));
-
-                // make sure all interpolated points will be on the same branch
-                final T dot = dt.linearCombination(fixed.getRotation().getQ0(), previous.getQ0(),
-                                                   fixed.getRotation().getQ1(), previous.getQ1(),
-                                                   fixed.getRotation().getQ2(), previous.getQ2(),
-                                                   fixed.getRotation().getQ3(), previous.getQ3());
-                sign = FastMath.copySign(1.0, dot.getReal() * sign);
-                previous = fixed.getRotation();
-
-                // check modified Rodrigues vector singularity
-                if (fixed.getRotation().getQ0().getReal() * sign < threshold) {
-                    // the sample point is close to a modified Rodrigues vector singularity
-                    // we need to change the linear offset model to avoid this
-                    restart = true;
-                    break;
-                }
-
-                final T[][] rodrigues = fixed.getModifiedRodrigues(sign);
-                switch (filter) {
-                    case USE_RRA:
-                        // populate sample with rotation, rotation rate and acceleration data
-                        interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1], rodrigues[2]);
-                        break;
-                    case USE_RR:
-                        // populate sample with rotation and rotation rate data
-                        interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1]);
-                        break;
-                    case USE_R:
-                        // populate sample with rotation data only
-                        interpolator.addSamplePoint(dt, rodrigues[0]);
-                        break;
-                    default :
-                        // this should never happen
-                        throw new OrekitInternalError(null);
-                }
-            }
-
-            if (restart) {
-                // interpolation failed, some intermediate rotation was too close to 2π
-                // we need to offset all rotations to avoid the singularity
-                offset = offset.addOffset(new FieldAngularCoordinates<>(new FieldRotation<>(FieldVector3D.getPlusI(field),
-                                                                                            field.getZero().add(epsilon),
-                                                                                            RotationConvention.VECTOR_OPERATOR),
-                                                                        FieldVector3D.getZero(field),
-                                                                        FieldVector3D.getZero(field)));
-            } else {
-                // interpolation succeeded with the current offset
-                final T[][] p = interpolator.derivatives(field.getZero(), 2);
-                final FieldAngularCoordinates<T> ac = createFromModifiedRodrigues(p);
-                return new TimeStampedFieldAngularCoordinates<>(offset.getDate(),
-                                                                ac.getRotation(),
-                                                                ac.getRotationRate(),
-                                                                ac.getRotationAcceleration()).addOffset(offset);
-            }
-
-        }
-
-        // this should never happen
-        throw new OrekitInternalError(null);
-
     }
 
 }

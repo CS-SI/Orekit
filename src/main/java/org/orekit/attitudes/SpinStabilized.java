@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.attitudes;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -74,11 +74,13 @@ public class SpinStabilized implements AttitudeProviderModifier {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AttitudeProvider getUnderlyingAttitudeProvider() {
         return nonRotatingLaw;
     }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame) {
 
@@ -104,7 +106,21 @@ public class SpinStabilized implements AttitudeProviderModifier {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        // get rotation from underlying non-rotating law
+        final Rotation baseRotation = nonRotatingLaw.getAttitudeRotation(pvProv, date, frame);
+
+        // compute spin rotation due to spin from reference to current date
+        final Rotation spinInfluence = new Rotation(axis, rate * date.durationFrom(start), RotationConvention.FRAME_TRANSFORM);
+
+        // combine the two rotations
+        return baseRotation.compose(spinInfluence, RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame) {
 
@@ -129,4 +145,22 @@ public class SpinStabilized implements AttitudeProviderModifier {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+
+        // get attitude from underlying non-rotating law
+        final FieldRotation<T> baseRotation = nonRotatingLaw.getAttitudeRotation(pvProv, date, frame);
+
+        // compute spin rotation due to spin from reference to current date
+        final FieldRotation<T> spinInfluence =
+                new FieldRotation<>(new FieldVector3D<>(date.getField(), axis),
+                                date.durationFrom(start).multiply(rate),
+                                RotationConvention.FRAME_TRANSFORM);
+
+        // combine the two rotations
+        return baseRotation.compose(spinInfluence, RotationConvention.FRAME_TRANSFORM);
+    }
 }

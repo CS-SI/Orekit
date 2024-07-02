@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,15 +16,14 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -37,15 +36,18 @@ import org.orekit.models.earth.EarthStandardAtmosphereRefraction;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.propagation.events.intervals.ElevationDetectionAdaptableIntervalFactory;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -54,6 +56,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ElevationMask;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.List;
 
 public class ElevationDetectorTest {
 
@@ -92,22 +96,22 @@ public class ElevationDetectorTest {
                 new ElevationDetector(topo).
                 withConstantElevation(FastMath.toRadians(5.0)).
                 withHandler(checking);
-        Assert.assertNull(detector.getElevationMask());
-        Assert.assertNull(detector.getRefractionModel());
-        Assert.assertSame(topo, detector.getTopocentricFrame());
-        Assert.assertEquals(FastMath.toRadians(5.0), detector.getMinElevation(), 1.0e-15);
+        Assertions.assertNull(detector.getElevationMask());
+        Assertions.assertNull(detector.getRefractionModel());
+        Assertions.assertSame(topo, detector.getTopocentricFrame());
+        Assertions.assertEquals(FastMath.toRadians(5.0), detector.getMinElevation(), 1.0e-15);
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 12, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
-        propagator.setMasterMode(10.0, checking);
+        propagator.setStepHandler(10.0, checking);
         propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
 
     }
 
-    private static class Checking implements EventHandler<ElevationDetector>, OrekitFixedStepHandler {
+    private static class Checking implements EventHandler, OrekitFixedStepHandler {
 
-        private TopocentricFrame topo;
+        private final TopocentricFrame topo;
         private boolean visible;
 
         public Checking(final TopocentricFrame topo) {
@@ -115,29 +119,25 @@ public class ElevationDetectorTest {
             this.visible = false;
         }
 
-        public Action eventOccurred(SpacecraftState s, ElevationDetector detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             visible = increasing;
             return Action.CONTINUE;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast)
+        public void handleStep(SpacecraftState currentState)
             {
             BodyShape shape = topo.getParentShape();
             GeodeticPoint p =
-                            shape.transform(currentState.getPVCoordinates().getPosition(),
+                            shape.transform(currentState.getPosition(),
                                             currentState.getFrame(), currentState.getDate());
             Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
-            double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
+            double range = topo.getTrackingCoordinates(subSat, shape.getBodyFrame(), currentState.getDate()).getRange();
 
             if (visible) {
-                Assert.assertTrue(range < 2.45e6);
+                Assertions.assertTrue(range < 2.45e6);
             } else {
-                Assert.assertTrue(range > 2.02e6);
+                Assertions.assertTrue(range > 2.02e6);
             }
-        }
-
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }
 
     }
@@ -179,15 +179,15 @@ public class ElevationDetectorTest {
         ElevationMask mask = new ElevationMask(maskValues);
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withElevationMask(mask)
-                                            .withHandler(new StopOnIncreasing<ElevationDetector>());
-        Assert.assertSame(mask, detector.getElevationMask());
+                                            .withHandler(new StopOnIncreasing());
+        Assertions.assertSame(mask, detector.getElevationMask());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
-        Assert.assertEquals(0.065, elevation, 2.0e-5);
+        double elevation = topo.getTrackingCoordinates(fs.getPosition(), fs.getFrame(), fs.getDate()).getElevation();
+        Assertions.assertEquals(0.065, elevation, 2.0e-5);
 
     }
 
@@ -217,15 +217,15 @@ public class ElevationDetectorTest {
         AtmosphericRefractionModel refractionModel = new EarthStandardAtmosphereRefraction();
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withRefraction(refractionModel)
-                                            .withHandler(new StopOnIncreasing<ElevationDetector>());
-        Assert.assertSame(refractionModel, detector.getRefractionModel());
+                                            .withHandler(new StopOnIncreasing());
+        Assertions.assertSame(refractionModel, detector.getRefractionModel());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
-        Assert.assertEquals(FastMath.toRadians(-0.5746255623877098), elevation, 2.0e-5);
+        double elevation = topo.getTrackingCoordinates(fs.getPosition(), fs.getFrame(), fs.getDate()).getElevation();
+        Assertions.assertEquals(FastMath.toRadians(-0.5746255623877098), elevation, 2.0e-5);
 
     }
 
@@ -234,11 +234,11 @@ public class ElevationDetectorTest {
     public void testIssue136() {
 
         //  Initial state definition : date, orbit
-        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
+        AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
         Orbit initialOrbit = new KeplerianOrbit(6828137.005, 7.322641382145889e-10, 1.6967079057368113,
                                                 0.0, 1.658054062748353,
-                                                0.0001223149429077902, PositionAngle.MEAN,
+                                                0.0001223149429077902, PositionAngleType.MEAN,
                                                 inertialFrame, initialDate, Constants.EIGEN5C_EARTH_MU);
 
         // Propagator : consider a simple Keplerian motion (could be more elaborate)
@@ -265,7 +265,7 @@ public class ElevationDetectorTest {
         final double threshold = 10.0;
         final EventDetector rawEvent = new ElevationDetector(maxcheck, threshold, sta1Frame)
                                                 .withConstantElevation(elevation)
-                                                .withHandler(new ContinueOnEvent<ElevationDetector>());
+                                                .withHandler(new ContinueOnEvent());
         final EventsLogger logger = new EventsLogger();
         kepler.addEventDetector(logger.monitorDetector(rawEvent));
 
@@ -280,8 +280,8 @@ public class ElevationDetectorTest {
                 ++countDecreasing;
             }
         }
-        Assert.assertEquals(314, countIncreasing);
-        Assert.assertEquals(314, countDecreasing);
+        Assertions.assertEquals(314, countIncreasing);
+        Assertions.assertEquals(314, countDecreasing);
 
     }
 
@@ -294,7 +294,7 @@ public class ElevationDetectorTest {
         final double a = 7000000.0;
         final Orbit initialOrbit = new KeplerianOrbit(a, 0.0,
                 FastMath.PI / 2.2, 0.0, FastMath.PI / 2., 0.0,
-                PositionAngle.TRUE, eme2000Frame, initDate,
+                PositionAngleType.TRUE, eme2000Frame, initDate,
                 Constants.EGM96_EARTH_MU);
         final KeplerianPropagator kProp = new KeplerianPropagator(initialOrbit);
 
@@ -314,7 +314,7 @@ public class ElevationDetectorTest {
         final double threshold = 1.0e-3;
         final EventDetector rawEvent = new ElevationDetector(maxCheck, threshold, station)
                                                     .withConstantElevation(FastMath.toRadians(5.0))
-                                                    .withHandler(new ContinueOnEvent<ElevationDetector>());
+                                                    .withHandler(new ContinueOnEvent());
         final EventsLogger logger = new EventsLogger();
         kProp.addEventDetector(logger.monitorDetector(rawEvent));
 
@@ -322,15 +322,16 @@ public class ElevationDetectorTest {
         final AbsoluteDate finalDate = initDate.shiftedBy(30 * 60.);
 
         kProp.propagate(finalDate);
-        Assert.assertEquals(2, logger.getLoggedEvents().size());
-        Assert.assertTrue(logger.getLoggedEvents().get(0).isIncreasing());
-        Assert.assertEquals(478.945, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(initDate), 1.0e-3);
-        Assert.assertFalse(logger.getLoggedEvents().get(1).isIncreasing());
-        Assert.assertEquals(665.721, logger.getLoggedEvents().get(1).getState().getDate().durationFrom(initDate), 1.0e-3);
+        Assertions.assertEquals(2, logger.getLoggedEvents().size());
+        Assertions.assertTrue(logger.getLoggedEvents().get(0).isIncreasing());
+        Assertions.assertEquals(478.945, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(initDate), 1.0e-3);
+        Assertions.assertFalse(logger.getLoggedEvents().get(1).isIncreasing());
+        Assertions.assertEquals(665.721, logger.getLoggedEvents().get(1).getState().getDate().durationFrom(initDate), 1.0e-3);
 
     }
 
-
+    @Disabled
+    @Test
     public void testPresTemp() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -355,7 +356,7 @@ public class ElevationDetectorTest {
         EarthStandardAtmosphereRefraction refractionModel = new EarthStandardAtmosphereRefraction();
         ElevationDetector detector = new ElevationDetector(topo)
                                                  .withRefraction(refractionModel)
-                                                 .withHandler(new StopOnIncreasing<ElevationDetector>());
+                                                 .withHandler(new StopOnIncreasing());
         refractionModel.setPressure(101325);
         refractionModel.setTemperature(290);
 
@@ -363,8 +364,8 @@ public class ElevationDetectorTest {
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
-        Assert.assertEquals(FastMath.toRadians(1.7026104902251749), elevation, 2.0e-5);
+        double elevation = topo.getTrackingCoordinates(fs.getPosition(), fs.getFrame(), fs.getDate()).getElevation();
+        Assertions.assertEquals(FastMath.toRadians(1.7026104902251749), elevation, 2.0e-5);
 
     }
 
@@ -376,7 +377,7 @@ public class ElevationDetectorTest {
 
         Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
 
-        Orbit initialOrbit = new KeplerianOrbit(6828137.5, 7.322641060181212E-8, 1.7082667003713938, 0.0, 1.658054062748353, 1.2231496082116026E-4, PositionAngle.TRUE , inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
+        Orbit initialOrbit = new KeplerianOrbit(6828137.5, 7.322641060181212E-8, 1.7082667003713938, 0.0, 1.658054062748353, 1.2231496082116026E-4, PositionAngleType.TRUE , inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
 
         Propagator propagator =
                 new EcksteinHechlerPropagator(initialOrbit,
@@ -489,15 +490,15 @@ public class ElevationDetectorTest {
 
         // Event definition
         final double maxcheck  = 60.0;
-        final double threshold =  2.0; // 0.001;
+        final double threshold =  2.0;
         final EventDetector sta1Visi =
                 new ElevationDetector(maxcheck, threshold, sta1Frame).
                 withElevationMask(mask).
-                withHandler(new EventHandler<ElevationDetector>() {
+                withHandler(new EventHandler() {
 
                     private int count = 6;
                     @Override
-                    public Action eventOccurred(SpacecraftState s, ElevationDetector detector, boolean increasing) {
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                         return (--count > 0) ? Action.CONTINUE : Action.STOP;
                     }
 
@@ -511,17 +512,46 @@ public class ElevationDetectorTest {
         propagator.propagate(start, end);
 
         List<LoggedEvent> events = logger.getLoggedEvents();
-        Assert.assertEquals(6, events.size());
+        Assertions.assertEquals(6, events.size());
 
         // despite the events 2 and 3 are closer to each other than the convergence threshold
         // the second one is not merged into the first one
-        AbsoluteDate d2 = events.get(2).getState().getDate();
-        AbsoluteDate d3 = events.get(3).getState().getDate();
-        Assert.assertEquals(1.529, d3.durationFrom(d2), 0.01);
+        AbsoluteDate d2 = events.get(2).getDate();
+        AbsoluteDate d3 = events.get(3).getDate();
+        Assertions.assertTrue(d3.durationFrom(d2) > 0.3 * threshold);
+        Assertions.assertTrue(d3.durationFrom(d2) < threshold);
 
     }
 
-    @Before
+    @Test
+    public void testIssue1407() {
+        final TLE tle = new TLE("1 25544U 98067A   03042.38687590  .00035128  00000-0  41387-3 0  9990",
+                                "2 25544 051.6337 292.0267 0005644 135.6869 224.5096 15.60691825241426");
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final TopocentricFrame topo = new TopocentricFrame(earth,
+                                                           new GeodeticPoint(FastMath.toRadians(38.832772),
+                                                                             FastMath.toRadians(-104.74755),
+                                                                             1839.0),
+                                                           "Colorado Springs");
+        final AdaptableInterval maxCheck = ElevationDetectionAdaptableIntervalFactory.
+            getAdaptableInterval(topo,
+                                 ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH,
+                                 60.0);
+        final ElevationDetector detector = new ElevationDetector(maxCheck, 1.0e-3, topo).
+                                           withConstantElevation(FastMath.toRadians(10.0)).
+                                           withHandler(new ContinueOnEvent());
+
+        final EventsLogger logger = new EventsLogger();
+        final Propagator propagator = TLEPropagator.selectExtrapolator(tle);
+        propagator.addEventDetector(logger.monitorDetector(detector));
+        propagator.propagate(tle.getDate().shiftedBy(Constants.JULIAN_DAY));
+        Assertions.assertEquals(8, logger.getLoggedEvents().size());
+
+    }
+
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         mu  = 3.9860047e14;
@@ -533,7 +563,7 @@ public class ElevationDetectorTest {
         c60 = -5.5e-7;
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         mu   = Double.NaN;
         ae   = Double.NaN;

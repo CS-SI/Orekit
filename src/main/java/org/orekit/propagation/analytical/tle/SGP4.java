@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,11 @@
 package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
  * <p>
@@ -53,13 +57,33 @@ public class SGP4 extends TLEPropagator {
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Constructor for a unique initial TLE.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @see #SGP4(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     public SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                       final double mass) {
-        super(initialTLE, attitudeProvider, mass);
+                final double mass) {
+        this(initialTLE, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /** Constructor for a unique initial TLE.
+     * @param initialTLE the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
+     * @since 10.1
+     */
+    public SGP4(final TLE initialTLE,
+                final AttitudeProvider attitudeProvider,
+                final double mass,
+                final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
@@ -71,8 +95,9 @@ public class SGP4 extends TLEPropagator {
         // Also, the c3 term, the delta omega term, and the delta m term are dropped.
         lessThan220 = perige < 220;
         if (!lessThan220) {
+            final SinCos scM0 = FastMath.sinCos(tle.getMeanAnomaly());
             final double c1sq = c1 * c1;
-            delM0 = 1.0 + eta * FastMath.cos(tle.getMeanAnomaly());
+            delM0 = 1.0 + eta * scM0.cos();
             delM0 *= delM0 * delM0;
             d2 = 4 * a0dp * tsi * c1sq;
             final double temp = d2 * tsi * c1 / 3.0;
@@ -81,7 +106,7 @@ public class SGP4 extends TLEPropagator {
             t3cof = d2 + 2 * c1sq;
             t4cof = 0.25 * (3 * d3 + c1 * (12 * d2 + 10 * c1sq));
             t5cof = 0.2 * (3 * d4 + 12 * c1 * d3 + 6 * d2 * d2 + 15 * c1sq * (2 * d2 + c1sq));
-            sinM0 = FastMath.sin(tle.getMeanAnomaly());
+            sinM0 = scM0.sin();
             if (tle.getE() < 1e-4) {
                 omgcof = 0.;
                 xmcof = 0.;
@@ -112,7 +137,7 @@ public class SGP4 extends TLEPropagator {
         final double tsq = tSince * tSince;
         xnode = xn0ddf + xnodcf * tsq;
         double tempa = 1 - c1 * tSince;
-        double tempe = tle.getBStar() * c4 * tSince;
+        double tempe = tle.getBStar(tle.getDate().shiftedBy(tSince)) * c4 * tSince;
         double templ = t2cof * tsq;
 
         if (!lessThan220) {
@@ -125,7 +150,7 @@ public class SGP4 extends TLEPropagator {
             final double tcube = tsq * tSince;
             final double tfour = tSince * tcube;
             tempa = tempa - d2 * tsq - d3 * tcube - d4 * tfour;
-            tempe = tempe + tle.getBStar() * c5 * (FastMath.sin(xmp) - sinM0);
+            tempe = tempe + tle.getBStar(tle.getDate().shiftedBy(tSince)) * c5 * (FastMath.sin(xmp) - sinM0);
             templ = templ + t3cof * tcube + tfour * (t4cof + tSince * t5cof);
         }
 

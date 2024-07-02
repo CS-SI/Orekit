@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,11 +16,9 @@
  */
 package org.orekit.estimation;
 
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Pair;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -30,10 +28,11 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.TimeScale;
@@ -41,7 +40,10 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class Context {
+import java.util.List;
+import java.util.Map;
+
+public class Context implements StationDataProvider {
     public IERSConventions                      conventions;
     public OneAxisEllipsoid                     earth;
     public CelestialBody                        sun;
@@ -55,11 +57,23 @@ public class Context {
     public StationDisplacement[]                displacements;
     public List<GroundStation>                  stations;
     // Stations for turn-around range
-    // Map entry = master station
-    // Map value = slave station associated
+    // Map entry = primary station
+    // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
+    // Stations for bistatic range rate
+    // key/first    = emitter station
+    // value/second = receiver station
+    public Pair<GroundStation, GroundStation>    BRRstations;
+    // Stations for TDOA
+    // key/first    = primary station that dates the measurement
+    // value/second = secondary station associated
+    public Pair<GroundStation, GroundStation>    TDOAstations;
+    // Stations for FDOA
+    // key/first    = primary station that dates the measurement
+    // value/second = secondary station associated
+    public Pair<GroundStation, GroundStation>    FDOAstations;
 
-    public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
+    public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngleType positionAngleType,
                                                     final boolean perfectStart,
                                                     final double minStep, final double maxStep, final double dP,
                                                     final Force... forces) {
@@ -70,7 +84,7 @@ public class Context {
             startOrbit = initialOrbit;
         } else {
             // orbit estimation will start from a wrong point
-            final Vector3D initialPosition = initialOrbit.getPVCoordinates().getPosition();
+            final Vector3D initialPosition = initialOrbit.getPosition();
             final Vector3D initialVelocity = initialOrbit.getPVCoordinates().getVelocity();
             final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
             final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));
@@ -82,7 +96,7 @@ public class Context {
         final NumericalPropagatorBuilder propagatorBuilder =
                         new NumericalPropagatorBuilder(orbitType.convertType(startOrbit),
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       positionAngle, dP);
+                                positionAngleType, dP);
         for (Force force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
         }
@@ -97,7 +111,13 @@ public class Context {
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name),
+                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                                  ut1.getEOPHistory(), displacements);
+    }
+
+    @Override
+    public List<GroundStation> getStations() {
+        return stations;
     }
 
 }

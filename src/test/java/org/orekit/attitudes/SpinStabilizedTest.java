@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,24 +16,24 @@
  */
 package org.orekit.attitudes;
 
-
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -44,15 +44,17 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class SpinStabilizedTest {
+class SpinStabilizedTest {
 
     @Test
-    public void testBBQMode() {
+    @DefaultDataContext
+    void testBBQMode() {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getTAI());
         double rate = 2.0 * FastMath.PI / (12 * 60);
@@ -64,30 +66,71 @@ public class SpinStabilizedTest {
                               new Vector3D(0, 0, 3680.853673522056));
         KeplerianOrbit kep = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
         Attitude attitude = bbq.getAttitude(kep, date, kep.getFrame());
-        checkField(Decimal64Field.getInstance(), bbq, kep, kep.getDate(), kep.getFrame());
+        checkField(Binary64Field.getInstance(), bbq, kep, kep.getDate(), kep.getFrame());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        Assert.assertEquals(FastMath.atan(1.0 / 5000.0),
-                     Vector3D.angle(xDirection, sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
+        Assertions.assertEquals(FastMath.atan(1.0 / 5000.0),
+                     Vector3D.angle(xDirection, sun.getPosition(date, FramesFactory.getEME2000())),
                      2.0e-15);
-        Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
-        Assert.assertSame(cbp, bbq.getUnderlyingAttitudeProvider());
+        Assertions.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
+        Assertions.assertSame(cbp, bbq.getUnderlyingAttitudeProvider());
 
     }
 
     @Test
-    public void testSpin() {
+    @DefaultDataContext
+    void testGetAttitudeRotation() {
+        // GIVEN
+        final Orbit orbit = getOrbit();
+        final AttitudeProvider baseProvider = new FrameAlignedProvider(FramesFactory.getEME2000());
+        final AbsoluteDate startDate = orbit.getDate().shiftedBy(-10.);
+        final SpinStabilized spinStabilized = new SpinStabilized(baseProvider, startDate, Vector3D.PLUS_K, 0.1);
+        // WHEN
+        final Rotation rotation = spinStabilized.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
+        // THEN
+        final Attitude attitude = spinStabilized.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        Assertions.assertEquals(0., Rotation.distance(rotation, attitude.getRotation()));
+    }
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+    @Test
+    @DefaultDataContext
+    void testFieldGetAttitudeRotation() {
+        // GIVEN
+        final CartesianOrbit orbit = getOrbit();
+        final AbsoluteDate startDate = orbit.getDate().shiftedBy(-10.);
+
+        final AttitudeProvider baseProvider = new FrameAlignedProvider(FramesFactory.getEME2000());
+        final SpinStabilized spinStabilized = new SpinStabilized(baseProvider, startDate, Vector3D.PLUS_K, 0.1);
+        final FieldOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(ComplexField.getInstance(), orbit);
+        // WHEN
+        final FieldRotation<Complex> rotation = spinStabilized.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        // THEN
+        final FieldAttitude<Complex> attitude = spinStabilized.getAttitude(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        Assertions.assertEquals(0., Rotation.distance(rotation.toRotation(), attitude.getRotation().toRotation()));
+    }
+
+    @DefaultDataContext
+    private CartesianOrbit getOrbit() {
+        final PVCoordinates pv =
+                new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
+                        new Vector3D(0, 0, 3680.853673522056));
+        return new CartesianOrbit(pv, FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU);
+    }
+
+    @Test
+    @DefaultDataContext
+    void testSpin() {
+
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         double rate = 2.0 * FastMath.PI / (12 * 60);
         AttitudeProvider law =
-            new SpinStabilized(new InertialProvider(Rotation.IDENTITY),
+            new SpinStabilized(new FrameAlignedProvider(Rotation.IDENTITY),
                                date, Vector3D.PLUS_K, rate);
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -103,25 +146,25 @@ public class SpinStabilizedTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertTrue(errorAngleMinus <= 1.0e-6 * evolutionAngleMinus);
+        Assertions.assertTrue(errorAngleMinus <= 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertTrue(errorAnglePlus <= 1.0e-6 * evolutionAnglePlus);
+        Assertions.assertTrue(errorAnglePlus <= 1.0e-6 * evolutionAnglePlus);
 
         // compute spin axis using finite differences
         Rotation rM = sMinus.getAttitude().getRotation();
         Rotation rP = sPlus.getAttitude().getRotation();
         Vector3D reference = AngularCoordinates.estimateRate(rM, rP, 2 * h);
 
-        Assert.assertEquals(2 * FastMath.PI / reference.getNorm(), 2 * FastMath.PI / spin0.getNorm(), 0.05);
-        Assert.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(reference, spin0)), 1.0e-10);
-        Assert.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(Vector3D.PLUS_K, spin0)), 1.0e-10);
+        Assertions.assertEquals(2 * FastMath.PI / reference.getNorm(), 2 * FastMath.PI / spin0.getNorm(), 0.05);
+        Assertions.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(reference, spin0)), 1.0e-10);
+        Assertions.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(Vector3D.PLUS_K, spin0)), 1.0e-10);
 
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
+    private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
         {
@@ -129,12 +172,12 @@ public class SpinStabilizedTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assert.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

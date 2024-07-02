@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.hipparchus #ECEBD8 {
       interface RandomVectorGenerator
@@ -32,27 +33,50 @@
 
   package org.orekit #ECEBD8 {
 
-    package propagation.events #DDEBD8 {
-      interface EventsDetector
-      note top
-        ground visibility,
-        ground at night,
-        sunlit satellite,
-        inter sat direct view,
-        boolean combination...
-      end note
+    package propagation #DDEBD8 {
+
+      package events #CBDBC8 {
+        interface EventsDetector
+        note top
+          ground visibility,
+          ground at night,
+          sunlit satellite,
+          inter sat direct view,
+          boolean combination...
+        end note
+      }
+
+      interface Propagator
+      class PropagatorsParallelizer {
+        propagate()
+      }
+      Propagator <-- PropagatorsParallelizer
+
     }
+
+    package time #DDEBD8 {
+        interface DatesSelector {
+          +selectDates(interval)
+        }
+        class FixedStepSelector
+        class BurstSelector
+
+
+        DatesSelector <|.. FixedStepSelector
+        DatesSelector <|.. BurstSelector
+    }
+
     package estimation.measurements #DDEBD8 {
 
-      package generation #CEEBD8 {
+      package generation #CBDBC8 {
 
         interface "MeasurementBuilder<T>" as MeasurementBuilder_T_ {
           +addModifier(estimationModifier)
-          +T build(spacecraftStates)
-         }
+          +EstimatedMeasurement<T> build(date, interpolators)
+        }
 
         class "...MeasurementBuilder" as XXXMeasurementBuilder
-        note right
+        note left
           one for each
           measurement type
         end note
@@ -60,8 +84,9 @@
         class Generator {
           +ObservableSatellite addPropagator(Propagator)
           +Propagator getPropagator(index)
-          +addScheduler(Scheduler)
-          +SortedSet<ObservedMeasurements> generate(startDate, endDate)
+          +addScheduler(scheduler)
+          +addSubscriber(subscriber)
+          +generate(startDate, endDate)
         }
 
         enum SignSemantic {
@@ -72,24 +97,39 @@
         class "ContinuousScheduler<T>" as ContinuousScheduler_T_
 
         interface "Scheduler<T>" as Scheduler_T_ {
+          +MeasurementBuilder_T_ getBuilder()
           +SortedSet<T> generate(interpolators)
+        }
+
+        interface GeneratedMeasurementSubscriber {
+          +init(start, end)
+          +handleGeneratedMeasurement(measurement)
+        }
+
+        class GatheringSubscriber {
+          +SortedSet<ObservedMeasurements> getGeneratedMeasurements()
         }
 
         XXXMeasurementBuilder       ..|>          MeasurementBuilder_T_
         MeasurementBuilder_T_ "1" <--* Scheduler_T_
-        XXXMeasurementBuilder -up-> RandomVectorGenerator
+        RandomVectorGenerator <-- XXXMeasurementBuilder
         SignSemantic "1" <--* EventBasedScheduler_T_
         Scheduler_T_ <|.left. EventBasedScheduler_T_
-        ContinuousScheduler_T_ .right.|> Scheduler_T_
+        Scheduler_T_ <|.. ContinuousScheduler_T_
         Scheduler_T_ "*" <--* Generator
+        Generator *--> GeneratedMeasurementSubscriber
+        GeneratedMeasurementSubscriber <|-- GatheringSubscriber
+        EventsDetector <--* EventBasedScheduler_T_
   
-        EventBasedScheduler_T_ *-right-> "1" EventsDetector
+        Generator --> PropagatorsParallelizer
+        Propagator "*" <--* Generator
+
       }
 
       interface "EstimationModifier<T>" as EstimationModifier_T_
       interface "ObservedMeasurement<T>" as ObservedMeasurement_T_
       class "...Measurement" as XXXMeasurement
-      note bottom
+      note top
         this box represents any
         measurement type
         (range, range-rate, ...)
@@ -98,40 +138,12 @@
  
       EstimationModifier_T_  "*" <-left-*      ObservedMeasurement_T_ 
       ObservedMeasurement_T_     <|..          XXXMeasurement
-      XXXMeasurementBuilder       -->          XXXMeasurement
+      XXXMeasurement <-left- XXXMeasurementBuilder
       EstimationModifier_T_ "*" <--* XXXMeasurementBuilder 
 
+      Scheduler_T_ *--> "1" DatesSelector
     }
 
-
-    package propagation #DDEBD8 {
-    interface Propagator
-      class PropagatorsParallelizer {
-        propagate()
-      }
-      Generator --> PropagatorsParallelizer
-      Generator *--> "*" Propagator
-      Propagator <-left- PropagatorsParallelizer
-    }
-
-    package time #DDEBD8 {
-        class FixedStepSelector
-        class BurstSelector
-        interface DatesSelector {
-          +selectDates(interval)
-        }
-
-
-        FixedStepSelector --|> DatesSelector
-        BurstSelector --|> DatesSelector
-        Scheduler_T_ *--> "1" DatesSelector
-    }
-
-  }
-
-  package mission.specific #C4D2C5 {
-    class "CustomScheduler<T>" as CustomScheduler_T_ #D5E0D5/E2EBE2
-    Scheduler_T_ <|.up. CustomScheduler_T_
   }
 
 @enduml

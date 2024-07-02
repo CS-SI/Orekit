@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,15 +16,14 @@
  */
 package org.orekit.errors;
 
-
-import java.util.Locale;
-
 import org.hipparchus.exception.MathRuntimeException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.Locale;
 
 public class TimeStampedCacheExceptionTest {
 
@@ -32,12 +31,14 @@ public class TimeStampedCacheExceptionTest {
     public void testMessage() {
         TimeStampedCacheException e =
                         new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                      AbsoluteDate.MODIFIED_JULIAN_EPOCH);
-        Assert.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
-        Assert.assertEquals(1, e.getParts().length);
-        Assert.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
-        Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816",
+                                                      AbsoluteDate.MODIFIED_JULIAN_EPOCH,
+                                                      AbsoluteDate.MODIFIED_JULIAN_EPOCH.shiftedBy(-1e-16),
+                                                      1e-16);
+        Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
+        Assertions.assertEquals(3, e.getParts().length);
+        Assertions.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
+        Assertions.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
+        Assertions.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816Z, données requises pour 1858-11-16T23:59:27.816Z qui est 1,0E-16 s avant",
                             e.getMessage(Locale.FRENCH));
     }
 
@@ -47,12 +48,12 @@ public class TimeStampedCacheExceptionTest {
                         new TimeStampedCacheException(new ArrayIndexOutOfBoundsException(),
                                                       OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                       AbsoluteDate.MODIFIED_JULIAN_EPOCH);
-        Assert.assertTrue(e.getCause() instanceof ArrayIndexOutOfBoundsException);
-        Assert.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
-        Assert.assertEquals(1, e.getParts().length);
-        Assert.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
-        Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816",
+        Assertions.assertTrue(e.getCause() instanceof ArrayIndexOutOfBoundsException);
+        Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
+        Assertions.assertEquals(1, e.getParts().length);
+        Assertions.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
+        Assertions.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
+        Assertions.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816Z, données requises pour {1} qui est {2} s avant",
                             e.getMessage(Locale.FRENCH));
     }
 
@@ -61,7 +62,7 @@ public class TimeStampedCacheExceptionTest {
         OrekitException base = new OrekitException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                    AbsoluteDate.MODIFIED_JULIAN_EPOCH);
         TimeStampedCacheException unwraped = TimeStampedCacheException.unwrap(base);
-        Assert.assertSame(base, unwraped.getCause());
+        Assertions.assertSame(base, unwraped.getCause());
     }
 
     @Test
@@ -70,8 +71,8 @@ public class TimeStampedCacheExceptionTest {
                                                                        AbsoluteDate.MODIFIED_JULIAN_EPOCH);
         OrekitException intermediate = new OrekitException(base);
         TimeStampedCacheException unwraped = TimeStampedCacheException.unwrap(intermediate);
-        Assert.assertNull(unwraped.getCause());
-        Assert.assertSame(base, unwraped);
+        Assertions.assertNull(unwraped.getCause());
+        Assertions.assertSame(base, unwraped);
     }
 
     @Test
@@ -79,7 +80,7 @@ public class TimeStampedCacheExceptionTest {
         MathRuntimeException base = new MathRuntimeException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                              AbsoluteDate.MODIFIED_JULIAN_EPOCH);
         TimeStampedCacheException unwraped = TimeStampedCacheException.unwrap(base);
-        Assert.assertSame(base, unwraped.getCause());
+        Assertions.assertSame(base, unwraped.getCause());
     }
 
     @Test
@@ -88,11 +89,11 @@ public class TimeStampedCacheExceptionTest {
                                                                        AbsoluteDate.MODIFIED_JULIAN_EPOCH);
         MathRuntimeException intermediate = new MathRuntimeException(base, base.getSpecifier(), base.getParts());
         TimeStampedCacheException unwraped = TimeStampedCacheException.unwrap(intermediate);
-        Assert.assertNull(unwraped.getCause());
-        Assert.assertSame(base, unwraped);
+        Assertions.assertNull(unwraped.getCause());
+        Assertions.assertSame(base, unwraped);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

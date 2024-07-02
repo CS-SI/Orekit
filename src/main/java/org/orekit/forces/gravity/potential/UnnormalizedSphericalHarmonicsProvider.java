@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,7 +28,7 @@ import org.orekit.time.TimeStamped;
  * applications.
  *
  * @author Luc Maisonobe
- * @see GravityFieldFactory
+ * @see GravityFields
  * @since 6.0
  */
 public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmonicsProvider {
@@ -56,14 +56,24 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
 
     }
 
-
     /**
      * Get the un-normalized spherical harmonic coefficients at a specific instance in time.
      *
-     * @param date of evaluation
+     * @param date of evaluation (may be null if model is not time-dependent)
      * @return un-normalized coefficients on {@code date}.
      * @since 6.1
      */
     UnnormalizedSphericalHarmonics onDate(AbsoluteDate date);
+
+    /**
+     * Get the un-normalized coefficient of degree 2 and order 0 at a specific instance in time.
+     *
+     * @param date of evaluation (may be null if model is not time-dependent)
+     * @return un-normalized C20 on {@code date}.
+     * @since 12.1
+     */
+    default double getUnnormalizedC20(final AbsoluteDate date) {
+        return onDate(date).getUnnormalizedCnm(2, 0);
+    }
 
 }

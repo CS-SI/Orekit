@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
@@ -29,16 +29,34 @@ import org.orekit.time.AbsoluteDate;
  *
  * <p>Events detectors are a useful solution to meet the requirements
  * of propagators concerning discrete conditions. The state of each
- * event detector is queried by the integrator at each step. When the
- * sign of the underlying g switching function changes, the step is rejected
- * and reduced, in order to make sure the sign changes occur only at steps
- * boundaries.</p>
+ * event detector is queried by the propagator from time to time, at least
+ * once every {@link #getMaxCheckInterval() max check interval} but it may
+ * be more frequent. When the sign of the underlying g switching function
+ * changes, a root-finding algorithm is run to precisely locate the event,
+ * down to a configured {@link #getThreshold() convergence threshold}. The
+ * {@link #getMaxCheckInterval() max check interval} is therefore devoted to
+ * separate roots and is often much larger than the  {@link #getThreshold()
+ * convergence threshold}.</p>
  *
- * <p>When step ends exactly at a switching function sign change, the corresponding
- * event is triggered, by calling the {@link #eventOccurred(SpacecraftState, boolean)}
- * method. The method can do whatever it needs with the event (logging it, performing
+ * <p>The physical meaning of the g switching function is not really used
+ * by the event detection algorithms. Its varies from event detector to
+ * event detector. One example would be a visibility detector that could use the
+ * angular elevation of the satellite above horizon as a g switching function.
+ * In this case, the function would switch from negative to positive when the
+ * satellite raises above horizon and it would switch from positive to negative
+ * when it sets backs below horizon. Another example would be an apside detector
+ * that could use the dot product of position and velocity. In this case, the
+ * function would switch from negative to positive when the satellite crosses
+ * periapsis and it would switch from positive to negative when the satellite
+ * crosses apoapsis.</p>
+ *
+ * <p>When the precise state at which the g switching function changes has been
+ * located, the corresponding event is triggered, by calling the {@link
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred}
+ * method from the associated {@link #getHandler() handler}.
+ * The method can do whatever it needs with the event (logging it, performing
  * some processing, ignore it ...). The return value of the method will be used by
- * the propagator to stop or resume propagation, possibly changing the state vector.<p>
+ * the propagator to stop or resume propagation, possibly changing the state vector.</p>
  *
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
@@ -78,38 +96,17 @@ public interface EventDetector {
     /** Get maximal time interval between switching function checks.
      * @return maximal time interval (s) between switching function checks
      */
-    double getMaxCheckInterval();
+    AdaptableInterval getMaxCheckInterval();
 
     /** Get maximal number of iterations in the event time search.
      * @return maximal number of iterations in the event time search
      */
     int getMaxIterationCount();
 
-    /** Handle the event.
-     * @param s SpaceCraft state to be used in the evaluation
-     * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
-     * @return the Action that the calling detector should pass back to the evaluation system
-          * @since 7.0
+    /** Get the handler.
+     * @return event handler to call at event occurrences
+     * @since 12.0
      */
-    Action eventOccurred(SpacecraftState s, boolean increasing);
-
-    /** Reset the state prior to continue propagation.
-     * <p>This method is called after the step handler has returned and
-     * before the next step is started, but only when {@link
-     * #eventOccurred} has itself returned the {@link Action#RESET_STATE}
-     * indicator. It allows the user to reset the state for the next step,
-     * without perturbing the step handler of the finishing step. If the
-     * {@link #eventOccurred} never returns the {@link Action#RESET_STATE}
-     * indicator, this function will never be called, and it is safe to simply return null.</p>
-     * <p>
-     * The default implementation simply returns its argument.
-     * </p>
-     * @param oldState old state
-     * @return new state
-          * @since 7.0
-     */
-    default SpacecraftState resetState(SpacecraftState oldState) {
-        return oldState;
-    }
+    EventHandler getHandler();
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -46,6 +47,9 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
 
     /** Pattern for fields with Doodson number. */
     private static final String  DOODSON_TYPE_PATTERN = "\\p{Digit}{2,3}[.,]\\p{Digit}{3}";
+
+    /** Pattern for regular data. */
+    private static final Pattern PATTERN = Pattern.compile("[.,]");
 
     /** Sea water fensity. */
     private static final double RHO   = 1025;
@@ -129,65 +133,68 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
 
         // parse the file
         startParse(name);
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        int lineNumber      = 0;
-        for (String line = r.readLine(); line != null; line = r.readLine()) {
-            ++lineNumber;
-            final Matcher regularMatcher = regularLinePattern.matcher(line);
-            if (regularMatcher.matches()) {
-                // we have found a regular data line
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            int lineNumber      = 0;
+            for (String line = r.readLine(); line != null; line = r.readLine()) {
+                ++lineNumber;
+                final Matcher regularMatcher = regularLinePattern.matcher(line);
+                if (regularMatcher.matches()) {
+                    // we have found a regular data line
 
-                // parse fields
-                final int doodson = Integer.parseInt(regularMatcher.group(1).replaceAll("[.,]", ""));
-                final int n       = Integer.parseInt(regularMatcher.group(3));
-                final int m       = Integer.parseInt(regularMatcher.group(4));
+                    // parse fields
+                    final int doodson = Integer.parseInt(PATTERN.matcher(regularMatcher.group(1)).replaceAll(""));
+                    final int n       = Integer.parseInt(regularMatcher.group(3));
+                    final int m       = Integer.parseInt(regularMatcher.group(4));
 
-                if (canAdd(n, m)) {
+                    if (canAdd(n, m)) {
 
-                    final double cHatPlus  = scaleCHat    * Double.parseDouble(regularMatcher.group(9));
-                    final double ePlus     = scaleEpsilon * Double.parseDouble(regularMatcher.group(10));
-                    final double cHatMinus = scaleCHat    * Double.parseDouble(regularMatcher.group(11));
-                    final double eMinus    = scaleEpsilon * Double.parseDouble(regularMatcher.group(12));
+                        final double cHatPlus  = scaleCHat    * Double.parseDouble(regularMatcher.group(9));
+                        final double ePlus     = scaleEpsilon * Double.parseDouble(regularMatcher.group(10));
+                        final double cHatMinus = scaleCHat    * Double.parseDouble(regularMatcher.group(11));
+                        final double eMinus    = scaleEpsilon * Double.parseDouble(regularMatcher.group(12));
 
-                    // compute bias from table 6.6
-                    final double hf = astronomicalAmplitudes.containsKey(doodson) ? astronomicalAmplitudes.get(doodson) : 0.0;
-                    final int cGamma = doodson / 100000;
-                    final double chiF;
-                    if (cGamma == 0) {
-                        chiF = hf > 0 ? FastMath.PI : 0.0;
-                    } else if (cGamma == 1) {
-                        chiF = hf > 0 ? 0.5 * FastMath.PI : -0.5 * FastMath.PI;
-                    } else if (cGamma == 2) {
-                        chiF = hf > 0 ? 0.0 : FastMath.PI;
-                    } else {
-                        chiF = 0;
+                        // compute bias from table 6.6
+                        final double hf = astronomicalAmplitudes.getOrDefault(doodson, 0.0);
+                        final int cGamma = doodson / 100000;
+                        final double chiF;
+                        if (cGamma == 0) {
+                            chiF = hf > 0 ? FastMath.PI : 0.0;
+                        } else if (cGamma == 1) {
+                            chiF = hf > 0 ? 0.5 * FastMath.PI : -0.5 * FastMath.PI;
+                        } else if (cGamma == 2) {
+                            chiF = hf > 0 ? 0.0 : FastMath.PI;
+                        } else {
+                            chiF = 0;
+                        }
+
+                        // compute reference gravity coefficients by converting height coefficients
+                        // IERS conventions 2010, equation 6.21
+                        if (n >= kPrime.length) {
+                            throw new OrekitException(OrekitMessages.OCEAN_TIDE_LOAD_DEFORMATION_LIMITS,
+                                                      kPrime.length - 1, n, name);
+                        }
+                        final double termFactor = (1 + kPrime[n]) / (2 * n + 1);
+
+                        // an update on IERS conventions from 2012-08-10 states that for FES model:
+                        //      Note that, for zonal terms, FES2004 takes the approach to set
+                        //      the retrograde coefficients C-f,nO and S-f,n0 to zero and to double
+                        //      the prograde coefficients C+f,nO and S+f,n0. Therefore, after
+                        //      applying Equation (6.15), the ΔCn0 have the expected value but the
+                        //      ΔSn0 must be set to zero.
+                        // (see ftp://tai.bipm.org/iers/convupdt/chapter6/icc6.pdf)
+                        final SinCos scP    = FastMath.sinCos(ePlus  + chiF);
+                        final SinCos scM    = FastMath.sinCos(eMinus + chiF);
+                        final double cPlus  =                  commonFactor * termFactor * cHatPlus  * scP.sin();
+                        final double sPlus  =                  commonFactor * termFactor * cHatPlus  * scP.cos();
+                        final double cMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * scM.sin();
+                        final double sMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * scM.cos();
+
+                        // store parsed fields
+                        addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);
+
                     }
-
-                    // compute reference gravity coefficients by converting height coefficients
-                    // IERS conventions 2010, equation 6.21
-                    if (n >= kPrime.length) {
-                        throw new OrekitException(OrekitMessages.OCEAN_TIDE_LOAD_DEFORMATION_LIMITS,
-                                                  kPrime.length - 1, n, name);
-                    }
-                    final double termFactor = (1 + kPrime[n]) / (2 * n + 1);
-
-                    // an update on IERS conventions from 2012-08-10 states that for FES model:
-                    //      Note that, for zonal terms, FES2004 takes the approach to set
-                    //      the retrograde coefficients C-f,nO and S-f,n0 to zero and to double
-                    //      the prograde coefficients C+f,nO and S+f,n0. Therefore, after
-                    //      applying Equation (6.15), the ΔCn0 have the expected value but the
-                    //      ΔSn0 must be set to zero.
-                    // (see ftp://tai.bipm.org/iers/convupdt/chapter6/icc6.pdf)
-                    final double cPlus  =                  commonFactor * termFactor * cHatPlus  * FastMath.sin(ePlus  + chiF);
-                    final double sPlus  =                  commonFactor * termFactor * cHatPlus  * FastMath.cos(ePlus  + chiF);
-                    final double cMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * FastMath.sin(eMinus + chiF);
-                    final double sMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * FastMath.cos(eMinus + chiF);
-
-                    // store parsed fields
-                    addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);
 
                 }
-
             }
         }
         endParse();

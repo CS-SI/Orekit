@@ -1,0 +1,123 @@
+CCSDS_TDM_VERS = 2.0
+    COMMENT TDM example created by CS GROUP
+    COMMENT Testing all TDM known meta-data and data keywords
+    CREATION_DATE = 2017-06-14T10:53:00.000
+    ORIGINATOR = CS GROUP
+    MESSAGE_ID    = 04655f62-1ba0-4ca6-92e9-eb3411db3d44
+META_START
+    COMMENT                         All known meta-data keywords displayed
+    TRACK_ID                      = ID_TEST_269
+    DATA_TYPES                    = CARRIER_POWER,DOPPLER_COUNT,DOPPLER_INSTANTANEOUS,DOPPLER_INTEGRATED,PC_N0,RECEIVE_PHASE_CT_1,RECEIVE_PHASE_CT_2,RECEIVE_PHASE_CT_3,RECEIVE_PHASE_CT_4,RECEIVE_PHASE_CT_5,TRANSMIT_PHASE_CT_1,TRANSMIT_PHASE_CT_2,TRANSMIT_PHASE_CT_3,TRANSMIT_PHASE_CT_4,TRANSMIT_PHASE_CT_5,PR_N0,RANGE,RECEIVE_FREQ_1,RECEIVE_FREQ_2,RECEIVE_FREQ_3,RECEIVE_FREQ_4,RECEIVE_FREQ_5,RECEIVE_FREQ,TRANSMIT_FREQ_1,TRANSMIT_FREQ_2,TRANSMIT_FREQ_3,TRANSMIT_FREQ_4,TRANSMIT_FREQ_5,TRANSMIT_FREQ_RATE_1,TRANSMIT_FREQ_RATE_2,TRANSMIT_FREQ_RATE_3,TRANSMIT_FREQ_RATE_4,TRANSMIT_FREQ_RATE_5,DOR,VLBI_DELAY,ANGLE_1,ANGLE_2,MAG,RCS,CLOCK_BIAS,CLOCK_DRIFT,STEC,TROPO_DRY,TROPO_WET,PRESSURE,RHUMIDITY,TEMPERATURE
+    TIME_SYSTEM                   = UTC
+    START_TIME                    = 2017-06-14T10:53:00.000
+    STOP_TIME                     = 2017-06-15T10:53:00.000
+    PARTICIPANT_1                 = DSS-25
+    PARTICIPANT_2                 = yyyy-nnnA
+    PARTICIPANT_3                 = P3
+    PARTICIPANT_4                 = P4
+    PARTICIPANT_5                 = P5
+    MODE                          = SINGLE_DIFF
+    PATH_1                        = 4,5
+    PATH_2                        = 3,2
+    EPHEMERIS_NAME_1              = eph-1
+    EPHEMERIS_NAME_2              = eph-2
+    EPHEMERIS_NAME_3              = eph-3
+    EPHEMERIS_NAME_4              = eph-4
+    EPHEMERIS_NAME_5              = eph-5
+    TRANSMIT_BAND                 = S
+    RECEIVE_BAND                  = L
+    TURNAROUND_NUMERATOR          = 240
+    TURNAROUND_DENOMINATOR        = 221
+    TIMETAG_REF                   = TRANSMIT
+    INTEGRATION_INTERVAL          = 1.0
+    INTEGRATION_REF               = MIDDLE
+    FREQ_OFFSET                   = 32021035200.0
+    RANGE_MODE                    = COHERENT
+    RANGE_MODULUS                 = 32768.0
+    RANGE_UNITS                   = RU
+    ANGLE_TYPE                    = RADEC
+    REFERENCE_FRAME               = EME2000
+    INTERPOLATION                 = HERMITE
+    INTERPOLATION_DEGREE          = 5
+    DOPPLER_COUNT_BIAS            = 120000
+    DOPPLER_COUNT_SCALE           = 1000
+    DOPPLER_COUNT_ROLLOVER        = NO
+    TRANSMIT_DELAY_1              = 0.000077
+    TRANSMIT_DELAY_2              = 0.000077
+    TRANSMIT_DELAY_3              = 0.000077
+    TRANSMIT_DELAY_4              = 0.000077
+    TRANSMIT_DELAY_5              = 0.000077
+    RECEIVE_DELAY_1               = 0.000077
+    RECEIVE_DELAY_2               = 0.000077
+    RECEIVE_DELAY_3               = 0.000077
+    RECEIVE_DELAY_4               = 0.000077
+    RECEIVE_DELAY_5               = 0.000077
+    DATA_QUALITY                  = RAW
+    CORRECTION_ANGLE_1            =  1.0
+    CORRECTION_ANGLE_2            =  2.0
+    CORRECTION_DOPPLER            =  3.0
+    CORRECTION_MAG                =  4.0
+    CORRECTION_RANGE              =  5.0
+    CORRECTION_RCS                =  6.0
+    CORRECTION_RECEIVE            =  7.0
+    CORRECTION_TRANSMIT           =  8.0
+    CORRECTION_ABERRATION_YEARLY  =  9.0
+    CORRECTION_ABERRATION_DIURNAL = 10.0
+    CORRECTIONS_APPLIED           = YES
+META_STOP
+DATA_START
+    COMMENT                         Data Related Keywords
+    CARRIER_POWER                 = 2017-06-14T10:53:01 1.
+    DOPPLER_COUNT                 = 2017-06-14T10:53:02 2
+    DOPPLER_INSTANTANEOUS         = 2017-06-14T10:53:03 0.003
+    DOPPLER_INTEGRATED            = 2017-06-14T10:53:04 0.004
+    PC_N0                         = 2017-06-14T10:53:05  5.
+    RECEIVE_PHASE_CT_1            = 2017-06-14T10:53:06  6
+    RECEIVE_PHASE_CT_2            = 2017-06-14T10:53:07  7
+    RECEIVE_PHASE_CT_3            = 2017-06-14T10:53:08  8
+    RECEIVE_PHASE_CT_4            = 2017-06-14T10:53:09  9
+    RECEIVE_PHASE_CT_5            = 2017-06-14T10:53:10 10
+    TRANSMIT_PHASE_CT_1           = 2017-06-14T10:53:11 11
+    TRANSMIT_PHASE_CT_2           = 2017-06-14T10:53:12 12
+    TRANSMIT_PHASE_CT_3           = 2017-06-14T10:53:13 13
+    TRANSMIT_PHASE_CT_4           = 2017-06-14T10:53:14 14
+    TRANSMIT_PHASE_CT_5           = 2017-06-14T10:53:15 15
+    PR_N0                         = 2017-06-14T10:53:16 16
+    RANGE                         = 2017-06-14T10:53:17 17
+    RECEIVE_FREQ_1                = 2017-06-14T10:53:18 18
+    RECEIVE_FREQ_2                = 2017-06-14T10:53:19 19
+    RECEIVE_FREQ_3                = 2017-06-14T10:53:20 20
+    RECEIVE_FREQ_4                = 2017-06-14T10:53:21 21
+    RECEIVE_FREQ_5                = 2017-06-14T10:53:22 22
+    RECEIVE_FREQ                  = 2017-06-14T10:53:23 23
+    TRANSMIT_FREQ_1               = 2017-06-14T10:53:24 24
+    TRANSMIT_FREQ_2               = 2017-06-14T10:53:25 25
+    TRANSMIT_FREQ_3               = 2017-06-14T10:53:26 26
+    TRANSMIT_FREQ_4               = 2017-06-14T10:53:27 27
+    TRANSMIT_FREQ_5               = 2017-06-14T10:53:28 28
+    TRANSMIT_FREQ_RATE_1          = 2017-06-14T10:53:29 29
+    TRANSMIT_FREQ_RATE_2          = 2017-06-14T10:53:30 30
+    TRANSMIT_FREQ_RATE_3          = 2017-06-14T10:53:31 31
+    TRANSMIT_FREQ_RATE_4          = 2017-06-14T10:53:32 32
+    TRANSMIT_FREQ_RATE_5          = 2017-06-14T10:53:33 33
+
+    DOR                           = 2017-06-14T10:53:34 34
+    VLBI_DELAY                    = 2017-06-14T10:53:35 35
+
+    ANGLE_1                       = 2017-06-14T10:53:36 2062.6480624709635516
+    ANGLE_2                       = 2017-06-14T10:53:37 2119.9438419840458724
+
+    MAG                           = 2017-06-14T10:53:38 38
+    RCS                           = 2017-06-14T10:53:39 39
+
+    CLOCK_BIAS                    = 2017-06-14T10:53:40 40
+    CLOCK_DRIFT                   = 2017-06-14T10:53:41 41
+
+    STEC                          = 2017-06-14T10:53:42 42.0e-16
+    TROPO_DRY                     = 2017-06-14T10:53:43 43
+    TROPO_WET                     = 2017-06-14T10:53:44 44
+
+    PRESSURE                      = 2017-06-14T10:53:45 0.45
+    RHUMIDITY                     = 2017-06-14T10:53:46 4600.0
+    TEMPERATURE                   = 2017-06-14T10:53:47 47
+DATA_STOP

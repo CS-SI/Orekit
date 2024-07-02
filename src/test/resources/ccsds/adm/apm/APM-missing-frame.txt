@@ -1,0 +1,17 @@
+CCSDS_APM_VERS  = 1.0
+CREATION_DATE   = 2004-02-14T19:23:57
+ORIGINATOR      = JPL
+
+OBJECT_NAME     = MARS SPIRIT
+OBJECT_ID       = 2004-003A
+CENTER_NAME     = EARTH
+TIME_SYSTEM     = UTC
+
+EPOCH           = 2004-02-14T14:28:15.1172
+Q_FRAME_B       = ITRF-97
+Q_DIR           = A2B
+
+Q1              = 0.03123
+Q2              = 0.78543
+Q3              = 0.39158
+QC              = 0.47832

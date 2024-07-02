@@ -1,5 +1,5 @@
 /* Copyright 2016 Applied Defense Solutions (ADS)
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * ADS licenses this file to You under the Apache License, Version 2.0
@@ -22,15 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -43,7 +43,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  *
  */
-public class OrekitEphemerisFile implements EphemerisFile {
+public class OrekitEphemerisFile
+    implements EphemerisFile<TimeStampedPVCoordinates, OrekitEphemerisFile.OrekitEphemerisSegment> {
 
     /** Hashmap of satellite ephemeris. **/
     private final Map<String, OrekitSatelliteEphemeris> satellites;
@@ -55,6 +56,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
         this.satellites = new ConcurrentHashMap<String, OrekitSatelliteEphemeris>();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, OrekitSatelliteEphemeris> getSatellites() {
         return Collections.unmodifiableMap(satellites);
@@ -76,25 +78,26 @@ public class OrekitEphemerisFile implements EphemerisFile {
     /**
      * Inner class of {@link OrekitEphemerisFile} that defines the
      * {@link OrekitSatelliteEphemeris} corresponding object for this ephemeris type.
-     *
      */
-    public static class OrekitSatelliteEphemeris implements SatelliteEphemeris {
+    public static class OrekitSatelliteEphemeris
+        implements EphemerisFile.SatelliteEphemeris<TimeStampedPVCoordinates, OrekitEphemerisSegment> {
+
         /**
          * Defines the default interpolation sample size if it is not specified
          * on a segment.
          **/
-        public static final int DEFAULT_INTERPOLATION_SIZE = 7;
+        public static final int DEFAULT_INTERPOLATION_SIZE = 2;
 
         /** ID of the space object encapsulated here. **/
         private final String id;
 
-        /** Earlist date of this file. **/
+        /** Earliest date of this file. **/
         private AbsoluteDate startDate;
 
         /** Latest date of this file. **/
         private AbsoluteDate stopDate;
 
-        /** List of segements in the file. **/
+        /** List of segments in the file. **/
         private final List<OrekitEphemerisSegment> segments;
 
         /**
@@ -105,14 +108,16 @@ public class OrekitEphemerisFile implements EphemerisFile {
          */
         public OrekitSatelliteEphemeris(final String id) {
             this.id = id;
-            this.segments = new ArrayList<OrekitEphemerisSegment>();
+            this.segments = new ArrayList<>();
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getId() {
             return id;
         }
 
+        /** {@inheritDoc} */
         @Override
         public double getMu() {
             if (this.segments.size() == 0) {
@@ -122,19 +127,21 @@ public class OrekitEphemerisFile implements EphemerisFile {
             }
         }
 
+        /** {@inheritDoc} */
         @Override
-        public List<? extends EphemerisSegment> getSegments() {
+        public List<OrekitEphemerisSegment> getSegments() {
             return Collections.unmodifiableList(this.segments);
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
             return this.startDate;
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
-            // TODO Auto-generated method stub
             return this.stopDate;
         }
 
@@ -144,19 +151,25 @@ public class OrekitEphemerisFile implements EphemerisFile {
          * has been stored internally. Defaults the celestial body to earth and
          * the interpolation size to the default.
          *
+         * <p>This method uses the {@link DataContext#getDefault() default data context}.
+         *
          * @param states
          *            a list of {@link SpacecraftState} that will comprise this
          *            new unit.
          * @return the generated {@link OrekitEphemerisSegment}
+         * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
+        @DefaultDataContext
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states) {
-            return this.addNewSegment(states, CelestialBodyFactory.getEarth(), DEFAULT_INTERPOLATION_SIZE);
+            return this.addNewSegment(states, DEFAULT_INTERPOLATION_SIZE);
         }
 
         /**
          * Injects pre-computed satellite states into this ephemeris file
          * object, returning the generated {@link OrekitEphemerisSegment} that
          * has been stored internally. Defaults the Celestial Body to be Earths
+         *
+         * <p>This method uses the {@link DataContext#getDefault() default data context}.
          *
          * @param states
          *            a list of {@link SpacecraftState} that will comprise this
@@ -165,10 +178,40 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            the number of interpolation samples that should be used
          *            when processed by another system
          * @return the generated {@link OrekitEphemerisSegment}
+         * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
+        @DefaultDataContext
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states,
                 final int interpolationSampleSize) {
-            return this.addNewSegment(states, CelestialBodyFactory.getEarth(), interpolationSampleSize);
+            return this.addNewSegment(
+                    states,
+                    DataContext.getDefault().getCelestialBodies().getEarth(),
+                    interpolationSampleSize);
+        }
+
+        /**
+         * Injects pre-computed satellite states into this ephemeris file
+         * object, returning the generated {@link OrekitEphemerisSegment} that
+         * has been stored internally.
+         *
+         * <p>This method uses the {@link DataContext#getDefault() default data context}.
+         *
+         * @param states
+         *            a list of {@link SpacecraftState} that will comprise this
+         *            new unit.
+         * @param body
+         *            the celestial body the state's frames are with respect to
+         * @param interpolationSampleSize
+         *            the number of interpolation samples that should be used
+         *            when processed by another system
+         * @return the generated {@link OrekitEphemerisSegment}
+         * @see #addNewSegment(List, CelestialBody, int, TimeScale)
+         */
+        @DefaultDataContext
+        public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states, final CelestialBody body,
+                                                    final int interpolationSampleSize) {
+            return addNewSegment(states, body, interpolationSampleSize,
+                    DataContext.getDefault().getTimeScales().getUTC());
         }
 
         /**
@@ -180,21 +223,26 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            a list of {@link SpacecraftState} that will comprise this
          *            new unit.
          * @param body
-         *            the celestial body the state's frames are with respect to
+         *            the celestial body from which the frames are defined
          * @param interpolationSampleSize
          *            the number of interpolation samples that should be used
          *            when processed by another system
+         * @param timeScale
+         *            the time scale used in the new segment.
          * @return the generated {@link OrekitEphemerisSegment}
+         * @since 10.1
          */
-        public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states, final CelestialBody body,
-                final int interpolationSampleSize) {
+        public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states,
+                                                    final CelestialBody body,
+                                                    final int interpolationSampleSize,
+                                                    final TimeScale timeScale) {
             final int minimumSampleSize = 2;
             if (states == null || states.size() == 0) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "states");
             }
 
             if (interpolationSampleSize < minimumSampleSize) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA,
                         interpolationSampleSize);
             }
 
@@ -209,42 +257,36 @@ public class OrekitEphemerisFile implements EphemerisFile {
                 this.stopDate = stop;
             }
 
-            final List<TimeStampedPVCoordinates> coordinates = new ArrayList<TimeStampedPVCoordinates>();
+            final List<TimeStampedPVCoordinates> coordinates = new ArrayList<>();
             for (SpacecraftState state : states) {
                 coordinates.add(state.getPVCoordinates());
             }
 
             final Frame frame = states.get(0).getFrame();
 
-            final OrekitEphemerisSegment newSeg = new OrekitEphemerisSegment(coordinates, frame, body.getName(),
-                    body.getGM(), TimeScalesFactory.getUTC(), interpolationSampleSize);
+            final OrekitEphemerisSegment newSeg =
+                            new OrekitEphemerisSegment(coordinates, frame, body.getGM(), interpolationSampleSize);
             this.segments.add(newSeg);
 
             return newSeg;
         }
     }
 
-    public static class OrekitEphemerisSegment implements EphemerisSegment {
-        /** **/
+    /** Ephemeris segment. */
+    public static class OrekitEphemerisSegment
+        implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
+
+        /** Coordinates for this ephemeris segment. **/
         private final List<TimeStampedPVCoordinates> coordinates;
 
-        /** **/
+        /** The reference frame for this ephemeris segment. **/
         private final Frame frame;
 
-        /** **/
-        private final String frameCenterString;
-
-        /** **/
+        /** Standard gravitational parameter for the satellite. **/
         private final double mu;
 
-        /** **/
-        private final String timeScaleString;
-
-        /** **/
-        private final TimeScale timeScale;
-
-        /** **/
-        private final int samples;
+        /** The number of interpolation samples. */
+        private final int interpolationSamples;
 
         /**
          * constructor for OrekitEphemerisSegment.
@@ -253,77 +295,62 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            coordinates making up the ephemeris for this segment
          * @param frame
          *            the frame the coordinates are in
-         * @param frameCenterString
-         *            the name of celestial body the frame is attached to
          * @param mu
-         *            the gravitional constant used in force model evaluations
-         * @param timeScale
-         *            the time scale of these ephemeris points
-         * @param samples
+         *            the gravitational constant used in force model evaluations
+         * @param interpolationSamples
          *            the number of samples to use during interpolation
          */
         public OrekitEphemerisSegment(final List<TimeStampedPVCoordinates> coordinates, final Frame frame,
-                final String frameCenterString, final double mu, final TimeScale timeScale, final int samples) {
-            super();
-            this.coordinates = coordinates;
-            this.frame = frame;
-            this.frameCenterString = frameCenterString;
-            this.mu = mu;
-            this.timeScale = timeScale;
-            this.timeScaleString = timeScale.getName();
-            this.samples = samples;
+                                      final double mu, final int interpolationSamples) {
+            this.coordinates          = coordinates;
+            this.frame                = frame;
+            this.mu                   = mu;
+            this.interpolationSamples = interpolationSamples;
         }
 
+        /** {@inheritDoc} */
         @Override
         public double getMu() {
             return mu;
         }
 
-        @Override
-        public String getFrameCenterString() {
-            return frameCenterString;
-        }
-
-        @Override
-        public String getFrameString() {
-            return frame.getName();
-        }
-
+        /** {@inheritDoc} */
         @Override
         public Frame getFrame() {
             return frame;
         }
 
+        /** {@inheritDoc} */
         @Override
-        public String getTimeScaleString() {
-            return timeScaleString;
+        public Frame getInertialFrame() {
+            return frame;
         }
 
-        @Override
-        public TimeScale getTimeScale() {
-            return timeScale;
-        }
-
+        /** {@inheritDoc} */
         @Override
         public int getInterpolationSamples() {
-            return samples;
+            return interpolationSamples;
         }
 
+        /** {@inheritDoc} */
         @Override
         public CartesianDerivativesFilter getAvailableDerivatives() {
             return CartesianDerivativesFilter.USE_PV;
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<TimeStampedPVCoordinates> getCoordinates() {
             return Collections.unmodifiableList(coordinates);
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
             return coordinates.get(0).getDate();
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
             return coordinates.get(coordinates.size() - 1).getDate();

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,29 +22,28 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Line;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeShiftable;
-import org.orekit.time.TimeStamped;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.FieldTimeShiftable;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-/** Transformation class in three dimensional space.
+/** Transformation class in three-dimensional space.
  *
  * <p>This class represents the transformation engine between {@link Frame frames}.
  * It is used both to define the relationship between each frame and its
@@ -57,9 +56,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
- * <h1> Examples </h1>
+ * <h2> Examples </h2>
  *
- * <h2> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h2>
+ * <h3> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h3>
  *
  * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with :
@@ -78,7 +77,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * PVB = R1toR2.transformPVCoordinate(PVA);
  * </pre>
  *
- * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
+ * <h3> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h3>
  * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with
  *
@@ -101,8 +100,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @param <T> the type of the field elements
  * @since 9.0
  */
-public class FieldTransform<T extends RealFieldElement<T>>
-    implements TimeStamped, TimeShiftable<FieldTransform<T>> {
+public class FieldTransform<T extends CalculusFieldElement<T>>
+    implements FieldTimeShiftable<FieldTransform<T>, T>, FieldKinematicTransform<T> {
 
     /** Date of the transform. */
     private final FieldAbsoluteDate<T> date;
@@ -164,9 +163,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
     public FieldTransform(final FieldAbsoluteDate<T> date, final FieldRotation<T> rotation) {
         this(date, date.toAbsoluteDate(),
              FieldPVCoordinates.getZero(date.getField()),
-             new FieldAngularCoordinates<>(rotation,
-                                           FieldVector3D.getZero(date.getField()),
-                                           FieldVector3D.getZero(date.getField())));
+             new FieldAngularCoordinates<>(rotation, FieldVector3D.getZero(date.getField())));
     }
 
     /** Build a translation transform, with its first time derivative.
@@ -212,6 +209,22 @@ public class FieldTransform<T extends RealFieldElement<T>>
         this(date, date.toAbsoluteDate(),
              cartesian,
              FieldAngularCoordinates.getIdentity(date.getField()));
+    }
+
+    /** Build a combined translation and rotation transform.
+     * @param date date of the transform
+     * @param translation translation to apply (i.e. coordinates of
+     * the transformed origin, or coordinates of the origin of the
+     * old frame in the new frame)
+     * @param rotation rotation to apply ( i.e. rotation to apply to the
+     * coordinates of a vector expressed in the old frame to obtain the
+     * same vector expressed in the new frame )
+     * @since 12.1
+     */
+    public FieldTransform(final FieldAbsoluteDate<T> date, final FieldVector3D<T> translation,
+                          final FieldRotation<T> rotation) {
+        this(date, date.toAbsoluteDate(), new FieldPVCoordinates<>(translation, FieldVector3D.getZero(date.getField())),
+                new FieldAngularCoordinates<>(rotation, FieldVector3D.getZero(date.getField())));
     }
 
     /** Build a rotation transform.
@@ -274,10 +287,10 @@ public class FieldTransform<T extends RealFieldElement<T>>
                           final FieldTransform<T> first,
                           final FieldTransform<T> second) {
         this(date, date.toAbsoluteDate(),
-             new FieldPVCoordinates<>(compositeTranslation(first, second),
+             new FieldPVCoordinates<>(FieldStaticTransform.compositeTranslation(first, second),
                                       compositeVelocity(first, second),
                                       compositeAcceleration(first, second)),
-             new FieldAngularCoordinates<>(compositeRotation(first, second),
+             new FieldAngularCoordinates<>(FieldStaticTransform.compositeRotation(first, second),
                                            compositeRotationRate(first, second),
                                            compositeRotationAcceleration(first, second)));
     }
@@ -287,24 +300,8 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return identity transform
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> getIdentity(final Field<T> field) {
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> getIdentity(final Field<T> field) {
         return new FieldIdentityTransform<>(field);
-    }
-
-    /** Compute a composite translation.
-     * @param first first applied transform
-     * @param second second applied transform
-     * @param <T> the type of the field elements
-     * @return translation part of the composite transform
-     */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeTranslation(final FieldTransform<T> first, final FieldTransform<T> second) {
-
-        final FieldVector3D<T> p1 = first.cartesian.getPosition();
-        final FieldRotation<T> r1 = first.angular.getRotation();
-        final FieldVector3D<T> p2 = second.cartesian.getPosition();
-
-        return p1.add(r1.applyInverseTo(p2));
-
     }
 
     /** Compute a composite velocity.
@@ -313,7 +310,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return velocity part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeVelocity(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeVelocity(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> v1 = first.cartesian.getVelocity();
         final FieldRotation<T> r1 = first.angular.getRotation();
@@ -333,7 +330,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return acceleration part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeAcceleration(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeAcceleration(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> a1    = first.cartesian.getAcceleration();
         final FieldRotation<T> r1    = first.angular.getRotation();
@@ -351,28 +348,13 @@ public class FieldTransform<T extends RealFieldElement<T>>
 
     }
 
-    /** Compute a composite rotation.
-     * @param first first applied transform
-     * @param second second applied transform
-     * @param <T> the type of the field elements
-     * @return rotation part of the composite transform
-     */
-    private static <T extends RealFieldElement<T>> FieldRotation<T> compositeRotation(final FieldTransform<T> first, final FieldTransform<T> second) {
-
-        final FieldRotation<T> r1 = first.angular.getRotation();
-        final FieldRotation<T> r2 = second.angular.getRotation();
-
-        return r1.compose(r2, RotationConvention.FRAME_TRANSFORM);
-
-    }
-
     /** Compute a composite rotation rate.
      * @param first first applied transform
      * @param second second applied transform
      * @param <T> the type of the field elements
      * @return rotation rate part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeRotationRate(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeRotationRate(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> o1 = first.angular.getRotationRate();
         final FieldRotation<T> r2 = second.angular.getRotation();
@@ -388,7 +370,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return rotation acceleration part of the composite transform
      */
-    private static <T extends RealFieldElement<T>> FieldVector3D<T> compositeRotationAcceleration(final FieldTransform<T> first, final FieldTransform<T> second) {
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeRotationAcceleration(final FieldTransform<T> first, final FieldTransform<T> second) {
 
         final FieldVector3D<T> o1    = first.angular.getRotationRate();
         final FieldVector3D<T> oDot1 = first.angular.getRotationAcceleration();
@@ -403,6 +385,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbsoluteDate getDate() {
         return aDate;
     }
@@ -410,11 +393,13 @@ public class FieldTransform<T extends RealFieldElement<T>>
     /** Get the date.
      * @return date attached to the object
      */
+    @Override
     public FieldAbsoluteDate<T> getFieldDate() {
         return date;
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldTransform<T> shiftedBy(final double dt) {
         return new FieldTransform<>(date.shiftedBy(dt), aDate.shiftedBy(dt),
                                     cartesian.shiftedBy(dt), angular.shiftedBy(dt));
@@ -427,6 +412,34 @@ public class FieldTransform<T extends RealFieldElement<T>>
     public FieldTransform<T> shiftedBy(final T dt) {
         return new FieldTransform<>(date.shiftedBy(dt), aDate.shiftedBy(dt.getReal()),
                                     cartesian.shiftedBy(dt), angular.shiftedBy(dt));
+    }
+
+    /**
+     * Shift the transform in time considering all rates, then return only the
+     * translation and rotation portion of the transform.
+     *
+     * @param dt time shift in seconds.
+     * @return shifted transform as a static transform. It is static in the
+     * sense that it can only be used to transform directions and positions, but
+     * not velocities or accelerations.
+     * @see #shiftedBy(double)
+     */
+    public FieldStaticTransform<T> staticShiftedBy(final T dt) {
+        return FieldStaticTransform.of(date.shiftedBy(dt),
+                                       cartesian.positionShiftedBy(dt),
+                                       angular.rotationShiftedBy(dt));
+    }
+
+    /**
+     * Create a so-called static transform from the instance.
+     *
+     * @return static part of the transform. It is static in the
+     * sense that it can only be used to transform directions and positions, but
+     * not velocities or accelerations.
+     * @see FieldStaticTransform
+     */
+    public FieldStaticTransform<T> toStaticTransform() {
+        return FieldStaticTransform.of(date, cartesian.getPosition(), angular.getRotation());
     }
 
     /** Interpolate a transform from a sample set of existing transforms.
@@ -442,7 +455,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new instance, interpolated at specified date
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
                                                                                 final Collection<FieldTransform<T>> sample) {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
@@ -473,7 +486,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @return a new instance, interpolated at specified date
           * @param <T> the type of the field elements
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
                                                                                 final Collection<FieldTransform<T>> sample) {
@@ -504,24 +517,37 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @return a new instance, interpolated at specified date
           * @param <T> the type of the field elements
      */
-    public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
+    public static <T extends CalculusFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
                                                                                 final Stream<FieldTransform<T>> sample) {
+
+        // Create samples
         final List<TimeStampedFieldPVCoordinates<T>>      datedPV = new ArrayList<>();
         final List<TimeStampedFieldAngularCoordinates<T>> datedAC = new ArrayList<>();
         sample.forEach(t -> {
             datedPV.add(new TimeStampedFieldPVCoordinates<>(t.getDate(), t.getTranslation(), t.getVelocity(), t.getAcceleration()));
             datedAC.add(new TimeStampedFieldAngularCoordinates<>(t.getDate(), t.getRotation(), t.getRotationRate(), t.getRotationAcceleration()));
         });
-        final TimeStampedFieldPVCoordinates<T>      interpolatedPV = TimeStampedFieldPVCoordinates.interpolate(date, cFilter, datedPV);
-        final TimeStampedFieldAngularCoordinates<T> interpolatedAC = TimeStampedFieldAngularCoordinates.interpolate(date, aFilter, datedAC);
+
+        // Create interpolators
+        final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> pvInterpolator =
+                new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(datedPV.size(), cFilter);
+
+        final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<T>, T> angularInterpolator =
+                new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(datedPV.size(), aFilter);
+
+        // Interpolate
+        final TimeStampedFieldPVCoordinates<T>      interpolatedPV = pvInterpolator.interpolate(date, datedPV);
+        final TimeStampedFieldAngularCoordinates<T> interpolatedAC = angularInterpolator.interpolate(date, datedAC);
+
         return new FieldTransform<>(date, date.toAbsoluteDate(), interpolatedPV, interpolatedAC);
     }
 
     /** Get the inverse transform of the instance.
      * @return inverse transform of the instance
      */
+    @Override
     public FieldTransform<T> getInverse() {
 
         final FieldRotation<T> r    = angular.getRotation();
@@ -561,58 +587,6 @@ public class FieldTransform<T extends RealFieldElement<T>>
                                     new FieldAngularCoordinates<>(angular.getRotation(),
                                                                   FieldVector3D.getZero(date.getField()),
                                                                   FieldVector3D.getZero(date.getField())));
-    }
-
-    /** Transform a position vector (including translation effects).
-     * @param position vector to transform
-     * @return transformed position
-     */
-    public FieldVector3D<T> transformPosition(final Vector3D position) {
-        return angular.getRotation().applyTo(cartesian.getPosition().add(position));
-    }
-
-    /** Transform a position vector (including translation effects).
-     * @param position vector to transform
-     * @return transformed position
-     */
-    public FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
-        return angular.getRotation().applyTo(position.add(cartesian.getPosition()));
-    }
-
-    /** Transform a vector (ignoring translation effects).
-     * @param vector vector to transform
-     * @return transformed vector
-     */
-    public FieldVector3D<T> transformVector(final Vector3D vector) {
-        return angular.getRotation().applyTo(vector);
-    }
-
-    /** Transform a vector (ignoring translation effects).
-     * @param vector vector to transform
-     * @return transformed vector
-     */
-    public FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
-        return angular.getRotation().applyTo(vector);
-    }
-
-    /** Transform a line.
-     * @param line to transform
-     * @return transformed line
-     */
-    public FieldLine<T> transformLine(final Line line) {
-        final FieldVector3D<T> transformedP0 = transformPosition(line.getOrigin());
-        final FieldVector3D<T> transformedP1 = transformPosition(line.pointAt(1.0e6));
-        return new FieldLine<>(transformedP0, transformedP1, 1.0e-10);
-    }
-
-    /** Transform a line.
-     * @param line to transform
-     * @return transformed line
-     */
-    public FieldLine<T> transformLine(final FieldLine<T> line) {
-        final FieldVector3D<T> transformedP0 = transformPosition(line.getOrigin());
-        final FieldVector3D<T> transformedP1 = transformPosition(line.pointAt(1.0e6));
-        return new FieldLine<>(transformedP0, transformedP1, 1.0e-10);
     }
 
     /** Transform {@link TimeStampedPVCoordinates} including kinematic effects.
@@ -655,7 +629,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * BEWARE! This method does explicit computation of velocity and acceleration by combining
      * the transform velocity, acceleration, rotation rate and rotation acceleration with the
      * velocity and acceleration from the argument. This implies that this method should
-     * <em>not</em> be used when derivatives are contained in the {@link RealFieldElement field
+     * <em>not</em> be used when derivatives are contained in the {@link CalculusFieldElement field
      * elements} (typically when using {@link org.hipparchus.analysis.differentiation.DerivativeStructure
      * DerivativeStructure} elements where time is one of the differentiation parameter), otherwise
      * the time derivatives would be computed twice, once explicitly in this method and once implicitly
@@ -689,7 +663,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * BEWARE! This method does explicit computation of velocity and acceleration by combining
      * the transform velocity, acceleration, rotation rate and rotation acceleration with the
      * velocity and acceleration from the argument. This implies that this method should
-     * <em>not</em> be used when derivatives are contained in the {@link RealFieldElement field
+     * <em>not</em> be used when derivatives are contained in the {@link CalculusFieldElement field
      * elements} (typically when using {@link org.hipparchus.analysis.differentiation.DerivativeStructure
      * DerivativeStructure} elements where time is one of the differentiation parameter), otherwise
      * the time derivatives would be computed twice, once explicitly in this method and once implicitly
@@ -908,13 +882,14 @@ public class FieldTransform<T extends RealFieldElement<T>>
     }
 
     /** Specialized class for identity transform. */
-    private static class FieldIdentityTransform<T extends RealFieldElement<T>> extends FieldTransform<T> {
+    private static class FieldIdentityTransform<T extends CalculusFieldElement<T>> extends FieldTransform<T> {
 
         /** Simple constructor.
          * @param field field for the components
          */
         FieldIdentityTransform(final Field<T> field) {
-            super(FieldAbsoluteDate.getJ2000Epoch(field), AbsoluteDate.J2000_EPOCH,
+            super(FieldAbsoluteDate.getArbitraryEpoch(field),
+                  FieldAbsoluteDate.getArbitraryEpoch(field).toAbsoluteDate(),
                   FieldPVCoordinates.getZero(field),
                   FieldAngularCoordinates.getIdentity(field));
         }
@@ -953,6 +928,12 @@ public class FieldTransform<T extends RealFieldElement<T>>
         @Override
         public FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
             return pv;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldTransform<T> freeze() {
+            return this;
         }
 
         /** {@inheritDoc} */

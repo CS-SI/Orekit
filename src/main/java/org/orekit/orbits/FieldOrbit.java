@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,21 +18,22 @@ package org.orekit.orbits;
 
 
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.FieldPVCoordinates;
@@ -63,9 +64,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
+ * @param <T> type of the field elements
  */
-public abstract class FieldOrbit<T extends RealFieldElement<T>>
-    implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T>, FieldTimeInterpolable<FieldOrbit<T>, T> {
+public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
+    implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T> {
 
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
@@ -75,6 +77,26 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
 
     /** Value of mu used to compute position and velocity (m³/s²). */
     private final T mu;
+
+    /** Field-valued one.
+     * @since 12.0
+     * */
+    private final T one;
+
+    /** Field-valued zero.
+     * @since 12.0
+     * */
+    private final T zero;
+
+    /** Field used by this class.
+     * @since 12.0
+     */
+    private final Field<T> field;
+
+    /** Computed position.
+     * @since 12.0
+     */
+    private transient FieldVector3D<T> position;
 
     /** Computed PVCoordinates. */
     private transient TimeStampedFieldPVCoordinates<T> pvCoordinates;
@@ -109,6 +131,9 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     protected FieldOrbit(final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
+        this.field = mu.getField();
+        this.zero = this.field.getZero();
+        this.one = this.field.getOne();
         this.date                      = date;
         this.mu                        = mu;
         this.pvCoordinates             = null;
@@ -126,31 +151,34 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
-     * @param FieldPVCoordinates the position and velocity in the inertial frame
+     * @param fieldPVCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link TimeStampedPVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    protected FieldOrbit(final TimeStampedFieldPVCoordinates<T> FieldPVCoordinates, final Frame frame, final T mu)
+    protected FieldOrbit(final TimeStampedFieldPVCoordinates<T> fieldPVCoordinates, final Frame frame, final T mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
-        this.date = FieldPVCoordinates.getDate();
+        this.field = mu.getField();
+        this.zero = this.field.getZero();
+        this.one = this.field.getOne();
+        this.date = fieldPVCoordinates.getDate();
         this.mu = mu;
-        if (FieldPVCoordinates.getAcceleration().getNormSq().getReal() == 0.0) {
+        if (fieldPVCoordinates.getAcceleration().getNormSq().getReal() == 0.0) {
             // the acceleration was not provided,
             // compute it from Newtonian attraction
-            final T r2 = FieldPVCoordinates.getPosition().getNormSq();
+            final T r2 = fieldPVCoordinates.getPosition().getNormSq();
             final T r3 = r2.multiply(r2.sqrt());
-            this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(FieldPVCoordinates.getDate(),
-                                                                     FieldPVCoordinates.getPosition(),
-                                                                     FieldPVCoordinates.getVelocity(),
-                                                                     new FieldVector3D<>(r3.reciprocal().multiply(mu.negate()), FieldPVCoordinates.getPosition()));
+            this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(fieldPVCoordinates.getDate(),
+                                                                     fieldPVCoordinates.getPosition(),
+                                                                     fieldPVCoordinates.getVelocity(),
+                                                                     new FieldVector3D<>(r3.reciprocal().multiply(mu.negate()), fieldPVCoordinates.getPosition()));
         } else {
-            this.pvCoordinates = FieldPVCoordinates;
+            this.pvCoordinates = fieldPVCoordinates;
         }
         this.frame = frame;
     }
@@ -161,25 +189,44 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @param <T> type of the field elements
      * @return true if Cartesian coordinates include non-Keplerian acceleration
      */
-    protected static <T extends RealFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final T mu) {
+    protected static <T extends CalculusFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final T mu) {
 
-        final FieldVector3D<T> a = pva.getAcceleration();
-        if (a == null) {
-            return false;
-        }
+        if (mu.getField().getZero() instanceof Derivative<?>) {
+            return Orbit.hasNonKeplerianAcceleration(pva.toPVCoordinates(), mu.getReal()); // for performance
 
-        final FieldVector3D<T> p = pva.getPosition();
-        final T r2 = p.getNormSq();
-        final T r  = r2.sqrt();
-        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), p);
-        if (a.getNorm().getReal() > 1.0e-9 * keplerianAcceleration.getNorm().getReal()) {
-            // we have a relevant acceleration, we can compute derivatives
-            return true;
         } else {
-            // the provided acceleration is either too small to be reliable (probably even 0), or NaN
-            return false;
+            final FieldVector3D<T> a = pva.getAcceleration();
+            if (a == null) {
+                return false;
+            }
+
+            final FieldVector3D<T> p = pva.getPosition();
+            final T r2 = p.getNormSq();
+
+            // Check if acceleration is relatively close to 0 compared to the Keplerian acceleration
+            final double tolerance = mu.getReal() * 1e-9;
+            final FieldVector3D<T> aTimesR2 = a.scalarMultiply(r2);
+            if (aTimesR2.getNorm().getReal() < tolerance) {
+                return false;
+            }
+
+            if ((aTimesR2.add(p.normalize().scalarMultiply(mu))).getNorm().getReal() > tolerance) {
+                // we have a relevant acceleration, we can compute derivatives
+                return true;
+            } else {
+                // the provided acceleration is either too small to be reliable (probably even 0), or NaN
+                return false;
+            }
         }
 
+    }
+
+    /** Returns true if and only if the orbit is elliptical i.e. has a non-negative semi-major axis.
+     * @return true if getA() is strictly greater than 0
+     * @since 12.0
+     */
+    public boolean isElliptical() {
+        return getA().getReal() > 0.;
     }
 
     /** Get the orbit type.
@@ -343,10 +390,6 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      */
     public abstract T getIDot();
 
-    /** Get the central acceleration constant.
-     * @return central acceleration constant
-     */
-
     /** Check if orbit includes derivatives.
      * @return true if orbit includes derivatives
      * @see #getADot()
@@ -363,6 +406,9 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      */
     public abstract boolean hasDerivatives();
 
+    /** Get the central attraction coefficient used for position and velocity conversions (m³/s²).
+     * @return central attraction coefficient used for position and velocity conversions (m³/s²)
+     */
     public T getMu() {
         return mu;
     }
@@ -374,7 +420,9 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      */
     public T getKeplerianPeriod() {
         final T a = getA();
-        return (a.getReal() < 0) ? getA().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
+        return isElliptical() ?
+               a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt()) :
+               zero.add(Double.POSITIVE_INFINITY);
     }
 
     /** Get the Keplerian mean motion.
@@ -385,6 +433,13 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     public T getKeplerianMeanMotion() {
         final T absA = getA().abs();
         return absA.reciprocal().multiply(mu).sqrt().divide(absA);
+    }
+
+    /** Get the derivative of the mean anomaly with respect to the semi major axis.
+     * @return derivative of the mean anomaly with respect to the semi major axis
+     */
+    public T getMeanAnomalyDotWrtA() {
+        return getKeplerianMeanMotion().divide(getA()).multiply(-1.5);
     }
 
     /** Get the date of orbital parameters.
@@ -411,7 +466,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         }
 
         // Else, PV coordinates are transformed to output frame
-        final Transform t = frame.getTransformTo(outputFrame, date.toAbsoluteDate()); //TODO CHECK THIS
+        final FieldTransform<T> t = frame.getTransformTo(outputFrame, date);
         return t.transformPVCoordinates(pvCoordinates);
     }
 
@@ -420,6 +475,46 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
+        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
+    }
+
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position in the specified output frame
+     * @see #getPosition()
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition(final Frame outputFrame) {
+        if (position == null) {
+            position = initPosition();
+        }
+
+        // If output frame requested is the same as definition frame,
+        // Position vector is returned directly
+        if (outputFrame == frame) {
+            return position;
+        }
+
+        // Else, position vector is transformed to output frame
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(outputFrame, date);
+        return t.transformPosition(position);
+
+    }
+
+    /** Get the position in definition frame.
+     * @return position in the definition frame
+     * @see #getPVCoordinates()
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition() {
+        if (position == null) {
+            position = initPosition();
+        }
+        return position;
+    }
 
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return FieldPVCoordinates in the definition frame
@@ -428,10 +523,37 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
-
+            position      = pvCoordinates.getPosition();
         }
         return pvCoordinates;
     }
+
+    /** Getter for Field-valued one.
+     * @return one
+     * */
+    protected T getOne() {
+        return one;
+    }
+
+    /** Getter for Field-valued zero.
+     * @return zero
+     * */
+    protected T getZero() {
+        return zero;
+    }
+
+    /** Getter for Field.
+     * @return CalculusField
+     * */
+    protected Field<T> getField() {
+        return field;
+    }
+
+    /** Compute the position coordinates from the canonical parameters.
+     * @return computed position coordinates
+     * @since 12.0
+     */
+    protected abstract FieldVector3D<T> initPosition();
 
     /** Compute the position/velocity coordinates from the canonical parameters.
      * @return computed position/velocity coordinates
@@ -460,7 +582,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtCartesian(final PositionAngle type, final T[][] jacobian) {
+    public void getJacobianWrtCartesian(final PositionAngleType type, final T[][] jacobian) {
 
         final T[][] cachedJacobian;
         synchronized (this) {
@@ -508,7 +630,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtParameters(final PositionAngle type, final T[][] jacobian) {
+    public void getJacobianWrtParameters(final PositionAngleType type, final T[][] jacobian) {
 
         final T[][] cachedJacobian;
         synchronized (this) {
@@ -550,7 +672,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @param type type of the position angle to use
      * @return inverse Jacobian
      */
-    private T[][] createInverseJacobian(final PositionAngle type) {
+    private T[][] createInverseJacobian(final PositionAngleType type) {
 
         // get the direct Jacobian
         final T[][] directJacobian = MathArrays.buildArray(getA().getField(), 6, 6);
@@ -610,7 +732,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(PositionAngle type, T gm, T[] pDot);
+    public abstract void addKeplerContribution(PositionAngleType type, T gm, T[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector
@@ -638,9 +760,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         row[j]     = a1.linearCombination(a1, v1.getX(), a2, v2.getX());
         row[j + 1] = a1.linearCombination(a1, v1.getY(), a2, v2.getY());
         row[j + 2] = a1.linearCombination(a1, v1.getZ(), a2, v2.getZ());
-//        row[j]     = a1.multiply(v1.getX()).add(a2.multiply(v2.getX()));
-//        row[j + 1] = a1.multiply(v1.getY()).add(a2.multiply(v2.getY()));
-//        row[j + 2] = a1.multiply(v1.getZ()).add(a2.multiply(v2.getZ()));
+
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -661,11 +781,6 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         row[j + 1] = a1.linearCombination(a1, v1.getY(), a2, v2.getY(), a3, v3.getY());
         row[j + 2] = a1.linearCombination(a1, v1.getZ(), a2, v2.getZ(), a3, v3.getZ());
 
-
-
-//        row[j]     = a1.multiply(v1.getX()).add(a2.multiply(v2.getX())).add(a3.multiply(v3.getX()));
-//        row[j + 1] = a1.multiply(v1.getY()).add(a2.multiply(v2.getY())).add(a3.multiply(v3.getY()));
-//        row[j + 2] = a1.multiply(v1.getZ()).add(a2.multiply(v2.getZ())).add(a3.multiply(v3.getZ()));
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -686,9 +801,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         row[j]     = a1.linearCombination(a1, v1.getX(), a2, v2.getX(), a3, v3.getX(), a4, v4.getX());
         row[j + 1] = a1.linearCombination(a1, v1.getY(), a2, v2.getY(), a3, v3.getY(), a4, v4.getY());
         row[j + 2] = a1.linearCombination(a1, v1.getZ(), a2, v2.getZ(), a3, v3.getZ(), a4, v4.getZ());
-//        row[j]     = a1.multiply(v1.getX()).add(a2.multiply(v2.getX())).add(a3.multiply(v3.getX())).add(a4.multiply(v4.getX()));
-//        row[j + 1] = a1.multiply(v1.getY()).add(a2.multiply(v2.getY())).add(a3.multiply(v3.getY())).add(a4.multiply(v4.getY()));
-//        row[j + 2] = a1.multiply(v1.getZ()).add(a2.multiply(v2.getZ())).add(a3.multiply(v3.getZ())).add(a4.multiply(v4.getZ()));
+
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -713,9 +826,6 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         row[j + 1] = a1.linearCombination(a1, v1.getY(), a2, v2.getY(), a3, v3.getY(), a4, v4.getY()).add(a5.multiply(v5.getY()));
         row[j + 2] = a1.linearCombination(a1, v1.getZ(), a2, v2.getZ(), a3, v3.getZ(), a4, v4.getZ()).add(a5.multiply(v5.getZ()));
 
-//        row[j]     = a1.multiply(v1.getX()).add(a2.multiply(v2.getX())).add(a3.multiply(v3.getX())).add(a4.multiply(v4.getX())).add(a5.multiply(v5.getX()));
-//        row[j + 1] = a1.multiply(v1.getY()).add(a2.multiply(v2.getY())).add(a3.multiply(v3.getY())).add(a4.multiply(v4.getY())).add(a5.multiply(v5.getY()));
-//        row[j + 2] = a1.multiply(v1.getZ()).add(a2.multiply(v2.getZ())).add(a3.multiply(v3.getZ())).add(a4.multiply(v4.getZ())).add(a5.multiply(v5.getZ()));
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -742,10 +852,6 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         row[j + 1] = a1.linearCombination(a1, v1.getY(), a2, v2.getY(), a3, v3.getY(), a4, v4.getY()).add(a1.linearCombination(a5, v5.getY(), a6, v6.getY()));
         row[j + 2] = a1.linearCombination(a1, v1.getZ(), a2, v2.getZ(), a3, v3.getZ(), a4, v4.getZ()).add(a1.linearCombination(a5, v5.getZ(), a6, v6.getZ()));
 
-
-//        row[j]     = a1.multiply(v1.getX()).add(a2.multiply(v2.getX())).add(a3.multiply(v3.getX())).add(a4.multiply(v4.getX())).add(a5.multiply(v5.getX())).add(a6.multiply(v6.getX()));
-//        row[j + 1] = a1.multiply(v1.getY()).add(a2.multiply(v2.getY())).add(a3.multiply(v3.getY())).add(a4.multiply(v4.getY())).add(a5.multiply(v5.getY())).add(a6.multiply(v6.getY()));
-//        row[j + 2] = a1.multiply(v1.getZ()).add(a2.multiply(v2.getZ())).add(a3.multiply(v3.getZ())).add(a4.multiply(v4.getZ())).add(a5.multiply(v5.getZ())).add(a6.multiply(v6.getZ()));
     }
 
 

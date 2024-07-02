@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,9 +17,6 @@
 package org.orekit.attitudes;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -27,11 +24,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 
@@ -53,7 +48,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  */
 
 public class Attitude
-    implements TimeStamped, TimeShiftable<Attitude>, TimeInterpolable<Attitude>, Serializable {
+    implements TimeStamped, TimeShiftable<Attitude>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20140611L;
@@ -193,26 +188,6 @@ public class Attitude
      */
     public Vector3D getRotationAcceleration() {
         return orientation.getRotationAcceleration();
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     */
-    public Attitude interpolate(final AbsoluteDate interpolationDate, final Stream<Attitude> sample) {
-        final List<TimeStampedAngularCoordinates> datedPV =
-             sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
-        final TimeStampedAngularCoordinates interpolated =
-                TimeStampedAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
-        return new Attitude(referenceFrame, interpolated);
     }
 
 }

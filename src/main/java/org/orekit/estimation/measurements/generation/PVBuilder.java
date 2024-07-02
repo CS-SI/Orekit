@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,13 +18,12 @@ package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.PV;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
+import java.util.Map;
 
 /** Builder for {@link PV} measurements.
  * @author Luc Maisonobe
@@ -44,60 +43,22 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
                      final double baseWeight, final ObservableSatellite satellite) {
         super(noiseSource,
               new double[] {
-                  sigmaPosition, sigmaVelocity
+                  sigmaPosition, sigmaPosition, sigmaPosition,
+                  sigmaVelocity, sigmaVelocity, sigmaVelocity
               }, new double[] {
-                  baseWeight
+                  baseWeight, baseWeight, baseWeight,
+                  baseWeight, baseWeight, baseWeight
               }, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
-    public PV build(final SpacecraftState[] states) {
-
-        final ObservableSatellite satellite = getSatellites()[0];
-        final double[] sigma                = getTheoreticalStandardDeviation();
-        final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
-
-        // create a dummy measurement
-        final PV dummy = new PV(state.getDate(), Vector3D.NaN, Vector3D.NaN,
-                                sigma[0], sigma[1], baseWeight, satellite);
-        for (final EstimationModifier<PV> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        final double[] pv = dummy.estimate(0, 0, states).getEstimatedValue();
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            pv[0] += noise[0];
-            pv[1] += noise[1];
-            pv[2] += noise[2];
-            pv[3] += noise[3];
-            pv[4] += noise[4];
-            pv[5] += noise[5];
-        }
-
-        // generate measurement
-        final PV measurement = new PV(state.getDate(),
-                                      new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5]),
-                                      sigma[0], sigma[1], baseWeight, satellite);
-        for (final EstimationModifier<PV> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected PV buildObserved(final AbsoluteDate date,
+                               final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new PV(date, Vector3D.NaN, Vector3D.NaN,
+                      getTheoreticalStandardDeviation()[0],
+                      getTheoreticalStandardDeviation()[3],
+                      getBaseWeight()[0], getSatellites()[0]);
     }
 
 }

@@ -16,20 +16,18 @@
  */
 package org.orekit.models.earth;
 
-import java.util.Collection;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import org.hipparchus.util.FastMath;
-import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 
 /** Factory for different {@link GeoMagneticField} models.
  * <p>
  * This is a utility class, so its constructor is private.
  * </p>
  * @author Thomas Neidhart
+ * @author Evan Ward
+ * @see GeoMagneticFields
+ * @see LazyLoadedGeoMagneticFields
+ * @see DataContext#getGeoMagneticFields()
  */
 public class GeoMagneticFieldFactory {
 
@@ -41,12 +39,6 @@ public class GeoMagneticFieldFactory {
         IGRF
     }
 
-    /** Loaded IGRF models. */
-    private static TreeMap<Integer, GeoMagneticField> igrfModels = null;
-
-    /** Loaded WMM models. */
-    private static TreeMap<Integer, GeoMagneticField> wmmModels = null;
-
     /** Private constructor.
      * <p>
      * This class is a utility class, it should neither have a public nor a
@@ -57,22 +49,27 @@ public class GeoMagneticFieldFactory {
     private GeoMagneticFieldFactory() {
     }
 
+    /**
+     * Get the instance of {@link GeoMagneticFields} that is called by methods in this
+     * class.
+     *
+     * @return the geomagnetic fields used by this factory.
+     * @since 10.1
+     */
+    @DefaultDataContext
+    public static LazyLoadedGeoMagneticFields getGeoMagneticFields() {
+        return DataContext.getDefault().getGeoMagneticFields();
+    }
+
     /** Get the {@link GeoMagneticField} for the given model type and year.
      * @param type the field model type
      * @param year the decimal year
      * @return a {@link GeoMagneticField} for the given year and model
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
+    @DefaultDataContext
     public static GeoMagneticField getField(final FieldModel type, final double year) {
-
-        switch (type) {
-            case WMM:
-                return getWMM(year);
-            case IGRF:
-                return getIGRF(year);
-            default:
-                throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
-        }
+        return getGeoMagneticFields().getField(type, year);
     }
 
     /** Get the IGRF model for the given year.
@@ -80,13 +77,9 @@ public class GeoMagneticFieldFactory {
      * @return a {@link GeoMagneticField} for the given year
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
+    @DefaultDataContext
     public static GeoMagneticField getIGRF(final double year) {
-        synchronized (GeoMagneticFieldFactory.class) {
-            if (igrfModels == null) {
-                igrfModels = loadModels("^IGRF\\.COF$");
-            }
-            return getModel(FieldModel.IGRF, igrfModels, year);
-        }
+        return getGeoMagneticFields().getIGRF(year);
     }
 
     /** Get the WMM model for the given year.
@@ -94,82 +87,9 @@ public class GeoMagneticFieldFactory {
      * @return a {@link GeoMagneticField} for the given year
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
+    @DefaultDataContext
     public static GeoMagneticField getWMM(final double year) {
-        synchronized (GeoMagneticFieldFactory.class) {
-            if (wmmModels == null) {
-                wmmModels = loadModels("^WMM\\.COF$");
-            }
-            return getModel(FieldModel.WMM, wmmModels, year);
-        }
+        return getGeoMagneticFields().getWMM(year);
     }
 
-    /** Loads the geomagnetic model files from the given filename. The loaded
-     * models are inserted in a {@link TreeMap} with their epoch as key in order
-     * to retrieve them in a sorted manner.
-     * @param supportedNames a regular expression for valid filenames
-     * @return a {@link TreeMap} of all loaded models
-     */
-    private static TreeMap<Integer, GeoMagneticField> loadModels(final String supportedNames) {
-
-        TreeMap<Integer, GeoMagneticField> loadedModels = null;
-        final GeoMagneticModelLoader loader = new GeoMagneticModelLoader();
-        DataProvidersManager.getInstance().feed(supportedNames, loader);
-
-        if (!loader.stillAcceptsData()) {
-            final Collection<GeoMagneticField> models = loader.getModels();
-            if (models != null) {
-                loadedModels = new TreeMap<Integer, GeoMagneticField>();
-                for (GeoMagneticField model : models) {
-                    // round to a precision of two digits after the comma
-                    final int epoch = (int) FastMath.round(model.getEpoch() * 100d);
-                    loadedModels.put(epoch, model);
-                }
-            }
-        }
-
-        // if no models could be loaded -> throw exception
-        if (loadedModels == null || loadedModels.size() == 0) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, supportedNames);
-        }
-
-        return loadedModels;
-    }
-
-    /** Gets a geomagnetic field model for the given year. In case the specified
-     * year does not match an existing model epoch, the resulting field is
-     * generated by either time-transforming an existing model using its secular
-     * variation coefficients, or by linear interpolating two existing models.
-     * @param type the type of the field (e.g. WMM or IGRF)
-     * @param models all loaded field models, sorted by their epoch
-     * @param year the epoch of the resulting field model
-     * @return a {@link GeoMagneticField} model for the given year
-     */
-    private static GeoMagneticField getModel(final FieldModel type,
-                                             final TreeMap<Integer, GeoMagneticField> models,
-                                             final double year) {
-
-        final int epochKey = (int) (year * 100d);
-        final SortedMap<Integer, GeoMagneticField> head = models.headMap(epochKey, true);
-
-        if (head.isEmpty()) {
-            throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
-        }
-
-        GeoMagneticField model = models.get(head.lastKey());
-        if (model.getEpoch() < year) {
-            if (model.supportsTimeTransform()) {
-                model = model.transformModel(year);
-            } else {
-                final SortedMap<Integer, GeoMagneticField> tail = models.tailMap(epochKey, false);
-                if (tail.isEmpty()) {
-                    throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
-                }
-                final GeoMagneticField secondModel = models.get(tail.firstKey());
-                if (secondModel != model) {
-                    model = model.transformModel(secondModel, year);
-                }
-            }
-        }
-        return model;
-    }
 }

@@ -1,0 +1,378 @@
+#######################################
+#        LAGEOS-2
+#
+#
+# Initial orbit extracted from the following TLE
+#
+#  1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990
+#  2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192
+#
+#
+#######################################
+##
+## Input file for OrbitDetermination
+
+## The input file syntax is a set of key=value lines.
+## Blank lines and lines starting with '#' (after whitespace trimming) are
+## silently ignored.
+## The equal sign may be surrounded by space characters.
+## Keys must correspond to the ParameterKey enumerate constants, given that
+## matching is not case sensitive and that '_' characters may appear as '.'
+## characters in the file.
+
+## This file must contain one orbit defined as keplerian, equinoctial, circular
+## or cartesian.
+
+## Some parameters are optional, default values are shown below between [].
+
+## All dates are treated in UTC timescale.
+## The inertial frame for orbit definition and propagation is EME2000.
+## Physical data are read from the src/tutorial/resources/tutorial-orekit-data
+## directory.
+
+### Orbit definition
+## date of the orbital parameters (UTC)
+orbit.date = 2016-02-14T12:14:48.132
+
+
+## Position & velocity along X, y, z in inertial frame (m) 
+orbit.cartesian.px =  -5532232.334281051
+orbit.cartesian.py = 1.0025636857493076E7
+orbit.cartesian.pz = -3578941.1097531132
+orbit.cartesian.vx =  -3871.2032545876173
+orbit.cartesian.vy = -607.9056504788068
+orbit.cartesian.vz = 4281.008504966887
+#orbit.tle.line_1 = 1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990
+#orbit.tle.line_2 = 2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192
+#orbit.tle.line_1 =1 22195U 92070B   16061.61468796 -.00000009 +00000-0 +00000-0 0  9998
+#orbit.tle.line_2 = 2 22195 052.6496 122.7359 0137661 343.3246 089.0633 06.47294129552242
+
+## Spacecraft mass (kg) [1000.]
+mass = 405.380
+
+# IERS conventions [2010]
+iers.conventions = 2010
+
+# Inertial frame [EME2000]
+inertial.frame = EME2000
+
+# Propagator min step (s), max step (s), position error (m) and normalization scale (m) [0.001, 300, 10.0, 1000.0]
+propagator.min.step                  = 0.001
+propagator.max.step                  = 300
+propagator.position.error            = 10.0
+
+# body (default is a WGS-84 ellipsoid with IERS-2010 conventions and simple EOP frame)
+body.frame              = CIO/2010-based ITRF simple EOP
+body.equatorial.radius  = 6378137.0
+body.inverse.flattening =     298.257223563
+
+### Force models
+
+## Central body gravity potential degree
+central.body.degree = 8
+## Central body gravity potential order
+central.body.order  =  8
+
+## 3rd body Sun (true/false) [false]
+third.body.sun  = true
+## 3rd body Moon (true/false) [false]
+third.body.moon = true
+
+## ocean tides (negative degree and order by default to disable ocean tides)
+ocean.tides.degree = -1
+ocean.tides.order  = -1
+
+## solid tides (true/false) [false]
+solid.tides.sun    = false;
+solid.tides.moon   = false
+
+## Atmospheric drag (true/false) [false]
+drag = false
+## Drag coefficient
+drag.cd =  2.0
+## Estimation flag for drag coefficient (true/false) [false]
+drag.cd.estimated = false
+## Drag area (m^2)
+drag.area = 0.28270
+
+## Solar Radiation Pressure (true/false) [false]
+solar.radiation.pressure = false
+## SRP coefficient
+solar.radiation.pressure.cr =  1.134
+## Estimation flag for SRP coefficient (true/false) [false]
+solar.radiation.pressure.cr.estimated = true
+## SRP area (m^2)
+solar.radiation.pressure.area = 0.28270
+
+## Earth's Albedo and Infrared (true/false) [false]
+## It reuses the configuration of the solar radiation pressure for the reflection coefficient
+earth.albedo.infrared = false
+## Angular resolution
+albedo.infrared.angular.resolution = 15.0
+
+# Post-Newtonian correction force due to general relativity (true/false) [false]
+general.relativity = false
+
+## Use range and range-rate measurements
+use.range.measurements = true
+use.range.rate.measurements = false
+
+## On-board range bias (m) [0.0]
+onboard.range.bias     = 0.0
+onboard.range.bias.min = 0.0
+onboard.range.bias.max = 0.0
+
+### Estimation flag for on-board range (true/false) [false]
+onboard.range.bias.estimated = false
+
+## On-board antenna phase center in spacecraft frame (m) [0.0, 0.0, 0.0]
+on.board.antenna.phase.center.x = 0.0
+on.board.antenna.phase.center.y = 0.0
+on.board.antenna.phase.center.z = 0.0
+
+## On-board clock offset (s) [0.0]
+on.board.clock.offset           = 0.0
+on.board.clock.offset.min       = -0.01
+on.board.clock.offset.max       = +0.01
+on.board.clock.offset.estimated = false
+
+## correction of ground stations displacements (true/false) [false, false, false]
+## if remove.permanent.deformation if true, the station coordinates are
+## considered *mean tide* and already include the permanent deformation, hence
+## it should be removed from the displacement to avoid considering it twice;
+## if false, the station coordinates are considered *conventional tide free*
+## so the permanent deformation must be included in the displacement
+solid.tides.displacement.correction                   = false
+solid.tides.displacement.remove.permanent.deformation = false
+ocean.loading.correction                              = false
+
+## Use a time span tropospheric model or not
+use.time.span.tropospheric.model = true
+
+## Ground stations (angles in degrees, altitude and range bias in meters)
+ground.station.name                            [0] =  YARL 
+ground.station.latitude                        [0] =  -29.046495 
+ground.station.longitude                       [0] =  115.346744 
+ground.station.altitude                        [0] =  245.088103 
+ground.station.clock.offset                    [0] = 0.0
+ground.station.clock.offset.min                [0] = -0.001
+ground.station.clock.offset.max                [0] = +0.001
+ground.station.clock.offset.estimated          [0] = false
+ground.station.position.estimated              [0] = true
+ground.station.range.sigma                     [0] = 20.0
+ground.station.range.bias                      [0] =     0.0
+ground.station.range.bias.min                  [0] = -1000.0
+ground.station.range.bias.max                  [0] = +1000.0
+ground.station.range.bias.estimated            [0] = true
+ground.station.range.rate.sigma                [0] = 0.001
+ground.station.range.rate.bias                 [0] =  0.0
+ground.station.range.rate.bias.min             [0] = -1.0
+ground.station.range.rate.bias.max             [0] = +1.0
+ground.station.range.rate.bias.estimated       [0] = true
+ground.station.azimuth.sigma                   [0] =  0.02
+ground.station.azimuth.bias                    [0] =  0.01
+ground.station.azimuth.bias.min                [0] = -0.50
+ground.station.azimuth.bias.max                [0] = +0.50
+ground.station.elevation.sigma                 [0] =  0.02
+ground.station.elevation.bias                  [0] =  0.01
+ground.station.elevation.bias.min              [0] = -0.50
+ground.station.elevation.bias.max              [0] = +0.50
+ground.station.az.el.biases.estimated          [0] = true
+ground.station.elevation.refraction.correction [0] = true
+ground.station.tropospheric.model.estimated    [0] = false
+ground.station.tropospheric.zenith.delay       [0] = 2.0
+ground.station.tropospheric.delay.estimated    [0] = false
+ground.station.global.mapping.function         [0] = false
+ground.station.niell.mapping.function          [0] = false
+ground.station.range.tropospheric.correction   [0] = true
+ground.station.weather.estimated               [0] = false
+ground.station.range.ionospheric.correction    [0] = false
+ground.station.ionospheric.model.estimated     [0] = false
+ground.station.ionospheric.vtec.estimated      [0] = false
+ground.station.ionospheric.vtec.value          [0] = 10.0
+ground.station.ionospheric.hion.value          [0] = 350e3
+
+ground.station.name                            [1] =  GODL
+ground.station.latitude                        [1] =  39.020605 
+ground.station.longitude                       [1] =  283.172305 
+ground.station.altitude                        [1] =  19.882672 
+ground.station.clock.offset                    [1] = 0.0
+ground.station.clock.offset.min                [1] = -0.001
+ground.station.clock.offset.max                [1] = +0.001
+ground.station.clock.offset.estimated          [1] = false
+ground.station.position.estimated              [1] = false
+ground.station.range.sigma                     [1] = 20.0
+ground.station.range.bias                      [1] = 0.0
+ground.station.range.bias.min                  [1] = -1000.0
+ground.station.range.bias.max                  [1] = +1000.0
+ground.station.range.bias.estimated            [1] = false
+ground.station.range.rate.sigma                [1] = 0.001
+ground.station.range.rate.bias                 [1] =  0.0
+ground.station.range.rate.bias.min             [1] = -1.0
+ground.station.range.rate.bias.max             [1] = +1.0
+ground.station.range.rate.bias.estimated       [1] = false
+ground.station.azimuth.sigma                   [1] =  0.02
+ground.station.azimuth.bias                    [1] =  0.01
+ground.station.azimuth.bias.min                [1] = -0.50
+ground.station.azimuth.bias.max                [1] = +0.50
+ground.station.elevation.sigma                 [1] =  0.02
+ground.station.elevation.bias                  [1] =  0.01
+ground.station.elevation.bias.min              [1] = -0.50
+ground.station.elevation.bias.max              [1] = +0.50
+ground.station.az.el.biases.estimated          [1] = false
+ground.station.elevation.refraction.correction [1] = true
+ground.station.tropospheric.model.estimated    [1] = false
+ground.station.tropospheric.zenith.delay       [1] = 2.0
+ground.station.tropospheric.delay.estimated    [1] = false
+ground.station.global.mapping.function         [1] = false
+ground.station.niell.mapping.function          [1] = false
+ground.station.range.tropospheric.correction   [1] = true
+ground.station.weather.estimated               [1] = false
+ground.station.range.ionospheric.correction    [1] = false
+ground.station.ionospheric.model.estimated     [1] = false
+ground.station.ionospheric.vtec.estimated      [1] = false
+ground.station.ionospheric.vtec.value          [1] = 10.0
+ground.station.ionospheric.hion.value          [1] = 350e3
+
+ground.station.name                            [2] =  HA4T 
+ground.station.latitude                        [2] =  20.706489 
+ground.station.longitude                       [2] =  203.743079 
+ground.station.altitude                        [2] =  3056.971459 
+ground.station.clock.offset                    [2] = 0.0
+ground.station.clock.offset.min                [2] = -0.001
+ground.station.clock.offset.max                [2] = +0.001
+ground.station.clock.offset.estimated          [2] = false
+ground.station.position.estimated              [2] = false
+ground.station.range.sigma                     [2] = 20.0
+ground.station.range.bias                      [2] = 0.0
+ground.station.range.bias.min                  [2] = -1000.0
+ground.station.range.bias.max                  [2] = +1000.0
+ground.station.range.bias.estimated            [2] = false
+ground.station.range.rate.sigma                [2] = 0.001
+ground.station.range.rate.bias                 [2] =  0.0
+ground.station.range.rate.bias.min             [2] = -1.0
+ground.station.range.rate.bias.max             [2] = +1.0
+ground.station.range.rate.bias.estimated       [2] = false
+ground.station.azimuth.sigma                   [2] =  0.02
+ground.station.azimuth.bias                    [2] =  0.01
+ground.station.azimuth.bias.min                [2] = -0.50
+ground.station.azimuth.bias.max                [2] = +0.50
+ground.station.elevation.sigma                 [2] =  0.02
+ground.station.elevation.bias                  [2] =  0.01
+ground.station.elevation.bias.min              [2] = -0.50
+ground.station.elevation.bias.max              [2] = +0.50
+ground.station.az.el.biases.estimated          [2] = false
+ground.station.elevation.refraction.correction [2] = true
+ground.station.tropospheric.model.estimated    [2] = false
+ground.station.tropospheric.zenith.delay       [2] = 2.0
+ground.station.tropospheric.delay.estimated    [2] = false
+ground.station.global.mapping.function         [2] = false
+ground.station.niell.mapping.function          [2] = false
+ground.station.range.tropospheric.correction   [2] = true
+ground.station.weather.estimated               [2] = false
+ground.station.range.ionospheric.correction    [2] = false
+ground.station.ionospheric.model.estimated     [2] = false
+ground.station.ionospheric.vtec.estimated      [2] = false
+ground.station.ionospheric.vtec.value          [2] = 10.0
+ground.station.ionospheric.hion.value          [2] = 350e3
+
+ground.station.name                            [3] =  SISL 
+ground.station.latitude                        [3] =  33.577694 
+ground.station.longitude                       [3] =  135.937039 
+ground.station.altitude                        [3] =  102.317142 
+ground.station.clock.offset                    [3] = 0.0
+ground.station.clock.offset.min                [3] = -0.001
+ground.station.clock.offset.max                [3] = +0.001
+ground.station.clock.offset.estimated          [3] = false
+ground.station.position.estimated              [3] = false
+ground.station.range.sigma                     [3] = 20.0
+ground.station.range.bias                      [3] = 0.0
+ground.station.range.bias.min                  [3] = -1000.0
+ground.station.range.bias.max                  [3] = +1000.0
+ground.station.range.bias.estimated            [3] = false
+ground.station.range.rate.sigma                [3] = 0.001
+ground.station.range.rate.bias                 [3] =  0.0
+ground.station.range.rate.bias.min             [3] = -1.0
+ground.station.range.rate.bias.max             [3] = +1.0
+ground.station.range.rate.bias.estimated       [3] = false
+ground.station.azimuth.sigma                   [3] =  0.02
+ground.station.azimuth.bias                    [3] =  0.01
+ground.station.azimuth.bias.min                [3] = -0.50
+ground.station.azimuth.bias.max                [3] = +0.50
+ground.station.elevation.sigma                 [3] =  0.02
+ground.station.elevation.bias                  [3] =  0.01
+ground.station.elevation.bias.min              [3] = -0.50
+ground.station.elevation.bias.max              [3] = +0.50
+ground.station.az.el.biases.estimated          [3] = false
+ground.station.elevation.refraction.correction [3] = true
+ground.station.tropospheric.model.estimated    [3] = false
+ground.station.tropospheric.zenith.delay       [3] = 2.0
+ground.station.tropospheric.delay.estimated    [3] = false
+ground.station.global.mapping.function         [3] = false
+ground.station.niell.mapping.function          [3] = false
+ground.station.range.tropospheric.correction   [3] = true
+ground.station.weather.estimated               [3] = false
+ground.station.range.ionospheric.correction    [3] = false
+ground.station.ionospheric.model.estimated     [3] = false
+ground.station.ionospheric.vtec.estimated      [3] = false
+ground.station.ionospheric.vtec.value          [3] = 10.0
+ground.station.ionospheric.hion.value          [3] = 350e3
+
+
+
+### Measurements parameters
+range.outlier.rejection.multiplier              = 6
+range.outlier.rejection.starting.iteration      = 2
+range.rate.outlier.rejection.multiplier         = 6
+range.rate.outlier.rejection.starting.iteration = 2
+az.el.outlier.rejection.multiplier              = 6
+az.el.outlier.rejection.starting.iteration      = 2
+PV.outlier.rejection.multiplier                 = 6
+PV.outlier.rejection.starting.iteration         = 2
+range.measurements.base.weight                  = 1.0
+range.rate.measurements.base.weight             = 1.0
+azimuth.measurements.base.weight                = 1.0
+elevation.measurements.base.weight              = 1.0
+PV.measurements.base.weight                     = 1.0
+PV.measurements.position.sigma                  = 1.0
+PV.measurements.velocity.sigma                  = 0.01
+
+## Estimator
+
+# normalized parameters p are computed from physical parameters x
+# as p = (x - x0) / sx where x0 is the reference value for physical
+# parameter x and sx is the associated scale factor
+# scaling factor for orbital parameters normalization (m)
+# if not specified, the value set for propagator.position.error will be copied
+estimator.orbital.parameters.position.scale     = 10.0
+
+# we can use either a Levenberg-Marquardt or a Gauss-Newton
+# optimization engine. Default is Levenberg-Marquardt
+estimator.optimization.engine = Gauss-Newton
+
+# the default initial step bound factor is 100 for Levenberg-Marquardt
+# this is too small for normalized parameters when initial guess is very
+# far. An order of magnitude is 100 times the distance error of the initial guess
+# divided by estimator.orbital.parameters.position.scale. So if the initial guess
+# is about 100km wrong and estimator.orbital.parameters.position.scale is set to 10.0,
+# the initial step bound factor should be of the order of magnitude of 1.0e6
+estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
+
+# convergence is reached when max|p(k+1) - p(k)| < ε for each
+# normalized estimated parameters p and iterations k and k+1
+# so the ε threshold (which corresponds to the key
+# estimator.normalized.parameters.convergence.threshold)
+# Normalized values are computed as (x - x0) / sx,
+# so convergence is reached when the following condition holds for
+# all estimated parameters: |x[i+1] - x[i]| <= ε * sx
+# So the convergence threshold specified here can be considered as
+# a multiplication factor applied to scale. Since for all parameters
+# the scale is often small (typically about 1 m for orbital positions
+# for example), then the threshold should not be too small. A value
+# of 10⁻³ is often quite accurate.
+estimator.normalized.parameters.convergence.threshold   = 1.0e-3
+estimator.max.iterations                                = 25
+estimator.max.evaluations                               = 35
+
+# comma-separated list of measurements files (in the same directory as this file)
+measurements.files = Lageos2_test.aer

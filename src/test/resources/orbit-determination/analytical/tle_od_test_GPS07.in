@@ -1,0 +1,1138 @@
+#######################################
+#        GPS IIR-M-6
+#
+#
+# Initial orbit extracted from the following TLE
+#
+#  1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991
+#  2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013
+#
+#
+#######################################
+##
+## Input file for OrbitDetermination
+
+## The input file syntax is a set of key=value lines.
+## Blank lines and lines starting with '#' (after whitespace trimming) are
+## silently ignored.
+## The equal sign may be surrounded by space characters.
+## Keys must correspond to the ParameterKey enumerate constants, given that
+## matching is not case sensitive and that '_' characters may appear as '.'
+## characters in the file.
+
+## This file must contain one orbit defined as keplerian, equinoctial, circular
+## or cartesian.
+
+## Some parameters are optional, default values are shown below between [].
+
+## All dates are treated in UTC timescale.
+## The inertial frame for orbit definition and propagation is EME2000.
+
+### Orbit definition
+## date of the orbital parameters (UTC)
+orbit.date = 2016-02-13T09:44:09.046
+
+## Position & velocity along X, y, z in inertial frame (m)
+orbit.cartesian.px =  1.3849437250138424E7
+orbit.cartesian.py = -2.2915975594187245E7
+orbit.cartesian.pz = -22735.626194184624
+orbit.cartesian.vx =  1878.4055493924077
+orbit.cartesian.vy =  1113.8449221627475
+orbit.cartesian.vz =  3161.898423641942
+
+## Spacecraft mass (kg) [1000.]
+mass = 1630
+
+# IERS conventions [2010]
+iers.conventions = 2010
+
+# Inertial frame [EME2000]
+inertial.frame = EME2000
+
+# Propagator min step (s), max step (s), position error (m) and normalization scale (m) [0.001, 300, 10.0, 1000.0]
+propagator.min.step        = 0.001
+propagator.max.step        = 300
+propagator.position.error  = 0.01
+
+# body (default is a WGS-84 ellipsoid with IERS-2010 conventions and simple EOP frame)
+body.frame              = CIO/2010-based ITRF simple EOP
+body.equatorial.radius  = 6378137.0
+body.inverse.flattening =     298.257223563
+
+### Force models
+
+## Central body gravity potential degree
+central.body.degree = 20
+## Central body gravity potential order
+central.body.order  = 20
+
+## 3rd body Sun (true/false) [false]
+third.body.sun  = false
+## 3rd body Moon (true/false) [false]
+third.body.moon = false
+
+## ocean tides (negative degree and order by default to disable ocean tides)
+ocean.tides.degree = -1
+ocean.tides.order  = -1
+
+## solid tides (true/false) [false]
+solid.tides.sun    = false
+solid.tides.moon   = false
+
+## Atmospheric drag (true/false) [false]
+drag = false
+## Drag coefficient
+drag.cd =  2.0
+## Estimation flag for drag coefficient (true/false) [false]
+drag.cd.estimated = false
+## Drag area (m^2)
+drag.area = 0.28270
+
+## Solar Radiation Pressure (true/false) [false]
+solar.radiation.pressure = false
+## SRP coefficient
+solar.radiation.pressure.cr =  1.8
+## Estimation flag for SRP coefficient (true/false) [false]
+solar.radiation.pressure.cr.estimated = false
+## SRP area (m^2)
+solar.radiation.pressure.area = 50
+
+# Post-Newtonian correction force due to general relativity (true/false) [false]
+general.relativity = false
+
+## Attitude mode, from the following predefined list [NADIR_WITH_YAW_COMPENSATION]
+## NADIR_POINTING_WITH_YAW_COMPENSATION, CENTER_POINTING_WITH_YAW_STEERING,
+## LOF_ALIGNED_LVLH, LOF_ALIGNED_QSW, LOF_ALIGNED_TNW, LOF_ALIGNED_VNC, LOF_ALIGNED_VVLH
+attitude.mode = CENTER_POINTING_WITH_YAW_STEERING
+
+## Use range and range-rate measurements
+use.range.measurements = true
+use.range.rate.measurements = false
+
+## On-board range bias (m) [0.0]
+onboard.range.bias     =  0.0
+onboard.range.bias.min = -1000000.0
+onboard.range.bias.max = +1000000.0
+
+### Estimation flag for on-board range (true/false) [false]
+onboard.range.bias.estimated = false
+
+## On-board antenna phase center in spacecraft frame (m) [0.0, 0.0, 0.0]
+on.board.antenna.phase.center.x = -0.00040
+on.board.antenna.phase.center.y =  0.00500
+on.board.antenna.phase.center.z =  0.82240
+
+## On-board clock offset (s) [0.0]
+## here the clock offset was extracted from com18836.sp3: 469.816135 µs
+on.board.clock.offset           = 469.816135e-06
+on.board.clock.offset.min       = -0.01
+on.board.clock.offset.max       = +0.01
+on.board.clock.offset.estimated = false
+
+## correction of ground stations displacements (true/false) [false, false, false]
+## if remove.permanent.deformation if true, the station coordinates are
+## considered *mean tide* and already include the permanent deformation, hence
+## it should be removed from the displacement to avoid considering it twice;
+## if false, the station coordinates are considered *conventional tide free*
+## so the permanent deformation must be included in the displacement
+solid.tides.displacement.correction                   = true
+solid.tides.displacement.remove.permanent.deformation = false
+ocean.loading.correction                              = false
+
+## Shapiro time delay on range measurement
+range.shapiro = false
+
+## Use a time span tropospheric model or not
+use.time.span.tropospheric.model = false
+
+## Ground stations (angles in degrees, altitude and range bias in meters)
+ground.station.name                            [0] =  BADG/C1
+ground.station.latitude                        [0] =   51.7697056
+ground.station.longitude                       [0] = 102.2349806
+ground.station.altitude                        [0] = 811.4
+ground.station.position.estimated              [0] = false
+ground.station.clock.offset                    [0] = 2.4533323122804125E-4
+ground.station.clock.offset.min                [0] = -0.001
+ground.station.clock.offset.max                [0] = +0.001
+ground.station.clock.offset.estimated          [0] = true
+ground.station.range.sigma                     [0] = 1.0
+ground.station.range.bias                      [0] =     0.0
+ground.station.range.bias.min                  [0] = -1000.0
+ground.station.range.bias.max                  [0] = +1000.0
+ground.station.range.bias.estimated            [0] = false
+ground.station.range.rate.sigma                [0] = 0.001
+ground.station.range.rate.bias                 [0] =  0.0
+ground.station.range.rate.bias.min             [0] = -1.0
+ground.station.range.rate.bias.max             [0] = +1.0
+ground.station.range.rate.bias.estimated       [0] = false
+ground.station.azimuth.sigma                   [0] =  0.02
+ground.station.azimuth.bias                    [0] =  0.01
+ground.station.azimuth.bias.min                [0] = -0.50
+ground.station.azimuth.bias.max                [0] = +0.50
+ground.station.elevation.sigma                 [0] =  0.02
+ground.station.elevation.bias                  [0] =  0.01
+ground.station.elevation.bias.min              [0] = -0.50
+ground.station.elevation.bias.max              [0] = +0.50
+ground.station.az.el.biases.estimated          [0] = false
+ground.station.elevation.refraction.correction [0] = false
+ground.station.tropospheric.model.estimated    [0] = true
+ground.station.tropospheric.zenith.delay       [0] = 2.3
+ground.station.tropospheric.delay.estimated    [0] = false
+ground.station.global.mapping.function         [0] = false
+ground.station.niell.mapping.function          [0] = true
+ground.station.range.tropospheric.correction   [0] = true
+ground.station.weather.estimated               [0] = true
+ground.station.range.ionospheric.correction    [0] = true
+ground.station.ionospheric.model.estimated     [0] = true
+ground.station.ionospheric.vtec.estimated      [0] = false
+ground.station.ionospheric.vtec.value          [0] = 10.0
+ground.station.ionospheric.hion.value          [0] = 350e3
+
+ground.station.name                            [1] =  BADG/P1
+ground.station.latitude                        [1] =   51.7697056
+ground.station.longitude                       [1] = 102.2349806
+ground.station.altitude                        [1] = 811.4
+ground.station.position.estimated              [1] = false
+ground.station.clock.offset                    [1] = 2.4533112322454087E-4
+ground.station.clock.offset.min                [1] = -0.001
+ground.station.clock.offset.max                [1] = +0.001
+ground.station.clock.offset.estimated          [1] = true
+ground.station.range.sigma                     [1] = 1.0
+ground.station.range.bias                      [1] =     0.0
+ground.station.range.bias.min                  [1] = -1000.0
+ground.station.range.bias.max                  [1] = +1000.0
+ground.station.range.bias.estimated            [1] = false
+ground.station.range.rate.sigma                [1] = 0.001
+ground.station.range.rate.bias                 [1] =  0.0
+ground.station.range.rate.bias.min             [1] = -1.0
+ground.station.range.rate.bias.max             [1] = +1.0
+ground.station.range.rate.bias.estimated       [1] = false
+ground.station.azimuth.sigma                   [1] =  0.02
+ground.station.azimuth.bias                    [1] =  0.01
+ground.station.azimuth.bias.min                [1] = -0.50
+ground.station.azimuth.bias.max                [1] = +0.50
+ground.station.elevation.sigma                 [1] =  0.02
+ground.station.elevation.bias                  [1] =  0.01
+ground.station.elevation.bias.min              [1] = -0.50
+ground.station.elevation.bias.max              [1] = +0.50
+ground.station.az.el.biases.estimated          [1] = false
+ground.station.elevation.refraction.correction [1] = false
+ground.station.tropospheric.model.estimated    [1] = true
+ground.station.tropospheric.zenith.delay       [1] = 2.3
+ground.station.tropospheric.delay.estimated    [1] = false
+ground.station.global.mapping.function         [1] = false
+ground.station.niell.mapping.function          [1] = true
+ground.station.range.tropospheric.correction   [1] = true
+ground.station.weather.estimated               [1] = true
+ground.station.range.ionospheric.correction    [1] = true
+ground.station.ionospheric.model.estimated     [1] = true
+ground.station.ionospheric.vtec.estimated      [1] = false
+ground.station.ionospheric.vtec.value          [1] = 10.0
+ground.station.ionospheric.hion.value          [1] = 350e3
+
+ground.station.name                            [2] =  BADG/P2
+ground.station.latitude                        [2] =   51.7697056
+ground.station.longitude                       [2] = 102.2349806
+ground.station.altitude                        [2] = 811.4
+ground.station.position.estimated              [2] = false
+ground.station.clock.offset                    [2] = 2.45318515980531E-4
+ground.station.clock.offset.min                [2] = -0.001
+ground.station.clock.offset.max                [2] = +0.001
+ground.station.clock.offset.estimated          [2] = true
+ground.station.range.sigma                     [2] = 1.0
+ground.station.range.bias                      [2] =     0.0
+ground.station.range.bias.min                  [2] = -1000.0
+ground.station.range.bias.max                  [2] = +1000.0
+ground.station.range.bias.estimated            [2] = false
+ground.station.range.rate.sigma                [2] = 0.001
+ground.station.range.rate.bias                 [2] =  0.0
+ground.station.range.rate.bias.min             [2] = -1.0
+ground.station.range.rate.bias.max             [2] = +1.0
+ground.station.range.rate.bias.estimated       [2] = false
+ground.station.azimuth.sigma                   [2] =  0.02
+ground.station.azimuth.bias                    [2] =  0.01
+ground.station.azimuth.bias.min                [2] = -0.50
+ground.station.azimuth.bias.max                [2] = +0.50
+ground.station.elevation.sigma                 [2] =  0.02
+ground.station.elevation.bias                  [2] =  0.01
+ground.station.elevation.bias.min              [2] = -0.50
+ground.station.elevation.bias.max              [2] = +0.50
+ground.station.az.el.biases.estimated          [2] = false
+ground.station.elevation.refraction.correction [2] = false
+ground.station.tropospheric.model.estimated    [2] = true
+ground.station.tropospheric.zenith.delay       [2] = 2.3
+ground.station.tropospheric.delay.estimated    [2] = false
+ground.station.global.mapping.function         [2] = false
+ground.station.niell.mapping.function          [2] = true
+ground.station.range.tropospheric.correction   [2] = true
+ground.station.weather.estimated               [2] = true
+ground.station.range.ionospheric.correction    [2] = true
+ground.station.ionospheric.model.estimated     [2] = true
+ground.station.ionospheric.vtec.estimated      [2] = false
+ground.station.ionospheric.vtec.value          [2] = 10.0
+ground.station.ionospheric.hion.value          [2] = 350e3
+
+ground.station.name                            [3] =  TLSE/C1
+ground.station.latitude                        [3] =   43.5606944
+ground.station.longitude                       [3] = 1.4808722	
+ground.station.altitude                        [3] = 207.2
+ground.station.position.estimated              [3] = false
+ground.station.clock.offset                    [3] = 4.712152950820852E-9
+ground.station.clock.offset.min                [3] = -0.001
+ground.station.clock.offset.max                [3] = +0.001
+ground.station.clock.offset.estimated          [3] = false
+ground.station.range.sigma                     [3] = 1.0
+ground.station.range.bias                      [3] =     0.0
+ground.station.range.bias.min                  [3] = -1000.0
+ground.station.range.bias.max                  [3] = +1000.0
+ground.station.range.bias.estimated            [3] = false
+ground.station.range.rate.sigma                [3] = 0.001
+ground.station.range.rate.bias                 [3] =  0.0
+ground.station.range.rate.bias.min             [3] = -1.0
+ground.station.range.rate.bias.max             [3] = +1.0
+ground.station.range.rate.bias.estimated       [3] = false
+ground.station.azimuth.sigma                   [3] =  0.02
+ground.station.azimuth.bias                    [3] =  0.01
+ground.station.azimuth.bias.min                [3] = -0.50
+ground.station.azimuth.bias.max                [3] = +0.50
+ground.station.elevation.sigma                 [3] =  0.02
+ground.station.elevation.bias                  [3] =  0.01
+ground.station.elevation.bias.min              [3] = -0.50
+ground.station.elevation.bias.max              [3] = +0.50
+ground.station.az.el.biases.estimated          [3] = false
+ground.station.elevation.refraction.correction [3] = false
+ground.station.tropospheric.model.estimated    [3] = true
+ground.station.tropospheric.zenith.delay       [3] = 2.3
+ground.station.tropospheric.delay.estimated    [3] = false
+ground.station.global.mapping.function         [3] = false
+ground.station.niell.mapping.function          [3] = true
+ground.station.range.tropospheric.correction   [3] = true
+ground.station.weather.estimated               [3] = true
+ground.station.range.ionospheric.correction    [3] = true
+ground.station.ionospheric.model.estimated     [3] = true
+ground.station.ionospheric.vtec.estimated      [3] = false
+ground.station.ionospheric.vtec.value          [3] = 10.0
+ground.station.ionospheric.hion.value          [3] = 350e3
+
+ground.station.name                            [4] =  TLSE/P2
+ground.station.latitude                        [4] =   43.5606944
+ground.station.longitude                       [4] = 1.4808722	
+ground.station.altitude                        [4] = 207.2
+ground.station.position.estimated              [4] = false
+ground.station.clock.offset                    [4] = 2.1834395332467382E-8
+ground.station.clock.offset.min                [4] = -0.001
+ground.station.clock.offset.max                [4] = +0.001
+ground.station.clock.offset.estimated          [4] = false
+ground.station.range.sigma                     [4] = 1.0
+ground.station.range.bias                      [4] =     0.0
+ground.station.range.bias.min                  [4] = -1000.0
+ground.station.range.bias.max                  [4] = +1000.0
+ground.station.range.bias.estimated            [4] = false
+ground.station.range.rate.sigma                [4] = 0.001
+ground.station.range.rate.bias                 [4] =  0.0
+ground.station.range.rate.bias.min             [4] = -1.0
+ground.station.range.rate.bias.max             [4] = +1.0
+ground.station.range.rate.bias.estimated       [4] = false
+ground.station.azimuth.sigma                   [4] =  0.02
+ground.station.azimuth.bias                    [4] =  0.01
+ground.station.azimuth.bias.min                [4] = -0.50
+ground.station.azimuth.bias.max                [4] = +0.50
+ground.station.elevation.sigma                 [4] =  0.02
+ground.station.elevation.bias                  [4] =  0.01
+ground.station.elevation.bias.min              [4] = -0.50
+ground.station.elevation.bias.max              [4] = +0.50
+ground.station.az.el.biases.estimated          [4] = false
+ground.station.elevation.refraction.correction [4] = false
+ground.station.tropospheric.model.estimated    [4] = true
+ground.station.tropospheric.zenith.delay       [4] = 2.3
+ground.station.tropospheric.delay.estimated    [4] = false
+ground.station.global.mapping.function         [4] = false
+ground.station.niell.mapping.function          [4] = true
+ground.station.range.tropospheric.correction   [4] = true
+ground.station.weather.estimated               [4] = true
+ground.station.range.ionospheric.correction    [4] = true
+ground.station.ionospheric.model.estimated     [4] = true
+ground.station.ionospheric.vtec.estimated      [4] = false
+ground.station.ionospheric.vtec.value          [4] = 10.0
+ground.station.ionospheric.hion.value          [4] = 350e3
+
+ground.station.name                            [5] =  LAMA/C1
+ground.station.latitude                        [5] = 53.8924000	
+ground.station.longitude                       [5] = 20.6699333		
+ground.station.altitude                        [5] = 186.7
+ground.station.position.estimated              [5] = false
+ground.station.clock.offset                    [5] = -1.1266482915653172E-8
+ground.station.clock.offset.min                [5] = -0.001
+ground.station.clock.offset.max                [5] = +0.001
+ground.station.clock.offset.estimated          [5] = true
+ground.station.range.sigma                     [5] = 1.0
+ground.station.range.bias                      [5] =     0.0
+ground.station.range.bias.min                  [5] = -1000.0
+ground.station.range.bias.max                  [5] = +1000.0
+ground.station.range.bias.estimated            [5] = false
+ground.station.range.rate.sigma                [5] = 0.001
+ground.station.range.rate.bias                 [5] =  0.0
+ground.station.range.rate.bias.min             [5] = -1.0
+ground.station.range.rate.bias.max             [5] = +1.0
+ground.station.range.rate.bias.estimated       [5] = false
+ground.station.azimuth.sigma                   [5] =  0.02
+ground.station.azimuth.bias                    [5] =  0.01
+ground.station.azimuth.bias.min                [5] = -0.50
+ground.station.azimuth.bias.max                [5] = +0.50
+ground.station.elevation.sigma                 [5] =  0.02
+ground.station.elevation.bias                  [5] =  0.01
+ground.station.elevation.bias.min              [5] = -0.50
+ground.station.elevation.bias.max              [5] = +0.50
+ground.station.az.el.biases.estimated          [5] = false
+ground.station.elevation.refraction.correction [5] = false
+ground.station.tropospheric.model.estimated    [5] = true
+ground.station.tropospheric.zenith.delay       [5] = 2.3
+ground.station.tropospheric.delay.estimated    [5] = false
+ground.station.global.mapping.function         [5] = false
+ground.station.niell.mapping.function          [5] = true
+ground.station.range.tropospheric.correction   [5] = true
+ground.station.weather.estimated               [5] = true
+ground.station.range.ionospheric.correction    [5] = true
+ground.station.ionospheric.model.estimated     [5] = true
+ground.station.ionospheric.vtec.estimated      [5] = false
+ground.station.ionospheric.vtec.value          [5] = 10.0
+ground.station.ionospheric.hion.value          [5] = 350e3
+
+ground.station.name                            [6] =  LAMA/P2
+ground.station.latitude                        [6] = 53.8924000	
+ground.station.longitude                       [6] = 20.6699333		
+ground.station.altitude                        [6] = 186.7
+ground.station.position.estimated              [6] = false
+ground.station.clock.offset                    [6] = -2.0927813372984702E-8
+ground.station.clock.offset.min                [6] = -0.001
+ground.station.clock.offset.max                [6] = +0.001
+ground.station.clock.offset.estimated          [6] = true
+ground.station.range.sigma                     [6] = 1.0
+ground.station.range.bias                      [6] =     0.0
+ground.station.range.bias.min                  [6] = -1000.0
+ground.station.range.bias.max                  [6] = +1000.0
+ground.station.range.bias.estimated            [6] = false
+ground.station.range.rate.sigma                [6] = 0.001
+ground.station.range.rate.bias                 [6] =  0.0
+ground.station.range.rate.bias.min             [6] = -1.0
+ground.station.range.rate.bias.max             [6] = +1.0
+ground.station.range.rate.bias.estimated       [6] = false
+ground.station.azimuth.sigma                   [6] =  0.02
+ground.station.azimuth.bias                    [6] =  0.01
+ground.station.azimuth.bias.min                [6] = -0.50
+ground.station.azimuth.bias.max                [6] = +0.50
+ground.station.elevation.sigma                 [6] =  0.02
+ground.station.elevation.bias                  [6] =  0.01
+ground.station.elevation.bias.min              [6] = -0.50
+ground.station.elevation.bias.max              [6] = +0.50
+ground.station.az.el.biases.estimated          [6] = false
+ground.station.elevation.refraction.correction [6] = false
+ground.station.tropospheric.model.estimated    [6] = true
+ground.station.tropospheric.zenith.delay       [6] = 2.3
+ground.station.tropospheric.delay.estimated    [6] = false
+ground.station.global.mapping.function         [6] = false
+ground.station.niell.mapping.function          [6] = true
+ground.station.range.tropospheric.correction   [6] = true
+ground.station.weather.estimated               [6] = true
+ground.station.range.ionospheric.correction    [6] = true
+ground.station.ionospheric.model.estimated     [6] = true
+ground.station.ionospheric.vtec.estimated      [6] = false
+ground.station.ionospheric.vtec.value          [6] = 10.0
+ground.station.ionospheric.hion.value          [6] = 350e3
+
+ground.station.name                            [7] =  LAMA/C2
+ground.station.latitude                        [7] = 53.8924000	
+ground.station.longitude                       [7] = 20.6699333		
+ground.station.altitude                        [7] = 186.7
+ground.station.position.estimated              [7] = false
+ground.station.clock.offset                    [7] = -2.0780125035227956E-8
+ground.station.clock.offset.min                [7] = -0.001
+ground.station.clock.offset.max                [7] = +0.001
+ground.station.clock.offset.estimated          [7] = true
+ground.station.range.sigma                     [7] = 1.0
+ground.station.range.bias                      [7] =     0.0
+ground.station.range.bias.min                  [7] = -1000.0
+ground.station.range.bias.max                  [7] = +1000.0
+ground.station.range.bias.estimated            [7] = false
+ground.station.range.rate.sigma                [7] = 0.001
+ground.station.range.rate.bias                 [7] =  0.0
+ground.station.range.rate.bias.min             [7] = -1.0
+ground.station.range.rate.bias.max             [7] = +1.0
+ground.station.range.rate.bias.estimated       [7] = false
+ground.station.azimuth.sigma                   [7] =  0.02
+ground.station.azimuth.bias                    [7] =  0.01
+ground.station.azimuth.bias.min                [7] = -0.50
+ground.station.azimuth.bias.max                [7] = +0.50
+ground.station.elevation.sigma                 [7] =  0.02
+ground.station.elevation.bias                  [7] =  0.01
+ground.station.elevation.bias.min              [7] = -0.50
+ground.station.elevation.bias.max              [7] = +0.50
+ground.station.az.el.biases.estimated          [7] = false
+ground.station.elevation.refraction.correction [7] = false
+ground.station.tropospheric.model.estimated    [7] = true
+ground.station.tropospheric.zenith.delay       [7] = 2.3
+ground.station.tropospheric.delay.estimated    [7] = false
+ground.station.global.mapping.function         [7] = false
+ground.station.niell.mapping.function          [7] = true
+ground.station.range.tropospheric.correction   [7] = true
+ground.station.weather.estimated               [7] = true
+ground.station.range.ionospheric.correction    [7] = true
+ground.station.ionospheric.model.estimated     [7] = true
+ground.station.ionospheric.vtec.estimated      [7] = false
+ground.station.ionospheric.vtec.value          [7] = 10.0
+ground.station.ionospheric.hion.value          [7] = 350e3
+
+ground.station.name                            [8] =  BSHM/C1
+ground.station.latitude                        [8] = 33.3414139
+ground.station.longitude                       [8] = 44.4384028			
+ground.station.altitude                        [8] = 72.4
+ground.station.position.estimated              [8] = false
+ground.station.clock.offset                    [8] = -1.4098610509418356E-8
+ground.station.clock.offset.min                [8] = -0.001
+ground.station.clock.offset.max                [8] = +0.001
+ground.station.clock.offset.estimated          [8] = true
+ground.station.range.sigma                     [8] = 1.0
+ground.station.range.bias                      [8] =     0.0
+ground.station.range.bias.min                  [8] = -1000.0
+ground.station.range.bias.max                  [8] = +1000.0
+ground.station.range.bias.estimated            [8] = false
+ground.station.range.rate.sigma                [8] = 0.001
+ground.station.range.rate.bias                 [8] =  0.0
+ground.station.range.rate.bias.min             [8] = -1.0
+ground.station.range.rate.bias.max             [8] = +1.0
+ground.station.range.rate.bias.estimated       [8] = false
+ground.station.azimuth.sigma                   [8] =  0.02
+ground.station.azimuth.bias                    [8] =  0.01
+ground.station.azimuth.bias.min                [8] = -0.50
+ground.station.azimuth.bias.max                [8] = +0.50
+ground.station.elevation.sigma                 [8] =  0.02
+ground.station.elevation.bias                  [8] =  0.01
+ground.station.elevation.bias.min              [8] = -0.50
+ground.station.elevation.bias.max              [8] = +0.50
+ground.station.az.el.biases.estimated          [8] = false
+ground.station.elevation.refraction.correction [8] = false
+ground.station.tropospheric.model.estimated    [8] = true
+ground.station.tropospheric.zenith.delay       [8] = 2.3
+ground.station.tropospheric.delay.estimated    [8] = false
+ground.station.global.mapping.function         [8] = false
+ground.station.niell.mapping.function          [8] = true
+ground.station.range.tropospheric.correction   [8] = true
+ground.station.weather.estimated               [8] = true
+ground.station.range.ionospheric.correction    [8] = true
+ground.station.ionospheric.model.estimated     [8] = true
+ground.station.ionospheric.vtec.estimated      [8] = false
+ground.station.ionospheric.vtec.value          [8] = 10.0
+ground.station.ionospheric.hion.value          [8] = 350e3
+
+
+ground.station.name                            [9] =  BSHM/P1
+ground.station.latitude                        [9] = 33.3414139
+ground.station.longitude                       [9] = 44.4384028			
+ground.station.altitude                        [9] = 72.4
+ground.station.position.estimated              [9] = false
+ground.station.clock.offset                    [9] = -1.446900785333988E-8
+ground.station.clock.offset.min                [9] = -0.001
+ground.station.clock.offset.max                [9] = +0.001
+ground.station.clock.offset.estimated          [9] = true
+ground.station.range.sigma                     [9] = 1.0
+ground.station.range.bias                      [9] =     0.0
+ground.station.range.bias.min                  [9] = -1000.0
+ground.station.range.bias.max                  [9] = +1000.0
+ground.station.range.bias.estimated            [9] = false
+ground.station.range.rate.sigma                [9] = 0.001
+ground.station.range.rate.bias                 [9] =  0.0
+ground.station.range.rate.bias.min             [9] = -1.0
+ground.station.range.rate.bias.max             [9] = +1.0
+ground.station.range.rate.bias.estimated       [9] = false
+ground.station.azimuth.sigma                   [9] =  0.02
+ground.station.azimuth.bias                    [9] =  0.01
+ground.station.azimuth.bias.min                [9] = -0.50
+ground.station.azimuth.bias.max                [9] = +0.50
+ground.station.elevation.sigma                 [9] =  0.02
+ground.station.elevation.bias                  [9] =  0.01
+ground.station.elevation.bias.min              [9] = -0.50
+ground.station.elevation.bias.max              [9] = +0.50
+ground.station.az.el.biases.estimated          [9] = false
+ground.station.elevation.refraction.correction [9] = false
+ground.station.tropospheric.model.estimated    [9] = true
+ground.station.tropospheric.zenith.delay       [9] = 2.3
+ground.station.tropospheric.delay.estimated    [9] = false
+ground.station.global.mapping.function         [9] = false
+ground.station.niell.mapping.function          [9] = true
+ground.station.range.tropospheric.correction   [9] = true
+ground.station.weather.estimated               [9] = true
+ground.station.range.ionospheric.correction    [9] = true
+ground.station.ionospheric.model.estimated     [9] = true
+ground.station.ionospheric.vtec.estimated      [9] = false
+ground.station.ionospheric.vtec.value          [9] = 10.0
+ground.station.ionospheric.hion.value          [9] = 350e3
+
+ground.station.name                            [10] =  BSHM/P2
+ground.station.latitude                        [10] = 33.3414139
+ground.station.longitude                       [10] = 44.4384028			
+ground.station.altitude                        [10] = 72.4
+ground.station.position.estimated              [10] = false
+ground.station.clock.offset                    [10] = -2.2315597087771364E-8
+ground.station.clock.offset.min                [10] = -0.001
+ground.station.clock.offset.max                [10] = +0.001
+ground.station.clock.offset.estimated          [10] = true
+ground.station.range.sigma                     [10] = 1.0
+ground.station.range.bias                      [10] =     0.0
+ground.station.range.bias.min                  [10] = -1000.0
+ground.station.range.bias.max                  [10] = +1000.0
+ground.station.range.bias.estimated            [10] = false
+ground.station.range.rate.sigma                [10] = 0.001
+ground.station.range.rate.bias                 [10] =  0.0
+ground.station.range.rate.bias.min             [10] = -1.0
+ground.station.range.rate.bias.max             [10] = +1.0
+ground.station.range.rate.bias.estimated       [10] = false
+ground.station.azimuth.sigma                   [10] =  0.02
+ground.station.azimuth.bias                    [10] =  0.01
+ground.station.azimuth.bias.min                [10] = -0.50
+ground.station.azimuth.bias.max                [10] = +0.50
+ground.station.elevation.sigma                 [10] =  0.02
+ground.station.elevation.bias                  [10] =  0.01
+ground.station.elevation.bias.min              [10] = -0.50
+ground.station.elevation.bias.max              [10] = +0.50
+ground.station.az.el.biases.estimated          [10] = false
+ground.station.elevation.refraction.correction [10] = false
+ground.station.tropospheric.model.estimated    [10] = true
+ground.station.tropospheric.zenith.delay       [10] = 2.3
+ground.station.tropospheric.delay.estimated    [10] = false
+ground.station.global.mapping.function         [10] = false
+ground.station.niell.mapping.function          [10] = true
+ground.station.range.tropospheric.correction   [10] = true
+ground.station.weather.estimated               [10] = true
+ground.station.range.ionospheric.correction    [10] = true
+ground.station.ionospheric.model.estimated     [10] = true
+ground.station.ionospheric.vtec.estimated      [10] = false
+ground.station.ionospheric.vtec.value          [10] = 10.0
+ground.station.ionospheric.hion.value          [10] = 350e3
+
+ground.station.name                            [11] =  ZECK/C1
+ground.station.latitude                        [11] = 43.7883917
+ground.station.longitude                       [11] = 41.5650639			
+ground.station.altitude                        [11] = 1166.8
+ground.station.position.estimated              [11] = false
+ground.station.clock.offset                    [11] = 5.175417690559566E-5
+ground.station.clock.offset.min                [11] = -0.001
+ground.station.clock.offset.max                [11] = +0.001
+ground.station.clock.offset.estimated          [11] = false
+ground.station.range.sigma                     [11] = 1.0
+ground.station.range.bias                      [11] =     0.0
+ground.station.range.bias.min                  [11] = -1000.0
+ground.station.range.bias.max                  [11] = +1000.0
+ground.station.range.bias.estimated            [11] = false
+ground.station.range.rate.sigma                [11] = 0.001
+ground.station.range.rate.bias                 [11] =  0.0
+ground.station.range.rate.bias.min             [11] = -1.0
+ground.station.range.rate.bias.max             [11] = +1.0
+ground.station.range.rate.bias.estimated       [11] = false
+ground.station.azimuth.sigma                   [11] =  0.02
+ground.station.azimuth.bias                    [11] =  0.01
+ground.station.azimuth.bias.min                [11] = -0.50
+ground.station.azimuth.bias.max                [11] = +0.50
+ground.station.elevation.sigma                 [11] =  0.02
+ground.station.elevation.bias                  [11] =  0.01
+ground.station.elevation.bias.min              [11] = -0.50
+ground.station.elevation.bias.max              [11] = +0.50
+ground.station.az.el.biases.estimated          [11] = false
+ground.station.elevation.refraction.correction [11] = false
+ground.station.tropospheric.model.estimated    [11] = true
+ground.station.tropospheric.zenith.delay       [11] = 2.3
+ground.station.tropospheric.delay.estimated    [11] = false
+ground.station.global.mapping.function         [11] = false
+ground.station.niell.mapping.function          [11] = true
+ground.station.range.tropospheric.correction   [11] = true
+ground.station.weather.estimated               [11] = true
+ground.station.range.ionospheric.correction    [11] = true
+ground.station.ionospheric.model.estimated     [11] = true
+ground.station.ionospheric.vtec.estimated      [11] = false
+ground.station.ionospheric.vtec.value          [11] = 10.0
+ground.station.ionospheric.hion.value          [11] = 350e3
+
+ground.station.name                            [12] =  ZECK/P1
+ground.station.latitude                        [12] = 43.7883917
+ground.station.longitude                       [12] = 41.5650639			
+ground.station.altitude                        [12] = 1166.8
+ground.station.position.estimated              [12] = false
+ground.station.clock.offset                    [12] = 5.175372396768106E-5
+ground.station.clock.offset.min                [12] = -0.001
+ground.station.clock.offset.max                [12] = +0.001
+ground.station.clock.offset.estimated          [12] = false
+ground.station.range.sigma                     [12] = 1.0
+ground.station.range.bias                      [12] =     0.0
+ground.station.range.bias.min                  [12] = -1000.0
+ground.station.range.bias.max                  [12] = +1000.0
+ground.station.range.bias.estimated            [12] = false
+ground.station.range.rate.sigma                [12] = 0.001
+ground.station.range.rate.bias                 [12] =  0.0
+ground.station.range.rate.bias.min             [12] = -1.0
+ground.station.range.rate.bias.max             [12] = +1.0
+ground.station.range.rate.bias.estimated       [12] = false
+ground.station.azimuth.sigma                   [12] =  0.02
+ground.station.azimuth.bias                    [12] =  0.01
+ground.station.azimuth.bias.min                [12] = -0.50
+ground.station.azimuth.bias.max                [12] = +0.50
+ground.station.elevation.sigma                 [12] =  0.02
+ground.station.elevation.bias                  [12] =  0.01
+ground.station.elevation.bias.min              [12] = -0.50
+ground.station.elevation.bias.max              [12] = +0.50
+ground.station.az.el.biases.estimated          [12] = false
+ground.station.elevation.refraction.correction [12] = false
+ground.station.tropospheric.model.estimated    [12] = true
+ground.station.tropospheric.zenith.delay       [12] = 2.3
+ground.station.tropospheric.delay.estimated    [12] = false
+ground.station.global.mapping.function         [12] = false
+ground.station.niell.mapping.function          [12] = true
+ground.station.range.tropospheric.correction   [12] = true
+ground.station.weather.estimated               [12] = true
+ground.station.range.ionospheric.correction    [12] = true
+ground.station.ionospheric.model.estimated     [12] = true
+ground.station.ionospheric.vtec.estimated      [12] = false
+ground.station.ionospheric.vtec.value          [12] = 10.0
+ground.station.ionospheric.hion.value          [12] = 350e3
+
+ground.station.name                            [13] =  ZECK/P2
+ground.station.latitude                        [13] = 43.7883917
+ground.station.longitude                       [13] = 41.5650639			
+ground.station.altitude                        [13] = 1166.8
+ground.station.position.estimated              [13] = false
+ground.station.clock.offset                    [13] = 5.174002766823401E-5
+ground.station.clock.offset.min                [13] = -0.001
+ground.station.clock.offset.max                [13] = +0.001
+ground.station.clock.offset.estimated          [13] = false
+ground.station.range.sigma                     [13] = 1.0
+ground.station.range.bias                      [13] =     0.0
+ground.station.range.bias.min                  [13] = -1000.0
+ground.station.range.bias.max                  [13] = +1000.0
+ground.station.range.bias.estimated            [13] = false
+ground.station.range.rate.sigma                [13] = 0.001
+ground.station.range.rate.bias                 [13] =  0.0
+ground.station.range.rate.bias.min             [13] = -1.0
+ground.station.range.rate.bias.max             [13] = +1.0
+ground.station.range.rate.bias.estimated       [13] = false
+ground.station.azimuth.sigma                   [13] =  0.02
+ground.station.azimuth.bias                    [13] =  0.01
+ground.station.azimuth.bias.min                [13] = -0.50
+ground.station.azimuth.bias.max                [13] = +0.50
+ground.station.elevation.sigma                 [13] =  0.02
+ground.station.elevation.bias                  [13] =  0.01
+ground.station.elevation.bias.min              [13] = -0.50
+ground.station.elevation.bias.max              [13] = +0.50
+ground.station.az.el.biases.estimated          [13] = false
+ground.station.elevation.refraction.correction [13] = false
+ground.station.tropospheric.model.estimated    [13] = true
+ground.station.tropospheric.zenith.delay       [13] = 2.3
+ground.station.tropospheric.delay.estimated    [13] = false
+ground.station.global.mapping.function         [13] = false
+ground.station.niell.mapping.function          [13] = true
+ground.station.range.tropospheric.correction   [13] = true
+ground.station.weather.estimated               [13] = true
+ground.station.range.ionospheric.correction    [13] = true
+ground.station.ionospheric.model.estimated     [13] = true
+ground.station.ionospheric.vtec.estimated      [13] = false
+ground.station.ionospheric.vtec.value          [13] = 10.0
+ground.station.ionospheric.hion.value          [13] = 350e3
+
+ground.station.name                            [14] =  POLV/C1
+ground.station.latitude                        [14] = 49.6026139
+ground.station.longitude                       [14] = 34.5429278				
+ground.station.altitude                        [14] = 178.1
+ground.station.position.estimated              [14] = false
+ground.station.clock.offset                    [14] = -3.5536129458134465E-8
+ground.station.clock.offset.min                [14] = -0.001
+ground.station.clock.offset.max                [14] = +0.001
+ground.station.clock.offset.estimated          [14] = false
+ground.station.range.sigma                     [14] = 1.0
+ground.station.range.bias                      [14] =     0.0
+ground.station.range.bias.min                  [14] = -1000.0
+ground.station.range.bias.max                  [14] = +1000.0
+ground.station.range.bias.estimated            [14] = false
+ground.station.range.rate.sigma                [14] = 0.001
+ground.station.range.rate.bias                 [14] =  0.0
+ground.station.range.rate.bias.min             [14] = -1.0
+ground.station.range.rate.bias.max             [14] = +1.0
+ground.station.range.rate.bias.estimated       [14] = false
+ground.station.azimuth.sigma                   [14] =  0.02
+ground.station.azimuth.bias                    [14] =  0.01
+ground.station.azimuth.bias.min                [14] = -0.50
+ground.station.azimuth.bias.max                [14] = +0.50
+ground.station.elevation.sigma                 [14] =  0.02
+ground.station.elevation.bias                  [14] =  0.01
+ground.station.elevation.bias.min              [14] = -0.50
+ground.station.elevation.bias.max              [14] = +0.50
+ground.station.az.el.biases.estimated          [14] = false
+ground.station.elevation.refraction.correction [14] = false
+ground.station.tropospheric.model.estimated    [14] = true
+ground.station.tropospheric.zenith.delay       [14] = 2.3
+ground.station.tropospheric.delay.estimated    [14] = false
+ground.station.global.mapping.function         [14] = false
+ground.station.niell.mapping.function          [14] = true
+ground.station.range.tropospheric.correction   [14] = true
+ground.station.weather.estimated               [14] = true
+ground.station.range.ionospheric.correction    [14] = true
+ground.station.ionospheric.model.estimated     [14] = true
+ground.station.ionospheric.vtec.estimated      [14] = false
+ground.station.ionospheric.vtec.value          [14] = 10.0
+ground.station.ionospheric.hion.value          [14] = 350e3
+
+ground.station.name                            [15] =  POLV/P2
+ground.station.latitude                        [15] = 49.6026139
+ground.station.longitude                       [15] = 34.5429278				
+ground.station.altitude                        [15] = 178.1
+ground.station.position.estimated              [15] = false
+ground.station.clock.offset                    [15] = -6.016690876658574E-8
+ground.station.clock.offset.min                [15] = -0.001
+ground.station.clock.offset.max                [15] = +0.001
+ground.station.clock.offset.estimated          [15] = false
+ground.station.range.sigma                     [15] = 1.0
+ground.station.range.bias                      [15] =     0.0
+ground.station.range.bias.min                  [15] = -1000.0
+ground.station.range.bias.max                  [15] = +1000.0
+ground.station.range.bias.estimated            [15] = false
+ground.station.range.rate.sigma                [15] = 0.001
+ground.station.range.rate.bias                 [15] =  0.0
+ground.station.range.rate.bias.min             [15] = -1.0
+ground.station.range.rate.bias.max             [15] = +1.0
+ground.station.range.rate.bias.estimated       [15] = false
+ground.station.azimuth.sigma                   [15] =  0.02
+ground.station.azimuth.bias                    [15] =  0.01
+ground.station.azimuth.bias.min                [15] = -0.50
+ground.station.azimuth.bias.max                [15] = +0.50
+ground.station.elevation.sigma                 [15] =  0.02
+ground.station.elevation.bias                  [15] =  0.01
+ground.station.elevation.bias.min              [15] = -0.50
+ground.station.elevation.bias.max              [15] = +0.50
+ground.station.az.el.biases.estimated          [15] = false
+ground.station.elevation.refraction.correction [15] = false
+ground.station.tropospheric.model.estimated    [15] = true
+ground.station.tropospheric.zenith.delay       [15] = 2.3
+ground.station.tropospheric.delay.estimated    [15] = false
+ground.station.global.mapping.function         [15] = false
+ground.station.niell.mapping.function          [15] = true
+ground.station.range.tropospheric.correction   [15] = true
+ground.station.weather.estimated               [15] = true
+ground.station.range.ionospheric.correction    [15] = true
+ground.station.ionospheric.model.estimated     [15] = true
+ground.station.ionospheric.vtec.estimated      [15] = false
+ground.station.ionospheric.vtec.value          [15] = 10.0
+ground.station.ionospheric.hion.value          [15] = 350e3
+
+ground.station.name                            [16] =  SUTH/P1
+ground.station.latitude                        [16] = 	-32.3802108
+ground.station.longitude                       [16] = 20.8104623				
+ground.station.altitude                        [16] = 1799.7659
+ground.station.position.estimated              [16] = false
+ground.station.clock.offset                    [16] = -3.357266616918197E-8
+ground.station.clock.offset.min                [16] = -0.001
+ground.station.clock.offset.max                [16] = +0.001
+ground.station.clock.offset.estimated          [16] = false
+ground.station.range.sigma                     [16] = 1.0
+ground.station.range.bias                      [16] =     0.0
+ground.station.range.bias.min                  [16] = -1000.0
+ground.station.range.bias.max                  [16] = +1000.0
+ground.station.range.bias.estimated            [16] = false
+ground.station.range.rate.sigma                [16] = 0.001
+ground.station.range.rate.bias                 [16] =  0.0
+ground.station.range.rate.bias.min             [16] = -1.0
+ground.station.range.rate.bias.max             [16] = +1.0
+ground.station.range.rate.bias.estimated       [16] = false
+ground.station.azimuth.sigma                   [16] =  0.02
+ground.station.azimuth.bias                    [16] =  0.01
+ground.station.azimuth.bias.min                [16] = -0.50
+ground.station.azimuth.bias.max                [16] = +0.50
+ground.station.elevation.sigma                 [16] =  0.02
+ground.station.elevation.bias                  [16] =  0.01
+ground.station.elevation.bias.min              [16] = -0.50
+ground.station.elevation.bias.max              [16] = +0.50
+ground.station.az.el.biases.estimated          [16] = false
+ground.station.elevation.refraction.correction [16] = false
+ground.station.tropospheric.model.estimated    [16] = true
+ground.station.tropospheric.zenith.delay       [16] = 2.3
+ground.station.tropospheric.delay.estimated    [16] = false
+ground.station.global.mapping.function         [16] = false
+ground.station.niell.mapping.function          [16] = true
+ground.station.range.tropospheric.correction   [16] = true
+ground.station.weather.estimated               [16] = true
+ground.station.range.ionospheric.correction    [16] = true
+ground.station.ionospheric.model.estimated     [16] = true
+ground.station.ionospheric.vtec.estimated      [16] = false
+ground.station.ionospheric.vtec.value          [16] = 10.0
+ground.station.ionospheric.hion.value          [16] = 350e3
+
+ground.station.name                            [17] =  SUTH/P2
+ground.station.latitude                        [17] = 	-32.3802108
+ground.station.longitude                       [17] = 20.8104623				
+ground.station.altitude                        [17] = 1799.7659
+ground.station.position.estimated              [17] = false
+ground.station.clock.offset                    [17] = -2.813493078166724E-8
+ground.station.clock.offset.min                [17] = -0.001
+ground.station.clock.offset.max                [17] = +0.001
+ground.station.clock.offset.estimated          [17] = false
+ground.station.range.sigma                     [17] = 1.0
+ground.station.range.bias                      [17] =     0.0
+ground.station.range.bias.min                  [17] = -1000.0
+ground.station.range.bias.max                  [17] = +1000.0
+ground.station.range.bias.estimated            [17] = false
+ground.station.range.rate.sigma                [17] = 0.001
+ground.station.range.rate.bias                 [17] =  0.0
+ground.station.range.rate.bias.min             [17] = -1.0
+ground.station.range.rate.bias.max             [17] = +1.0
+ground.station.range.rate.bias.estimated       [17] = false
+ground.station.azimuth.sigma                   [17] =  0.02
+ground.station.azimuth.bias                    [17] =  0.01
+ground.station.azimuth.bias.min                [17] = -0.50
+ground.station.azimuth.bias.max                [17] = +0.50
+ground.station.elevation.sigma                 [17] =  0.02
+ground.station.elevation.bias                  [17] =  0.01
+ground.station.elevation.bias.min              [17] = -0.50
+ground.station.elevation.bias.max              [17] = +0.50
+ground.station.az.el.biases.estimated          [17] = false
+ground.station.elevation.refraction.correction [17] = false
+ground.station.tropospheric.model.estimated    [17] = true
+ground.station.tropospheric.zenith.delay       [17] = 2.3
+ground.station.tropospheric.delay.estimated    [17] = false
+ground.station.global.mapping.function         [17] = false
+ground.station.niell.mapping.function          [17] = true
+ground.station.range.tropospheric.correction   [17] = true
+ground.station.weather.estimated               [17] = true
+ground.station.range.ionospheric.correction    [17] = true
+ground.station.ionospheric.model.estimated     [17] = true
+ground.station.ionospheric.vtec.estimated      [17] = false
+ground.station.ionospheric.vtec.value          [17] = 10.0
+ground.station.ionospheric.hion.value          [17] = 350e3
+
+ground.station.name                            [18] =  SUTH/C1
+ground.station.latitude                        [18] = 	-32.3802108
+ground.station.longitude                       [18] = 20.8104623				
+ground.station.altitude                        [18] = 1799.7659
+ground.station.position.estimated              [18] = false
+ground.station.clock.offset                    [18] = -3.4268793383962196E-8
+ground.station.clock.offset.min                [18] = -0.001
+ground.station.clock.offset.max                [18] = +0.001
+ground.station.clock.offset.estimated          [18] = false
+ground.station.range.sigma                     [18] = 1.0
+ground.station.range.bias                      [18] =     0.0
+ground.station.range.bias.min                  [18] = -1000.0
+ground.station.range.bias.max                  [18] = +1000.0
+ground.station.range.bias.estimated            [18] = false
+ground.station.range.rate.sigma                [18] = 0.001
+ground.station.range.rate.bias                 [18] =  0.0
+ground.station.range.rate.bias.min             [18] = -1.0
+ground.station.range.rate.bias.max             [18] = +1.0
+ground.station.range.rate.bias.estimated       [18] = false
+ground.station.azimuth.sigma                   [18] =  0.02
+ground.station.azimuth.bias                    [18] =  0.01
+ground.station.azimuth.bias.min                [18] = -0.50
+ground.station.azimuth.bias.max                [18] = +0.50
+ground.station.elevation.sigma                 [18] =  0.02
+ground.station.elevation.bias                  [18] =  0.01
+ground.station.elevation.bias.min              [18] = -0.50
+ground.station.elevation.bias.max              [18] = +0.50
+ground.station.az.el.biases.estimated          [18] = false
+ground.station.elevation.refraction.correction [18] = false
+ground.station.tropospheric.model.estimated    [18] = true
+ground.station.tropospheric.zenith.delay       [18] = 2.3
+ground.station.tropospheric.delay.estimated    [18] = false
+ground.station.global.mapping.function         [18] = false
+ground.station.niell.mapping.function          [18] = true
+ground.station.range.tropospheric.correction   [18] = true
+ground.station.weather.estimated               [18] = true
+ground.station.range.ionospheric.correction    [18] = true
+ground.station.ionospheric.model.estimated     [18] = true
+ground.station.ionospheric.vtec.estimated      [18] = false
+ground.station.ionospheric.vtec.value          [18] = 10.0
+ground.station.ionospheric.hion.value          [18] = 350e3
+
+ground.station.name                            [19] =  TLSE/D1
+ground.station.latitude                        [19] =   43.5606944
+ground.station.longitude                       [19] = 1.4808722	
+ground.station.altitude                        [19] = 207.2
+ground.station.position.estimated              [19] = false
+ground.station.clock.offset                    [19] = 4.712152950820852E-9
+ground.station.clock.offset.min                [19] = -0.001
+ground.station.clock.offset.max                [19] = +0.001
+ground.station.clock.offset.estimated          [19] = false
+ground.station.range.sigma                     [19] = 1.0
+ground.station.range.bias                      [19] =     0.0
+ground.station.range.bias.min                  [19] = -1000.0
+ground.station.range.bias.max                  [19] = +1000.0
+ground.station.range.bias.estimated            [19] = false
+ground.station.range.rate.sigma                [19] = 0.001
+ground.station.range.rate.bias                 [19] =  0.0
+ground.station.range.rate.bias.min             [19] = -1.0
+ground.station.range.rate.bias.max             [19] = +1.0
+ground.station.range.rate.bias.estimated       [19] = false
+ground.station.azimuth.sigma                   [19] =  0.02
+ground.station.azimuth.bias                    [19] =  0.01
+ground.station.azimuth.bias.min                [19] = -0.50
+ground.station.azimuth.bias.max                [19] = +0.50
+ground.station.elevation.sigma                 [19] =  0.02
+ground.station.elevation.bias                  [19] =  0.01
+ground.station.elevation.bias.min              [19] = -0.50
+ground.station.elevation.bias.max              [19] = +0.50
+ground.station.az.el.biases.estimated          [19] = false
+ground.station.elevation.refraction.correction [19] = false
+ground.station.tropospheric.model.estimated    [19] = true
+ground.station.tropospheric.zenith.delay       [19] = 2.3
+ground.station.tropospheric.delay.estimated    [19] = false
+ground.station.global.mapping.function         [19] = false
+ground.station.niell.mapping.function          [19] = true
+ground.station.range.tropospheric.correction   [19] = true
+ground.station.weather.estimated               [19] = true
+ground.station.range.ionospheric.correction    [19] = true
+ground.station.ionospheric.model.estimated     [19] = true
+ground.station.ionospheric.vtec.estimated      [19] = false
+ground.station.ionospheric.vtec.value          [19] = 10.0
+ground.station.ionospheric.hion.value          [19] = 350e3
+
+ground.station.name                            [20] =  TLSE/D2
+ground.station.latitude                        [20] =   43.5606944
+ground.station.longitude                       [20] = 1.4808722	
+ground.station.altitude                        [20] = 207.2
+ground.station.position.estimated              [20] = false
+ground.station.clock.offset                    [20] = 4.712152950820852E-9
+ground.station.clock.offset.min                [20] = -0.001
+ground.station.clock.offset.max                [20] = +0.001
+ground.station.clock.offset.estimated          [20] = false
+ground.station.range.sigma                     [20] = 1.0
+ground.station.range.bias                      [20] =     0.0
+ground.station.range.bias.min                  [20] = -1000.0
+ground.station.range.bias.max                  [20] = +1000.0
+ground.station.range.bias.estimated            [20] = false
+ground.station.range.rate.sigma                [20] = 0.001
+ground.station.range.rate.bias                 [20] =  0.0
+ground.station.range.rate.bias.min             [20] = -1.0
+ground.station.range.rate.bias.max             [20] = +1.0
+ground.station.range.rate.bias.estimated       [20] = false
+ground.station.azimuth.sigma                   [20] =  0.02
+ground.station.azimuth.bias                    [20] =  0.01
+ground.station.azimuth.bias.min                [20] = -0.50
+ground.station.azimuth.bias.max                [20] = +0.50
+ground.station.elevation.sigma                 [20] =  0.02
+ground.station.elevation.bias                  [20] =  0.01
+ground.station.elevation.bias.min              [20] = -0.50
+ground.station.elevation.bias.max              [20] = +0.50
+ground.station.az.el.biases.estimated          [20] = false
+ground.station.elevation.refraction.correction [20] = false
+ground.station.tropospheric.model.estimated    [20] = true
+ground.station.tropospheric.zenith.delay       [20] = 2.3
+ground.station.tropospheric.delay.estimated    [20] = false
+ground.station.global.mapping.function         [20] = false
+ground.station.niell.mapping.function          [20] = true
+ground.station.range.tropospheric.correction   [20] = true
+ground.station.weather.estimated               [20] = true
+ground.station.range.ionospheric.correction    [20] = true
+ground.station.ionospheric.model.estimated     [20] = true
+ground.station.ionospheric.vtec.estimated      [20] = false
+ground.station.ionospheric.vtec.value          [20] = 10.0
+ground.station.ionospheric.hion.value          [20] = 350e3
+
+ground.station.name                            [21] =  POLV/D1
+ground.station.latitude                        [21] = 49.6026139
+ground.station.longitude                       [21] = 34.5429278				
+ground.station.altitude                        [21] = 178.1
+ground.station.position.estimated              [21] = false
+ground.station.clock.offset                    [21] = -3.5536129458134465E-8
+ground.station.clock.offset.min                [21] = -0.001
+ground.station.clock.offset.max                [21] = +0.001
+ground.station.clock.offset.estimated          [21] = false
+ground.station.range.sigma                     [21] = 1.0
+ground.station.range.bias                      [21] =     0.0
+ground.station.range.bias.min                  [21] = -1000.0
+ground.station.range.bias.max                  [21] = +1000.0
+ground.station.range.bias.estimated            [21] = false
+ground.station.range.rate.sigma                [21] = 0.001
+ground.station.range.rate.bias                 [21] =  0.0
+ground.station.range.rate.bias.min             [21] = -1.0
+ground.station.range.rate.bias.max             [21] = +1.0
+ground.station.range.rate.bias.estimated       [21] = false
+ground.station.azimuth.sigma                   [21] =  0.02
+ground.station.azimuth.bias                    [21] =  0.01
+ground.station.azimuth.bias.min                [21] = -0.50
+ground.station.azimuth.bias.max                [21] = +0.50
+ground.station.elevation.sigma                 [21] =  0.02
+ground.station.elevation.bias                  [21] =  0.01
+ground.station.elevation.bias.min              [21] = -0.50
+ground.station.elevation.bias.max              [21] = +0.50
+ground.station.az.el.biases.estimated          [21] = false
+ground.station.elevation.refraction.correction [21] = false
+ground.station.tropospheric.model.estimated    [21] = true
+ground.station.tropospheric.zenith.delay       [21] = 2.3
+ground.station.tropospheric.delay.estimated    [21] = false
+ground.station.global.mapping.function         [21] = false
+ground.station.niell.mapping.function          [21] = true
+ground.station.range.tropospheric.correction   [21] = true
+ground.station.weather.estimated               [21] = true
+ground.station.range.ionospheric.correction    [21] = true
+ground.station.ionospheric.model.estimated     [21] = true
+ground.station.ionospheric.vtec.estimated      [21] = false
+ground.station.ionospheric.vtec.value          [21] = 10.0
+ground.station.ionospheric.hion.value          [21] = 350e3
+
+# Time span models
+tropospheric.correction.date = 2016-02-13T02:30:00.000
+
+### Measurements parameters
+range.outlier.rejection.multiplier              = 1
+range.outlier.rejection.starting.iteration      = 2
+range.rate.outlier.rejection.multiplier         = 6
+range.rate.outlier.rejection.starting.iteration = 2
+az.el.outlier.rejection.multiplier              = 6
+az.el.outlier.rejection.starting.iteration      = 2
+PV.outlier.rejection.multiplier                 = 6
+PV.outlier.rejection.starting.iteration         = 2
+range.measurements.base.weight                  = 1.0
+range.rate.measurements.base.weight             = 1.0
+azimuth.measurements.base.weight                = 1.0
+elevation.measurements.base.weight              = 1.0
+PV.measurements.base.weight                     = 1.0
+PV.measurements.position.sigma                  = 1.0
+PV.measurements.velocity.sigma                  = 0.01
+
+## Estimator
+
+# normalized parameters p are computed from physical parameters x
+# as p = (x - x0) / sx where x0 is the reference value for physical
+# parameter x and sx is the associated scale factor
+# scaling factor for orbital parameters normalization (m)
+# if not specified, the value set for propagator.position.error will be copied
+estimator.orbital.parameters.position.scale     = 100
+
+# we can use either a Levenberg-Marquardt or a Gauss-Newton
+# optimization engine. Default is Levenberg-Marquardt
+estimator.optimization.engine = Levenberg-Marquardt
+
+# the default initial step bound factor is 100 for Levenberg-Marquardt
+# this is too small for normalized parameters when initial guess is very
+# far. An order of magnitude is 100 times the distance error of the initial guess
+# divided by estimator.orbital.parameters.position.scale. So if the initial guess
+# is about 100km wrong and estimator.orbital.parameters.position.scale is set to 10.0,
+# the initial step bound factor should be of the order of magnitude of 1.0e6
+estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
+
+# convergence is reached when max|p(k+1) - p(k)| < ε for each
+# normalized estimated parameters p and iterations k and k+1
+# so the ε threshold (which corresponds to the key
+# estimator.normalized.parameters.convergence.threshold)
+# Normalized values are computed as (x - x0) / sx,
+# so convergence is reached when the following condition holds for
+# all estimated parameters: |x[i+1] - x[i]| <= ε * sx
+# So the convergence threshold specified here can be considered as
+# a multiplication factor applied to scale. Since for all parameters
+# the scale is often small (typically about 1 m for orbital positions
+# for example), then the threshold should not be too small. A value
+# of 10⁻³ is often quite accurate.
+estimator.normalized.parameters.convergence.threshold   = 0.1
+estimator.max.iterations                                = 20
+estimator.max.evaluations                               = 25
+
+# id of satellite in the Rinex files (only used if some measurements.files are Rinex 2 or 3)
+satellite.id.in.rinex.files = G07
+
+# station coordinates and eccentricities files
+sinex.position.file = cod18836.snx
+
+# comma-separated list of measurements files (in the same directory as this file)
+measurements.files = badg0440.16d.Z, tlse0440.16d.Z, bshm0440.16d.Z, zeck0440.16d.Z, polv0440.16d.Z, suth0440.16d.Z

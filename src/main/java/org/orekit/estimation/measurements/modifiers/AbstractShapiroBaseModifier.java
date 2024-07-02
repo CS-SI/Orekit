@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,9 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -26,7 +28,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * Shapiro time delay is a relativistic effect due to gravity.
  * </p>
- *
  * @author Luc Maisonobe
  * @since 10.0
  */
@@ -43,9 +44,13 @@ public class AbstractShapiroBaseModifier {
     }
 
     /** Modify measurement.
+     * @param <T> type of the measurements
+     * @param modifier applied modifier
      * @param estimated measurement to modify
+     * @since 12.1
      */
-    protected void doModify(final EstimatedMeasurement<?> estimated) {
+    protected <T extends ObservedMeasurement<T>> void doModify(final EstimationModifier<T> modifier,
+                                                               final EstimatedMeasurementBase<T> estimated) {
 
         // compute correction, for one way or two way measurements
         final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
@@ -56,7 +61,7 @@ public class AbstractShapiroBaseModifier {
         // update estimated value taking into account the Shapiro time delay.
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] + correction;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(modifier, newValue);
 
     }
 
@@ -65,7 +70,7 @@ public class AbstractShapiroBaseModifier {
      * @param pvReceiver coordinates of receiver in body-centered frame
      * @return path dilation to add to raw measurement
      */
-    private double shapiroCorrection(final TimeStampedPVCoordinates pvEmitter, final TimeStampedPVCoordinates pvReceiver) {
+    protected double shapiroCorrection(final TimeStampedPVCoordinates pvEmitter, final TimeStampedPVCoordinates pvReceiver) {
         final Vector3D pEmitter  = pvEmitter.getPosition();
         final Vector3D pReceiver = pvReceiver.getPosition();
         final double   rEpR      = pEmitter.getNorm() + pReceiver.getNorm();

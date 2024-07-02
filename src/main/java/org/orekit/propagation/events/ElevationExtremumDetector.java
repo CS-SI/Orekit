@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -63,34 +63,34 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
                                      final TopocentricFrame topo) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<ElevationExtremumDetector>(),
+        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              topo);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
      */
-    private ElevationExtremumDetector(final double maxCheck, final double threshold,
-                                      final int maxIter, final EventHandler<? super ElevationExtremumDetector> handler,
-                                      final TopocentricFrame topo) {
+    protected ElevationExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler handler,
+                                        final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.topo = topo;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ElevationExtremumDetector create(final double newMaxCheck, final double newThreshold,
+    protected ElevationExtremumDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super ElevationExtremumDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
     }
 
@@ -107,7 +107,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @return spacecraft elevation
      */
     public double getElevation(final SpacecraftState s) {
-        return topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+        return topo.getElevation(s.getPosition(), s.getFrame(), s.getDate());
     }
 
     /** Compute the value of the detection function.
@@ -119,21 +119,21 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public double g(final SpacecraftState s) {
 
-        // get position, velocity acceleration of spacecraft in topocentric frame
-        final Transform inertToTopo = s.getFrame().getTransformTo(topo, s.getDate());
-        final TimeStampedPVCoordinates pvTopo = inertToTopo.transformPVCoordinates(s.getPVCoordinates());
+        // get position, velocity of spacecraft in topocentric frame
+        final KinematicTransform inertToTopo = s.getFrame().getKinematicTransformTo(topo, s.getDate());
+        final TimeStampedPVCoordinates pvTopo = inertToTopo.transformOnlyPV(s.getPVCoordinates());
 
-        // convert the coordinates to DerivativeStructure based vector
+        // convert the coordinates to UnivariateDerivative1 based vector
         // instead of having vector position, then vector velocity then vector acceleration
         // we get one vector and each coordinate is a DerivativeStructure containing
         // value, first time derivative (we don't need second time derivative here)
-        final FieldVector3D<DerivativeStructure> pvDS = pvTopo.toDerivativeStructureVector(1);
+        final FieldVector3D<UnivariateDerivative1> pvDS = pvTopo.toUnivariateDerivative1Vector();
 
         // compute elevation and its first time derivative
-        final DerivativeStructure elevation = pvDS.getZ().divide(pvDS.getNorm()).asin();
+        final UnivariateDerivative1 elevation = pvDS.getZ().divide(pvDS.getNorm()).asin();
 
         // return elevation first time derivative
-        return elevation.getPartialDerivative(1);
+        return elevation.getDerivative(1);
 
     }
 

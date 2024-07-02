@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.ElevationMask;
+import org.orekit.utils.TrackingCoordinates;
 
 
 /**
@@ -70,7 +71,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * Creates an instance of Elevation detector based on passed in topocentric frame
      * and overrides of default maximal checking interval and convergence threshold values.
      * @param maxCheck maximum checking interval (s)
-     * @param threshold maximum divergence threshold (s)
+     * @param threshold maximum convergence threshold (s)
      * @param topo reference to a topocentric model
      * @see #withConstantElevation(double)
      * @see #withElevationMask(ElevationMask)
@@ -78,18 +79,35 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      */
     public ElevationDetector(final double maxCheck, final double threshold,
                              final TopocentricFrame topo) {
+        this(AdaptableInterval.of(maxCheck), threshold, topo);
+    }
+
+    /**
+     * Creates an instance of Elevation detector based on passed in topocentric frame
+     * and overrides of default maximal checking interval and convergence threshold values.
+     * @param maxCheck maximum checking adaptable interval
+     * @param threshold maximum convergence threshold (s)
+     * @param topo reference to a topocentric model
+     * @see org.orekit.propagation.events.intervals.ElevationDetectionAdaptableIntervalFactory
+     * @see #withConstantElevation(double)
+     * @see #withElevationMask(ElevationMask)
+     * @see #withRefraction(AtmosphericRefractionModel)
+     * @since 12.1
+     */
+    public ElevationDetector(final AdaptableInterval maxCheck, final double threshold,
+                             final TopocentricFrame topo) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER,
-             new StopOnDecreasing<ElevationDetector>(),
+             new StopOnDecreasing(),
              0.0, null, null, topo);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -98,11 +116,11 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * @param refractionModel reference to refraction model
      * @param topo reference to a topocentric model
      */
-    private ElevationDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<? super ElevationDetector> handler,
-                              final double minElevation, final ElevationMask mask,
-                              final AtmosphericRefractionModel refractionModel,
-                              final TopocentricFrame topo) {
+    protected ElevationDetector(final AdaptableInterval maxCheck, final double threshold,
+                                final int maxIter, final EventHandler handler,
+                                final double minElevation, final ElevationMask mask,
+                                final AtmosphericRefractionModel refractionModel,
+                                final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.minElevation    = minElevation;
         this.elevationMask   = mask;
@@ -112,8 +130,8 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected ElevationDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super ElevationDetector> newHandler) {
+    protected ElevationDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler newHandler) {
         return new ElevationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      minElevation, elevationMask, refractionModel, topo);
     }
@@ -164,19 +182,17 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
     @Override
     public double g(final SpacecraftState s) {
 
-        final double trueElevation = topo.getElevation(s.getPVCoordinates().getPosition(),
-                                                       s.getFrame(), s.getDate());
+        final TrackingCoordinates tc = topo.getTrackingCoordinates(s.getPosition(), s.getFrame(), s.getDate());
 
         final double calculatedElevation;
         if (refractionModel != null) {
-            calculatedElevation = trueElevation + refractionModel.getRefraction(trueElevation);
+            calculatedElevation = tc.getElevation() + refractionModel.getRefraction(tc.getElevation());
         } else {
-            calculatedElevation = trueElevation;
+            calculatedElevation = tc.getElevation();
         }
 
         if (elevationMask != null) {
-            final double azimuth = topo.getAzimuth(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
-            return calculatedElevation - elevationMask.getElevation(azimuth);
+            return calculatedElevation - elevationMask.getElevation(tc.getAzimuth());
         } else {
             return calculatedElevation - minElevation;
         }

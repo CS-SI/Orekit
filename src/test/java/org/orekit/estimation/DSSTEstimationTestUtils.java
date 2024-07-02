@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,7 @@
  */
 package org.orekit.estimation;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -31,7 +26,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -40,7 +35,8 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.KalmanEstimator;
+import org.orekit.estimation.sequential.SemiAnalyticalKalmanEstimator;
+import org.orekit.estimation.sequential.SemiAnalyticalUnscentedKalmanEstimator;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -57,10 +53,10 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -68,6 +64,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Utility class for orbit determination tests. */
 public class DSSTEstimationTestUtils {
@@ -98,7 +100,7 @@ public class DSSTEstimationTestUtils {
         context.gravity = GravityFieldFactory.getUnnormalizedProvider(20, 20);
 
         Orbit orbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
-                                         0.250, 1.375, 0.0625, PositionAngle.MEAN,
+                                         0.250, 1.375, 0.0625, PositionAngleType.MEAN,
                                          FramesFactory.getEME2000(),
                                          new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
                                          context.gravity.getMu());
@@ -112,8 +114,8 @@ public class DSSTEstimationTestUtils {
                         );
 
         // Turn-around range stations
-        // Map entry = master station
-        // Map value = slave station associated
+        // Map entry = primary station
+        // Map value = secondary station associated
         context.TARstations = new HashMap<GroundStation, GroundStation>();
 
         context.TARstations.put(context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
@@ -148,7 +150,7 @@ public class DSSTEstimationTestUtils {
                                                        RotationConvention.VECTOR_OPERATOR);
                 return new Transform(date, rotation, rotationRate);
             }
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+            public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 final T rotationduration = date.durationFrom(datedef);
                 final FieldVector3D<T> alpharot = new FieldVector3D<>(rotationduration, rotationRate);
                 final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
@@ -168,14 +170,14 @@ public class DSSTEstimationTestUtils {
 
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         context.gravity = GravityFieldFactory.getUnnormalizedProvider(20, 20);
-        
+
         // semimajor axis for a geostationnary satellite
         double da = FastMath.cbrt(context.gravity.getMu() / (omega * omega));
 
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
         //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
         //                );
-        context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
+        context.stations = Collections.singletonList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
 
         // Station position & velocity in EME2000
         final Vector3D geovelocity = new Vector3D (0., 0., 0.);
@@ -201,11 +203,11 @@ public class DSSTEstimationTestUtils {
                                                     new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),
                                                     context.gravity.getMu());
 
-        context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
+        context.stations = Collections.singletonList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
 
         // Turn-around range stations
-        // Map entry = master station
-        // Map value = slave station associated
+        // Map entry = primary station
+        // Map value = secondary station associated
         context.TARstations = new HashMap<GroundStation, GroundStation>();
 
         context.TARstations.put(context.createStation(  41.977, 13.600,  671.354, "Fucino"),
@@ -224,13 +226,14 @@ public class DSSTEstimationTestUtils {
         // override orbital parameters
         double[] orbitArray = new double[6];
         OrbitType.EQUINOCTIAL.mapOrbitToArray(initialOrbit,
-                                              PositionAngle.MEAN,
+                                              PositionAngleType.MEAN,
                                               orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
-            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
+            // here orbital paramaters drivers have only 1 estimated values on the all time period for orbit determination
+            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
         }
 
-        return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
+        return propagatorBuilder.buildPropagator();
 
     }
 
@@ -239,7 +242,7 @@ public class DSSTEstimationTestUtils {
                                                                   final double startPeriod, final double endPeriod,
                                                                   final double step) {
 
-        propagator.setMasterMode(step, creator);
+        propagator.setStepHandler(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();
         final AbsoluteDate start  = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
         final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);
@@ -282,14 +285,14 @@ public class DSSTEstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
-        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
-        Assert.assertEquals(iterations, estimator.getIterationsCount());
-        Assert.assertEquals(evaluations, estimator.getEvaluationsCount());
+        Assertions.assertEquals(iterations, estimator.getIterationsCount());
+        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
         Optimum optimum = estimator.getOptimum();
-        Assert.assertEquals(iterations, optimum.getIterations());
-        Assert.assertEquals(evaluations, optimum.getEvaluations());
+        Assertions.assertEquals(iterations, optimum.getIterations());
+        Assertions.assertEquals(evaluations, optimum.getEvaluations());
 
         int    k   = 0;
         double sum = 0;
@@ -310,16 +313,16 @@ public class DSSTEstimationTestUtils {
             }
         }
 
-        Assert.assertEquals(expectedRMS,
+        Assertions.assertEquals(expectedRMS,
                             FastMath.sqrt(sum / k),
                             rmsEps);
-        Assert.assertEquals(expectedMax,
+        Assertions.assertEquals(expectedMax,
                             max,
                             maxEps);
-        Assert.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
+        Assertions.assertEquals(expectedDeltaPos,
+                            Vector3D.distance(context.initialOrbit.getPosition(), estimatedPosition),
                             posEps);
-        Assert.assertEquals(expectedDeltaVel,
+        Assertions.assertEquals(expectedDeltaVel,
                             Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
                             velEps);
 
@@ -336,14 +339,14 @@ public class DSSTEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbit
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkKalmanFit(final DSSTContext context, final KalmanEstimator kalman,
+    public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalKalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final Orbit refOrbit, final PositionAngleType positionAngleType,
                                       final double expectedDeltaPos, final double posEps,
                                       final double expectedDeltaVel, final double velEps) {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
-                       new PositionAngle[] { positionAngle },
+                       new PositionAngleType[] {positionAngleType},
                        new double[] { expectedDeltaPos }, new double[] { posEps },
                        new double[] { expectedDeltaVel }, new double[] { velEps });
     }
@@ -359,22 +362,104 @@ public class DSSTEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkKalmanFit(final DSSTContext context, final KalmanEstimator kalman,
+    public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalKalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit[] refOrbit, final PositionAngle[] positionAngle,
+                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
                                       final double[] expectedDeltaPos, final double[] posEps,
                                       final double[] expectedDeltaVel, final double []velEps) {
 
         // Add the measurements to the Kalman filter
-        AbstractIntegratedPropagator[] estimated = kalman.processMeasurements(measurements);
-        
+        DSSTPropagator estimated = kalman.processMeasurements(measurements);
+
         // Check the number of measurements processed by the filter
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
-            final Orbit    estimatedOrbit    = estimated[k].getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+            final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
+            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
+
+            // Get the last covariance matrix estimation
+            final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
+
+            // Convert the orbital part to Cartesian formalism
+            // Assuming all 6 orbital parameters are estimated by the filter
+            final double[][] dCdY = new double[6][6];
+            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
+            final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
+            final RealMatrix estimatedCartesianP =
+                            Jacobian.
+                            multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
+                            multiply(Jacobian.transpose());
+
+            // Get the final sigmas (ie.sqrt of the diagonal of the Cartesian orbital covariance matrix)
+            final double[] sigmas = new double[6];
+            for (int i = 0; i < 6; i++) {
+                sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
+            }
+
+            // Check the final orbit estimation & PV sigmas
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
+            final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
+            Assertions.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
+            Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+
+        }
+    }
+    /**
+     * Checker for Semi-analytical Unscented Kalman estimator validation
+     * @param context context used for the test
+     * @param kalman Unscented Kalman filter
+     * @param measurements List of observed measurements to be processed by the Kalman
+     * @param refOrbit Reference orbits at last measurement date
+     * @param expectedDeltaPos Expected position difference between estimated orbit and reference orbits
+     * @param posEps Tolerance on expected position difference
+     * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
+     * @param velEps Tolerance on expected velocity difference
+     */
+    public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalUnscentedKalmanEstimator kalman,
+                                      final List<ObservedMeasurement<?>> measurements,
+                                      final Orbit refOrbit, final PositionAngleType positionAngleType,
+                                      final double expectedDeltaPos, final double posEps,
+                                      final double expectedDeltaVel, final double velEps) {
+        checkKalmanFit(context, kalman, measurements,
+                new Orbit[] { refOrbit },
+                new PositionAngleType[] {positionAngleType},
+                new double[] { expectedDeltaPos }, new double[] { posEps },
+                new double[] { expectedDeltaVel }, new double[] { velEps });
+        }
+    /**
+     * Checker for Semi-analytical Unscented Kalman estimator validation
+     * @param context context used for the test
+     * @param kalman Unscented Kalman filter
+     * @param measurements List of observed measurements to be processed by the Kalman
+     * @param refOrbit Reference orbits at last measurement date
+     * @param expectedDeltaPos Expected position difference between estimated orbit and reference orbits
+     * @param posEps Tolerance on expected position difference
+     * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
+     * @param velEps Tolerance on expected velocity difference
+     */
+    public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalUnscentedKalmanEstimator kalman,
+                                      final List<ObservedMeasurement<?>> measurements,
+                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
+                                      final double[] expectedDeltaPos, final double[] posEps,
+                                      final double[] expectedDeltaVel, final double []velEps) {
+
+        // Add the measurements to the Kalman filter
+        DSSTPropagator estimated = kalman.processMeasurements(measurements);
+
+        // Verify epoch of estimation
+        Assertions.assertEquals(0.0, refOrbit[0].getDate().durationFrom(estimated.getInitialState().getDate()), 1.0e-10);
+
+        // Check the number of measurements processed by the filter
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+
+        for (int k = 0; k < refOrbit.length; ++k) {
+            // Get the last estimation
+            final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
             final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
 
             // Get the last covariance matrix estimation
@@ -383,7 +468,7 @@ public class DSSTEstimationTestUtils {
             // Convert the orbital part to Cartesian formalism
             // Assuming all 6 orbital parameters are estimated by the filter
             final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
+            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
             final RealMatrix estimatedCartesianP = 
                             Jacobian.
@@ -395,27 +480,18 @@ public class DSSTEstimationTestUtils {
             for (int i = 0; i < 6; i++) {
                 sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
             }
-//          // FIXME: debug print values
-//          final double dPos = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
-//          final double dVel = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
-//          System.out.println("Nb Meas = " + kalman.getCurrentMeasurementNumber());
-//          System.out.println("dPos    = " + dPos + " m");
-//          System.out.println("dVel    = " + dVel + " m/s");
-//          System.out.println("sigmas  = " + sigmas[0] + " "
-//                          + sigmas[1] + " "
-//                          + sigmas[2] + " "
-//                          + sigmas[3] + " "
-//                          + sigmas[4] + " "
-//                          + sigmas[5]);
-//          //debug
 
             // Check the final orbit estimation & PV sigmas
-            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
-            Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
-            Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+            Assertions.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
+            Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 
         }
     }
+
+
+
 
 }

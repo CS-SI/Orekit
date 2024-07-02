@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,17 +25,24 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit.propagation #ECEBD8 {
 
+    interface Propagator {
+      +void addEventDetector(EventDetector detector)
+      +Collection<EventDetector> getEventsDetectors()
+      +void clearEventsDetectors()
+    }
+
     package events #DDEBD8 {
 
-      package handlers #CEEBD8 {
+      package handlers #CBDBC8 {
 
-        interface "EventHandler<T extends EventDetector>" as EventHandler_T_ {
-          +init(SpacecraftState s0, AbsoluteDate target)
-          +Action eventOccurred(SpacecraftState s, T detector, boolean increasing)
-          +SpacecraftState resetState(T detector, SpacecraftState oldState)
+        interface EventHandler {
+          +init(SpacecraftState s0, AbsoluteDate target, EventDetector detector)
+          +Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing)
+          +SpacecraftState resetState(EventDetector detector, SpacecraftState oldState)
         }
 
         enum Action {
@@ -45,10 +52,10 @@
           +CONTINUE
         }
 
-        ContinueOnEvent       --|> EventHandler_T_
-        StopOnEvent           --|> EventHandler_T_
-        StopOnDecreasingEvent --|> EventHandler_T_
-        StopOnIncreasingEvent --|> EventHandler_T_
+        ContinueOnEvent       --|> EventHandler
+        StopOnEvent           --|> EventHandler
+        StopOnDecreasingEvent --|> EventHandler
+        StopOnIncreasingEvent --|> EventHandler
 
       }
 
@@ -70,17 +77,17 @@
       }
 
       EventDetector <--* "1" EventShifter 
-      class "AbstractDetector<T extends EventDetector>" as AbstractDetector_T_ {
+      class "AbstractDetector<T extends AbstractDetector<T>>" as AbstractDetector_T_ {
         +T withMaxCheck(double maxCheck)
         +T withThreshold(double threshold)
         +T withMaxIter(int maxIter)
-        +T withHandler(EventHandler<T> handler)
-        +EventHandler<T> getHandler()
+        +T withHandler(EventHandler handler)
+        +EventHandler getHandler()
       }
 
       enum FilterType {
-	    TRIGGER_ONLY_DECREASING_EVENTS
-	    TRIGGER_ONLY_INCREASING_EVENTS
+        TRIGGER_ONLY_DECREASING_EVENTS
+        TRIGGER_ONLY_INCREASING_EVENTS
       }
 
       interface EnablingPredicate {
@@ -92,6 +99,7 @@
       EventDetector <--* "1" EventSlopeFilter 
       EventSlopeFilter "1" *--> FilterType
 
+      Propagator "1" o--> "*" EventDetector  : detectors
       EventDetector <--* "1" EventEnablingPredicateFilter 
       EventEnablingPredicateFilter "1" *--> EnablingPredicate
 
@@ -99,28 +107,21 @@
       AbstractDetector_T_ <|-- EventSlopeFilter  
       AbstractDetector_T_ <|-- EventEnablingPredicateFilter  
 
-      Action <-left- EventHandler_T_
+      Action <-left- EventHandler
       EventDetector       <|.. AbstractDetector_T_
       AbstractDetector_T_ <|-- EclipseDetector
       AbstractDetector_T_ <|-- ElevationDetector
       class "...Detector" as DummyDetector
-      AbstractDetector_T_ <|-- DummyDetector
+      DummyDetector --|> AbstractDetector_T_
       note top
         many implementations
         not displayed for the
         sake of diagram clarity
       end note
 
-      EventHandler_T_ "1" <--o AbstractDetector_T_ : handler
+      EventHandler "1" <--o AbstractDetector_T_ : handler
 
     }
-
-    interface Propagator {
-      +void addEventDetector(EventDetector detector)
-      +Collection<EventDetector> getEventsDetectors()
-      +void clearEventsDetectors()
-    }
-    EventDetector "*" <--o "1" Propagator : detectors
 
   }
 

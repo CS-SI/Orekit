@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,9 +18,11 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 
 /** This class contains methods to compute propagated coordinates with the SDP4 model.
@@ -60,10 +62,13 @@ abstract class SDP4  extends TLEPropagator {
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
      */
-    protected SDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                   final double mass) {
-        super(initialTLE, attitudeProvider, mass);
+    protected SDP4(final TLE initialTLE,
+                   final AttitudeProvider attitudeProvider,
+                   final double mass,
+                   final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
@@ -91,7 +96,7 @@ abstract class SDP4  extends TLEPropagator {
 
         final double tempa = 1 - c1 * tSince;
         a   = FastMath.pow(TLEConstants.XKE / xn, TLEConstants.TWO_THIRD) * tempa * tempa;
-        em -= tle.getBStar() * c4 * tSince;
+        em -= tle.getBStar(tle.getDate().shiftedBy(tSince)) * c4 * tSince;
 
         // Update for deep-space periodic effects
         xll += xn0dp * t2cof * tSinceSq;
@@ -101,8 +106,9 @@ abstract class SDP4  extends TLEPropagator {
         xl = xll + omgadf + xnode;
 
         // Dundee change:  Reset cosio,  sinio for new xinc:
-        cosi0 = FastMath.cos(xinc);
-        sini0 = FastMath.sin(xinc);
+        final SinCos scI0 = FastMath.sinCos(xinc);
+        cosi0 = scI0.cos();
+        sini0 = scI0.sin();
         e = em;
         i = xinc;
         omega = omgadf;
@@ -113,13 +119,14 @@ abstract class SDP4  extends TLEPropagator {
      * @param date the current date
      * @return the ERA (rad)
      */
-    protected static double thetaG(final AbsoluteDate date) {
+    protected double thetaG(final AbsoluteDate date) {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
         final double omega_E = 1.00273790934;
-        final double jd = (date.durationFrom(AbsoluteDate.JULIAN_EPOCH) +
-                           date.timeScalesOffset(TimeScalesFactory.getUTC(), TimeScalesFactory.getTT())
-                          ) / Constants.JULIAN_DAY;
+        final double jd = date
+                .getComponents(utc)
+                .offsetFrom(DateTimeComponents.JULIAN_EPOCH) /
+                Constants.JULIAN_DAY;
 
         // Earth rotations per sidereal day (non-constant)
         final double UT = (jd + 0.5) % 1;

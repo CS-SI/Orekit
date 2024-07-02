@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -48,25 +48,25 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      * ContinueOnEvent}, and a g function that is identically unity.
      */
     public FunctionalDetector() {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                new ContinueOnEvent<>(),
-                (ToDoubleFunction<SpacecraftState>) value -> 1.0);
+        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new ContinueOnEvent(),
+             (ToDoubleFunction<SpacecraftState>) value -> 1.0);
     }
 
     /**
      * Private constructor.
      *
-     * @param maxCheck  maximum checking interval (s)
+     * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      * @param function  the switching function.
      */
-    private FunctionalDetector(final double maxCheck,
-                               final double threshold,
-                               final int maxIter,
-                               final EventHandler<? super FunctionalDetector> handler,
-                               final ToDoubleFunction<SpacecraftState> function) {
+    protected FunctionalDetector(final AdaptableInterval maxCheck,
+                                 final double threshold,
+                                 final int maxIter,
+                                 final EventHandler handler,
+                                 final ToDoubleFunction<SpacecraftState> function) {
         super(maxCheck, threshold, maxIter, handler);
         this.function = function;
     }
@@ -79,10 +79,10 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
 
     @Override
     protected FunctionalDetector create(
-            final double newMaxCheck,
+            final AdaptableInterval newMaxCheck,
             final double newThreshold,
             final int newMaxIter,
-            final EventHandler<? super FunctionalDetector> newHandler) {
+            final EventHandler newHandler) {
 
         return new FunctionalDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                       function);
@@ -90,7 +90,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
 
     /**
      * Create a new event detector with a new g function, keeping all other attributes the
-     * same. It is recommended to use {@link #withMaxCheck(double)} and {@link
+     * same. It is recommended to use {@link #withMaxCheck(AdaptableInterval)} and {@link
      * #withThreshold(double)} to set appropriate values for this g function.
      *
      * @param newGFunction the new g function.

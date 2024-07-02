@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,10 +20,11 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
  * <p>
  * An interpolation grid provides a grid of time points
  * that can be used for interpolation processes.
- * </p><p>
+ * </p>
+ * <p>
  * In the context of DSST propagation, an interpolation grid is used for the
  * computation through interpolation of short periodics coefficients
- * <p>
+ * </p>
  * @author Nicolas Bernard
  */
 public interface InterpolationGrid {

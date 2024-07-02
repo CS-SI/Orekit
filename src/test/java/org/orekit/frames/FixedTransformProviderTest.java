@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,17 +16,16 @@
  */
 package org.orekit.frames;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 
 
 public class FixedTransformProviderTest {
@@ -41,8 +40,8 @@ public class FixedTransformProviderTest {
             final AbsoluteDate t = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
             final Transform expectedIdentity =
                             new Transform(t, fixed.getTransform(t), eme2000.getTransformTo(gcrf, t));
-            Assert.assertEquals(0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assert.assertEquals(0, expectedIdentity.getRotation().getAngle(), 1.0e-15);
+            Assertions.assertEquals(0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0, expectedIdentity.getRotation().getAngle(), 1.0e-15);
         }
     }
 
@@ -57,8 +56,8 @@ public class FixedTransformProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(fixed);
 
-        Assert.assertTrue(bos.size() >  990);
-        Assert.assertTrue(bos.size() < 1010);
+        Assertions.assertTrue(bos.size() >  990);
+        Assertions.assertTrue(bos.size() < 1010);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -68,8 +67,8 @@ public class FixedTransformProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        fixed.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }

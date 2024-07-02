@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,20 +16,24 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The Niell Mapping Function  model for radio wavelengths.
  *  This model is an empirical mapping function. It only needs the
@@ -45,7 +49,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  *
  */
-public class NiellMappingFunctionModel implements MappingFunction {
+public class NiellMappingFunctionModel implements TroposphereMappingFunction {
 
     /** Values for the ah average function. */
     private static final double[] VALUES_FOR_AH_AVERAGE = {
@@ -124,13 +128,26 @@ public class NiellMappingFunctionModel implements MappingFunction {
     /** Interpolation function for the cw term. */
     private final UnivariateFunction cwFunction;
 
-    /** Geodetic site latitude, radians.*/
-    private final double latitude;
+    /** UTC time scale. */
+    private final TimeScale utc;
 
-    /** Buils a new instance.
-     * @param latitude geodetic latitude of the station, in radians
+    /** Builds a new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see #NiellMappingFunctionModel(TimeScale)
      */
-    public NiellMappingFunctionModel(final double latitude) {
+    @DefaultDataContext
+    public NiellMappingFunctionModel() {
+        this(DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /** Builds a new instance.
+     * @param utc UTC time scale.
+     * @since 10.1
+     */
+    public NiellMappingFunctionModel(final TimeScale utc) {
+        this.utc = utc;
         // Interpolation functions for hydrostatic coefficients
         this.ahAverageFunction    = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_AH_AVERAGE);
         this.bhAverageFunction    = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_BH_AVERAGE);
@@ -143,20 +160,20 @@ public class NiellMappingFunctionModel implements MappingFunction {
         this.awFunction  = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_AW);
         this.bwFunction  = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_BW);
         this.cwFunction  = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_CW);
-
-        this.latitude = latitude;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final double height,
-                                   final double[] parameters, final AbsoluteDate date) {
+    public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
+                                   final PressureTemperatureHumidity weather,
+                                   final AbsoluteDate date) {
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor
         double t0 = 28;
-        if (latitude < 0) {
+        if (point.getLatitude() < 0) {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
@@ -164,7 +181,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final double cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
-        double absLatidude = FastMath.abs(latitude);
+        double absLatidude = FastMath.abs(point.getLatitude());
         // there are no data in the model for latitudes lower than 15°
         absLatidude = FastMath.max(FastMath.toRadians(15.0), absLatidude);
         // there are no data in the model for latitudes greater than 75°
@@ -176,39 +193,46 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final double[] function = new double[2];
 
         // Hydrostatic mapping factor
-        function[0] = computeFunction(ah, bh, ch, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, trackingCoordinates.getElevation());
 
         // Wet mapping factor
-        function[1] = computeFunction(awFunction.value(absLatidude), bwFunction.value(absLatidude), cwFunction.value(absLatidude), elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(awFunction.value(absLatidude),
+                                                             bwFunction.value(absLatidude),
+                                                             cwFunction.value(absLatidude),
+                                                             trackingCoordinates.getElevation());
 
         // Apply height correction
-        final double correction = computeHeightCorrection(elevation, height);
+        final double correction = TroposphericModelUtils.computeHeightCorrection(trackingCoordinates.getElevation(),
+                                                                                 point.getAltitude());
         function[0] = function[0] + correction;
 
         return function;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
-                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
-        final Field<T> field = height.getField();
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                  final FieldGeodeticPoint<T> point,
+                                                                  final FieldPressureTemperatureHumidity<T> weather,
+                                                                  final FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
         final T zero = field.getZero();
 
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor
         double t0 = 28;
-        if (latitude < 0) {
+        if (point.getLatitude().getReal() < 0) {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef    = zero.add(2 * FastMath.PI * ((dofyear - t0) / 365.25));
+        final T coef    = zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365.25);
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
-        double absLatidude = FastMath.abs(latitude);
+        double absLatidude = FastMath.abs(point.getLatitude().getReal());
         // there are no data in the model for latitudes lower than 15°
         absLatidude = FastMath.max(FastMath.toRadians(15.0), absLatidude);
         // there are no data in the model for latitudes greater than 75°
@@ -220,100 +244,20 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final T[] function = MathArrays.buildArray(field, 2);
 
         // Hydrostatic mapping factor
-        function[0] = computeFunction(ah, bh, ch, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch,
+                                                             trackingCoordinates.getElevation());
 
         // Wet mapping factor
-        function[1] = computeFunction(zero.add(awFunction.value(absLatidude)), zero.add(bwFunction.value(absLatidude)),
-                                      zero.add(cwFunction.value(absLatidude)), elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(zero.newInstance(awFunction.value(absLatidude)), zero.newInstance(bwFunction.value(absLatidude)),
+                                                             zero.newInstance(cwFunction.value(absLatidude)), trackingCoordinates.getElevation());
 
         // Apply height correction
-        final T correction = computeHeightCorrection(elevation, height, field);
+        final T correction = TroposphericModelUtils.computeHeightCorrection(trackingCoordinates.getElevation(),
+                                                                            point.getAltitude(),
+                                                                            field);
         function[0] = function[0].add(correction);
 
         return function;
-    }
-
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
-    }
-
-    /** Compute the mapping function related to the coefficient values and the elevation.
-     * @param a a coefficient
-     * @param b b coefficient
-     * @param c c coefficient
-     * @param elevation the elevation of the satellite, in radians.
-     * @return the value of the function at a given elevation
-     */
-    private double computeFunction(final double a, final double b, final double c, final double elevation) {
-        final double sinE = FastMath.sin(elevation);
-        // Numerator
-        final double numMP = 1 + a / (1 + b / (1 + c));
-        // Denominator
-        final double denMP = sinE + a / (sinE + b / (sinE + c));
-
-        final double felevation = numMP / denMP;
-
-        return felevation;
-    }
-
-    /** Compute the mapping function related to the coefficient values and the elevation.
-     * @param <T> type of the elements
-     * @param a a coefficient
-     * @param b b coefficient
-     * @param c c coefficient
-     * @param elevation the elevation of the satellite, in radians.
-     * @return the value of the function at a given elevation
-     */
-    private <T extends RealFieldElement<T>> T computeFunction(final T a, final T b, final T c, final T elevation) {
-        final T sinE = FastMath.sin(elevation);
-        // Numerator
-        final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
-        // Denominator
-        final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
-
-        final T felevation = numMP.divide(denMP);
-
-        return felevation;
-    }
-
-    /** This method computes the height correction for the hydrostatic
-     *  component of the mapping function (Neill, 1996).
-     * @param elevation the elevation of the satellite, in radians.
-     * @param height the height of the station in m above sea level.
-     * @return the height correction, in m
-     */
-    private double computeHeightCorrection(final double elevation, final double height) {
-        final double fixedHeight = FastMath.max(0.0, height);
-        final double sinE = FastMath.sin(elevation);
-        // Ref: Eq. 4
-        final double function = computeFunction(2.53e-5, 5.49e-3, 1.14e-3, elevation);
-        // Ref: Eq. 6
-        final double dmdh = (1 / sinE) - function;
-        // Ref: Eq. 7
-        final double correction = dmdh * (fixedHeight / 1000.0);
-        return correction;
-    }
-
-    /** This method computes the height correction for the hydrostatic
-     *  component of the mapping function (Neill, 1996).
-     * @param <T> type of the elements
-     * @param elevation the elevation of the satellite, in radians.
-     * @param height the height of the station in m above sea level.
-     * @param field field to which the elements belong
-     * @return the height correction, in m
-     */
-    private <T extends RealFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
-        final T zero = field.getZero();
-        final T fixedHeight = FastMath.max(zero, height);
-        final T sinE = FastMath.sin(elevation);
-        // Ref: Eq. 4
-        final T function = computeFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
-        // Ref: Eq. 6
-        final T dmdh = sinE.reciprocal().subtract(function);
-        // Ref: Eq. 7
-        final T correction = dmdh.multiply(fixedHeight.divide(1000.0));
-        return correction;
     }
 
 }

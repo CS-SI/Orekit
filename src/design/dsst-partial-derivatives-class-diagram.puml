@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,65 +25,60 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
- 
-    package propagation #DDEBD8 {
+    interface Propagator {
+      + SpacecraftState propagate(AbsoluteDate target)
+      +MatrixHarvester setupMatricesComputation(name, initialSTM, initialJacobian)
+    }
 
-      interface Propagator {
-        + SpacecraftState propagate(AbsoluteDate target)
+    interface MatricesHarvester {
+      +void setReferenceState(SpacecraftState state)
+      +RealMatrix getStateTransitionMatrix(SpacecraftState state)
+      +RealMatrix getParametersJacobian(SpacecraftState state)
+      +List<String> getJacobiansColumnsNames()
+    }
+
+    Propagator -right-> MatricesHarvester
+
+    package integration #DDEBD8 {
+      class  AbstractIntegratedPropagator {
+       +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
       }
-
-      Propagator <|.. AbstractPropagator
-
-      package integration #EAECE6 {
-        interface AdditionalEquations {
-          +String getName()
-          +void computeDerivatives()
-        }
-        class  AbstractIntegratedPropagator {
-         +void addAdditionalEquations(AdditionalEquations addEqu)
-        }
-        AbstractPropagator <|-- AbstractIntegratedPropagator
-        AdditionalEquations <---o AbstractIntegratedPropagator : additional
+      interface AdditionalDerivativesProvider {
+        +String getName()
+        +yield()
+        +void derivatives()
       }
+      AbstractIntegratedPropagator o--> AdditionalDerivativesProvider : providers
+      Propagator <|.. AbstractIntegratedPropagator
+    }
 
-      package semianalytical.dsst #EAECE6 {
+    package semianalytical.dsst #DDEBD8 {
 
-      	package forces #DDEBD8 {
+       class DSSTHarvester
 
-        	interface DSSTForceModel {
-          	   +void initialize()
-        	   +DerivativeStructure[] getMeanElementRate()
-               +void updateShortPeriodTerms()
-        	}
-
-          	class DSSTZonal
-          		DSSTForceModel <|.. DSSTZonal
-
-        }
-    
-
-       class DSSTPropagator {
-         +void addForceModel(DSSTForceModel model)
+       class DSSTStateTransitionMatrixGenerator {
+         -List<DSSTForceModel> forceModels
        }
 
-       class DSSTPartialDerivativesEquations {
-          +List<String> getAvailableParameters()
-          +void selectParameters(String ... parameters)
-          +void selectParamAndStep(String parameter, double hP)
-          +void setInitialJacobians()
+       class DSSTIntegrableJacobianColumnGenerator {
+         -String columnName
        }
 
-       class DSSTJacobiansMapper
+       class DSSTPropagator
 
-       AdditionalEquations         <|..     DSSTPartialDerivativesEquations
-       DSSTPartialDerivativesEquations *-->     DSSTForceModel
-       AbstractIntegratedPropagator  <|--     DSSTPropagator
-       DSSTPropagator          *--> DSSTForceModel
+       MatricesHarvester <|.. DSSTHarvester
+       AbstractIntegratedPropagator <|-- DSSTPropagator
+       DSSTStateTransitionMatrixGenerator <--o DSSTPropagator
+       DSSTIntegrableJacobianColumnGenerator <--o DSSTPropagator
+       DSSTHarvester <--o DSSTPropagator
 
-       }
+       AdditionalDerivativesProvider <|.. DSSTStateTransitionMatrixGenerator
+       AdditionalDerivativesProvider <|.. DSSTIntegrableJacobianColumnGenerator
+
     }
 
   }

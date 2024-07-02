@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.SortedSet;
-
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
@@ -25,20 +23,20 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -48,6 +46,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.SortedSet;
+import java.util.function.Predicate;
 
 public class InterSatellitesRangeBuilderTest {
 
@@ -72,45 +73,82 @@ public class InterSatellitesRangeBuilderTest {
     }
 
     @Test
-    public void testForward() {
-        doTest(0xc82a56322345dc25l, 0.0, 1.2, 2.8 * SIGMA);
+    public void testForwardAll() {
+        doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> true,
+               264, 73485.963, 28386637.208, 2.8 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0x95c10149c4891232l, 0.0, -1.0, 2.6 * SIGMA);
+    public void testForwardIgnoreSmall() {
+        doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] > 10000000.0,
+               182, 10111578.965, 28386637.208, 2.8 * SIGMA);
+    }
+
+    @Test
+    public void testForwardIgnoreLarge() {
+        doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] <= 10000000.0,
+               82, 73485.963, 9969288.418, 2.8 * SIGMA);
+    }
+
+    @Test
+    public void testBackwardAll() {
+        doTest(0x95c10149c4891232L, 0.0, -1.0, e -> true,
+               219, 243749.068, 28279283.197, 2.6 * SIGMA);
+    }
+
+    @Test
+    public void testBackwardIgnoreSmall() {
+        doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] > 10000000.0,
+               153, 10131712.178, 28279283.197, 2.6 * SIGMA);
+    }
+
+    @Test
+    public void testBackwardIgnoreLarge() {
+        doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] <= 10000000.0,
+               66, 243749.068, 9950029.194, 2.6 * SIGMA);
     }
 
     private Propagator buildPropagator() {
         return EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
     }
 
-    private void doTest(long seed, double startPeriod, double endPeriod, double tolerance) {
+    private void doTest(long seed, double startPeriod, double endPeriod,
+                        Predicate<EstimatedMeasurementBase<InterSatellitesRange>> filter,
+                        int expectedCount,
+                        double expectedMin, double expectedMax, double tolerance) {
         Generator generator = new Generator();
-        ObservableSatellite receiver = generator.addPropagator(buildPropagator());
+        generator.addPropagator(buildPropagator()); // dummy first propagator
+        generator.addPropagator(buildPropagator()); // dummy second propagator
+        ObservableSatellite receiver = generator.addPropagator(buildPropagator()); // useful third propagator
+        generator.addPropagator(buildPropagator()); // dummy fourth propagator
         final Orbit o1 = context.initialOrbit;
         // for the second satellite, we simply reverse velocity
-        final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPVCoordinates().getPosition(),
+        final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPosition(),
                                                               o1.getPVCoordinates().getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
-        ObservableSatellite remote = generator.addPropagator(new KeplerianPropagator(o2));
+        ObservableSatellite remote = generator.addPropagator(new KeplerianPropagator(o2)); // useful sixth propagator
         final double step = 60.0;
 
-        // beware that in order to avoid deadlocks, the slave PV coordinates provider
+        // beware that in order to avoid deadlocks, the secondary PV coordinates provider
         // in InterSatDirectViewDetector must be *different* from the second propagator
         // added to generator above! The reason is the event detector will be bound
         // to the first propagator, so it cannot also refer to the second one at the same time
         // this is the reason why we create a *new* KeplerianPropagator below
         generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), receiver, remote),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
+                                                         filter,
                                                          generator.getPropagator(receiver),
                                                          new InterSatDirectViewDetector(context.earth, new KeplerianPropagator(o2)),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
 
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
         final double period = o1.getKeplerianPeriod();
         AbsoluteDate t0     = o1.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = o1.getDate().shiftedBy(endPeriod   * period);
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(t0, t1);
+        generator.generate(t0, t1);
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
+        Assertions.assertEquals(expectedCount, measurements.size());
 
         // and yet another set of propagators for reference
         Propagator propagator1 = buildPropagator();
@@ -118,37 +156,48 @@ public class InterSatellitesRangeBuilderTest {
 
         double maxError = 0;
         AbsoluteDate previous = null;
-        AbsoluteDate tInf = t0.compareTo(t1) < 0 ? t0 : t1;
-        AbsoluteDate tSup = t0.compareTo(t1) < 0 ? t1 : t0;
-        for (ObservedMeasurement<?> measurement : measurements) {
+        AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
+        AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assert.assertTrue(date.compareTo(tInf) >= 0);
-            Assert.assertTrue(date.compareTo(tSup) <= 0);
+            Assertions.assertTrue(date.compareTo(tInf) >= 0);
+            Assertions.assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
-                // measurements are always chronological, even with backward propagation,
-                // due to the SortedSet (which is intended for combining several
-                // measurements types with different builders and schedulers)
-                Assert.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                if (t0.isBefore(t1)) {
+                    // measurements are expected to be chronological
+                    Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                } else {
+                    // measurements are expected to be reverse chronological
+                    Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+                }
             }
             previous = date;
-            double[] e = measurement.estimate(0, 0,
-                                              new SpacecraftState[] {
-                                                  propagator1.propagate(date),
-                                                  propagator2.propagate(date)
-                                              }).getEstimatedValue();
+            double[] e = measurement.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] {
+                                               propagator1.propagate(date),
+                                               propagator2.propagate(date)
+                                           }).
+                getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
+                min      = FastMath.min(min, e[i]);
+                max      = FastMath.max(max, e[i]);
             }
         }
-        Assert.assertEquals(0.0, maxError, tolerance);
+        Assertions.assertEquals(0.0, maxError, tolerance);
+        Assertions.assertEquals(expectedMin, min, tolerance);
+        Assertions.assertEquals(expectedMax, max, tolerance);
      }
 
-     @Before
+     @BeforeEach
      public void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                    1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.AngularAzEl;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.AtmosphericRefractionModel;
@@ -61,12 +61,12 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
     private double angularErrorRadioRefractionModel(final GroundStation station,
                                                     final SpacecraftState state) {
 
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation in radians
-        final double elevation = station.getBaseFrame().getElevation(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
+        final double elevation =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
+                        getElevation();
 
         // angle correction (rad)
         return atmosModel.getRefraction(elevation);
@@ -79,7 +79,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];
@@ -92,6 +92,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
 
         // consider only effect on elevation
         newValue[1] = newValue[1] + correction;
-        estimated.setEstimatedValue(newValue[0], newValue[1]);
+        estimated.modifyEstimatedValue(this, newValue[0], newValue[1]);
     }
+
 }

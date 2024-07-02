@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-4.0.0-master-4.0.xsd" id="CCSDS_APM_VERS" version="2.0">
+  <header>
+    <CREATION_DATE>2023-04-04T13:34:26.0</CREATION_DATE>
+    <ORIGINATOR>OREKIT</ORIGINATOR>
+  </header>
+
+  <body>
+    <segment>
+      <metadata>
+        <OBJECT_NAME>OREKIT_SAT</OBJECT_NAME>
+        <OBJECT_ID>2002-999Z</OBJECT_ID>
+        <TIME_SYSTEM>UTC</TIME_SYSTEM>
+      </metadata>
+      <data>
+        <COMMENT>this is a made up test message</COMMENT>
+        <EPOCH>2008-04-07T00:00:00.0</EPOCH>
+        <quaternionState>
+          <REF_FRAME_A>EME2000</REF_FRAME_A>
+          <REF_FRAME_B>SC_BODY_1</REF_FRAME_B>
+          <quaternion>
+            <Q1>-0.6447327809733585</Q1>
+            <Q2>-0.3463409538535587</Q2>
+            <Q3>-0.28613054916357517</Q3>
+            <QC>0.6184633325084984</QC>
+          </quaternion>
+        </quaternionState>
+        <angularVelocity>
+          <REF_FRAME_A>EME2000</REF_FRAME_A>
+          <REF_FRAME_B>SC_BODY_1</REF_FRAME_B>
+          <ANGVEL_FRAME>SC_BODY_1</ANGVEL_FRAME>
+          <ANGVEL_X units="deg/s">0.0031504176144069016</ANGVEL_X>
+          <ANGVEL_Y units="deg/s">-0.0596101304816182</ANGVEL_Y>
+          <ANGVEL_Z units="deg/s">2.9095159008651856E-4</ANGVEL_Z>
+        </angularVelocity>
+      </data>
+    </segment>
+  </body>
+</apm>

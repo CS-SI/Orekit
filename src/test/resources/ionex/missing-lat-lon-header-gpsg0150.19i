@@ -1,0 +1,25 @@
+     1.0            IONOSPHERE MAPS     GPS                 IONEX VERSION / TYPE
+BIMINX V5.3         AIUB                16-JAN-19 07:26     PGM / RUN BY / DATE 
+BROADCAST IONOSPHERE MODEL FOR DAY 015, 2019                COMMENT             
+  2019     1    15     0     0     0                        EPOCH OF FIRST MAP  
+  2019     1    16     0     0     0                        EPOCH OF LAST MAP   
+  3600                                                      INTERVAL            
+    25                                                      # OF MAPS IN FILE   
+  NONE                                                      MAPPING FUNCTION    
+     0.0                                                    ELEVATION CUTOFF    
+                                                            OBSERVABLES USED    
+  6371.0                                                    BASE RADIUS         
+     2                                                      MAP DIMENSION       
+   350.0 350.0   0.0                                        HGT1 / HGT2 / DHGT  
+    -1                                                      EXPONENT
+TEC/RMS values in 0.1 TECU; 9999, if no value available     COMMENT             
+                                                            END OF HEADER       
+     1                                                      START OF TEC MAP    
+  2019     1    15     0     0     0                        EPOCH OF CURRENT MAP
+    87.5-180.0 180.0   5.0 350.0                            LAT/LON1/LON2/DLON/H
+   92   92   92   92   92   92   92   92   92   92   92   92   92   92   92   92
+   92   92   92   92   92   92   92   92   92   92   92   92   92   92   92   92
+   92   92   92   92   92   92   92   92   92   92   92   92   92   92   92   92
+   92   92   92   92   92   92   92   92   92   92   92   92   92   92   92   92
+   92   92   92   92   92   92   92   92   92    
+                                                            END OF FILE         

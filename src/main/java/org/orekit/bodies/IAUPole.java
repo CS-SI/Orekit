@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
@@ -39,7 +39,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * href="http://astrogeology.usgs.gov/Projects/WGCCRE/">working group
  * site</a>.
  * </p>
- * @see CelestialBodyFactory
+ * @see CelestialBodies
  * @author Luc Maisonobe
  */
 public interface IAUPole extends Serializable {
@@ -56,7 +56,7 @@ public interface IAUPole extends Serializable {
      * @return body North pole direction in ICRF frame
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> getPole(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getPole(FieldAbsoluteDate<T> date);
 
     /** Get the body Q Node direction in ICRF frame.
      * @param date current date
@@ -73,7 +73,7 @@ public interface IAUPole extends Serializable {
      * @return body Q Node direction in ICRF frame
      * @since 9.1
      */
-    default <T extends RealFieldElement<T>> FieldVector3D<T> getNode(FieldAbsoluteDate<T> date) {
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getNode(FieldAbsoluteDate<T> date) {
         return FieldVector3D.crossProduct(FieldVector3D.getPlusK(date.getField()), getPole(date));
     }
 
@@ -97,6 +97,6 @@ public interface IAUPole extends Serializable {
      * @return prime meridian vector
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> T getPrimeMeridianAngle(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(FieldAbsoluteDate<T> date);
 
 }

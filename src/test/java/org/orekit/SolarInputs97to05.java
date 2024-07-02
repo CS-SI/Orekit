@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,16 @@
  */
 package org.orekit;
 
+import org.hipparchus.exception.DummyLocalizable;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,16 +36,6 @@ import java.util.GregorianCalendar;
 import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
-
-import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.TimeStamped;
-import org.orekit.utils.Constants;
 
 
 /** This class reads and provides solar activity data needed by the
@@ -178,7 +178,7 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
     private void findClosestLine(AbsoluteDate date) {
 
         if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > Constants.JULIAN_DAY)) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date, firstDate, lastDate);
         }
 
         // don't search if the cached selection is fine

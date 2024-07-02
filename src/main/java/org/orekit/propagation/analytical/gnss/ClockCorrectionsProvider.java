@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,11 +17,11 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.gnss.data.GNSSClockElements;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -31,13 +31,19 @@ import org.orekit.utils.PVCoordinates;
  * </p>
  * <ul>
  *   <li>at index 0, the polynomial satellite clock model
- *       Δtₛₐₜ = {@link GPSOrbitalElements#getAf0() a₀} +
- *               {@link GPSOrbitalElements#getAf1() a₁} (t - {@link GPSOrbitalElements#getToc() toc}) +
- *               {@link GPSOrbitalElements#getAf1() a₂} (t - {@link GPSOrbitalElements#getToc() toc})²
+ *       Δtₛₐₜ = {@link GNSSClockElements#getAf0() a₀} +
+ *               {@link GNSSClockElements#getAf1() a₁} (t - {@link GNSSClockElements#getToc() toc}) +
+ *               {@link GNSSClockElements#getAf1() a₂} (t - {@link GNSSClockElements#getToc() toc})²
  *   </li>
  *   <li>at index 1 the relativistic clock correction due to eccentricity</li>
- *   <li>at index 2 the estimated group delay differential {@link GPSOrbitalElements#getTGD() TGD} for L1-L2 correction</li>
+ *   <li>at index 2 the estimated group delay differential {@link GNSSClockElements#getTGD() TGD} for L1-L2 correction</li>
  * </ul>
+ * <p>
+ * Since Orekit 10.3 the relativistic clock correction can be used as an {@link EstimationModifier}
+ * in orbit determination applications to take into consideration this effect
+ * in measurement modeling.
+ * </p>
+ *
  * @author Luc Maisonobe
  * @since 9.3
  */
@@ -48,21 +54,18 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
      */
     public static final String CLOCK_CORRECTIONS = "";
 
-    /** Duration of the GPS cycle in seconds. */
-    private static final double GPS_CYCLE_DURATION = GPSOrbitalElements.GPS_WEEK_IN_SECONDS *
-                                                     GPSOrbitalElements.GPS_WEEK_NB;
-    /** The GPS orbital elements. */
-    private final GPSOrbitalElements gpsOrbit;
+    /** The GPS clock elements. */
+    private final GNSSClockElements gnssClk;
 
     /** Clock reference epoch. */
     private final AbsoluteDate clockRef;
 
     /** Simple constructor.
-     * @param gpsOrbit GPS orbital elements
+     * @param gnssClk GNSS clock elements
      */
-    public ClockCorrectionsProvider(final GPSOrbitalElements gpsOrbit) {
-        this.gpsOrbit = gpsOrbit;
-        this.clockRef = new GNSSDate(gpsOrbit.getWeek(), gpsOrbit.getToc() * 1000.0, SatelliteSystem.GPS).getDate();
+    public ClockCorrectionsProvider(final GNSSClockElements gnssClk) {
+        this.gnssClk  = gnssClk;
+        this.clockRef = gnssClk.getDate();
     }
 
     /** {@inheritDoc} */
@@ -73,20 +76,21 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
 
     /**
      * Get the duration from clock Reference epoch.
-     * <p>This takes the GPS week roll-over into account.</p>
+     * <p>This takes the GNSS week roll-over into account.</p>
      *
      * @param date the considered date
      * @return the duration from clock Reference epoch (s)
      */
     private double getDT(final AbsoluteDate date) {
+        final double cycleDuration = gnssClk.getCycleDuration();
         // Time from ephemeris reference epoch
         double dt = date.durationFrom(clockRef);
         // Adjusts the time to take roll over week into account
-        while (dt > 0.5 * GPS_CYCLE_DURATION) {
-            dt -= GPS_CYCLE_DURATION;
+        while (dt > 0.5 * cycleDuration) {
+            dt -= cycleDuration;
         }
-        while (dt < -0.5 * GPS_CYCLE_DURATION) {
-            dt += GPS_CYCLE_DURATION;
+        while (dt < -0.5 * cycleDuration) {
+            dt += cycleDuration;
         }
         // Returns the time from ephemeris reference epoch
         return dt;
@@ -98,7 +102,7 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
 
         // polynomial clock model
         final double  dt    = getDT(state.getDate());
-        final double  dtSat = gpsOrbit.getAf0() + dt * (gpsOrbit.getAf1() + dt * gpsOrbit.getAf2());
+        final double  dtSat = gnssClk.getAf0() + dt * (gnssClk.getAf1() + dt * gnssClk.getAf2());
 
         // relativistic effect due to eccentricity
         final PVCoordinates pv    = state.getPVCoordinates();
@@ -106,7 +110,7 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
                         (Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT);
 
         // estimated group delay differential
-        final double tg = gpsOrbit.getTGD();
+        final double tg = gnssClk.getTGD();
 
         return new double[] {
             dtSat, dtRel, tg

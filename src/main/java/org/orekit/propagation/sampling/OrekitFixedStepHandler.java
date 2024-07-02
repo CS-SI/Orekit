@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -39,15 +39,23 @@ public interface OrekitFixedStepHandler {
      * @param t target time for the integration
      * @param step the duration in seconds of the fixed step. This value is
      *             positive even if propagation is backwards.
-          * @since 9.0
+     * @since 9.0
      */
     default void init(SpacecraftState s0, AbsoluteDate t, double step) {
     }
 
     /** Handle the current step.
      * @param currentState current state at step time
-     * @param isLast if true, this is the last integration step
      */
-    void handleStep(SpacecraftState currentState, boolean isLast);
+    void handleStep(SpacecraftState currentState);
+
+    /**
+     * Finalize propagation.
+     * @param finalState state at propagation end
+     * @since 11.0
+     */
+    default void finish(SpacecraftState finalState) {
+        // nothing by default
+    }
 
 }

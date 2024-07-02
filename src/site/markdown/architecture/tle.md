@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2024 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -29,7 +29,7 @@ themselves without loss of precision.
 
 The implemented TLE model conforms to new 2006 corrected model.
 More information on the TLE format can be found on the
-[CelesTrak](http://www.celestrak.com/) website.
+[CelesTrak](https://www.celestrak.com/) website.
 
 ## Evolution
 
@@ -40,5 +40,5 @@ architecture.
 
 It is considered to be closer to a propagation model than to an orbit representation and
 has been moved within the `org.orekit.propagation` package since 6.0. This move allowed the
-rich features from the global propagation framework (master/slave/ephemeris mode, events
+rich features from the global propagation framework (multiple step handlers, events
 handling) to be used with TLE.

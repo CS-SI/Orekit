@@ -1,0 +1,147 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit #ECEBD8 {
+
+    package data #DDEBD8 {
+      interface DataFilter {
+        DataSource filter(DataSource)
+      }
+      class DataSource {
+        +getName()
+        +getOpener()
+      }
+      DataFilter --> DataSource
+    }
+
+    package files #DDEBD8 {
+
+       package sp3 #CBDBC8 {
+          class SP3
+          class SP3Coordinate
+          SP3 --> SP3Coordinate
+       }
+
+       package ilrs #CBDBC8 {
+         class CPF
+         class CPFWriter
+         class StreamingCpfWriter
+         class CPFCoordinate
+         CPF --> CPFCoordinate
+       }
+
+      package general #CBDBC8 {
+
+        class OrekitEphemerisFile
+
+        interface EphemerisFileParser {
+          +EphemerisFile parse(dataSource)
+        }
+
+        interface EphemerisFileWriter {
+          +write(appendable, ephemerisFile)
+          +write(path, ephemerisFile)
+        }
+
+        interface "EphemerisFile<C,S>" as EphemerisFile {
+          +getSatellites()
+        }
+
+        interface "EphemerisFile.SatelliteEphemeris" as SatelliteEphemeris {
+          +getId()
+          +getMu()
+          +getStart()
+          +getStop()
+          +getSegments()
+          +getPropagator()
+        }
+
+        interface "EphemerisFile.EphemerisSegment" as EphemerisSegment {
+          +getMu()
+          +getFrame()
+          +getInertialFrame()
+          +getInterpolationSamples()
+          +getAvailableDerivatives()
+          +getCoordinates()
+          +getStart()
+          +getStop()
+          +getPropagator()
+        }
+
+        SP3 ..|> EphemerisFile
+        CPF ..|> EphemerisFile
+        CPFWriter <--o StreamingCpfWriter
+        EphemerisFileWriter <|.. CPFWriter
+        SatelliteEphemeris <--* EphemerisFile
+        SatelliteEphemeris o--> EphemerisSegment
+
+        DataSource     <--  EphemerisFileParser
+        EphemerisFile <|.. OrekitEphemerisFile
+        EphemerisFile <--  EphemerisFileWriter
+        EphemerisFileParser --> EphemerisFile : create
+
+      }
+
+      package ccsds.ndm.odm #CBDBC8 {
+        package oem #CCCCC7 {
+          class OemWriter
+          class StreamingOemWriter
+          class Oem
+          EphemerisFile <|.. Oem
+          OemWriter <--o StreamingOemWriter
+          EphemerisFileWriter <|.. OemWriter
+        }
+        package ocm #CCCCC7 {
+          class OcmWriter
+          class StreamingOcmWriter
+          class Ocm
+          EphemerisFile <|.. Ocm
+          OcmWriter <--o StreamingOcmWriter
+          EphemerisFileWriter <|.. OcmWriter
+        }
+      }
+    }
+
+    package propagation #DDEBD8 {
+      interface Propagator
+      interface BoundedPropagator
+      Propagator <|.. BoundedPropagator
+      BoundedPropagator <-left- SatelliteEphemeris
+      BoundedPropagator <-left- EphemerisSegment
+
+      package sampling #CBDBC8 {
+        interface OrekitFixedStepHandler
+        Propagator --> OrekitFixedStepHandler
+        OrekitFixedStepHandler <|-- StreamingOemWriter
+        OrekitFixedStepHandler <|-- StreamingOcmWriter
+      }
+    }
+
+  }
+@enduml

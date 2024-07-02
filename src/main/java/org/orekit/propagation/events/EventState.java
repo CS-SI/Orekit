@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.function.DoubleFunction;
+
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
@@ -24,8 +26,11 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -50,6 +55,9 @@ public class EventState<T extends EventDetector> {
 
     /** Event detector. */
     private T detector;
+
+    /** Event handler. */
+    private EventHandler handler;
 
     /** Time of the previous call to g. */
     private AbsoluteDate lastT;
@@ -100,6 +108,7 @@ public class EventState<T extends EventDetector> {
      */
     public EventState(final T detector) {
         this.detector     = detector;
+        this.handler      = detector.getHandler();
 
         // some dummy values ...
         lastT                  = AbsoluteDate.PAST_INFINITY;
@@ -149,8 +158,8 @@ public class EventState<T extends EventDetector> {
      */
     private double g(final SpacecraftState s) {
         if (!s.getDate().equals(lastT)) {
-            lastT = s.getDate();
             lastG = detector.g(s);
+            lastT = s.getDate();
         }
         return lastG;
     }
@@ -192,28 +201,30 @@ public class EventState<T extends EventDetector> {
         throws MathRuntimeException {
 
         forward = interpolator.isForward();
+        final SpacecraftState s0 = interpolator.getPreviousState();
         final SpacecraftState s1 = interpolator.getCurrentState();
         final AbsoluteDate t1 = s1.getDate();
         final double dt = t1.durationFrom(t0);
         if (FastMath.abs(dt) < detector.getThreshold()) {
             // we cannot do anything on such a small step, don't trigger any events
+            pendingEvent     = false;
+            pendingEventTime = null;
             return false;
         }
-        // number of points to check in the current step
-        final int n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / detector.getMaxCheckInterval()));
-        final double h = dt / n;
 
 
         AbsoluteDate ta = t0;
         double ga = g0;
-        for (int i = 0; i < n; ++i) {
+        for (SpacecraftState sb = nextCheck(s0, s1, interpolator);
+             sb != null;
+             sb = nextCheck(sb, s1, interpolator)) {
 
             // evaluate handler value at the end of the substep
-            final AbsoluteDate tb = (i == n - 1) ? t1 : t0.shiftedBy((i + 1) * h);
-            final double gb = g(interpolator.getInterpolatedState(tb));
+            final AbsoluteDate tb = sb.getDate();
+            final double gb = g(sb);
 
             // check events occurrence
-            if (gb == 0.0 || (g0Positive ^ (gb > 0))) {
+            if (gb == 0.0 || (g0Positive ^ gb > 0)) {
                 // there is a sign change: an event is expected during this step
                 if (findRoot(interpolator, ta, ga, tb, gb)) {
                     return true;
@@ -233,6 +244,29 @@ public class EventState<T extends EventDetector> {
 
     }
 
+    /** Estimate next state to check.
+     * @param done state already checked
+     * @param target target state towards which we are checking
+     * @param interpolator step interpolator for the proposed step
+     * @return intermediate state to check, or exactly {@code null}
+     * if we already have {@code done == target}
+     * @since 12.0
+     */
+    private SpacecraftState nextCheck(final SpacecraftState done, final SpacecraftState target,
+                                      final OrekitStepInterpolator interpolator) {
+        if (done == target) {
+            // we have already reached target
+            return null;
+        } else {
+            // we have to select some intermediate state
+            // attempting to split the remaining time in an integer number of checks
+            final double dt       = target.getDate().durationFrom(done.getDate());
+            final double maxCheck = detector.getMaxCheckInterval().currentInterval(done);
+            final int    n        = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / maxCheck));
+            return n == 1 ? target : interpolator.getInterpolatedState(done.getDate().shiftedBy(dt / n));
+        }
+    }
+
     /**
      * Find a root in a bracketing interval.
      *
@@ -250,12 +284,16 @@ public class EventState<T extends EventDetector> {
                              final AbsoluteDate ta, final double ga,
                              final AbsoluteDate tb, final double gb) {
         // check there appears to be a root in [ta, tb]
-        check(ga == 0.0 || gb == 0.0 || (ga > 0.0 && gb < 0.0) || (ga < 0.0 && gb > 0.0));
+        check(ga == 0.0 || gb == 0.0 || ga > 0.0 && gb < 0.0 || ga < 0.0 && gb > 0.0);
 
         final double convergence = detector.getThreshold();
         final int maxIterationCount = detector.getMaxIterationCount();
         final BracketedUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0, convergence, 0, 5);
+
+        // prepare loop below
+        AbsoluteDate loopT = ta;
+        double loopG = ga;
 
         // event time, just at or before the actual root.
         AbsoluteDate beforeRootT = null;
@@ -286,17 +324,26 @@ public class EventState<T extends EventDetector> {
             final double newGa = g(interpolator.getInterpolatedState(ta));
             if (ga > 0 != newGa > 0) {
                 // both non-zero, step sign change at ta, possibly due to reset state
-                beforeRootT = ta;
-                beforeRootG = newGa;
-                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+                final AbsoluteDate nextT = minTime(shiftedBy(ta, convergence), tb);
+                final double       nextG = g(interpolator.getInterpolatedState(nextT));
+                if (nextG > 0.0 == g0Positive) {
+                    // the sign change between ga and newGa just moved the root less than one convergence
+                    // threshold later, we are still in a regular search for another root before tb,
+                    // we just need to fix the bracketing interval
+                    // (see issue https://github.com/Hipparchus-Math/hipparchus/issues/184)
+                    loopT = nextT;
+                    loopG = nextG;
+                } else {
+                    beforeRootT = ta;
+                    beforeRootG = newGa;
+                    afterRootT  = nextT;
+                    afterRootG  = nextG;
+                }
             }
         }
 
         // loop to skip through "fake" roots, i.e. where g(t) = g'(t) = 0.0
         // executed once if we didn't hit a special case above
-        AbsoluteDate loopT = ta;
-        double loopG = ga;
         while ((afterRootG == 0.0 || afterRootG > 0.0 == g0Positive) &&
                 strictlyAfter(afterRootT, tb)) {
             if (loopG == 0.0) {
@@ -310,25 +357,51 @@ public class EventState<T extends EventDetector> {
                 // both non-zero, the usual case, use a root finder.
                 // time zero for evaluating the function f. Needs to be final
                 final AbsoluteDate fT0 = loopT;
-                final UnivariateFunction f = dt -> {
-                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
-                };
-                // tb as a double for use in f
                 final double tbDouble = tb.durationFrom(fT0);
+                final double middle = 0.5 * tbDouble;
+                final DoubleFunction<AbsoluteDate> date = dt -> {
+                    // use either fT0 or tb as the base time for shifts
+                    // in order to ensure we reproduce exactly those times
+                    // using only one reference time like fT0 would imply
+                    // to use ft0.shiftedBy(tbDouble), which may be different
+                    // from tb due to numerical noise (see issue 921)
+                    if (forward == dt <= middle) {
+                        // use start of interval as reference
+                        return fT0.shiftedBy(dt);
+                    } else {
+                        // use end of interval as reference
+                        return tb.shiftedBy(dt - tbDouble);
+                    }
+                };
+                final UnivariateFunction f = dt -> g(interpolator.getInterpolatedState(date.apply(dt)));
                 if (forward) {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, 0, tbDouble);
-                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    beforeRootG = interval.getLeftValue();
-                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    afterRootG = interval.getRightValue();
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                        beforeRootT = date.apply(interval.getLeftAbscissa());
+                        beforeRootG = interval.getLeftValue();
+                        afterRootT  = date.apply(interval.getRightAbscissa());
+                        afterRootG  = interval.getRightValue();
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, loopT, loopG, tb, gb, lastT, lastG);
+                    }
                 } else {
-                    final Interval interval =
-                            solver.solveInterval(maxIterationCount, f, tbDouble, 0);
-                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                    beforeRootG = interval.getRightValue();
-                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                    afterRootG = interval.getLeftValue();
+                    try {
+                        final Interval interval =
+                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                        beforeRootT = date.apply(interval.getRightAbscissa());
+                        beforeRootG = interval.getRightValue();
+                        afterRootT  = date.apply(interval.getLeftAbscissa());
+                        afterRootG  = interval.getLeftValue();
+                        // CHECKSTYLE: stop IllegalCatch check
+                    } catch (RuntimeException e) {
+                        // CHECKSTYLE: resume IllegalCatch check
+                        throw new OrekitException(e, OrekitMessages.FIND_ROOT,
+                                detector, tb, gb, loopT, loopG, lastT, lastG);
+                    }
                 }
             }
             // tolerance is set to less than 1 ulp
@@ -338,8 +411,8 @@ public class EventState<T extends EventDetector> {
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress
-            check((forward && afterRootT.compareTo(beforeRootT) > 0) ||
-                  (!forward && afterRootT.compareTo(beforeRootT) < 0));
+            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                  !forward && afterRootT.compareTo(beforeRootT) < 0);
             // setup next iteration
             loopT = afterRootT;
             loopG = afterRootG;
@@ -404,34 +477,44 @@ public class EventState<T extends EventDetector> {
      */
     public boolean tryAdvance(final SpacecraftState state,
                               final OrekitStepInterpolator interpolator) {
-        // check this is only called before a pending event.
-        check(!(pendingEvent && strictlyAfter(pendingEventTime, state.getDate())));
-
         final AbsoluteDate t = state.getDate();
+        // check this is only called before a pending event.
+        check(!pendingEvent || !strictlyAfter(pendingEventTime, t));
 
-        // just found an event and we know the next time we want to search again
+        final boolean meFirst;
+
         if (strictlyAfter(t, earliestTimeConsidered)) {
-            return false;
-        }
-
-        final double g = g(state);
-        final boolean positive = g > 0;
-
-        // check for new root, pendingEventTime may be null if there is not pending event
-        if ((g == 0.0 && t.equals(pendingEventTime)) || positive == g0Positive) {
-            // at a root we already found, or g function has expected sign
-            t0 = t;
-            g0 = g; // g0Positive is the same
-            return false;
+            // just found an event and we know the next time we want to search again
+            meFirst = false;
         } else {
-            // found a root we didn't expect -> find precise location
-            return findRoot(interpolator, t0, g0, t, g);
+            // check g function to see if there is a new event
+            final double g = g(state);
+            final boolean positive = g > 0;
+
+            if (positive == g0Positive) {
+                // g function has expected sign
+                g0 = g; // g0Positive is the same
+                meFirst = false;
+            } else {
+                // found a root we didn't expect -> find precise location
+                final AbsoluteDate oldPendingEventTime = pendingEventTime;
+                final boolean foundRoot = findRoot(interpolator, t0, g0, t, g);
+                // make sure the new root is not the same as the old root, if one exists
+                meFirst = foundRoot && !pendingEventTime.equals(oldPendingEventTime);
+            }
         }
+
+        if (!meFirst) {
+            // advance t0 to the current time so we can't find events that occur before t
+            t0 = t;
+        }
+
+        return meFirst;
     }
 
     /**
      * Notify the user's listener of the event. The event occurs wholly within this method
-     * call including a call to {@link EventDetector#resetState(SpacecraftState)}
+     * call including a call to {@link EventHandler#resetState(EventDetector, SpacecraftState)}
      * if necessary.
      *
      * @param state the state at the time of the event. This must be at the same time as
@@ -448,10 +531,10 @@ public class EventState<T extends EventDetector> {
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = handler.eventOccurred(state, detector, increasing == forward);
         final SpacecraftState newState;
         if (action == Action.RESET_STATE) {
-            newState = detector.resetState(state);
+            newState = handler.resetState(detector, state);
         } else {
             newState = state;
         }
@@ -464,7 +547,7 @@ public class EventState<T extends EventDetector> {
         g0 = afterG;
         g0Positive = increasing;
         // check g0Positive set correctly
-        check(g0 == 0.0 || g0Positive == (g0 > 0));
+        check(g0 == 0.0 || g0Positive == g0 > 0);
         return new EventOccurrence(action, newState, stopTime);
     }
 
@@ -503,7 +586,7 @@ public class EventState<T extends EventDetector> {
      * @return min(a, b) if forward, else max (a, b)
      */
     private AbsoluteDate minTime(final AbsoluteDate a, final AbsoluteDate b) {
-        return (forward ^ (a.compareTo(b) > 0)) ? a : b;
+        return (forward ^ a.compareTo(b) > 0) ? a : b;
     }
 
     /**

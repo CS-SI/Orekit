@@ -1,0 +1,1350 @@
+%=SNX 2.02 JCT 20:111:61200 JCT 68:041:00000 20:111:61200 L 00549 0 X         
++FILE/REFERENCE                                                                 
+ DESCRIPTION        UNE 200420 ILRS eccentricities file
+ OUTPUT             ILRS SINEX Formatted Eccentricity File                 
+ CONTACT            epavlis@UMBC.edu                                       
+ SOFTWARE           JCET's eccCDDIS2snx
+ HARDWARE           Apple MacBook Pro                                              
+ INPUT              Official Eccentricity file from CDDIS (110707)                            
+ INPUT              and previous version slrecc.191030.ILRS.une.snx                            
+ INPUT              Numerous emails/reports from Van Husson’s review                            
+-FILE/REFERENCE                                                                 
++INPUT/HISTORY                                                                  
+ =SNX 2.02 JCT 20:111:61200 JCT 68:041:00000 20:111:61200 L 00549 0 X        
+-INPUT/HISTORY                                                                  
++FILE/COMMENT
+*
+* LAST UPDATE 20 Apr., 2020, MAJOR UPDATE WITH MANY CORRECTIONS IN 
+*                            ENTRIES OF PRIOR YEARS !!!
+*
+* UPDATED 30 Oct., 2019, Added new 7865 Stafford, NRL entry
+*
+* UPDATED 25 Sep., 2019, Added 7395 Geochang & 7396 Wuhan (JFNL)
+*
+* UPDATED 26 Mar., 2019, New surveys for 7110, 7119, 7403 and 7501
+*
+* UPDATED 12 Feb., 2018, Corrected last Ajaccio (78486904) entry 
+*
+* UPDATED 06 Feb., 2018, Added new Russian (HRTL) system (7503)  
+*
+* UPDATED 02 Nov., 2017, End-date for 1891 corrected to 00:000:00000 
+*
+* UPDATED 12 Feb., 2017, Added new Kunming system (7819) 
+*
+* UPDATED  5 July, 2016, Added Sejong 7394 
+*
+* UPDATED 29 Sept., 2015, Added Irkutsk 1891, Brazilia 7407 & SOSW 7827
+*
+* UPDATED 21 Nov., 2014, to convert the two superfluous Arequipa entries 
+*   for the period 92:196:00000 04:031:86399 to comments by placing a "*"
+*   in column 1 of the records.
+*
+* UPDATED  9 Apr., 2014, Corrected geographic coordinates of Altay 1879
+*
+*                Some SITEID_BLOCK entries were also corrected !!!
+*
+*      This has corrections to 7090 pending clarification from GA.
+*
+* UPDATED 25 Oct., 2013, Added 7359 Daedeok, Korea
+* UPDATED 18 Dec., 2012, Added 1887, 1888, 1889, 1890, 7822
+* UPDATED 29 May,  2012, Added new Beijing SOD 72496102
+* UPDATED  5 Aug., 2011, Corrected start date for 74031304 Occupation
+* UPDATED  7 July, 2011, Added new sites/SOD 1886, 7119, 7403
+* UPDATED 18 Mar., 2011, Corrected sign of NEU ecc. for 2001 Urumqi
+* UPDATED  9 July, 2010, Corrected 1981 7110 Effective dates
+* UPDATED 13 May 2010, Based on Contents slrecc.100513
+* UPDATED 13 April 2010, Based on Contents slrecc.100309
+* UPDATED 14 May 2009, Added Altay site (from site log)
+* UPDATED 13 Nov. 2008    Source: Previous & new 7405 eccentricity  
+* UPDATED 19 May 2008     Source: CDDIS slrecc.070924 & Burnie info
+* UPDATED 02 May  2008, added 7370 eccentricty from FTLRS survey
+* UPDATED 05 Oct. 2007, added 7119 eccentricty from HTSI survey
+* UPDATED 15 Aug. 2007, the file has been recreated on the basis of the
+*   eccentricity file maintained on CDDIS (version of 070625) and all
+*   known (508 up to present) SLR site occupations have been included
+*   in this version, irrespective of whether the data exist or
+*   not in the CDDIS archives. Identification of the correct set of
+*   eccentricities to be used is now aided by the inclusion of the 
+*   familiar CDP SOD 8-digit identification No. with each entry.
+*   With this release we format the file in a more "formal" SINEX
+*   form, including all the mandatory records. The value of the 
+*   "estimated parameters in the header is really the number of sites
+*   (unique 8-digit No. and eccentricity combinations!) included, and
+*   we use "X" to designate "eccentricity" information as contents.
+*   The first-last dates indicate the earliest and latest dates that
+*   appear in this file, with the latter equal to the release date,
+*   indicating that this is current up that date. For all current
+*   occupations the end-date is set to 00:000:00000 as in past
+*   releases.
+*
+*   (See footnotes 14 & 15 for more details)
+*
+* UPDATED 29 June 2005, prior to release to ILRS web (ECP)
+* UPDATED 12 April 2004, to add Helwan A (7831) eccentricity
+* UPDATED 29 January 2004, to RETRO-actively change the 2nd set
+*   of eccs for station 7501
+* UPDATED 7 October 2003, to add the SITE/ID block
+* UPDATED 10 September 2003, to fix sign on Urumqi (7355) initial
+*   eccs from its first occupation
+* UPDATED 15 July 2003, added Beijing A (7357) eccentricity
+* UPDATED 14 July 2003, added Greenbelt (GUTS at 7127) and new Monument
+*   Peak (7110) eccentricities
+* UPDATED 30 June 2003, added Olifantsfontein (7902), closed out 7548 and 7505
+*   and fixed inversion error in 7830 North and UP eccs
+* UPDATED 13 May 2003, added 2nd occupation of Urumqi (7355)
+* UPDATED 23 April 2003, added FTLRS eccentricity at Chania, Crete (7830)
+* UPDATED 20 February 2003 (See footnote 13 for revision)
+* UPDATED 18 December 2002 (See footnote 12 for the revision)
+* UPDATED 22 November 2002 (See footnote 11 for the revision)
+* UPDATED 20 October 2002, to change the DOMES number for
+*   7301 and 7302 from 'S' to 'M', added three DOMES numbers for
+*   7307 which now give that site 4 unique DOMES numbers and point codes
+*
+* Eccentricities are sorted by CDP marker number.
+*
+* List of station eccentricities from the marker to the intersection of 
+* optical axis (i.e. optical axes - marker, the UP eccentricity should
+* in most cases be positive)
+*
+* Special Notes:
+*
+*   (1) Eccentricities, by definition, should NOT exceed a
+*       magnitude of 15 meters (+/-). If they exceed +/- 15 meters,
+*       then they are considered a LOCAL TIE.
+*
+*   (2) HTLRS occupations of marks (7300, 7304, 7307, 7321, 7322, 7323, 
+*       7844) have very large eccentricities, which violate the intention
+*       of system eccentricities (see note:1 above) and violate the 
+*       F8.4 SINEX eccentricity format. The data from these locations 
+*       may NOT exist in the ILRS global data centers. Since the
+*       eccentricities violate the SINEX format, we have listed them in
+*       this release with only three (3) decimal places, in order to
+*       provide users who have access to these data, with these information.
+*
+*       NOTE: For most accurate results, please use the UNE eccentricities
+*       instead of the Cartesian version which are prone to large
+*       conversion errors due to the large distances between the sites.
+*
+*       CDP  Start_epoch  End_epoch    UNE  Up(m)    North(m)   East(m)
+*       ---- ------------ ------------ ---  -------  ---------  ---------
+*       7300 89:010:00000 89:083:00000 UNE  -0.6140  -516.4230  -565.4650  
+*       7304 90:336:00000 91:038:00000 UNE   1.8990  -114.0920   152.6220 
+*       7307 88:200:00000 88:261:00000 UNE -17.6930 -1490.1010 -4030.6300   
+*       7307 97:215:00000 97:309:00000 UNE -19.6060 -1499.9910 -3979.5520   
+*       7307 98:223:00000 98:317:00000 UNE -19.6060 -1499.7820 -3979.7450   
+*       7307 99:257:00000 99:346:00000 UNE -19.6100 -1510.8970 -3982.0250   
+*       7321 94:152:00000 94:304:00000 UNE   2.1830  -259.1000   -49.6760 
+*       7322 95:305:00000 96:091:00000 UNE  -4.1810   -51.5480  -118.8600  
+*       7323 94:001:00000 94:090:00000 UNE -25.1050  -653.5770  -573.9810  
+*       7844 88:001:00000 88:073:00000 UNE 210.1370  -728.2680  1870.2800  
+*       7844 96:122:00000 96:213:00000 UNE 210.2150  -725.4850  1865.3340  
+* 
+*
+*   (3) Yarragedee has been occupied by an SLR system since 1979.
+*       The 1st set of eccentricities were measured in 1979 and
+*       were remeasured in 1987. There was a noted significant difference 
+*       of 8mm in the UP eccentricities between these 2 surveys,
+*       which is still unexplained. The possible causes could be an
+*       error in the original value or a change due to mount re-leveling(s)
+*       during those 8 years. The net effect of this change will be
+*       a 8mm discontinuity in the station's height on the date (day 225) 
+*       of the 1987 survey. 
+*
+*       In 1992, the mount was removed and refurbished resulting
+*       in a new position and eccentricities of the optical axes 
+*       relative to the mark 7090. The eccentricities were remeasured
+*       on 20 August 1998 (day 232), but the observed changes in 
+*       eccentricities relative to the previous measurements in 1992 
+*       were within the uncertainty of the measurement. Therefore the 
+*       1992 eccentricities are still considered valid. The 1998 
+*       measurements in UNE were 3.1809 m, -0.0083 m, and 0.0178 m, 
+*       respectively.
+*
+*7090  A    1 L 92:203:00000 00:000:00000 UNE   3.1809  -0.0083   0.0178        70900513
+*
+*       A new measurement in 2003 produced yet another set of eccentricities
+*       which are still indistinguishable from the 1992, given their accuracy.
+*
+*7090  A    1 L 03:331:00000 00:000:00000 UNE   3.1821  -0.0083   0.0184        70900513
+*
+*   (4) Greenbelt in 1985 had 3 systems (MOBLAS-7, MOBLAS-2 and TLRS-2)
+*       simultaneously occupying marker 7105 during. MOBLAS-2 and TLRS-2
+*       were in engineering evaluation and were physically
+*       parked on the street near MOBLAS-7. The data from these 
+*       two systems (MOBLAS-2 and TLRS-2) was never released and older       
+*       versions were missing these eccentricities. With the introduction
+*       of CDP SOD Nos., we can avoid confusion and we have re-entered them.
+*   
+*   (5) The Japanese Keystone systems (Koganei 7328, Kashima 7335, 
+*       Miura 7337, and Tateyama 7339) eccentricities were remeasured
+*       in October 1999 and differed by a few to many millimeters
+*       from the original values measured in 1997. The original 1997
+*       eccentricities are believed to be in error and have been 
+*       replaced by the 1999 values.
+*
+*   (6) Arequipa eccentricities were remeasured post-earthquake on 13 July
+*       2001 (day 194), but the observed changes in eccentricities relative to
+*       the previous measurements in 1994 were within the uncertainty
+*       of the measurement. Therefore the 1994 eccentricities
+*       are still considered valid. The 2001 measurements in UNE were
+*       2.6951 m, 0.0112 m, and -0.0046 m, respectively.        
+*
+*   (7) Mark 7889 was destroyed during construction of marker 7130
+*
+*   (8) TLRS-1 7082 eccentricities in late 1983 and early 1984 were measured
+*       changes due to upheaval of the pad from freezing cold temperatures. The
+*       position of the mark 7082 and it's concrete pad probably also changed.
+*
+*   (9) TIGO's 7594 eccentricity at Wettzell was measured in Jan 1998 and 
+*       Feb 2001. In 2001, there was a 5mm change in the East component. 
+*       The Jan 1998 "EAST" ecc. measurement is believed to be in error 
+*       and has been replaced with the Feb 2001 value (i.e. the Feb 2001 
+*       measurements are back-dated to Jan 1998).
+*
+*  (10) TIGO's 7405 "UP" eccentricity at Concepcion was incorrectly 
+*       reported in the original site log. The corrected "UP" eccentricity
+*       appears below for entry 7405:
+*
+*  (11) The start date of 79:135:00000 for eccentricity 7102 was changed
+*       to 79:138:00000 to avoid overlap with previous 7102 entry.
+*
+*  (12) a. Modified the end date(s) to ensure there were no overlaps between 
+*          consecutive site eccentricities. 
+*           (e.g. changed endate 99:020:00000 to 99:019:86399)
+*
+*       b. Modified the end dates to ensure eccentricities cover the entire 
+*          last day of the site occupation versus the beginning of the last 
+*          day.
+*           (e.g. 91:340:00000 to 91:340:86399)
+*
+*       c. Added another entry for Zimmerwald (7810) to correspond
+*          to the two 7810 DOMES numbers ( 14001S001 & 14001S007 ).
+*          The last entry has a point code of "B" to distinquish it
+*          from point "A".
+*
+*       d. Added another entry for San Fernando (7824) to correspond
+*          to the two 7824 DOMES numbers ( 13402S004 & 13402S007 ).
+*          The last entry has a point code of "B" to distinquish it
+*          from point "A".
+*
+*       e. Added eccentricities for 7941 in Matera and 7841 in Potsdam.
+*
+*       f. Closed out old occupations.
+*
+*  (13) a. The eccentricities for the FTLRS 2002 occupation of
+*          Ajaccio were retroactively modified due to the final survey 
+*          conducted by IGN in September 2002 (i.e. the original 
+*          eccentricities were an approximation).
+*
+*  (14) This version in addition to the other changes, it expands the 
+*       SITE/ID block to include a separate entry for each known SLR
+*       site occupation, corresponding to each CDP SOD 8-digit No.
+*       On the same record we include in the "_STATION DESCRIPTION__"
+*       string the system that occupied the site in each case. 
+*       In addition to that, we have added one more field beyond
+*       column 80, not to interfere with the current SINEX format.
+*       In cols. 81-89 we insert the "CDP-SOD_" field where we list
+*       the CDP SOD 8-digit Nos for the particular occupation.
+*
+*  (15) In the case of two sites, Bear Lake, Utah (TLRS-1) 7082 and Arequipa,
+*       Peru, (TLRS-3) 7403, we have multiple surveys which all fall under one
+*       SOD No.. In past releases only one of these was included. This release
+*       includes all surveys and associates them with time intervals defined
+*       by the "Effective date" listed in the CDDIS eccentricy master file.
+*       In all cases the differences are small, a few mm at most, but these are
+*       considered significant today, so we suggest users apply them. The
+*       explanation given for these are detailed in footnotes (8) and (6)
+*       respectively.
+*
+-FILE/COMMENT
++SITE/ID
+*Code PT __DOMES__ T _STATION DESCRIPTION__ APPROX_LON_ APPROX_LAT_ _APP_H_     CDP-SOD_
+ 1148  A   ---     L Ondrejov   OND. FIXED   14 47 08.1  49 54 49.3   592.6     11480901
+ 1181  A 14106S001 L Potsdam    GDR FIXED    13  3 55.0  52 22 48.9   148.5     11813901
+ 1824  A 12356S001 L Kiev       KIEV FIXED   30 29 45.1  50 21 47.2   213.1     18248101
+ 1831  A 12368S001 L Lviv       LVIV         23 57 15.8  49 55  3.2   359.8     18318501
+ 1863  A 12340S001 L Maidanak   MDN. FIXED   66 56 35.3  38 41  8.6  2712.0     18635101
+ 1864  A 12340S002 L Maidanak   MDN2 FIXED   66 56 35.1  38 41  5.6  2714.2     18645401
+ 1866  A 12347S001 L Dunaovcy   DUN. FIXED   26 43  6.3  48 50 53.6   397.2     18665201
+ 1867  A 12344S001 L Evpatoria  EVP. FIXED   33  9 50.5  45 13 11.0    47.7     18675301
+ 1868  A 12341S001 L Komsomolsk KOM. FIXED  136 44 37.7  50 41 40.6   270.1     18685901
+ 1869  A 12343S001 L Balkhash   BAL. FIXED   73 36  2.2  45 53 58.6   321.4     18696001
+ 1870  A 12309S001 L Mendeleevo MENLAS       37 13 24.4  56  1 39.3   257.3     18706301
+ 1871  A 12357S001 L Sarapul    SARLAS       56 28 45.2  53 47 15.0   141.8     18716401
+ 1873  A 12337S003 L Simeiz     SIM. FIXED   33 59 27.4  44 24 47.4   365.3     18734901
+ 1874  A 12309S003 L Mendeleev2 MDVS         37 13 24.4  56  1 39.3   257.3     18748301
+ 1879  A 12372S001 L Altay      ALTL         82 10 38.3  51 20 38.0   270.0     18799401
+ 1884  A 12302S002 L Riga       RIGA FIXED   24  3 31.0  56 56 55.3    31.7     18844401
+ 1885  A 12302S006 L Riga       RIGA         24  3 31.1  56 56 55.4    31.5     18856701
+ 1886  A 12373S001 L Arkhyz                  41 25 53.3  43 38 59.4  2078.2     18869601
+ 1887  A 25603S001 L Baikonur   BAIL         63 20 31.9  45 42 16.9    98.3     18879701
+ 1888  A 12350S002 L Svetloe    QUASAR       29 47 00.0  60 32 00.0   100.0     18889801
+ 1889  A 12351S002 L Zelenchuks QUASAR       41 34 00.0  43 47 00.0  1000.0     18899901
+ 1890  A 12338S004 L Badary     QUASAR      102 14  7.3  51 46 12.1   100.0     18900901
+ 1891  A 12313S007 L Irkutsk    IRKL FIXED  104 18 59.0  52 13  8.8   505.6     18915301
+ 1893  A 12337S006 L Katzively  CRIMEA FIX   33 58 12.4  44 23 35.4    68.7     18931801
+ 1953  A 40701S001 L Santiago D CUBA FIXED  284 14 16.0  20  0 43.0    18.3     19532001
+ 7035  A 40436M003 L Otay Mount TLRS-3      243  9 32.9  34 22 55.2  2200.0     70351301
+ 7040  A 49901S001 L Wrightwood OCTL        248 34 45.4  41 56  0.7  1963.9     70409201
+ 7046  A 40438M002 L Bear Lake  TLRS-4      248 34 45.4  41 56  0.7  1963.9     70461402
+ 7046  A 40438M002 L Bear Lake  MTLRS-1     248 34 45.4  41 56  0.8  1060.7     70461501
+ 7051  A 40433M001 L Quincy     MOBLAS-1    239  3 37.6  39 58 24.5  1060.7     70510101
+ 7051  A 40433M001 L Quincy     MOBLAS-2    239  3 37.6  39 58 24.5  1060.7     70510202
+ 7051  A 40433M001 L Quincy     MOBLAS-2    239  3 37.6  39 58 24.5  1060.7     70510203
+ 7051  A 40433M001 L Quincy     MOBLAS-8    239  3 37.6  39 58 24.5  1060.7     70510804
+ 7061  A 41703M001 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   116.8     70611201
+ 7061  A 41703M001 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   116.8     70611202
+ 7062  A 40436M002 L Otay Mount MOBLAS-2    243  9 32.8  32 36  2.6   989.0     70620201
+ 7062  A 40436M002 L Otay Mount MOBLAS-3    243  9 32.8  32 36  2.6   989.0     70620302
+ 7062  A 40436M002 L Otay Mount MOBLAS-3    243  9 32.8  32 36  2.6   989.0     70620303
+ 7062  A 40436M002 L Otay Mount TLRS-1      243  9 32.8  32 36  2.6   989.0     70621104
+ 7062  A 40436M002 L Otay Mount TLRS-2      243  9 32.8  32 36  2.6   989.0     70621205
+ 7063  A 40451M112 L Greenbelt  GSFC FIXED  283 10 19.9  39  1 13.3    19.9     70632101
+ 7064  A 40451M107 L Greenbelt  MOBLAS-1    283 10 19.1  39  1 14.9    18.7     70640101
+ 7064  A 40451M107 L Greenbelt  MOBLAS-1    283 10 19.1  39  1 14.9    18.7     70640102
+ 7065  A 40451M108 L Greenbelt  MOBLAS-2    283 10 19.1  39  1 14.4    18.6     70650201
+ 7065  A 40451M108 L Greenbelt  MOBLAS-2    283 10 19.1  39  1 14.4    18.6     70650203
+ 7065  A 40451M108 L Greenbelt  MOBLAS-3    283 10 19.1  39  1 14.4    18.6     70650302
+ 7066  A   ---     L Wallops Is WAL. FIXED  284 29 25.2  37 51 36.5     5.8     70662701
+ 7067  A 42501M001 L Bermuda    MOBLAS-1    295 20 37.6  32 21 12.8   -20.5     70670101
+ 7067  A 42501M001 L Bermuda    MOBLAS-1    295 20 37.6  32 21 12.8   -20.5     70670102
+ 7068  A 43602M002 L Grand Turk MOBLAS-2    288 52  5.1  21 27 37.7   -17.6     70680201
+ 7068  A 43602M002 L Grand Turk MOBLAS-2    288 52  5.1  21 27 37.7   -17.6     70680202
+ 7069  A 40417M002 L Patrick    PAFB FIXED  279 23 39.4  28 13 40.6   -23.0     70692201
+ 7070  A   ---     L Wallops Is MOBLAS-2    284 29 23.4  37 51 35.9     5.6     70700201
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802401
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802402
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802403
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802404
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802405
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802406
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802407
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802408
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802409
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802410
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802411
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802412
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802413
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802414
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802415
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802416
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802417
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802418
+ 7080  A 40442M006 L Mcdonald   MLRS        255 59  5.2  30 40 48.9  2004.9     70802419
+ 7081  A 40417M001 L Patrick    MOBLAS-2    279 23 36.5  28 13 39.7     1.8     70810201
+ 7082  A 40438M001 L Bear Lake  MOBLAS-1    248 34 45.6  41 56  0.8  1963.7     70820101
+ 7082  A 40438M001 L Bear Lake  MOBLAS-1    248 34 45.6  41 56  0.8  1963.7     70820102
+ 7082  A 40438M001 L Bear Lake  TLRS-1      248 34 45.6  41 56  0.8  1963.7     70821103
+ 7082  A 40438M001 L Bear Lake  TLRS-1      248 34 45.6  41 56  0.8  1963.7     70821104
+ 7083  A 40451M122 L Greenbelt  MOBLAS-3    283 10 19.1  39  1 14.0    18.6     70830301
+ 7084  A 40439M003 L Owens Vall MOBLAS-2    241 42 15.2  37 13 55.6  1178.7     70840201
+ 7085  A 40405M001 L Goldstone  MOBLAS-1    243  6 49.0  35 25 27.9   966.7     70850101
+ 7086  A 40442M001 L Mcdonald   MOBLAS-1    255 59  2.6  30 40 37.3  1962.1     70860101
+ 7086  A 40442M001 L Mcdonald   TLRS-1      255 59  2.6  30 40 37.3  1962.1     70861102
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862403
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862404
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862405
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862406
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862407
+ 7086  A 40442M001 L Mcdonald   MLRS        255 59  2.6  30 40 37.3  1962.1     70862408
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900501
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900502
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900503
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900504
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900505
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900506
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900507
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900508
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900509
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900510
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900511
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900512
+ 7090  A 50107M001 L Yarragadee MOBLAS-5    115 20 48.2 -29 -2-47.3   242.0     70900513
+ 7091  A 40440M001 L Westford   MOBLAS-3    288 30 44.4  42 37 21.7    92.8     70910301
+ 7091  A 40440M001 L Westford   MOBLAS-7    288 30 44.4  42 37 21.7    92.8     70910702
+ 7091  A 40440M001 L Westford   TLRS-1      288 30 44.4  42 37 21.7    92.8     70911103
+ 7091  A 40440M001 L Westford   TLRS-1      288 30 44.4  42 37 21.7    92.8     70911104
+ 7092  A 50505M001 L Kwajalein  MOBLAS-8    167 28 32.5   9 23 37.6    31.3     70920801
+ 7096  A 50503M001 L American N-MOBLAS-6    189 16 30.4 -14-20 -7.4    45.5     70960601
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971201
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971202
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971203
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971204
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971205
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971206
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971207
+ 7097  A 41703M002 L Easter Isl TLRS-2      250 36 59.1 -27 -8-52.1   118.2     70971208
+ 7100  A 40451M106 L Greenbelt  MOBLAS-3    283 10 47.7  39  1 15.4    10.8     71000301
+ 7100  A 40451M106 L Greenbelt  MOBLAS-4    283 10 47.7  39  1 15.4    10.8     71000402
+ 7101  A 40451M101 L Greenbelt  MOBLAS-6    283 10 43.0  39  1 16.2     8.1     71010602
+ 7101  A 40451M101 L Greenbelt  MOBLAS-8    283 10 43.0  39  1 16.2     8.1     71010801
+ 7102  A 40451M102 L Greenbelt  MOBLAS-3    283 10 18.9  39  1 14.4    19.1     71020305
+ 7102  A 40451M102 L Greenbelt  MOBLAS-4    283 10 18.9  39  1 14.4    19.1     71020402
+ 7102  A 40451M102 L Greenbelt  MOBLAS-4    283 10 18.9  39  1 14.4    19.1     71020403
+ 7102  A 40451M102 L Greenbelt  MOBLAS-4    283 10 18.9  39  1 14.4    19.1     71020404
+ 7102  A 40451M102 L Greenbelt  MOBLAS-5    283 10 18.9  39  1 14.4    19.1     71020501
+ 7102  A 40451M102 L Greenbelt  TLRS-1      283 10 18.9  39  1 14.4    19.1     71021106
+ 7102  A 40451M102 L Greenbelt  TLRS-1      283 10 18.9  39  1 14.4    19.1     71021107
+ 7103  A 40451M103 L Greenbelt  MOBLAS-6    283 10 18.9  39  1 14.6    18.1     71030601
+ 7103  A 40451M103 L Greenbelt  MOBLAS-6    283 10 18.9  39  1 14.6    18.1     71030602
+ 7104  A 40451M104 L Greenbelt  MOBLAS-7    283 10 36.9  39  1 17.0    11.9     71040701
+ 7105  A 40451M105 L Greenbelt  TLRS-2      283 10 20.3  39  1 14.1    19.8     71051206
+ 7105  A 40451M105 L Greenbelt  MOBLAS-2    283 10 20.3  39  1 14.1    19.8     71050207
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050701
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050702
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050703
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050704
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050705
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050708
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050709
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050710
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050711
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050712
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050713
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050714
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050715
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050716
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050717
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050718
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050719
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050720
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050721
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050722
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050723
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050724
+ 7105  A 40451M105 L Greenbelt  MOBLAS-7    283 10 20.3  39  1 14.1    19.8     71050725
+ 7106  A 40451M113 L Greenbelt  48-INCH     283 10 17.7  39  1 17.3    20.0     71065601
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090801
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090802
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090803
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090804
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090805
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090806
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090807
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090808
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090809
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090810
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090812
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090813
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090814
+ 7109  A 40433M002 L Quincy     MOBLAS-8    239  3 19.0  39 58 30.0  1107.0     71090815
+ 7109  A 40433M002 L Quincy     TLRS-4      239  3 19.0  39 58 30.0  1107.0     71091411
+ 7110  A 40497M001 L Monument P MOBLAS-3    243 34 38.3  32 53 30.2  1839.7     71100301
+ 7110  A 40497M001 L Monument P MOBLAS-3    243 34 38.3  32 53 30.2  1839.7     71100301
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100402
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100403
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100404
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100405
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100406
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100407
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100408
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100409
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100410
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100411
+ 7110  A 40497M001 L Monument P MOBLAS-4    243 34 38.3  32 53 30.2  1839.7     71100412
+ 7111  A 40420M001 L Vandenberg TLRS-1      239 29 58.0  34 33 58.4   601.6     71111101
+ 7112  A 40496M001 L Plattevill MOBLAS-2    255 16 26.4  40 10 58.0  1502.2     71120201
+ 7112  A 40496M001 L Plattevill TLRS-1      255 16 26.4  40 10 58.0  1502.2     71121105
+ 7112  A 40496M001 L Plattevill TLRS-4      255 16 26.4  40 10 58.0  1502.2     71121403
+ 7112  A 40496M001 L Plattevill MTLRS-1     255 16 26.4  40 10 58.0  1502.2     71121502
+ 7112  A 40496M001 L Plattevill MTLRS-1     255 16 26.4  40 10 58.0  1502.2     71121504
+ 7114  A 40439M001 L Owens Vall MOBLAS-2    241 42 22.3  37 13 57.2  1178.6     71140201
+ 7114  A 40439M001 L Owens Vall TLRS-1      241 42 22.3  37 13 57.2  1178.6     71141102
+ 7114  A 40439M001 L Owens Vall TLRS-1      241 42 22.3  37 13 57.2  1178.6     71141103
+ 7115  A 40405M002 L Goldstone  MOBLAS-3    243 12 29.1  35 14 53.9  1037.6     71150301
+ 7119  A 40445M004 L Haleakala  TLRS-4      203 44 35.2  20 42 27.4  3068.5     71191401
+ 7119  A 40445M004 L Haleakala  TLRS-4      203 44 35.2  20 42 27.4  3068.5     71191402
+ 7120  A 40445M002 L Haleakala  MOBLAS-1    203 44 38.2  20 42 27.4  3069.6     71200101
+ 7121  A 92202M002 L Huahine    MOBLAS-1    208 57 31.9 -16-44 -0.6    44.3     71210101
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220601
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220602
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220603
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220604
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220605
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220606
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220607
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220608
+ 7122  A 40504M001 L Mazatlan   MOBLAS-6    253 32 27.3  23 20 34.2    31.6     71220609
+ 7122  A 40504M001 L Mazatlan   TLRS-4      253 32 27.3  23 20 34.2    31.6     71221410
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231201
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231202
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231203
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231204
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231205
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231206
+ 7123  A 92202M004 L Huahine    TLRS-2      208 57 31.9 -16-44 -0.6    46.1     71231207
+ 7124  A 92201M007 L Papeete    MOBLAS-8    210 23 37.6 -17-34-36.5    95.1     71240801
+ 7124  A 92201M007 L Papeete    MOBLAS-8    210 23 37.6 -17-34-36.5    95.1     71240802
+ 7125  A 40451M114 L Greenbelt  TLRS-3      283 10 21.2  39  1 12.9    19.0     71251302
+ 7125  A 40451M114 L Greenbelt  MTLRS-1     283 10 21.2  39  1 12.9    19.0     71251501
+ 7125  A 40451M114 L Greenbelt  NGSLR01     283 10 21.2  39  1 12.9    19.0     71259301
+ 7126  A   ---     L Greenbelt  MLRO        283 10 21.1  39  1 12.9    19.2     71267701
+ 7127  A   ---     L Greenbelt  GUTS        283 10 21.1  39  1 12.9    19.2     71278901
+ 7130  A 40451M116 L Greenbelt  TLRS-2      283 10 21.1  39  1 15.2    19.6     71301201
+ 7130  A 40451M116 L Greenbelt  TLRS-4      283 10 21.1  39  1 15.2    19.6     71301402
+ 7130  A 40451M116 L Greenbelt  TLRS-4      283 10 21.1  39  1 15.2    19.6     71301403
+ 7206  A 40442S002 L Mcdonald   2.7 METER   255 58 40.8  30 40 18.3  2059.0     72062601
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102301
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102302
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102303
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102304
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102305
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102306
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102307
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102308
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102309
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102310
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102311
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102312
+ 7210  A 40445M001 L Haleakala  HALEAKALA   203 44 38.7  20 42 25.9  3068.2     72102313
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201101
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201102
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201103
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201104
+ 7220  A 40497M002 L Monument P TLRS-1      243 34 37.7  32 53 30.2  1840.9     72201105
+ 7231  A 21602S004 L Wuhan      WUHAN       114 29 22.8  30 30 56.4    87.1     72312901
+ 7236  A 21602S003 L Wuhan      WUH. FIXED  114 20 46.5  30 32 30.4    39.4     72362901
+ 7237  A 21611S001 L Changchun  CHALAS      125 26 36.4  43 47 25.8   274.9     72371901
+ 7249  A 21601S004 L Beijing    BEIJ FIXED  115 53 31.3  39 36 24.9    82.3     72496101
+ 7249  A 21601S004 L Beijing    BEIJ FIXED  115 53 31.3  39 36 24.9    82.3     72496102
+ 7261  A 40491M003 L Flagstaff  TLRS-1      248 21 55.7  35 12 52.3  2144.9     72611101
+ 7265  A 40405M006 L Mojave     TLRS-1      243  6 31.3  35 19 52.3   896.7     72651101
+ 7274  A 40497M003 L Monument P TLRS-1      243 34 37.8  32 53 30.3  1839.4     72741101
+ 7288  A 40405M013 L Mojave     TLRS-3      243  6 30.5  35 19 52.4   896.8     72881301
+ 7288  A 40405M013 L Mojave     TLRS-4      243  6 30.5  35 19 52.4   896.8     72881402
+ 7288  A 40405M013 L Mojave     TLRS-4      243  6 30.5  35 19 52.4   896.8     72881403
+ 7288  A 40405M013 L Mojave     TLRS-4      243  6 30.5  35 19 52.4   896.8     72881404
+ 7295  A 40499M002 L Richmond   TLRS-1      279 36 57.1  25 36 48.0   -22.0     72951102
+ 7295  A 40499M002 L Richmond   TLRS-4      279 36 57.1  25 36 48.0   -22.0     72951403
+ 7295  A 40499M002 L Richmond   MTLRS-1     279 36 57.1  25 36 48.0   -22.0     72951501
+ 7300  A 21733S001 L Minami Tor HTLRS-1     153 59  3.1  24 17 40.8    35.9     73001701
+ 7301  A 21709S001 L Okinawa (J HTLRS-1     127 42 56.9  26  7 54.7   126.5     73011701
+ 7302  A 21735S001 L Tsushima   HTLRS-1     129 17 37.0  34 11 47.4    33.9     73021701
+ 7303  A   ---     L Oki Gunto  HTLRS-1     133 19  9.7  36 10 48.3   122.5     73031701
+ 7304  A   ---     L Minami Dai HTLRS-1     131 13 47.4  25 49 45.1    50.8     73041701
+ 7305  A   ---     L Iwo Jima   HTLRS-1     141 18 20.2  24 46 18.3   135.7     73051701
+ 7307  A 21736S001 L Isigaki Sh HTLRS-1     124 12 51.4  24 22  9.1   100.8     73071701
+ 7307  B 21736S003 L Isigaki Sh HTLRS-1     124 12 51.4  24 22  9.1   100.8     73071702
+ 7307  C 21736S004 L Isigaki Sh HTLRS-1     124 12 51.4  24 22  9.1   100.8     73071703
+ 7307  D 21736S005 L Isigaki Sh HTLRS-1     124 12 51.4  24 22  9.1   100.8     73071704
+ 7308  A 21704S002 L Koganei    CRLLAS      139 29 20.8  35 42 36.3   123.1     73085001
+ 7309  A   ---     L Hachijo Ji HTLRS-1     139 49 22.1  33  4 22.7   264.1     73091701
+ 7313  A   ---     L Hiroo      HTLRS-1     143 19 42.4  42 19  4.1    46.1     73131701
+ 7320  A   ---     L Wakkanai   HTLRS-1     141 43 47.8  45 23  9.5    91.6     73201701
+ 7321  A   ---     L Oga        HTLRS-1     139 42  6.2  40  0 16.7    69.4     73211701
+ 7322  A   ---     L Tyosi      HTLRS-1     140 51 12.4  35 42 17.8    90.1     73221701
+ 7323  A   ---     L Makura Sak HTLRS-1     130 17 35.4  31 16 19.2    62.7     73231701
+ 7328  A 21704M001 L Koganei    KOGLAS      139 29 16.6  35 42 36.6   115.1     73287101
+ 7335  A 21701M002 L Kashima    KASH. FIXD  140 39 27.3  35 57 22.2    66.4     73357201
+ 7337  A 21739M001 L Miura      MIULAS      139 39  1.4  35 12 24.2    99.1     73377301
+ 7339  A 21740M001 L Tateyama   TATLAS      139 50 53.3  34 56 12.9   120.3     73397401
+ 7341  A   ---     L Bisei      HTLRS-1     133 34 15.1  34 40 47.0   549.4     73411701
+ 7341  A   ---     L Bisei      HTLRS-1     133 34 15.1  34 40 47.0   549.4     73411702
+ 7343  A 21601M002 L Beijing    TROS        115 53 31.3  39 36 24.9    82.4     73438401
+ 7355  A 21612M002 L Urumqi     TROS         87 42 19.3  43 48 49.0   846.1     73558401
+ 7355  A 21612M002 L Urumqi     TROS         87 42 19.3  43 48 49.0   846.1     73558402
+ 7356  A 21613M003 L Lhasa      TROS         91  2 15.5  29 38  5.4  3601.5     73568401
+ 7357  A 21601S005 L Beijing    BEIJING-A   115 53 33.6  39 36 27.8    72.7     73578801
+ 7358  A 21749S001 L Tanegashim GUTS        131  0 55.5  30 33 30.4   140.7     73588901
+ 7359  A 23902S002 L Daedeok    DAEK        127 22 28.9  36 23 56.5   116.6     73592601
+ 7370  A 50186M001 L BurnieTS   FTLRS       145 52 53.0 -41 -3-44.0   129.6     73706901
+ 7394  A 23907S002 L Sejong     SEJL        127 18 10.5  36 31 15.6   176.4     73942601
+ 7395  A 23910S001 L Geochang   GEOL        127 55 12.4  35 35 24.7   934.1     73956501
+ 7396  A 21602S008 L Wuhan      JFNL FIXED  114 29 24.7  30 30 59.5    77.4     73964701
+ 7400  A 41705M001 L Santiago   TLRS-1      289 19 52.9 -33 -8-58.6   723.4     74001101
+ 7401  A 41706M001 L Cerro Tolo TLRS-1      289 11 59.8 -30-10-20.8  2155.9     74011101
+ 7401  A 41706M001 L Cerro Tolo TLRS-3      289 11 59.8 -30-10-20.8  2155.9     74011302
+ 7401  A 41706M001 L Cerro Tolo TLRS-3      289 11 59.8 -30-10-20.8  2155.9     74011303
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031301
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031302
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031303
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031304
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031305
+ 7403  A 42202M003 L Arequipa   TLRS-3      288 30 25.3 -16-27-56.5  2489.5     74031306
+ 7404  A 41705M004 L Santiago   TLRS-2      289 19 53.5 -33 -8-58.6   724.5     74041201
+ 7404  A 41705M004 L Santiago   TLRS-2      289 19 53.5 -33 -8-58.6   724.5     74041202
+ 7405  A 41719M001 L Concepcion TIGO        286 58 28.8 -36-50-34.8   170.0     74057901
+ 7405  A 41719M001 L Concepcion TIGO        286 58 28.8 -36-50-34.8   170.0     74057902
+ 7405  A 41719M001 L Concepcion TIGO        286 58 28.8 -36-50-34.8   170.0     74057903
+ 7405  A 41719M001 L Concepcion TIGO        286 58 28.8 -36-50-34.8   170.0     74057904
+ 7406  A 41508S003 L San Juan   BEIJING-A   291 22 36.6 -31-30-31.0   727.2     74068801
+ 7407  A 48081S001 L Brazilia   BRAL        312 08 04.9 -15 46 23.0  1028.8     74072701
+ 7410  A 40104M003 L Algonquin  TLRS-4      281 55 46.9  45 57 20.1   195.9     74101401
+ 7411  A 40132M001 L La Grande  TLRS-4      281 25 43.4  53 41 53.6    20.2     74111401
+ 7411  A 40132M001 L La Grande  TLRS-4      281 25 43.4  53 41 53.6    20.2     74111402
+ 7501  A 30302M003 L Hartebeest MTLRS-1      27 41 10.2 -25-53-22.9  1407.5     75011501
+ 7501  A 30302M003 L Hartebeest MOBLAS-6     27 41 10.2 -25-53-22.9  1407.5     75010602
+ 7502  A 30314M001 L Sutherland MTLRS-1      20 48  8.9 -32-22-45.0  1730.0     75021501
+ 7503  A 30301S010 L HartRTL    HRTL         27 41 10.0 -25-53-21.1  1414.0     75036401
+ 7505  A 11101M001 L Sofia      MTLRS-1      23 23 41.0  42 33 20.4  1113.9     75051501
+ 7510  A 12612M001 L Askites    MTLRS-1      25 33 58.4  40 55 40.8   183.2     75101501
+ 7510  A 12612M001 L Askites    MTLRS-1      25 33 58.4  40 55 40.8   183.2     75101504
+ 7510  A 12612M001 L Askites    MTLRS-1      25 33 58.4  40 55 40.8   183.2     75101505
+ 7510  A 12612M001 L Askites    MTLRS-1      25 33 58.4  40 55 40.8   183.2     75101506
+ 7510  A 12612M001 L Askites    MTLRS-2      25 33 58.4  40 55 40.8   183.2     75101602
+ 7510  A 12612M001 L Askites    MTLRS-2      25 33 58.4  40 55 40.8   183.2     75101603
+ 7512  A 12615M001 L Katavia    MTLRS-1      27 46 50.8  35 57  5.4    74.6     75121501
+ 7512  A 12615M001 L Katavia    MTLRS-1      27 46 50.8  35 57  5.4    74.6     75121503
+ 7512  A 12615M001 L Katavia    MTLRS-1      27 46 50.8  35 57  5.4    74.6     75121504
+ 7512  A 12615M001 L Katavia    MTLRS-2      27 46 50.8  35 57  5.4    74.6     75121602
+ 7515  A 12602M002 L Dionysos   MTLRS-1      23 55 56.8  38  4 42.9   511.2     75151501
+ 7515  A 12602M002 L Dionysos   MTLRS-1      23 55 56.8  38  4 42.9   511.2     75151502
+ 7515  A 12602M002 L Dionysos   MTLRS-1      23 55 56.8  38  4 42.9   511.2     75151503
+ 7515  A 12602M002 L Dionysos   MTLRS-2      23 55 56.8  38  4 42.9   511.2     75151604
+ 7517  A 12613M001 L Roumelli   TLRS-1       24 41 39.0  35 24 15.2   103.3     75171102
+ 7517  A 12613M001 L Roumelli   TLRS-1       24 41 39.0  35 24 15.2   103.3     75171104
+ 7517  A 12613M001 L Roumelli   TLRS-1       24 41 39.0  35 24 15.2   103.3     75171105
+ 7517  A 12613M001 L Roumelli   MTLRS-1      24 41 39.0  35 24 15.2   103.3     75171503
+ 7517  A 12613M001 L Roumelli   MTLRS-2      24 41 39.0  35 24 15.2   103.3     75171601
+ 7520  A 12614M001 L Karitsa    MTLRS-1      20 39 53.4  39 44  3.3   599.3     75201501
+ 7520  A 12614M001 L Karitsa    MTLRS-1      20 39 53.4  39 44  3.3   599.3     75201502
+ 7520  A 12614M001 L Karitsa    MTLRS-1      20 39 53.4  39 44  3.3   599.3     75201503
+ 7525  A 12616M001 L Xrisokelar TLRS-1       21 52 39.4  36 47 29.2   476.8     75251104
+ 7525  A 12616M001 L Xrisokelar TLRS-1       21 52 39.4  36 47 29.2   476.8     75251105
+ 7525  A 12616M001 L Xrisokelar TLRS-1       21 52 39.4  36 47 29.2   476.8     75251106
+ 7525  A 12616M001 L Xrisokelar TLRS-1       21 52 39.4  36 47 29.2   476.8     75251107
+ 7525  A 12616M001 L Xrisokelar MTLRS-2      21 52 39.4  36 47 29.2   476.8     75251601
+ 7525  A 12616M001 L Xrisokelar MTLRS-2      21 52 39.4  36 47 29.2   476.8     75251602
+ 7525  A 12616M001 L Xrisokelar MTLRS-2      21 52 39.4  36 47 29.2   476.8     75251603
+ 7530  A 20702M001 L Bar Giyyor MOBLAS-2     35  5 18.7  31 43 20.6   773.7     75300201
+ 7530  A 20702M001 L Bar Giyyor MOBLAS-2     35  5 18.7  31 43 20.6   773.7     75300202
+ 7530  A 20702M001 L Bar Giyyor MOBLAS-2     35  5 18.7  31 43 20.6   773.7     75300203
+ 7530  A 20702M001 L Bar Giyyor MOBLAS-2     35  5 18.7  31 43 20.6   773.7     75300204
+ 7540  A 12734M005 L Matera     MTLRS-1      16 42 16.1  40 38 54.7   529.3     75401501
+ 7541  A 12734M004 L Matera     TLRS-1       16 42 15.4  40 38 54.7   529.0     75411102
+ 7541  A 12734M004 L Matera     TLRS-1       16 42 15.4  40 38 54.7   529.0     75411103
+ 7541  A 12734M004 L Matera     MTLRS-2      16 42 15.4  40 38 54.7   529.0     75411601
+ 7542  A 12749M001 L Monte Vend MTLRS-2      11 41 34.9  45 19 18.6   524.0     75421601
+ 7543  A 12717M001 L Noto       TLRS-1       14 59 18.2  36 52 35.7   126.4     75431102
+ 7543  A 12717M001 L Noto       MTLRS-2      14 59 18.2  36 52 35.7   126.4     75431601
+ 7544  A 12706M001 L Lampedusa  MTLRS-1      12 34  2.8  35 31  3.9   112.6     75441502
+ 7544  A 12706M001 L Lampedusa  MTLRS-1      12 34  2.8  35 31  3.9   112.6     75441503
+ 7544  A 12706M001 L Lampedusa  MTLRS-1      12 34  2.8  35 31  3.9   112.6     75441504
+ 7544  A 12706M001 L Lampedusa  MTLRS-2      12 34  2.8  35 31  3.9   112.6     75441601
+ 7545  A 12725M002 L Punta Sa M TLRS-1        8 58 22.7  39  8  7.7   230.7     75451103
+ 7545  A 12725M002 L Punta Sa M TLRS-1        8 58 22.7  39  8  7.7   230.7     75451104
+ 7545  A 12725M002 L Punta Sa M MTLRS-2       8 58 22.7  39  8  7.7   230.7     75451601
+ 7545  A 12725M002 L Punta Sa M MTLRS-2       8 58 22.7  39  8  7.7   230.7     75451602
+ 7546  A 12711M002 L Medicina   TLRS-1       11 38 47.3  44 31 12.1    50.1     75461102
+ 7546  A 12711M002 L Medicina   MTLRS-2      11 38 47.3  44 31 12.1    50.1     75461601
+ 7548  A 12725S013 L Cagliari   CAGLAS        8 58 19.3  39  8 11.9   252.8     75486201
+ 7550  A 12718M002 L Basovizza  MTLRS-2      13 52 32.0  45 38 34.6   447.9     75501601
+ 7550  A 12718M002 L Basovizza  MTLRS-2      13 52 32.0  45 38 34.6   447.9     75501602
+ 7560  A 12302M001 L Riga       MTLRS-1      24  3 30.9  56 56 54.4    30.0     75601501
+ 7561  A 12337M001 L Simeiz     MTLRS-1      33 59 29.7  44 24 55.2   387.1     75611501
+ 7575  A 20801M001 L Diyarbakir MTLRS-1      40 11 41.6  37 55 12.8   725.5     75751501
+ 7575  A 20801M001 L Diyarbakir MTLRS-1      40 11 41.6  37 55 12.8   725.5     75751502
+ 7580  A 20803M001 L Melengicli TLRS-1       33 11 28.5  37 22 39.5  1358.3     75801101
+ 7580  A 20803M001 L Melengicli TLRS-1       33 11 28.5  37 22 39.5  1358.3     75801102
+ 7580  A 20803M001 L Melengicli TLRS-1       33 11 28.5  37 22 39.5  1358.3     75801103
+ 7580  A 20803M001 L Melengicli TLRS-1       33 11 28.5  37 22 39.5  1358.3     75801104
+ 7585  A 20802M001 L Yozgat     MTLRS-1      34 48 46.8  39 48  1.9  1677.6     75851501
+ 7585  A 20802M001 L Yozgat     MTLRS-1      34 48 46.8  39 48  1.9  1677.6     75851502
+ 7585  A 20802M001 L Yozgat     MTLRS-1      34 48 46.8  39 48  1.9  1677.6     75851503
+ 7587  A 20804M001 L Yigilca    TLRS-1       31 26 19.6  40 56 13.1   823.3     75871101
+ 7587  A 20804M001 L Yigilca    TLRS-1       31 26 19.6  40 56 13.1   823.3     75871102
+ 7587  A 20804M001 L Yigilca    TLRS-1       31 26 19.6  40 56 13.1   823.3     75871103
+ 7587  A 20804M001 L Yigilca    MTLRS-1      31 26 19.6  40 56 13.1   823.3     75871504
+ 7589  A 20805M001 L Ankara     TLRS-1       32 45 30.8  39 53 15.0   974.5     75891101
+ 7590  A 14005M002 L Monte Gene MTLRS-2       9 01 04.3  45 55 39.5  1663.4     75901601
+ 7594  A 14201M200 L Wettzell   TIGO         12 52 38.0  49  8 39.4   659.3     75947901
+ 7596  A 14201M004 L Wettzell   MTLRS-1      12 52 43.2  49  8 38.9   659.4     75961502
+ 7596  A 14201M004 L Wettzell   MTLRS-1      12 52 43.2  49  8 38.9   659.4     75961503
+ 7596  A 14201M004 L Wettzell   MTLRS-2      12 52 43.2  49  8 38.9   659.4     75961601
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971501
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971502
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971503
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971504
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971505
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971506
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971507
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971508
+ 7597  A 14201M005 L Wettzell   MTLRS-1      12 52 42.5  49  8 38.3   660.9     75971509
+ 7599  A 14201M007 L Wettzell   MTLRS-1      12 52 39.9  49  8 42.5   657.8     75991501
+ 7602  A 10302M002 L Tromso     MTLRS-2      18 56 21.9  69 39 46.7   133.7     76021601
+ 7604  A 10004M002 L Brest      FTLRS       355 29 46.2  48 24 28.2   104.8     76046901
+ 7801  A 30101S001 L Helwan     EGY1 FIXED   31 20 33.7  29 51 32.4   132.5     78014601
+ 7805  A 10503S001 L Metsahovi  FIN. FIXED   24 23 40.3  60 13  2.3    79.0     78053301
+ 7806  A 10503S014 L Metsahovi  METLAS       24 23 40.3  60 13  1.7    74.7     78067601
+ 7810  A 14001S001 L Zimmerwald SWI. FIXED    7 27 54.7  46 52 38.0   951.7     78104801
+ 7810  B 14001S007 L Zimmerwald SWI2 FIXED    7 27 54.7  46 52 38.0   951.7     78106801
+ 7811  A 12205S001 L Borowiec   POL. FIXED   17  4 28.5  52 16 37.1   123.3     78113801
+ 7811  A 12205S001 L Borowiec   POL. FIXED   17  4 28.5  52 16 37.1   123.3     78113802
+ 7819  A 21609S004 L Kunming2   KUNMING2    102 47 50.7  25  1 47.8  1993.6     78198201
+ 7820  A 21609S002 L Kunming    KUNMING     102 47 50.7  25  1 47.8  1993.6     78208201
+ 7821  A 21605S010 L Shanghai   SO FIXED    121 11 11.8  31  5 45.9   100.9     78212801
+ 7822  A 92201M017 L Punaaia    FTLRS       210 23 37.6 -17-34-36.5    95.1     78226901
+ 7823  A 13402M005 L San Fernan FTLRS       353 47 40.8  36 27 54.9    98.6     78236901
+ 7824  A 13402S004 L San Fernan SPN. FIXED  353 47 40.8  36 27 54.9    98.6     78244501
+ 7824  B 13402S007 L San Fernan SPN. FIXED  353 47 40.8  36 27 54.9    98.6     78244502
+ 7825  A 50119S003 L Mount Stro STR2 FIXED  149  0 35.5 -35-18-58.1   805.6     78259001
+ 7826  A 50119S007 L Mount Stro STR3 FIXED  149  0 35.5 -35-18-58.1   805.6     78269101
+ 7827  A 14201S045 L Wettzell   SOSW         12 52 41.2  49  8 41.8   663.2     78272201
+ 7829  A 10002S017 L Grasse     FTLRS         6 55 14.9  43 45 16.8  1319.4     78296903
+ 7830  A 12617M002 L Chania     FTLRS        24  4 13.9  35 31 58.9   160.9     78306901
+ 7831  A 30101S001 L Helwan     EGY. FIXED   31 20 33.7  29 51 32.4   132.5     78314601
+ 7832  A 20101S001 L Riyadh     SALRO        46 24  1.3  24 54 37.9   760.8     78325501
+ 7833  A 13504S001 L Kootwijk   NL. FIXED     5 48 35.3  52 10 42.2    94.5     78333201
+ 7834  A 14201S002 L Wettzell   GER. FIXED   12 52 41.1  49  8 41.7   661.8     78343001
+ 7835  A 10002S001 L Grasse     FRA. FIXED    6 55 16.0  43 45 16.8  1323.5     78353101
+ 7835  A 10002S001 L Grasse     FRA. FIXED    6 55 16.0  43 45 16.8  1323.5     78353102
+ 7836  A 14106S009 L Potsdam    GFZLAS       13  3 53.6  52 22 48.0   134.2     78365801
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78372804
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78372805
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78373701
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78373702
+ 7837  A 21605S001 L Shanghai   SO FIXED    121 11 30.2  31  5 51.1    28.5     78373703
+ 7838  A 21726S001 L Simosato   SHO FIXED   135 56 13.3  33 34 39.6   102.3     78383601
+ 7838  A 21726S001 L Simosato   SHO FIXED   135 56 13.3  33 34 39.6   102.3     78383602
+ 7838  A 21726S001 L Simosato   SHO FIXED   135 56 13.3  33 34 39.6   102.3     78383603
+ 7839  A 11001S002 L Graz       GRAZ FIXED   15 29 36.0  47  4  1.6   540.1     78393401
+ 7839  A 11001S002 L Graz       GRAZ FIXED   15 29 36.0  47  4  1.6   540.1     78393402
+ 7840  A 13212S001 L Herstmonce RGO FIXED     0 20 10.0  50 52  2.5    76.1     78403501
+ 7841  A 14106S011 L Potsdam    GFZLAS3      13  3 41.1  52 22 58.8   127.9     78418701
+ 7843  A 50103S007 L Orroral    NLRS        148 56 21.5 -35-38-10.5  1350.6     78432501
+ 7843  A 50103S007 L Orroral    NLRS        148 56 21.5 -35-38-10.5  1350.6     78432502
+ 7844  A 21732S002 L Chichi Jim HTLRS-1     142 11 52.4  27  5 54.0    53.0     78441701
+ 7844  B 21732S002 L Chichi Jim HTLRS-1     142 11 52.4  27  5 54.0    53.0     78441702
+ 7845  A 10002S002 L Grasse     GRASLLR       6 55 17.6  43 45 16.6  1324.0     78457801
+ 7846  A 10002M004 L Grasse     FTLRS         6 55 14.9  43 45 16.8  1319.4     78466901
+ 7847  A 50107S009 L Yarragadee PSLR        115 20 48.5 -29 -2-46.6   243.1     78477001
+ 7848  A 10077M002 L Ajaccio    FTLRS         8 45 45.6  41 55 38.5    97.5     78486901
+ 7848  A 10077M002 L Ajaccio    FTLRS         8 45 45.6  41 55 38.5    97.5     78486902
+ 7848  A 10077M002 L Ajaccio    FTLRS         8 45 45.6  41 55 38.5    97.5     78486903
+ 7848  A 10077M002 L Ajaccio    FTLRS         8 45 45.6  41 55 38.5    97.5     78486904
+ 7849  A 50119S001 L Mount Stro STR. FIXED  149  0 35.5 -35-18-58.1   804.7     78498001
+ 7850  A 40442M008 L Mcdonald   TLRS-4      255 59  5.6  30 40 49.7  2004.9     78501401
+ 7853  A 40439M004 L Owens Vall MTLRS-1     241 42 22.3  37 13 57.3  1178.7     78531501
+ 7853  A 40439M004 L Owens Vall MTLRS-1     241 42 22.3  37 13 57.3  1178.7     78531502
+ 7865  A 49654M001 L NRL OTF    NRL OTF     282 37 44.0  38 29 57.1    24.6     78658601
+ 7882  A 40505M001 L Cabo San L TLRS-1      250  8  8.0  22 55  3.1   112.3     78821102
+ 7882  A 40505M001 L Cabo San L TLRS-2      250  8  8.0  22 55  3.1   112.3     78821201
+ 7882  A 40505M001 L Cabo San L TLRS-4      250  8  8.0  22 55  3.1   112.3     78821403
+ 7882  A 40505M001 L Cabo San L TLRS-4      250  8  8.0  22 55  3.1   112.3     78821404
+ 7883  A 40506M001 L Ensenada   TLRS-4      243 50 21.3  31 15 23.9   165.6     78831401
+ 7883  A 40506M001 L Ensenada   TLRS-4      243 50 21.3  31 15 23.9   165.6     78831402
+ 7883  A 40506M001 L Ensenada   TLRS-4      243 50 21.3  31 15 23.9   165.6     78831403
+ 7883  A 40506M001 L Ensenada   TLRS-4      243 50 21.3  31 15 23.9   165.6     78831404
+ 7884  A 40429S001 L Albuquerqu STARFIRE    253 32  9.9  34 57 51.2  1876.1     78846601
+ 7885  A 40442M005 L Mcdonald   TLRS-1      255 59  2.6  30 40 37.3  1962.0     78851101
+ 7886  A 40433M005 L Quincy     TLRS-1      239  3 18.7  39 58 30.0  1107.3     78861101
+ 7886  A 40433M005 L Quincy     TLRS-1      239  3 18.7  39 58 30.0  1107.3     78861102
+ 7886  A 40433M005 L Quincy     TLRS-1      239  3 18.7  39 58 30.0  1107.3     78861103
+ 7886  A 40433M005 L Quincy     TLRS-1      239  3 18.7  39 58 30.0  1107.3     78861104
+ 7887  A 40420M004 L Vandenberg TLRS-1      239 29 58.0  34 33 58.4   601.6     78871101
+ 7888  A 40434M002 L Mount Hopk TLRS-1      249  7 18.6  31 41  6.4  2330.8     78881101
+ 7889  A 40451M118 L Greenbelt  TLRS-2      283 10 21.1  39  1 15.2    19.2     78891201
+ 7889  A 40451M118 L Greenbelt  TLRS-2      283 10 21.1  39  1 15.2    19.2     78891203
+ 7889  A 40451M118 L Greenbelt  TLRS-3      283 10 21.1  39  1 15.2    19.2     78891302
+ 7890  A 40412M001 L Austin     TLRS-1      262 08 01.5  30 18 46.8   244.6     78901101
+ 7890  A 40412M001 L Austin     TLRS-1      262 08 01.5  30 18 46.8   244.6     78901102
+ 7891  A 40491M002 L Flagstaff  TLRS-1      248 21 55.7  35 12 52.3  2145.1     78911101
+ 7892  A 40492M001 L Vernal     TLRS-1      250 25 45.0  40 19 36.6  1589.8     78921101
+ 7892  A 40492M001 L Vernal     TLRS-1      250 25 45.0  40 19 36.6  1589.8     78921102
+ 7894  A 40493M001 L Yuma       TLRS-1      245 47 48.7  32 56 20.8   237.6     78941101
+ 7895  A   ---     L Mount Wils TLRS-1      283 10 19.7  39  1 14.5    21.9     78951101
+ 7896  A 40400M001 L Pasadena   TLRS-1      241 49 39.7  34 12 19.9   442.9     78961101
+ 7897  A 40442M010 L Mcdonald   TLRS-1      255 59  5.6  30 40 49.7  2004.9     78971101
+ 7897  A 40442M010 L Mcdonald   TLRS-1      255 59  5.6  30 40 49.7  2004.9     78971102
+ 7899  A 40451M111 L Greenbelt  TLRS-1      283 10 48.1  39  1 15.3    10.2     78991101
+ 7899  A 40451M111 L Greenbelt  TLRS-1      283 10 48.1  39  1 15.3    10.2     78991102
+ 7902  A 30304S001 L Olifantsfo SAO-3        27 41 10.2 -25-53-22.9  1407.5     79024201
+ 7907  A 42202S001 L Arequipa   SAO-2       288 30 24.7 -16-27-56.6  2492.9     79074001
+ 7907  A 42202S001 L Arequipa   SAO-2       288 30 24.7 -16-27-56.6  2492.9     79074002
+ 7907  A 42202S001 L Arequipa   SAO-2       288 30 24.7 -16-27-56.6  2492.9     79074003
+ 7917  A 40451M119 L Greenbelt  SAO-3       283 10 18.9  39  1 17.7    25.7     79174201
+ 7918  A 40451M120 L Greenbelt  MOBLAS-6    283 10 19.7  39  1 14.5    19.4     79180608
+ 7918  A 40451M120 L Greenbelt  MOBLAS-6    283 10 19.7  39  1 14.5    19.4     79180609
+ 7918  A 40451M120 L Greenbelt  TLRS-3      283 10 19.7  39  1 14.5    19.4     79181301
+ 7918  A 40451M120 L Greenbelt  TLRS-3      283 10 19.7  39  1 14.5    19.4     79181302
+ 7918  A 40451M120 L Greenbelt  TLRS-3      283 10 19.7  39  1 14.5    19.4     79181306
+ 7918  A 40451M120 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    19.4     79181403
+ 7918  A 40451M120 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    19.4     79181404
+ 7918  A 40451M120 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    19.4     79181405
+ 7918  A 40451M120 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    19.4     79181407
+ 7919  A 40451M121 L Greenbelt  TLRS-4      283 10 19.7  39  1 14.5    21.9     79191401
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201101
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201102
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201103
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201104
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201105
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201110
+ 7920  A 40451M117 L Greenbelt  TLRS-1      283 10 21.0  39  1 12.9    19.3     79201111
+ 7920  A 40451M117 L Greenbelt  TLRS-3      283 10 21.0  39  1 12.9    19.3     79201306
+ 7920  A 40451M117 L Greenbelt  TLRS-3      283 10 21.0  39  1 12.9    19.3     79201307
+ 7920  A 40451M117 L Greenbelt  TLRS-3      283 10 21.0  39  1 12.9    19.3     79201308
+ 7920  A 40451M117 L Greenbelt  TLRS-3      283 10 21.0  39  1 12.9    19.3     79201309
+ 7920  A 40451M117 L Greenbelt  TLRS-4      283 10 21.0  39  1 12.9    19.3     79201414
+ 7920  A 40451M117 L Greenbelt  SALRO       283 10 21.0  39  1 12.9    19.3     79205512
+ 7920  A 40451M117 L Greenbelt  SALRO       283 10 21.0  39  1 12.9    19.3     79205513
+ 7921  A 40434S001 L Mount Hopk SAO-4       249  7 18.9  31 41  3.2  2358.2     79214301
+ 7929  A 41604S001 L Natal      SAO-1       324 50  7.3  -5-55-40.1    42.6     79294101
+ 7935  A 21705S001 L Dodair     DDR FIXED   139 11 30.6  36  0 20.7   903.2     79356501
+ 7939  A 12734S001 L Matera     SAO-1        16 42 16.8  40 38 55.7   536.5     79394101
+ 7940  A 12602S001 L Dionysos   GRE. FIXED   23 55 57.9  38  4 42.3   511.9     79404701
+ 7941  A 12734S008 L Matera     MLRO         16 42 16.5  40 38 55.2   537.6     79417701
+ 7943  A 50103S003 L Orroral    SAO-3       148 57 17.2 -35-37-29.7   950.3     79434201
+ 7944  A   ---     L Tidbinbill SALRO       148 57 17.3 -35 37 29.7   689.0     79445501
+ 7999  A   ---     L Mcdonald   TLRS-1      255 59  5.6  30 40 49.7  2004.9     79991101
+ 8833  A 13504M002 L Kootwijk   MTLRS-1       5 48 36.6  52 10 41.4    89.2     88331501
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331602
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331603
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331604
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331605
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331606
+ 8833  A 13504M002 L Kootwijk   MTLRS-2       5 48 36.6  52 10 41.4    89.2     88331607
+ 8834  A 14201S018 L Wettzell   WLRS         12 52 40.8  49  8 39.9   666.0     88341001
+-SITE/ID
++SITE/ECCENTRICITY
+*SITE PT SOLN T DATA_START__ DATA_END____ UNE UP______ NORTH___ EAST____        CDP-SOD_
+ 1148  A    1 L 88:001:00000 91:365:86399 UNE   0.0000   0.0000   0.0000        11480901
+ 1181  A    1 L 74:001:00000 93:365:86399 UNE   0.0000   0.0000   0.0000        11813901
+ 1824  A    1 L 96:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18248101
+ 1831  A    1 L 02:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18318501
+ 1863  A    1 L 90:274:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18635101
+ 1864  A    1 L 90:274:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18645401
+ 1866  A    1 L 90:274:00000 90:365:86399 UNE   0.0000   0.0000   0.0000        18665201
+ 1867  A    1 L 90:274:00000 94:365:86399 UNE   0.0000   0.0000   0.0000        18675301
+ 1868  A    1 L 92:122:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18685901
+ 1869  A    1 L 92:001:00000 93:365:86399 UNE   0.0000   0.0000   0.0000        18696001
+ 1870  A    1 L 94:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18706301
+ 1871  A    1 L 94:001:00000 99:365:86399 UNE   0.0000   0.0000   0.0000        18716401
+ 1873  A    1 L 76:122:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18734901
+ 1874  A    1 L 99:152:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18748301
+ 1879  A    1 L 04:259:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18799401
+ 1884  A    1 L 76:122:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18844401
+ 1885  A    1 L 96:245:00000 97:365:86399 UNE   0.0000   0.0000   0.0000        18856701
+ 1886  A    1 L 10:335:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18869601
+ 1887  A    1 L 11:152:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18879701
+ 1888  A    1 L 12:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18889801
+ 1889  A    1 L 12:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18899901
+ 1890  A    1 L 12:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18900901
+ 1891  A    1 C 13:203:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18915301
+ 1893  A    1 L 76:122:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        18931801
+ 1953  A    1 L 76:122:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        19532001
+ 7035  A    1 L 88:176:00000 88:265:86399 UNE   2.5870   0.0060   0.0170        70351301
+ 7040  A    1 L 05:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        70409201
+ 7046  A    1 L 91:237:00000 91:290:86399 UNE   2.6390   0.0030  -0.0020        70461402
+ 7046  A    1 L 90:215:00000 90:246:86399 UNE   1.3350   1.7760   1.9460        70461501
+ 7051  A    1 L 74:239:00000 74:331:86399 UNE   3.6800   0.0020  -0.0010        70510101
+ 7051  A    1 L 76:191:00000 76:335:86399 UNE   3.6040  -0.0050  -0.0030        70510202
+ 7051  A    1 L 79:001:00000 79:150:86399 UNE   3.6190  -0.0060   0.0040        70510203
+ 7051  A    1 L 81:032:00000 81:141:86399 UNE   3.2790  -0.0220   0.0230        70510804
+ 7061  A    1 L 83:010:00000 83:214:86399 UNE   1.7360   0.0000   0.0000        70611201
+ 7061  A    1 L 84:079:00000 84:347:86399 UNE   1.7350   0.0000   0.0000        70611202
+ 7062  A    1 L 74:240:00000 74:348:86399 UNE   3.5700  -0.0050   0.0000        70620201
+ 7062  A    1 L 76:258:00000 77:120:86399 UNE   3.6150   0.0000   0.0000        70620302
+ 7062  A    1 L 78:180:00000 79:150:86399 UNE   3.5680  -0.0110  -0.0100        70620303
+ 7062  A    1 L 81:277:00000 82:008:86399 UNE   3.4080   0.0310  -1.6010        70621104
+ 7062  A    1 L 83:255:00000 84:004:86399 UNE   1.7940   0.0000   0.0000        70621205
+ 7063  A    1 L 76:122:00000 81:240:86399 UNE   3.0360   0.0000   0.0000        70632101
+ 7064  A    1 L 73:274:00000 74:181:86399 UNE   2.9780   0.0000   0.0000        70640101
+ 7064  A    1 L 77:294:00000 77:332:86399 UNE   2.9660   0.0020   0.0020        70640102
+ 7065  A    1 L 73:274:00000 74:181:86399 UNE   3.4170   0.0000   0.0000        70650201
+ 7065  A    1 L 77:290:00000 77:325:86399 UNE   3.4680  -0.0130   0.0020        70650203
+ 7065  A    1 L 75:213:00000 76:191:86399 UNE   3.4650  -0.0810  -0.1760        70650302
+ 7066  A    1 L 76:122:00000 79:152:86399 UNE   9.0800   0.0000   0.0000        70662701
+ 7067  A    1 L 75:236:00000 76:198:86399 UNE   3.7010   0.0000   0.0000        70670101
+ 7067  A    1 L 78:181:00000 78:313:86399 UNE   3.6890  -0.0050  -0.0080        70670102
+ 7068  A    1 L 75:109:00000 76:065:86399 UNE   3.5780   0.0000   0.0050        70680201
+ 7068  A    1 L 78:211:00000 78:311:86399 UNE   3.6780   0.0090  -0.0290        70680202
+ 7069  A    1 L 76:122:00000 80:274:86399 UNE   3.4360   0.0000   0.0000        70692201
+ 7070  A    1 L 75:024:00000 75:059:86399 UNE   3.3600   0.0000   0.0000        70700201
+ 7080  A    1 L 88:041:00000 88:154:86399 UNE   1.7560  -0.0040  -0.0050        70802401
+ 7080  A    1 L 88:155:00000 88:265:86399 UNE   1.7560  -0.0040  -0.0050        70802402
+ 7080  A    1 L 88:266:00000 89:255:86399 UNE   1.7560  -0.0040  -0.0050        70802403
+ 7080  A    1 L 89:256:00000 89:270:86399 UNE   1.7560  -0.0040  -0.0050        70802404
+ 7080  A    1 L 89:271:00000 89:297:86399 UNE   1.7560  -0.0040  -0.0050        70802405
+ 7080  A    1 L 89:309:00000 90:015:86399 UNE   1.7560  -0.0040  -0.0050        70802406
+ 7080  A    1 L 90:016:00000 90:025:86399 UNE   1.7560  -0.0040  -0.0050        70802407
+ 7080  A    1 L 90:026:00000 90:093:86399 UNE   1.7560  -0.0040  -0.0050        70802408
+ 7080  A    1 L 90:094:00000 90:119:86399 UNE   1.7560  -0.0040  -0.0050        70802409
+ 7080  A    1 L 90:120:00000 90:156:86399 UNE   1.7560  -0.0040  -0.0050        70802410
+ 7080  A    1 L 90:157:00000 90:267:86399 UNE   1.7560  -0.0040  -0.0050        70802411
+ 7080  A    1 L 90:268:00000 90:334:86399 UNE   1.7560  -0.0040  -0.0050        70802412
+ 7080  A    1 L 90:335:00000 91:099:86399 UNE   1.7560  -0.0040  -0.0050        70802413
+ 7080  A    1 L 91:100:00000 91:184:86399 UNE   1.7560  -0.0040  -0.0050        70802414
+ 7080  A    1 L 91:185:00000 92:100:86399 UNE   1.7560  -0.0040  -0.0050        70802415
+ 7080  A    1 L 92:101:00000 92:225:86399 UNE   1.7560  -0.0040  -0.0050        70802416
+ 7080  A    1 L 92:226:00000 93:028:86399 UNE   1.7560  -0.0040  -0.0050        70802417
+ 7080  A    1 L 93:029:00000 93:161:86399 UNE   1.7630  -0.0030  -0.0060        70802418
+ 7080  A    1 L 93:162:00000 00:000:00000 UNE   1.7630  -0.0030  -0.0060        70802419
+ 7081  A    1 L 76:103:00000 76:128:86399 UNE   3.4220   0.0000   0.0000        70810201
+ 7082  A    1 L 76:268:00000 76:335:86399 UNE   3.7740   0.0020   0.0030        70820101
+ 7082  A    1 L 79:001:00000 79:232:86399 UNE   3.8170  -0.0040   0.0050        70820102
+ 7082  A    1 L 81:089:00000 81:126:86399 UNE   3.5100  -1.0870   1.1120        70821103
+ 7082  A    1 L 83:307:00000 84:010:86399 UNE   3.5040  -0.9980   1.2060        70821104
+ 7083  A    1 L 75:001:00000 75:166:86399 UNE   2.8730   0.0000   0.0000        70830301
+ 7084  A    1 L 77:346:00000 78:090:86399 UNE   3.4930   0.0000   0.0000        70840201
+ 7085  A    1 L 77:346:00000 78:090:86399 UNE   3.8660  -0.0030  -0.0080        70850101
+ 7086  A    1 L 79:239:00000 80:152:86399 UNE   3.7880   0.0070  -0.0070        70860101
+ 7086  A    1 L 80:183:00000 80:221:86399 UNE   3.5290  -1.5800  -0.1400        70861102
+ 7086  A    1 L 82:284:00000 85:059:86399 UNE   1.9770  -5.3080   5.5900        70862403
+ 7086  A    1 L 85:060:00000 86:289:86399 UNE   1.9770  -5.3080   5.5900        70862404
+ 7086  A    1 L 86:290:00000 87:210:86399 UNE   1.9770  -5.3080   5.5900        70862405
+ 7086  A    1 L 87:211:00000 87:259:86399 UNE   1.9770  -5.3080   5.5900        70862406
+ 7086  A    1 L 87:260:00000 87:327:86399 UNE   1.9770  -5.3080   5.5900        70862407
+ 7086  A    1 L 87:328:00000 88:032:86399 UNE   1.9770  -5.3080   5.5900        70862408
+ 7090  A    1 L 79:182:00000 83:207:86399 UNE   3.1850   0.0030   0.0110        70900501
+ 7090  A    1 L 83:208:00000 84:323:86399 UNE   3.1850   0.0030   0.0110        70900502
+ 7090  A    1 L 84:324:00000 85:247:86399 UNE   3.1850   0.0030   0.0110        70900503
+ 7090  A    1 L 85:248:00000 87:106:86399 UNE   3.1850   0.0030   0.0110        70900504
+ 7090  A    1 L 87:113:00000 87:224:86399 UNE   3.1850   0.0030   0.0110        70900505
+ 7090  A    1 L 87:225:00000 87:237:86399 UNE   3.1770   0.0030   0.0100        70900506
+ 7090  A    1 L 87:238:00000 89:216:86399 UNE   3.1770   0.0030   0.0100        70900507
+ 7090  A    1 L 89:217:00000 90:316:86399 UNE   3.1770   0.0030   0.0100        70900508
+ 7090  A    1 L 90:317:00000 91:157:86399 UNE   3.1770   0.0030   0.0100        70900509
+ 7090  A    1 L 91:158:00000 92:008:86399 UNE   3.1770   0.0030   0.0100        70900510
+ 7090  A    1 L 92:021:00000 92:083:86399 UNE   3.1813  -0.0096   0.0192        70900511
+ 7090  A    1 L 92:084:00000 92:195:86399 UNE   3.1813  -0.0096   0.0192        70900512
+ 7090  A    1 L 92:203:00000 98:233:86399 UNE   3.1813  -0.0096   0.0192        70900513
+ 7090  A    1 L 98:234:00000 03:330:86399 UNE   3.1809  -0.0083   0.0178        70900513
+ 7090  A    1 L 03:331:00000 07:150:86399 UNE   3.1821  -0.0083   0.0184        70900513
+ 7090  A    1 L 07:151:00000 10:195:86399 UNE   3.1823  -0.0062   0.0190        70900513
+ 7090  A    1 L 10:196:00000 14:079:86399 UNE   3.1820  -0.0068   0.0164        70900513
+ 7090  A    1 L 14:080:00000 00:000:00000 UNE   3.1827  -0.0064   0.0194        70900513
+ 7091  A    1 L 77:339:00000 78:090:86399 UNE   3.7480   0.0000   0.0030        70910301
+ 7091  A    1 L 79:161:00000 80:319:86399 UNE   3.3810  -0.0160  -0.0030        70910702
+ 7091  A    1 L 88:222:00000 88:291:86399 UNE   3.4770   1.5540   0.1520        70911103
+ 7091  A    1 L 90:283:00000 90:345:86399 UNE   3.4970   1.5500  -0.0590        70911104
+ 7092  A    1 L 79:227:00000 80:305:86399 UNE   3.1420  -0.0150   0.0450        70920801
+ 7096  A    1 L 79:161:00000 80:319:86399 UNE   3.1980   0.0000   0.0000        70960601
+ 7097  A    1 L 87:315:00000 88:060:86399 UNE   1.4960   0.0000   0.0000        70971201
+ 7097  A    1 L 88:266:00000 89:090:86399 UNE   1.4740   0.0000   0.0000        70971202
+ 7097  A    1 L 89:279:00000 90:056:86399 UNE   1.4820   0.0000   0.0000        70971203
+ 7097  A    1 L 90:248:00000 91:068:86399 UNE   1.4870   0.0000  -0.0010        70971204
+ 7097  A    1 L 91:261:00000 92:069:86399 UNE   1.4820  -0.0010  -0.0020        70971205
+ 7097  A    1 L 92:070:00000 92:078:86399 UNE   1.4820  -0.0010  -0.0020        70971206
+ 7097  A    1 L 92:226:00000 93:089:86399 UNE   1.4970  -0.0010  -0.0010        70971207
+ 7097  A    1 L 93:331:00000 95:090:86399 UNE   1.4950   0.0000  -0.0010        70971208
+ 7100  A    1 L 77:228:00000 77:322:86399 UNE   3.5130   0.0000  -0.0020        71000301
+ 7100  A    1 L 78:060:00000 78:286:86399 UNE   3.1910   0.0050   0.0210        71000402
+ 7101  A    1 L 82:032:00000 82:152:86399 UNE   3.1500   0.1190  -0.6480        71010602
+ 7101  A    1 L 78:213:00000 79:150:86399 UNE   3.1330   0.1680  -0.6910        71010801
+ 7102  A    1 L 84:336:00000 88:174:86399 UNE   3.4880   0.0580   0.0180        71020305
+ 7102  A    1 L 79:138:00000 82:319:86399 UNE   3.2050  -0.0020  -0.0040        71020402
+ 7102  A    1 L 82:335:00000 83:090:86399 UNE   3.1540   0.0080   0.0480        71020403
+ 7102  A    1 L 83:091:00000 83:212:86399 UNE   3.1960  -0.0190   0.0420        71020404
+ 7102  A    1 L 78:091:00000 79:137:86399 UNE   3.2080  -0.0090   0.0020        71020501
+ 7102  A    1 L 88:295:00000 89:001:86399 UNE   3.2670   1.5660  -0.0180        71021106
+ 7102  A    1 L 89:002:00000 89:065:86399 UNE   3.2670   1.5660  -0.0180        71021107
+ 7103  A    1 L 78:135:00000 79:130:86399 UNE   3.1920   0.0000  -0.0330        71030601
+ 7103  A    1 L 82:159:00000 82:306:86399 UNE   3.1660  -0.0460  -0.0060        71030602
+ 7104  A    1 L 78:182:00000 79:155:86399 UNE   3.1300   0.0690   0.0620        71040701
+ 7105  A    1 L 85:060:00000 85:204:86399 UNE   1.4650   0.9700  16.5080        71051206
+ 7105  A    1 L 85:088:00000 85:184:86399 UNE   2.9820  13.2060 -12.1060        71050207
+ 7105  A    1 L 81:001:00000 81:166:86399 UNE   3.1690   0.0160  -0.0260        71050701
+ 7105  A    1 L 81:167:00000 83:031:86399 UNE   3.1690   0.0160  -0.0260        71050702
+ 7105  A    1 L 83:032:00000 83:233:86399 UNE   3.1690   0.0160  -0.0260        71050703
+ 7105  A    1 L 83:234:00000 84:081:86399 UNE   3.1690   0.0170  -0.0310        71050704
+ 7105  A    1 L 84:082:00000 85:126:86399 UNE   3.1690   0.0170  -0.0320        71050705
+ 7105  A    1 L 85:127:00000 85:209:86399 UNE   3.1690   0.0170  -0.0320        71050708
+ 7105  A    1 L 85:210:00000 86:086:86399 UNE   3.1690   0.0170  -0.0320        71050709
+ 7105  A    1 L 86:090:00000 86:339:86399 UNE   3.1680   0.0170  -0.0310        71050710
+ 7105  A    1 L 86:340:00000 88:208:86399 UNE   3.1680   0.0170  -0.0310        71050711
+ 7105  A    1 L 88:209:00000 89:009:86399 UNE   3.1680   0.0170  -0.0310        71050712
+ 7105  A    1 L 89:010:00000 89:165:86399 UNE   3.1680   0.0170  -0.0310        71050713
+ 7105  A    1 L 89:166:00000 89:214:86399 UNE   3.1680   0.0170  -0.0310        71050714
+ 7105  A    1 L 89:215:00000 89:284:86399 UNE   3.1680   0.0170  -0.0310        71050715
+ 7105  A    1 L 89:285:00000 90:205:86399 UNE   3.1620   0.0350  -0.0400        71050716
+ 7105  A    1 L 90:206:00000 90:243:86399 UNE   3.1530  -0.0140  -0.0330        71050717
+ 7105  A    1 L 90:244:00000 90:343:86399 UNE   3.1530  -0.0140  -0.0330        71050718
+ 7105  A    1 L 90:344:00000 91:190:86399 UNE   3.1530  -0.0140  -0.0330        71050719
+ 7105  A    1 L 91:191:00000 91:203:86399 UNE   3.1530  -0.0140  -0.0330        71050720
+ 7105  A    1 L 91:204:00000 91:289:86399 UNE   3.1530  -0.0140  -0.0330        71050721
+ 7105  A    1 L 91:291:00000 91:342:86399 UNE   3.1530  -0.0140  -0.0330        71050722
+ 7105  A    1 L 91:343:00000 92:174:86399 UNE   3.1530  -0.0140  -0.0330        71050723
+ 7105  A    1 L 92:192:00000 99:031:86399 UNE   3.1380  -0.0110  -0.0300        71050724
+ 7105  A    1 L 99:032:00000 07:304:86399 UNE   3.1380  -0.0070  -0.0340        71050725
+ 7105  A    1 L 07:305:00000 12:151:86399 UNE   3.1380  -0.0070  -0.0340        71050725
+ 7105  A    1 L 12:152:00000 00:000:00000 UNE   3.1379  -0.0087  -0.0327        71050725
+ 7106  A    1 L 90:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        71065601
+ 7109  A    1 L 81:274:00000 82:210:86399 UNE   3.2250   0.0120   0.0110        71090801
+ 7109  A    1 L 82:227:00000 85:070:86399 UNE   3.1410  -0.0290   0.0110        71090802
+ 7109  A    1 L 85:071:00000 85:226:86399 UNE   3.1420  -0.0290   0.0110        71090803
+ 7109  A    1 L 85:227:00000 86:261:86399 UNE   3.1420  -0.0290   0.0110        71090804
+ 7109  A    1 L 86:269:00000 88:346:86399 UNE   3.1420  -0.0290   0.0110        71090805
+ 7109  A    1 L 88:347:00000 89:081:86399 UNE   3.1380  -0.0270   0.0120        71090806
+ 7109  A    1 L 89:082:00000 90:179:86399 UNE   3.1380  -0.0270   0.0120        71090807
+ 7109  A    1 L 90:182:00000 90:199:86399 UNE   3.1380  -0.0270   0.0120        71090808
+ 7109  A    1 L 90:200:00000 90:256:86399 UNE   3.1380  -0.0270   0.0120        71090809
+ 7109  A    1 L 90:257:00000 91:066:86399 UNE   3.1380  -0.0270   0.0120        71090810
+ 7109  A    1 L 91:322:00000 91:345:86399 UNE   3.1840  -0.0190   0.0050        71090812
+ 7109  A    1 L 91:346:00000 92:094:86399 UNE   3.1840  -0.0350  -0.0030        71090813
+ 7109  A    1 L 92:099:00000 92:117:86399 UNE   3.1840  -0.0350  -0.0030        71090814
+ 7109  A    1 L 92:118:00000 97:161:86399 UNE   3.1840  -0.0350  -0.0030        71090815
+ 7109  A    1 L 91:078:00000 91:231:86399 UNE   2.6510  -0.0050   0.0000        71091411
+ 7110  A    1 L 81:182:00000 81:212:86399 UNE   3.5000  -0.0070  -0.0030        71100301
+ 7110  A    1 L 81:213:00000 83:181:86399 UNE   3.5200  -0.0070  -0.0030        71100301
+ 7110  A    1 L 83:227:00000 86:316:86399 UNE   3.2090  -0.0330  -0.0150        71100402
+ 7110  A    1 L 86:324:00000 88:121:86399 UNE   3.2100  -0.0330  -0.0150        71100403
+ 7110  A    1 L 88:121:00000 88:167:86399 UNE   3.2130  -0.0330  -0.0160        71100404
+ 7110  A    1 L 88:168:00000 88:347:86399 UNE   3.2130  -0.0330  -0.0160        71100405
+ 7110  A    1 L 88:348:00000 90:256:86399 UNE   3.2130  -0.0330  -0.0160        71100406
+ 7110  A    1 L 90:257:00000 91:092:86399 UNE   3.2130  -0.0330  -0.0160        71100407
+ 7110  A    1 L 91:093:00000 91:339:86399 UNE   3.2130  -0.0330  -0.0160        71100408
+ 7110  A    1 L 91:340:00000 92:014:86399 UNE   3.2130  -0.0330  -0.0160        71100409
+ 7110  A    1 L 92:018:00000 92:069:86399 UNE   3.2130  -0.0330  -0.0160        71100410
+ 7110  A    1 L 92:122:00000 03:099:86399 UNE   3.1890  -0.0260  -0.0190        71100411
+ 7110  A    1 L 03:143:00000 11:316:86399 UNE   3.1880  -0.0213  -0.0208        71100412
+ 7110  A    1 L 11:317:00000 18:136:86399 UNE   3.1900  -0.0260  -0.0180        71100412
+ 7110  A    1 L 18:137:00000 00:000:00000 UNE   3.1895  -0.0242  -0.0148        71100412
+ 7111  A    1 L 82:118:00000 82:145:86399 UNE   3.3050  -1.1620  -1.0510        71111101
+ 7112  A    1 L 81:091:00000 84:287:86399 UNE   3.5110   0.0050  -0.0020        71120201
+ 7112  A    1 L 91:288:00000 91:359:86399 UNE   3.2730   1.1770  -1.0390        71121105
+ 7112  A    1 L 90:026:00000 90:054:86399 UNE   2.6280  -0.0070   0.0220        71121403
+ 7112  A    1 L 88:212:00000 88:274:86399 UNE   1.3510  -2.7050   0.0110        71121502
+ 7112  A    1 L 90:249:00000 90:289:86399 UNE   1.3470  -2.7480   0.0420        71121504
+ 7114  A    1 L 79:159:00000 81:031:86399 UNE   3.6220  -0.0030  -0.0080        71140201
+ 7114  A    1 L 81:223:00000 81:272:86399 UNE   3.4590   1.5120  -0.4420        71141102
+ 7114  A    1 L 82:312:00000 83:021:86399 UNE   3.5140   1.5200  -0.3640        71141103
+ 7115  A    1 L 79:166:00000 81:100:86399 UNE   3.6150   0.0070  -0.0290        71150301
+ 7119  A    1 L 06:250:00000 11:088:86399 UNE   2.6320   0.0010   0.0020        71191401
+ 7119  A    1 L 11:089:00000 13:134:86399 UNE   2.6320   0.0010   0.0020        71191402
+ 7119  A    1 L 13:135:00000 00:000:00000 UNE   2.6304   0.0029   0.0032        71191402
+ 7120  A    1 L 80:167:00000 82:022:86399 UNE   3.6020  -0.0130   0.0090        71200101
+ 7121  A    1 L 83:032:00000 86:101:86399 UNE   3.6620   0.0010   0.0060        71210101
+ 7122  A    1 L 83:060:00000 84:061:86399 UNE   3.1820   0.0010  -0.0070        71220601
+ 7122  A    1 L 84:150:00000 85:349:86399 UNE   3.1820   0.0010  -0.0070        71220602
+ 7122  A    1 L 85:350:00000 87:021:86399 UNE   3.1820   0.0010  -0.0070        71220603
+ 7122  A    1 L 87:028:00000 88:229:86399 UNE   3.1820   0.0010  -0.0070        71220604
+ 7122  A    1 L 88:230:00000 89:011:86399 UNE   3.1810   0.0020  -0.0060        71220605
+ 7122  A    1 L 89:012:00000 89:173:86399 UNE   3.1810   0.0020  -0.0060        71220606
+ 7122  A    1 L 89:174:00000 89:276:86399 UNE   3.1810   0.0020  -0.0060        71220607
+ 7122  A    1 L 89:277:00000 90:354:86399 UNE   3.1810   0.0020  -0.0060        71220608
+ 7122  A    1 L 90:355:00000 91:103:86399 UNE   3.1810   0.0020  -0.0060        71220609
+ 7122  A    1 L 92:254:00000 93:013:86399 UNE   2.6550  -0.0010  -0.0130        71221410
+ 7123  A    1 L 87:195:00000 87:281:86399 UNE   1.4530   0.0000   0.0000        71231201
+ 7123  A    1 L 88:076:00000 88:245:86399 UNE   1.4370   0.0000   0.0000        71231202
+ 7123  A    1 L 89:114:00000 89:245:86399 UNE   1.4820   0.0000   0.0000        71231203
+ 7123  A    1 L 90:074:00000 90:232:86399 UNE   1.4590  -0.0010   0.0030        71231204
+ 7123  A    1 L 91:095:00000 91:247:86399 UNE   1.4820  -0.0020   0.0040        71231205
+ 7123  A    1 L 92:098:00000 92:215:86399 UNE   1.4710  -0.0020  -0.0030        71231206
+ 7123  A    1 L 93:098:00000 93:318:86399 UNE   1.4810  -0.0010   0.0020        71231207
+ 7124  A    1 L 97:213:00000 99:348:86399 UNE   3.1450  -0.0120   0.0110        71240801
+ 7124  A    1 L 99:349:00000 07:275:86399 UNE   3.1430  -0.0150   0.0110        71240802
+ 7124  A    1 L 07:276:00000 00:000:00000 UNE   3.1410  -0.0150   0.0100        71240802
+ 7125  A    1 L 87:258:00000 88:028:86399 UNE   2.5800   0.0000   0.0000        71251302
+ 7125  A    1 L 85:121:00000 85:204:86399 UNE   1.3400  -0.3550  -2.1190        71251501
+ 7125  A    1 L 12:001:00000 00:000:00000 UNE   3.6960  -0.0820  -2.8140        71259301
+ 7126  A    1 L 96:275:00000 99:339:86399 UNE   0.0000   0.0000   0.0000        71267701
+ 7127  A    1 L 03:182:00000 04:213:86399 UNE   0.0000   0.0000   0.0000        71278901
+ 7130  A    1 L 85:310:00000 87:139:86399 UNE   2.4860   0.0000   0.0000        71301201
+ 7130  A    1 L 99:015:00000 04:366:86399 UNE   2.6550   0.0020  -0.0030        71301402
+ 7130  A    1 L 05:001:00000 06:109:86399 UNE   2.6704  -0.0096  -0.0159        71301403
+ 7206  A    1 L 76:122:00000 85:180:86399 UNE   5.3280  -0.8100  -0.0410        72062601
+ 7210  A    1 L 76:122:00000 84:091:86399 UNE   0.8480   0.7520   0.0000        72102301
+ 7210  A    1 L 84:092:00000 87:197:86399 UNE   0.8480   0.7520   0.0000        72102302
+ 7210  A    1 L 87:198:00000 89:215:86399 UNE   0.8480   0.7520   0.0000        72102303
+ 7210  A    1 L 89:216:00000 90:304:86399 UNE   0.8480   0.7530   0.0010        72102304
+ 7210  A    1 L 90:305:00000 91:021:86399 UNE   0.8480   0.7530   0.0010        72102305
+ 7210  A    1 L 91:022:00000 91:169:86399 UNE   0.8480   0.7530   0.0010        72102306
+ 7210  A    1 L 91:170:00000 92:013:86399 UNE   0.8480   0.7530   0.0010        72102307
+ 7210  A    1 L 92:014:00000 92:098:86399 UNE   0.8480   0.7530   0.0010        72102308
+ 7210  A    1 L 92:099:00000 92:183:86399 UNE   0.8480   0.7530   0.0010        72102309
+ 7210  A    1 L 92:184:00000 92:196:86399 UNE   0.8480   0.7530   0.0010        72102310
+ 7210  A    1 L 92:197:00000 93:229:86399 UNE   0.8480   0.7530   0.0010        72102311
+ 7210  A    1 L 93:232:00000 95:244:86399 UNE   0.8490   0.7530   0.0000        72102312
+ 7210  A    1 L 95:245:00000 04:159:86399 UNE   0.8490   0.7530   0.0000        72102313
+ 7220  A    1 L 83:242:00000 83:306:86399 UNE   3.2410   1.4390   0.6560        72201101
+ 7220  A    1 L 84:363:00000 85:010:86399 UNE   3.2540   1.2750   0.9030        72201102
+ 7220  A    1 L 85:013:00000 85:058:86399 UNE   3.2300   0.9270   1.2710        72201103
+ 7220  A    1 L 85:062:00000 85:082:86399 UNE   3.2300   0.9270   1.2710        72201104
+ 7220  A    1 L 85:083:00000 85:133:86399 UNE   3.2300   0.9270   1.2710        72201105
+ 7231  A    1 L 00:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        72312901
+ 7236  A    1 L 88:001:00000 99:273:86399 UNE   0.0000   0.0000   0.0000        72362901
+ 7237  A    1 L 88:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        72371901
+ 7249  A    1 L 92:336:00000 12:066:86399 UNE   0.0000   0.0000   0.0000        72496101
+ 7249  A    1 L 12:067:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        72496102
+ 7261  A    1 L 91:121:00000 91:227:86399 UNE   3.2700   1.5610   0.1290        72611101
+ 7265  A    1 L 84:018:00000 84:066:86399 UNE   3.4840   0.4700  -1.5020        72651101
+ 7274  A    1 L 85:136:00000 85:199:86399 UNE   3.3010   1.2580   0.9510        72741101
+ 7288  A    1 L 88:039:00000 88:167:86399 UNE   2.5840   0.0000  -0.0030        72881301
+ 7288  A    1 L 89:023:00000 89:108:86399 UNE   2.6100   0.0050  -0.0110        72881402
+ 7288  A    1 L 89:294:00000 90:017:86399 UNE   2.6170   0.0130  -0.0040        72881403
+ 7288  A    1 L 90:293:00000 91:053:86399 UNE   2.6370   0.0080  -0.0120        72881404
+ 7295  A    1 L 90:355:00000 91:107:86399 UNE   3.2880   0.1660   1.5650        72951102
+ 7295  A    1 L 94:280:00000 95:112:86399 UNE   2.6560   0.0060  -0.0050        72951403
+ 7295  A    1 L 88:084:00000 88:203:86399 UNE   1.3410  -2.6110   0.1960        72951501
+ 7300  A    1 L 89:010:00000 89:083:86399 UNE  -0.6140-516.4230-565.4650        73001701
+ 7301  A    1 L 89:191:00000 89:247:86399 UNE   1.5600  13.3950  19.1470        73011701
+ 7302  A    1 L 89:276:00000 89:329:86399 UNE   1.6850  -3.6970  -1.0760        73021701
+ 7303  A    1 L 90:254:00000 90:303:86399 UNE   1.6700   6.6200   8.4780        73031701
+ 7304  A    1 L 90:336:00000 91:038:86399 UNE   1.8990-114.0920 152.6220        73041701
+ 7305  A    1 L 92:001:00000 92:091:86399 UNE   1.8300  38.6450  60.9860        73051701
+ 7307  A    1 L 88:200:00000 88:261:86399 UNE -17.6930-1490.101-4030.630        73071701
+ 7307  B    1 L 97:215:00000 97:309:86399 UNE -19.6060-1499.991-3979.552        73071702
+ 7307  C    1 L 98:223:00000 98:317:86399 UNE -19.6060-1499.782-3979.745        73071703
+ 7307  D    1 L 99:257:00000 99:346:86399 UNE -19.6100-1510.897-3982.025        73071704
+ 7308  A    1 L 90:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        73085001
+ 7309  A    1 L 93:032:00000 93:090:86399 UNE   1.2720  15.3400 -20.5420        73091701
+ 7313  A    1 L 91:213:00000 91:304:86399 UNE   1.8500  -8.0840 -11.9970        73131701
+ 7320  A    1 L 92:214:00000 92:305:86399 UNE   1.7790  -9.7540   5.8090        73201701
+ 7321  A    1 L 94:152:00000 94:304:86399 UNE   2.1830-259.1000 -49.6760        73211701
+ 7322  A    1 L 95:305:00000 96:091:86399 UNE  -4.1810 -51.5480-118.8670        73221701
+ 7323  A    1 L 94:001:00000 94:090:86399 UNE -25.1050-653.5770-573.9810        73231701
+ 7328  A    1 L 96:061:00000 01:031:86399 UNE   8.9840   9.5460  29.0990        73287101
+ 7335  A    1 L 96:061:00000 01:031:86399 UNE   4.4430  10.0190   1.5320        73357201
+ 7337  A    1 L 96:061:00000 00:152:86399 UNE   4.4500   2.5960  13.2110        73377301
+ 7339  A    1 L 96:061:00000 01:304:86399 UNE   4.4590  -4.7340   7.3300        73397401
+ 7341  A    1 L 95:032:00000 95:090:86399 UNE   0.3680   3.9270  30.4830        73411701
+ 7341  A    1 L 95:182:00000 95:243:86399 UNE   0.3680   3.9270  30.4830        73411702
+ 7343  A    1 L 00:214:00000 00:366:86399 UNE   1.8300   0.0000   0.0000        73438401
+ 7355  A    1 L 01:110:00000 01:181:86399 UNE  -4.8704 -40.4854 -15.4235        73558401
+ 7355  A    1 L 03:091:00000 00:000:00000 UNE   0.9242   3.4911   0.6144        73558402
+ 7356  A    1 L 01:182:00000 01:365:86399 UNE   1.9041   0.0000   0.0000        73568401
+ 7357  A    1 L 03:001:00000 05:210:86399 UNE   0.0000   0.0000   0.0000        73578801
+ 7358  A    1 L 02:244:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        73588901
+ 7359  A    1 L 13:298:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        73592601
+ 7370  A    1 L 07:334:00000 00:000:00000 UNE   2.0178   0.0000   0.0000        73706901
+ 7394  A    1 L 15:218:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        73942601
+ 7395  A    1 L 17:268:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        73956501
+ 7396  A    1 L 19:246:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        73964701
+ 7400  A    1 L 84:067:00000 84:131:86399 UNE   3.3340  -1.5670  -0.0090        74001101
+ 7401  A    1 L 84:135:00000 84:182:86399 UNE   3.3020  -1.5800   0.1190        74011101
+ 7401  A    1 L 90:008:00000 90:153:86399 UNE   2.6990   0.0220  -0.0090        74011302
+ 7401  A    1 L 90:315:00000 91:072:86399 UNE   2.7010   0.0170  -0.0040        74011303
+ 7403  A    1 L 90:165:00000 90:297:86399 UNE   2.6830   0.0130  -0.0110        74031301
+ 7403  A    1 L 91:085:00000 91:288:86399 UNE   2.7010   0.0180  -0.0160        74031302
+ 7403  A    1 L 92:196:00000 04:031:86399 UNE   2.6951   0.0112  -0.0046        74031303
+ 7403  A    1 L 06:244:00000 09:216:86399 UNE   2.6790   0.0140  -0.0020        74031304
+ 7403  A    1 L 09:217:00000 10:264:86399 UNE   2.6790   0.0140  -0.0020        74031305
+ 7403  A    1 L 10:265:00000 00:000:00000 UNE   2.6790   0.0140  -0.0020        74031306
+ 7404  A    1 L 95:114:00000 95:300:86399 UNE   1.4500   0.1340  -0.0050        74041201
+ 7404  A    1 L 95:303:00000 96:335:86399 UNE   1.4560   0.1330  -0.0010        74041202
+ 7405  A    1 L 02:001:00000 04:277:86399 UNE   1.4650  -0.1930   0.0010        74057901
+ 7405  A    1 L 04:278:00000 08:281:86399 UNE   1.4667  -0.1956   0.0008        74057902
+ 7405  A    1 L 08:282:00000 10:058:86399 UNE   1.4627  -0.1996   0.0085        74057903
+ 7405  A    1 L 10:059:00000 00:000:00000 UNE   1.4638  -0.1891   0.0063        74057904
+ 7406  A    1 L 05:332:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        74068801
+ 7407  A    1 C 14:128:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        74072701
+ 7410  A    1 L 93:132:00000 93:259:86399 UNE   2.6430  -0.0050   0.0010        74101401
+ 7411  A    1 L 93:265:00000 93:286:86399 UNE   2.6480  -0.0030   0.0010        74111401
+ 7411  A    1 L 94:157:00000 94:263:86399 UNE   2.6480  -0.0030   0.0010        74111402
+ 7501  A    1 L 93:166:00000 93:220:86399 UNE   1.3320  -2.7460  -0.0120        75011501
+ 7501  A    1 L 00:122:00000 03:202:86399 UNE   3.2280  -0.0030  -0.0060        75010602
+ 7501  A    1 L 03:203:00000 14:089:86399 UNE   3.2271  -0.0006  -0.0060        75010602
+ 7501  A    1 L 14:090:00000 00:000:00000 UNE   3.2270  -0.0040  -0.0070        75010602
+ 7502  A    1 L 93:227:00000 93:365:86399 UNE   1.3620   1.3940   1.2980        75021501
+ 7503  A    1 L 17:351:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        75036401
+ 7505  A    1 L 95:273:00000 95:304:86399 UNE   1.3410  -2.7105   0.0629        75051501
+ 7510  A    1 L 86:141:00000 86:202:86399 UNE   1.3440  -2.5460   0.0260        75101501
+ 7510  A    1 L 89:307:00000 89:338:86399 UNE   1.3580  -2.6510  -0.0060        75101504
+ 7510  A    1 L 92:136:00000 92:173:86399 UNE   1.3420  -2.7040  -0.3610        75101505
+ 7510  A    1 L 92:174:00000 92:216:86399 UNE   1.3460  -2.7860  -0.1050        75101506
+ 7510  A    1 L 87:145:00000 87:240:86399 UNE   1.3580  -2.6190  -0.0730        75101602
+ 7510  A    1 L 89:217:00000 89:306:86399 UNE   1.3570  -2.6250  -0.0590        75101603
+ 7512  A    1 L 86:248:00000 86:291:86399 UNE   1.3400  -2.5570   0.0730        75121501
+ 7512  A    1 L 89:285:00000 89:299:86399 UNE   1.3440  -2.6780   0.0750        75121503
+ 7512  A    1 L 92:080:00000 92:125:86399 UNE   1.3440  -2.5980   0.0590        75121504
+ 7512  A    1 L 87:078:00000 87:135:86399 UNE   1.3540  -2.5750   0.0700        75121602
+ 7515  A    1 L 86:208:00000 86:242:86399 UNE   1.3280  -2.5770  -0.0140        75151501
+ 7515  A    1 L 87:201:00000 87:291:86399 UNE   1.3290  -2.6220   0.0030        75151502
+ 7515  A    1 L 89:349:00000 90:029:86399 UNE   1.3330  -2.6160   0.0280        75151503
+ 7515  A    1 L 92:080:00000 92:236:86399 UNE   1.3490  -2.6380   0.0400        75151604
+ 7517  A    1 L 87:201:00000 87:240:86399 UNE   3.3090  -1.5680  -0.0580        75171102
+ 7517  A    1 L 89:106:00000 89:171:86399 UNE   3.2380  -1.5620  -0.0720        75171104
+ 7517  A    1 L 92:174:00000 92:219:86399 UNE   3.2560  -1.5670   0.0210        75171105
+ 7517  A    1 L 87:295:00000 87:345:86399 UNE   1.3390  -2.5760  -0.0140        75171503
+ 7517  A    1 L 86:147:00000 86:243:86399 UNE   1.3600  -2.5920   0.0580        75171601
+ 7520  A    1 L 86:077:00000 86:133:86399 UNE   1.3390  -2.4275   0.0681        75201501
+ 7520  A    1 L 89:175:00000 89:216:86399 UNE   1.3540  -2.7220   0.0700        75201502
+ 7520  A    1 L 95:234:00000 95:273:86399 UNE   1.3301  -2.6600   0.0683        75201503
+ 7525  A    1 L 87:253:00000 87:345:86399 UNE   3.2630  -1.5700   0.0780        75251104
+ 7525  A    1 L 89:323:00000 90:020:86399 UNE   3.2600  -1.5680   0.0180        75251105
+ 7525  A    1 L 92:070:00000 92:164:86399 UNE   3.2740  -1.5680  -0.0120        75251106
+ 7525  A    1 L 94:182:00000 94:282:86399 UNE   3.2770  -1.5640  -0.0010        75251107
+ 7525  A    1 L 86:246:00000 86:255:86399 UNE   1.3700  -2.5720  -0.1030        75251601
+ 7525  A    1 L 86:256:00000 86:258:86399 UNE   1.3700  -2.5720  -0.1030        75251602
+ 7525  A    1 L 86:258:00000 86:291:86399 UNE   1.3700  -2.5720  -0.1030        75251603
+ 7530  A    1 L 85:214:00000 89:219:86399 UNE   2.0240   0.0000   0.5790        75300201
+ 7530  A    1 L 89:220:00000 90:174:86399 UNE   2.0240   0.0000   0.5790        75300202
+ 7530  A    1 L 90:175:00000 91:292:86399 UNE   3.4900   0.0200   0.0000        75300203
+ 7530  A    1 L 91:293:00000 94:289:86399 UNE   3.4800   0.0180  -0.0060        75300204
+ 7540  A    1 L 86:008:00000 86:076:86399 UNE   1.3200  -2.6530  -0.0230        75401501
+ 7541  A    1 L 94:083:00000 94:169:86399 UNE   3.2500  -1.5670  -0.1360        75411102
+ 7541  A    1 L 94:344:00000 95:090:86399 UNE   3.2380  -1.5590   0.1090        75411103
+ 7541  A    1 L 85:342:00000 86:071:86399 UNE   1.3360  -2.6390  -0.1160        75411601
+ 7542  A    1 L 91:107:00000 91:365:86399 UNE   1.3550  -2.6490   0.0910        75421601
+ 7543  A    1 L 93:187:00000 93:289:86399 UNE   3.2860  -1.5580  -0.0780        75431102
+ 7543  A    1 L 90:295:00000 90:346:86399 UNE   1.3610  -2.6020  -0.2640        75431601
+ 7544  A    1 L 89:087:00000 89:151:86399 UNE   1.3460  -2.6860   0.0380        75441502
+ 7544  A    1 L 92:253:00000 92:286:86399 UNE   1.3470  -2.6190   0.0710        75441503
+ 7544  A    1 L 92:287:00000 92:345:86399 UNE   1.3460  -2.6310   0.0840        75441504
+ 7544  A    1 L 87:257:00000 87:345:86399 UNE   1.3630  -2.6510  -0.0160        75441601
+ 7545  A    1 L 90:032:00000 90:114:86399 UNE   3.2490   0.0380   1.5650        75451103
+ 7545  A    1 L 93:297:00000 94:074:86399 UNE   3.2600  -1.5480   0.1410        75451104
+ 7545  A    1 L 85:292:00000 85:341:86399 UNE   1.3480  -2.6070   0.0890        75451601
+ 7545  A    1 L 88:008:00000 88:083:86399 UNE   1.3610  -2.6320   0.0370        75451602
+ 7546  A    1 L 94:294:00000 94:336:86399 UNE   3.2500  -1.5670  -0.1360        75461102
+ 7546  A    1 L 88:088:00000 88:156:86399 UNE   1.3490  -2.6480  -0.1120        75461601
+ 7548  A    1 L 93:001:00000 02:120:86399 UNE   0.0000   0.0000   0.0000        75486201
+ 7550  A    1 L 86:077:00000 86:139:86399 UNE   1.3460  -2.0620   0.5520        75501601
+ 7550  A    1 L 89:146:00000 89:201:86399 UNE   1.3530  -2.6310   0.0450        75501602
+ 7560  A    1 L 91:227:00000 91:275:86399 UNE   1.3110  -2.1430  -0.3070        75601501
+ 7561  A    1 L 91:289:00000 91:326:86399 UNE   1.3870  -2.6760   0.0280        75611501
+ 7575  A    1 L 87:082:00000 87:135:86399 UNE   1.3280  -2.6250  -0.0870        75751501
+ 7575  A    1 L 89:254:00000 89:269:86399 UNE   1.3500  -2.6760  -0.1660        75751502
+ 7580  A    1 L 87:092:00000 87:136:86399 UNE   3.3180  -1.5740  -0.1030        75801101
+ 7580  A    1 L 89:289:00000 89:316:86399 UNE   3.2450  -1.5550  -0.2300        75801102
+ 7580  A    1 L 92:311:00000 92:317:86399 UNE   3.2780  -1.5580  -0.2240        75801103
+ 7580  A    1 L 92:318:00000 93:006:86399 UNE   3.2770  -1.5560  -0.2260        75801104
+ 7585  A    1 L 87:145:00000 87:184:86399 UNE   1.3440  -2.5810  -0.1680        75851501
+ 7585  A    1 L 89:232:00000 89:248:86399 UNE   1.3420  -2.6030  -0.1530        75851502
+ 7585  A    1 L 92:207:00000 92:240:86399 UNE   1.3200  -2.6080  -0.2120        75851503
+ 7587  A    1 L 87:140:00000 87:184:86399 UNE   3.3070  -1.5760  -0.0360        75871101
+ 7587  A    1 L 89:186:00000 89:284:86399 UNE   3.2730  -1.5590  -0.1980        75871102
+ 7587  A    1 L 92:233:00000 92:303:86399 UNE   3.2760  -1.5660  -0.1340        75871103
+ 7587  A    1 L 94:258:00000 94:365:86399 UNE   1.3220   0.0010   2.5930        75871504
+ 7589  A    1 L 93:021:00000 93:170:86399 UNE   3.2870  -1.5640   0.0110        75891101
+ 7590  A    1 L 85:244:00000 85:291:86399 UNE   1.1320  -2.3070  -0.5130        75901601
+ 7594  A    1 L 97:274:00000 01:328:86399 UNE   1.4670  -0.1000  -0.0550        75947901
+ 7596  A    1 L 85:219:00000 85:365:86399 UNE   1.3410  -2.4450  -0.0060        75961502
+ 7596  A    1 L 95:057:00000 95:111:86399 UNE   1.3177  -2.6745  -0.0081        75961503
+ 7596  A    1 L 85:060:00000 85:106:86399 UNE   1.3710  -2.4080  -0.0300        75961601
+ 7597  A    1 L 85:032:00000 85:087:86399 UNE   1.3330  -2.5240   0.0090        75971501
+ 7597  A    1 L 85:088:00000 85:120:86399 UNE   1.3240  -2.5850   0.0010        75971502
+ 7597  A    1 L 91:183:00000 91:199:86399 UNE   1.3177  -2.6745  -0.0081        75971503
+ 7597  A    1 L 91:200:00000 91:205:86399 UNE   1.3177  -2.6745  -0.0081        75971504
+ 7597  A    1 L 91:206:00000 91:210:86399 UNE   1.3177  -2.6745  -0.0081        75971505
+ 7597  A    1 L 92:025:00000 92:069:86399 UNE   1.3177  -2.6745  -0.0081        75971506
+ 7597  A    1 L 94:121:00000 94:243:86399 UNE   1.3070  -2.6500   0.0330        75971507
+ 7597  A    1 L 95:144:00000 95:228:86399 UNE   1.3177  -2.6745  -0.0081        75971508
+ 7597  A    1 L 96:092:00000 96:366:86399 UNE   1.3277  -2.6972   0.0171        75971509
+ 7599  A    1 L 84:245:00000 84:366:86399 UNE   1.3680  -2.3040   0.0550        75991501
+ 7602  A    1 L 90:217:00000 90:274:86399 UNE   1.3490  -0.7920   2.0040        76021601
+ 7604  A    1 L 04:245:00000 04:366:86399 UNE   1.8455   0.0000   0.0000        76046901
+ 7801  A    1 L 78:060:00000 78:365:86399 UNE   0.0000   0.0000   0.0000        78014601
+ 7805  A    1 L 78:213:00000 98:365:86399 UNE   0.0000   0.0000   0.0000        78053301
+ 7806  A    1 L 96:275:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78067601
+ 7810  A    1 L 84:122:00000 95:120:86399 UNE   0.0000   0.0000   0.0000        78104801
+ 7810  B    1 L 95:274:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78106801
+ 7811  A    1 L 76:001:00000 83:365:86399 UNE   0.0000   0.0000   0.0000        78113801
+ 7811  A    1 L 88:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78113802
+ 7819  A    1 L 16:343:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78198201
+ 7820  A    1 L 98:244:00000 16:343:00000 UNE   0.0000   0.0000   0.0000        78208201
+ 7821  A    1 L 05:244:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78212801
+ 7822  A    1 L 11:121:00000 00:000:00000 UNE   1.7846   0.0000   0.0000        78226901
+ 7823  A    1 L 04:153:00000 04:182:86399 UNE   1.8201   0.0000   0.0000        78236901
+ 7824  A    1 L 76:122:00000 98:365:86399 UNE   0.0000   0.0000   0.0000        78244501
+ 7824  B    1 L 99:091:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78244502
+ 7825  A    1 L 04:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78259001
+ 7826  A    1 L 04:183:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78269101
+ 7827  A    1 C 14:120:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78272201
+ 7829  A    1 C 09:243:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78296903
+ 7830  A    1 L 03:086:00000 03:334:86399 UNE   1.8184   0.0000   0.0000        78306901
+ 7831  A    1 L 83:121:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78314601
+ 7832  A    1 L 95:121:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78325501
+ 7833  A    1 L 76:122:00000 84:366:86399 UNE   0.0000   0.0000   0.0000        78333201
+ 7834  A    1 L 76:122:00000 91:365:86399 UNE   0.0000   0.0000   0.0000        78343001
+ 7835  A    1 L 76:122:00000 83:080:86399 UNE   0.0000   0.0000   0.0000        78353101
+ 7835  A    1 L 83:357:00000 05:212:86399 UNE   0.0000   0.0000   0.0000        78353102
+ 7836  A    1 L 91:319:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78365801
+ 7837  A    1 L 87:300:00000 88:098:86399 UNE   0.0000   0.0000   0.0000        78372804
+ 7837  A    1 L 88:099:00000 05:105:86399 UNE   0.0000   0.0000   0.0000        78372805
+ 7837  A    1 L 83:213:00000 85:345:86399 UNE   0.0000   0.0000   0.0000        78373701
+ 7837  A    1 L 85:346:00000 86:059:86399 UNE   0.0000   0.0000   0.0000        78373702
+ 7837  A    1 L 86:060:00000 87:299:86399 UNE   0.0000   0.0000   0.0000        78373703
+ 7838  A    1 L 82:060:00000 90:181:86399 UNE   0.0000   0.0000   0.0000        78383601
+ 7838  A    1 L 90:182:00000 09:243:86399 UNE   0.0000   0.0000   0.0000        78383602
+ 7838  A    1 L 09:244:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78383603
+ 7839  A    1 L 83:244:00000 88:213:86399 UNE   0.0000   0.0000   0.0000        78393401
+ 7839  A    1 L 88:214:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78393402
+ 7840  A    1 L 83:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78403501
+ 7841  A    1 L 01:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78418701
+ 7843  A    1 L 84:214:00000 89:300:86399 UNE   0.0000   0.0000   0.0000        78432501
+ 7843  A    1 L 89:301:00000 98:334:86399 UNE   0.0000   0.0000   0.0000        78432502
+ 7844  A    1 L 88:001:00000 88:073:86399 UNE 210.1370 -728.268  1870.28        78441701
+ 7844  B    1 L 96:122:00000 96:213:86399 UNE 210.2150 -725.485  1865.33        78441702
+ 7845  A    1 L 97:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        78457801
+ 7846  A    1 L 95:274:00000 95:334:86399 UNE   1.8150   0.0000   0.0000        78466901
+ 7847  A    1 L 95:244:00000 96:121:86399 UNE   0.0000   0.0000   0.0000        78477001
+ 7848  A    1 L 96:245:00000 97:090:86399 UNE   1.7772   0.0000   0.0000        78486901
+ 7848  A    1 L 02:001:00000 02:273:86399 UNE   1.8260   0.0000   0.0000        78486902
+ 7848  A    1 L 05:130:00000 05:365:86399 UNE   1.8504   0.0000   0.0000        78486903
+ 7848  A    1 L 08:190:00000 08:366:86399 UNE   1.7772   0.0000   0.0000        78486904
+ 7849  A    1 L 98:001:00000 03:031:86399 UNE   0.0000   0.0000   0.0000        78498001
+ 7850  A    1 L 93:023:00000 93:121:86399 UNE   2.6530   0.0010   0.0040        78501401
+ 7853  A    1 L 88:275:00000 88:335:86399 UNE   1.3210  -2.6740  -0.0140        78531501
+ 7853  A    1 L 90:178:00000 90:212:86399 UNE   1.3300  -2.6900  -0.0040        78531502
+ 7865  A    1 L 01:244:00000 15:231:86399 UNE   4.0720  -1.2160  -0.0190        78658601
+ 7865  A    1 L 15:232:00000 00:000:00000 UNE   4.0545  -1.2022  -0.0102        78658601
+ 7882  A    1 L 88:081:00000 88:214:86399 UNE   3.2540  -0.3530   1.5250        78821102
+ 7882  A    1 L 84:032:00000 84:070:86399 UNE   1.7030   0.0000   0.0000        78821201
+ 7882  A    1 L 92:057:00000 92:154:86399 UNE   2.6460  -0.0060  -0.0030        78821403
+ 7882  A    1 L 94:052:00000 94:132:86399 UNE   2.6470  -0.0130   0.0080        78821404
+ 7883  A    1 L 89:115:00000 89:194:86399 UNE   2.6260   0.0060  -0.0060        78831401
+ 7883  A    1 L 89:195:00000 89:279:86399 UNE   2.6260   0.0060  -0.0060        78831402
+ 7883  A    1 L 91:299:00000 92:043:86399 UNE   2.6530   0.0000  -0.0100        78831403
+ 7883  A    1 L 93:326:00000 94:043:86399 UNE   2.6550   0.0060  -0.0160        78831404
+ 7884  A    1 L 95:001:00000 02:059:86399 UNE   0.0000   0.0000   0.0000        78846601
+ 7885  A    1 L 82:204:00000 82:283:86399 UNE   3.5640   1.4690   0.5430        78851101
+ 7886  A    1 L 83:186:00000 83:240:86399 UNE   3.3640  -0.3000   1.5590        78861101
+ 7886  A    1 L 84:191:00000 84:195:86399 UNE   3.3400  -0.4560   1.5130        78861102
+ 7886  A    1 L 84:221:00000 84:251:86399 UNE   3.3330  -0.4600   1.5060        78861103
+ 7886  A    1 L 84:255:00000 84:353:86399 UNE   3.3340   0.4360  -1.5330        78861104
+ 7887  A    1 L 83:025:00000 83:052:86399 UNE   3.3390  -1.4090   0.6780        78871101
+ 7888  A    1 L 82:025:00000 82:106:86399 UNE   3.4190  -1.4940   0.4670        78881101
+ 7889  A    1 L 82:121:00000 82:354:86399 UNE   1.7200   0.0000   0.0000        78891201
+ 7889  A    1 L 85:213:00000 85:288:86399 UNE   0.0000   0.0000   0.0000        78891203
+ 7889  A    1 L 84:306:00000 85:213:86399 UNE   0.0000   0.0000   0.0000        78891302
+ 7890  A    1 L 80:052:00000 80:054:86399 UNE   3.2500  -1.4860   0.3790        78901101
+ 7890  A    1 L 81:030:00000 81:075:86399 UNE   3.2940   0.4420  -1.5100        78901102
+ 7891  A    1 L 81:171:00000 81:218:86399 UNE   3.3770  -0.0010  -1.5740        78911101
+ 7892  A    1 L 81:127:00000 81:168:86399 UNE   3.3510  -0.0540   1.5620        78921101
+ 7892  A    1 L 82:151:00000 82:202:86399 UNE   3.3250   0.0210   1.5700        78921102
+ 7894  A    1 L 83:053:00000 83:185:86399 UNE   3.2990   1.3340   0.8320        78941101
+ 7895  A    1 L 81:006:00000 81:028:86399 UNE   0.0000   0.0000   0.0000        78951101
+ 7896  A    1 L 80:298:00000 81:006:86399 UNE   3.3070   1.5100   0.4590        78961101
+ 7897  A    1 L 79:244:00000 79:365:86399 UNE   3.1970  -1.5830   0.1020        78971101
+ 7897  A    1 L 80:001:00000 80:044:86399 UNE   3.3330  -1.5490   0.1260        78971102
+ 7899  A    1 L 80:060:00000 80:142:86399 UNE   3.3060   1.5410   0.3010        78991101
+ 7899  A    1 L 80:231:00000 80:284:86399 UNE   3.3040   1.5260   0.3260        78991102
+ 7902  A    1 L 71:001:00000 75:365:86399 UNE   0.0000   0.0000   0.0000        79024201
+ 7907  A    1 L 70:244:00000 88:166:86399 UNE   0.0000   0.0000   0.0000        79074001
+ 7907  A    1 L 88:167:00000 91:121:86399 UNE   0.0000   0.0000   0.0000        79074002
+ 7907  A    1 L 91:291:00000 92:366:86399 UNE   0.0000   0.0000   0.0000        79074003
+ 7917  A    1 L 84:245:00000 85:365:86399 UNE   2.0240   0.0000   0.5790        79174201
+ 7918  A    1 L 93:111:00000 94:173:86399 UNE   3.1000  -1.2160  -1.5040        79180608
+ 7918  A    1 L 94:269:00000 00:091:86399 UNE   3.1680  -0.9680  -1.2520        79180609
+ 7918  A    1 L 85:234:00000 86:189:86399 UNE   2.4640  -0.0050   0.0010        79181301
+ 7918  A    1 L 87:042:00000 87:257:86399 UNE   2.4640  -0.0050   0.0010        79181302
+ 7918  A    1 L 91:352:00000 92:135:86399 UNE   2.7000  -0.0080  -0.0030        79181306
+ 7918  A    1 L 88:032:00000 88:358:86399 UNE   2.6010  -0.0090  -0.0060        79181403
+ 7918  A    1 L 90:065:00000 90:204:86399 UNE   2.6130  -0.0070  -0.0050        79181404
+ 7918  A    1 L 90:205:00000 90:277:86399 UNE   2.6130  -0.0070  -0.0050        79181405
+ 7918  A    1 L 92:174:00000 92:242:86399 UNE   2.6390   0.0000  -1.1020        79181407
+ 7919  A    1 L 85:322:00000 87:092:86399 UNE   2.5910   0.0000  -0.0110        79191401
+ 7920  A    1 L 85:210:00000 86:015:86399 UNE   3.2870   1.5560  -0.1430        79201101
+ 7920  A    1 L 86:016:00000 86:353:86399 UNE   3.3190   1.5860  -0.0810        79201102
+ 7920  A    1 L 86:355:00000 87:020:86399 UNE   3.3190   1.5860  -0.0810        79201103
+ 7920  A    1 L 87:021:00000 87:037:86399 UNE   3.3190   1.5860  -0.0810        79201104
+ 7920  A    1 L 88:034:00000 88:068:86399 UNE   3.3190   1.5860  -0.0810        79201105
+ 7920  A    1 L 90:247:00000 90:283:86399 UNE   3.2410   1.5720  -0.0540        79201110
+ 7920  A    1 L 91:238:00000 91:277:86399 UNE   3.2730   1.5630  -0.0730        79201111
+ 7920  A    1 L 88:277:00000 89:046:86399 UNE   2.7000   1.5660   0.8490        79201306
+ 7920  A    1 L 89:047:00000 89:169:86399 UNE   2.6950   1.5670   0.8570        79201307
+ 7920  A    1 L 89:170:00000 89:284:86399 UNE   2.6960   1.5660   0.8580        79201308
+ 7920  A    1 L 89:285:00000 89:320:86399 UNE   2.6970   1.5690   0.8600        79201309
+ 7920  A    1 L 95:121:00000 99:014:86399 UNE   2.6460   1.4630  -0.0430        79201414
+ 7920  A    1 L 92:043:00000 93:098:86399 UNE   3.1590   1.4940  -0.0500        79205512
+ 7920  A    1 L 93:099:00000 95:110:86399 UNE   3.1290   1.4880  -0.0470        79205513
+ 7921  A    1 L 68:041:00000 82:064:86399 UNE   0.0000   0.0000   0.0000        79214301
+ 7929  A    1 L 70:304:00000 81:273:86399 UNE   0.0000   0.0000   0.0000        79294101
+ 7935  A    1 L 76:001:00000 77:365:86399 UNE   0.0000   0.0000   0.0000        79356501
+ 7939  A    1 L 83:121:00000 00:366:86399 UNE   0.0000   0.0000   0.0000        79394101
+ 7940  A    1 L 76:122:00000 77:365:86399 UNE   0.0000   0.0000   0.0000        79404701
+ 7941  A    1 L 00:001:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        79417701
+ 7943  A    1 L 76:167:00000 82:069:86399 UNE   0.0000   0.0000   0.0000        79434201
+ 7944  A    1 L 91:274:00000 91:354:86399 UNE   0.0000   0.0000   0.0000        79445501
+ 7999  A    1 L 80:222:00000 80:224:86399 UNE   0.0000   0.0000   0.0000        79991101
+ 8833  A    1 L 84:092:00000 84:152:86399 UNE  -0.0360  -0.0120  -0.0080        88331501
+ 8833  A    1 L 84:320:00000 85:059:86399 UNE   0.0890  -0.2210   0.0000        88331602
+ 8833  A    1 L 85:108:00000 85:243:86399 UNE   0.0890  -0.2210   0.0000        88331603
+ 8833  A    1 L 88:160:00000 89:144:86399 UNE   0.0810  -0.2200   0.0020        88331604
+ 8833  A    1 L 89:309:00000 90:211:86399 UNE   0.0990  -0.2180  -0.0010        88331605
+ 8833  A    1 L 92:238:00000 93:365:86399 UNE   0.0820  -0.2180  -0.0010        88331606
+ 8833  A    1 L 95:079:00000 95:243:86399 UNE   0.0790  -0.2180   0.0010        88331607
+ 8834  A    1 L 90:244:00000 00:000:00000 UNE   0.0000   0.0000   0.0000        88341001
+-SITE/ECCENTRICITY
+%ENDSNX

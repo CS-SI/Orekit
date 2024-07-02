@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,10 +17,11 @@
 package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
@@ -35,7 +36,7 @@ import org.orekit.time.TimeComponents;
  *
  * @since 10.1
  */
-class FieldNeQuickParameters <T extends RealFieldElement<T>> {
+class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
 
     /** Solar zenith angle at day night transition, degrees. */
     private static final double X0 = 86.23292796211615;
@@ -123,7 +124,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         }
 
         // E layer maximum density height in km (Eq. 78)
-        this.hmE = field.getZero().add(120.0);
+        this.hmE = field.getZero().newInstance(120.0);
         // E layer critical frequency in MHz
         final T foE = computefoE(date.getMonth(), az, xeff, latitude);
         // E layer maximum density in 10^11 m-3 (Eq. 36)
@@ -161,8 +162,8 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         this.b2Bot = nmF2.divide(a).multiply(0.385);
         this.b1Top = hmF2.subtract(hmF1).multiply(0.3);
         this.b1Bot = hmF1.subtract(hmE).multiply(0.5);
-        this.beTop = FastMath.max(b1Bot, zero.add(7.0));
-        this.beBot = zero.add(5.0);
+        this.beTop = FastMath.max(b1Bot, zero.newInstance(7.0));
+        this.beBot = zero.newInstance(5.0);
 
         // Layer amplitude coefficients
         this.amplitudes = computeLayerAmplitudes(field, nmE, nmF1, foF1);
@@ -292,7 +293,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // Auxiliary parameter l (Eq. 6 to 8)
         final int lF = (int) ((longitude.getReal() + 180) * 0.1);
         int l = lF - 2;
-        if (l < 0) {
+        if (l < -2) {
             l += 36;
         } else if (l > 33) {
             l -= 36;
@@ -343,14 +344,14 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         final T zero = field.getZero();
         // Particular condition (Eq. 17)
         if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
-            return zero.add(63.7);
+            return zero.newInstance(63.7);
         }
         // Az = a0 + modip * a1 + modip^2 * a2 (Eq. 18)
         T az = modip.multiply(alpha[2]).add(alpha[1]).multiply(modip).add(alpha[0]);
         // If Az < 0 -> Az = 0
         az = FastMath.max(zero, az);
         // If Az > 400 -> Az = 400
-        az = FastMath.min(zero.add(400.0), az);
+        az = FastMath.min(zero.newInstance(400.0), az);
         return az;
     }
 
@@ -391,7 +392,8 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         final T angle   = FastMath.atan2(FastMath.sqrt(cZenith.multiply(cZenith).negate().add(1.0)), cZenith);
         final T x       = FastMath.toDegrees(angle);
         // Effective solar zenith angle (Eq. 28)
-        final T xeff = join(clipExp(x.multiply(0.2).negate().add(20.0)).multiply(0.24).negate().add(90.0), x, zero.add(12.0), x.subtract(X0));
+        final T xeff = join(clipExp(x.multiply(0.2).negate().add(20.0)).multiply(0.24).negate().add(90.0), x,
+                zero.newInstance(12.0), x.subtract(X0));
         return FastMath.toRadians(xeff);
     }
 
@@ -440,7 +442,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         final T zero = field.getZero();
         // Ratio
         final T fo = foF2.divide(foE);
-        final T ratio = join(fo, zero.add(1.75), zero.add(20.0), fo.subtract(1.75));
+        final T ratio = join(fo, zero.newInstance(1.75), zero.newInstance(20.0), fo.subtract(1.75));
 
         // deltaM parameter
         T deltaM = zero.subtract(0.012);
@@ -449,7 +451,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         }
 
         // hmF2 Eq. 80
-        final T mF2Sq = mF2.multiply(mF2);
+        final T mF2Sq = mF2.square();
         final T temp  = FastMath.sqrt(mF2Sq.multiply(0.0196).add(1.0).divide(mF2Sq.multiply(1.2967).subtract(1.0)));
         final T height  = mF2.multiply(1490.0).multiply(temp).divide(mF2.add(deltaM)).subtract(176.0);
         return height;
@@ -468,7 +470,8 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         for (int i = 0; i < cf2.length; i++) {
             T sum = field.getZero();
             for (int k = 0; k < 6; k++) {
-                sum = sum.add(af2[i][2 * k + 1].multiply(FastMath.sin((k + 1) * t)).add(af2[i][2 * (k + 1)].multiply(FastMath.cos((k + 1) * t))));
+                final SinCos sc = FastMath.sinCos((k + 1) * t);
+                sum = sum.add(af2[i][2 * k + 1].multiply(sc.sin()).add(af2[i][2 * (k + 1)].multiply(sc.cos())));
             }
             cf2[i] = af2[i][0].add(sum);
         }
@@ -488,7 +491,8 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         for (int i = 0; i < cm3.length; i++) {
             T sum = field.getZero();
             for (int k = 0; k < 4; k++) {
-                sum = sum.add(am3[i][2 * k + 1].multiply(FastMath.sin((k + 1) * t)).add(am3[i][2 * (k + 1)].multiply(FastMath.cos((k + 1) * t))));
+                final SinCos sc = FastMath.sinCos((k + 1) * t);
+                sum = sum.add(am3[i][2 * k + 1].multiply(sc.sin()).add(am3[i][2 * (k + 1)].multiply(sc.cos())));
             }
             cm3[i] = am3[i][0].add(sum);
         }
@@ -539,9 +543,10 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // latitude and longitude terms
         int index = 12;
         for (int i = 1; i < q.length; i++) {
+            final FieldSinCos<T> sc = FastMath.sinCos(longitude.multiply(i));
             for (int j = 0; j < q[i]; j++) {
-                g[index++] = m[j].multiply(p[i - 1]).multiply(FastMath.cos(longitude.multiply(i)));
-                g[index++] = m[j].multiply(p[i - 1]).multiply(FastMath.sin(longitude.multiply(i)));
+                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.cos());
+                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.sin());
             }
         }
 
@@ -595,9 +600,10 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // latitude and longitude terms
         int index = 7;
         for (int i = 1; i < r.length; i++) {
+            final FieldSinCos<T> sc = FastMath.sinCos(longitude.multiply(i));
             for (int j = 0; j < r[i]; j++) {
-                g[index++] = m[j].multiply(p[i - 1]).multiply(FastMath.cos(longitude.multiply(i)));
-                g[index++] = m[j].multiply(p[i - 1]).multiply(FastMath.sin(longitude.multiply(i)));
+                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.cos());
+                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.sin());
             }
         }
 
@@ -619,9 +625,9 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
      */
     private T computefoF1(final Field<T> field, final T foE, final T foF2) {
         final T zero = field.getZero();
-        final T temp  = join(foE.multiply(1.4), zero, zero.add(1000.0), foE.subtract(2.0));
-        final T temp2 = join(zero, temp, zero.add(1000.0), foE.subtract(temp));
-        final T value = join(temp2, temp2.multiply(0.85), zero.add(60.0), foF2.multiply(0.85).subtract(temp2));
+        final T temp  = join(foE.multiply(1.4), zero, zero.newInstance(1000.0), foE.subtract(2.0));
+        final T temp2 = join(zero, temp, zero.newInstance(1000.0), foE.subtract(temp));
+        final T value = join(temp2, temp2.multiply(0.85), zero.newInstance(60.0), foF2.multiply(0.85).subtract(temp2));
         if (value.getReal() < 1.0E-6) {
             return zero;
         } else {
@@ -669,7 +675,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
                 a3a = nmE.subtract(epst(a2a, hmF1, b1Bot, hmE)).subtract(epst(a1, hmF2, b2Bot, hmE)).multiply(4.0);
             }
             amplitude[1] = a2a;
-            amplitude[2] = join(a3a, zero.add(0.05), zero.add(60.0), a3a.subtract(0.005));
+            amplitude[2] = join(a3a, zero.newInstance(0.05), zero.newInstance(60.0), a3a.subtract(0.005));
         }
 
         return amplitude;
@@ -700,8 +706,8 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         }
 
         // Auxiliary parameter kb (Eq. 101 and 102)
-        T kb = join(ka, one.multiply(2.0), one, ka.subtract(2.0));
-        kb = join(one.multiply(8.0), kb, one, kb.subtract(8.0));
+        T kb = join(ka, one.newInstance(2.0), one, ka.subtract(2.0));
+        kb = join(one.newInstance(8.0), kb, one, kb.subtract(8.0));
 
         // Auxiliary parameter Ha (Eq. 103)
         final T hA = kb.multiply(b2Bot);
@@ -727,9 +733,9 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
     private T clipExp(final T power) {
         final T zero = power.getField().getZero();
         if (power.getReal() > 80.0) {
-            return zero.add(5.5406E34);
+            return zero.newInstance(5.5406E34);
         } else if (power.getReal() < -80) {
-            return zero.add(1.8049E-35);
+            return zero.newInstance(1.8049E-35);
         } else {
             return FastMath.exp(power);
         }

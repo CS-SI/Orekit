@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.cs.examples.gnss;
+package eu.csgroup.examples.gnss;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,9 +38,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.data.DirectoryCrawler;
-import org.orekit.data.NamedData;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -138,8 +139,9 @@ public class GenerateBaseSamples {
                                           metadataFile + " does not exist or is a directory");
             }
 
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitDataDir));
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(antexDir));
+            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+            manager.addProvider(new DirectoryCrawler(orekitDataDir));
+            manager.addProvider(new DirectoryCrawler(antexDir));
             final AntexLoader loader = new AntexLoader(antexName);
             final CelestialBody sun = CelestialBodyFactory.getSun();
             final TimeScale gps = TimeScalesFactory.getGPS();
@@ -174,12 +176,11 @@ public class GenerateBaseSamples {
                     final List<BoundedPropagator> propagators = new ArrayList<>(fields.length - 6);
                     for (int i = 6; i < fields.length; ++i) {
                         final File f = new File(sp3Dir, fields[i]);
-                        final NamedData compressed = new NamedData(f.getName(), ()-> new FileInputStream(f));
-                        try (InputStream s = new UnixCompressFilter().filter(compressed).getStreamOpener().openStream()) {
-                            final SP3File sp3 = new SP3Parser().parse(s);
-                            final SP3Ephemeris ephemeris = sp3.getSatellites().get(id);
-                            propagators.add(ephemeris.getPropagator());
-                        }
+                        final DataSource   compressed   = new DataSource(f.getName(), () -> new FileInputStream(f));
+                        final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
+                        final SP3File      sp3          = new SP3Parser().parse(uncompressed);
+                        final SP3Ephemeris ephemeris    = sp3.getSatellites().get(id);
+                        propagators.add(ephemeris.getPropagator());
                     }
                     BoundedPropagator propagator = new AggregateBoundedPropagator(propagators);
 
@@ -267,7 +268,7 @@ public class GenerateBaseSamples {
             Transform     t          = s.getFrame().getTransformTo(itrf, s.getDate());
             Vector3D      pSat       = t.transformPosition(pvSatInert.getPosition());
             Vector3D      vSat       = t.transformVector(pvSatInert.getVelocity());
-            Vector3D      pSun       = t.transformPosition(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition());
+            Vector3D      pSun       = t.transformPosition(sun.getPosition(s.getDate(), s.getFrame()));
             out.format(Locale.US,
                        "%s %4d %16.6f %3s %-11s  %-4s" +
                        " %16.6f  %16.6f  %16.6f %16.9f  %16.9f  %16.9f" +
@@ -281,14 +282,14 @@ public class GenerateBaseSamples {
         }
 
         private double beta(final SpacecraftState s) {
-            final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+            final Vector3D pSun = sun.getPosition(s.getDate(), s.getFrame());
             final Vector3D mSat = s.getPVCoordinates().getMomentum();
             return FastMath.toDegrees(0.5 * FastMath.PI - Vector3D.angle(pSun, mSat));
         }
 
         private double delta(final SpacecraftState s) {
-            final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-            return FastMath.toDegrees(Vector3D.angle(pSun, s.getPVCoordinates().getPosition()));
+            final Vector3D pSun = sun.getPosition(s.getDate(), s.getFrame());
+            return FastMath.toDegrees(Vector3D.angle(pSun, s.getPosition()));
         }
 
     }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -41,13 +41,23 @@ import org.orekit.utils.PVCoordinates;
 public class ApsideDetector extends AbstractDetector<ApsideDetector> {
 
     /** Build a new instance.
+     * <p>The Keplerian period is used only to set an upper bound for the
+     * max check interval to period/3 and to set the convergence threshold.</p>
+     * @param keplerianPeriod estimate of the Keplerian period
+     * @since 12.1
+     */
+    public ApsideDetector(final double keplerianPeriod) {
+        super(keplerianPeriod / 3, 1e-13 * keplerianPeriod, DEFAULT_MAX_ITER, new StopOnIncreasing());
+    }
+
+    /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the
      * max check interval to period/3 and to set the convergence
      * threshold according to orbit size</p>
      * @param orbit initial orbit
      */
     public ApsideDetector(final Orbit orbit) {
-        this(1.0e-13 * orbit.getKeplerianPeriod(), orbit);
+        this(orbit.getKeplerianPeriod());
     }
 
     /** Build a new instance.
@@ -57,31 +67,28 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @param orbit initial orbit
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
-        super(orbit.getKeplerianPeriod() / 3, threshold,
-              DEFAULT_MAX_ITER, new StopOnIncreasing<ApsideDetector>());
+        super(orbit.getKeplerianPeriod() / 3, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing());
     }
 
-    /** Private constructor with full parameters.
+    /** Public constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
+     * This constructor is public because otherwise all accessible ones would require an orbit.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @since 6.1
      */
-    private ApsideDetector(final double maxCheck, final double threshold,
-                           final int maxIter, final EventHandler<? super ApsideDetector> handler) {
+    public ApsideDetector(final AdaptableInterval maxCheck, final double threshold,
+                          final int maxIter, final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ApsideDetector create(final double newMaxCheck, final double newThreshold,
-                                    final int newMaxIter, final EventHandler<? super ApsideDetector> newHandler) {
+    protected ApsideDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                    final int newMaxIter, final EventHandler newHandler) {
         return new ApsideDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,9 +18,9 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
@@ -51,12 +51,12 @@ public class LatitudeExtremumDetectorTest {
                 new LatitudeExtremumDetector(earth).
                 withMaxCheck(60).
                 withThreshold(1.e-6).
-                withHandler(new ContinueOnEvent<LatitudeExtremumDetector>());
+                withHandler(new ContinueOnEvent());
 
-        Assert.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
-        Assert.assertSame(earth, d.getBody());
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertSame(earth, d.getBody());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -82,19 +82,19 @@ public class LatitudeExtremumDetectorTest {
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
         for (LoggedEvent e : logger.getLoggedEvents()) {
             SpacecraftState state = e.getState();
-            double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            double latitude = earth.transform(state.getPosition(earth.getBodyFrame()),
                                               earth.getBodyFrame(), null).getLatitude();
             if (e.isIncreasing()) {
-                Assert.assertEquals(-81.863, FastMath.toDegrees(latitude), 0.001);
+                Assertions.assertEquals(-81.863, FastMath.toDegrees(latitude), 0.001);
             } else {
-                Assert.assertEquals(+81.863, FastMath.toDegrees(latitude), 0.001);
+                Assertions.assertEquals(+81.863, FastMath.toDegrees(latitude), 0.001);
             }
         }
-        Assert.assertEquals(29, logger.getLoggedEvents().size());
+        Assertions.assertEquals(29, logger.getLoggedEvents().size());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

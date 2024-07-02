@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,13 +18,15 @@ package org.orekit.propagation.analytical;
 
 import java.io.Serializable;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -33,9 +35,12 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AbstractMatricesHarvester;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -77,6 +82,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
+    /** Default convergence threshold for mean parameters conversion. */
+    private static final double EPSILON_DEFAULT = 1.0e-11;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 100;
+
     /** Initial Eckstein-Hechler model. */
     private EHModel initialModel;
 
@@ -94,22 +105,34 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
+     *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider,
+     * UnnormalizedSphericalHarmonicsProvider)
+     * @see #EcksteinHechlerPropagator(Orbit, UnnormalizedSphericalHarmonicsProvider,
+     *                                 PropagationType)
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, provider,
-             provider.onDate(initialOrbit.getDate()));
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /**
      * Private helper constructor.
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
      * @param initialOrbit initial orbit
      * @param attitude attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double,
+     *                                 UnnormalizedSphericalHarmonicsProvider,
+     *                                 UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics,
+     *                                 PropagationType)
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitude,
@@ -136,6 +159,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      *
      * <p> C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial orbit
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m³/s²)
@@ -144,24 +169,33 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-          * @see org.orekit.utils.Constants
+     * @see org.orekit.utils.Constants
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
+     * double, double, double, double, double)
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
-        this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
      * <p>Attitude law is set to an unspecified non-null arbitrary value.</p>
+     *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double,
+     * UnnormalizedSphericalHarmonicsProvider)
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate()));
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -176,6 +210,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      *
      * <p> C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -185,16 +221,20 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
+     * double, double, double, double, double)
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
-        this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from orbit, attitude provider and potential provider.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
@@ -217,6 +257,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      *
      * <p> C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -236,10 +278,13 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double,
+     *                                 UnnormalizedSphericalHarmonicsProvider, PropagationType)
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
@@ -259,6 +304,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      *
      * <p> C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
@@ -269,6 +316,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
+     *                                 double, double, double, double, double, PropagationType)
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
@@ -276,7 +325,149 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50, c60,
+             PropagationType.OSCULATING);
+    }
 
+
+    /** Build a propagator from orbit and potential provider.
+     * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
+     *
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     *
+     * @param initialOrbit initial orbit
+     * @param provider for un-normalized zonal coefficients
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 10.2
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final UnnormalizedSphericalHarmonicsProvider provider,
+                                     final PropagationType initialType) {
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), initialType);
+    }
+
+    /** Build a propagator from orbit, attitude provider, mass and potential provider.
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 10.2
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitudeProv,
+                                     final double mass,
+                                     final UnnormalizedSphericalHarmonicsProvider provider,
+                                     final PropagationType initialType) {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()), initialType);
+    }
+
+    /**
+     * Private helper constructor.
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     * @param initialOrbit initial orbit
+     * @param attitude attitude provider
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 10.2
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitude,
+                                     final double mass,
+                                     final UnnormalizedSphericalHarmonicsProvider provider,
+                                     final UnnormalizedSphericalHarmonics harmonics,
+                                     final PropagationType initialType) {
+        this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
+             harmonics.getUnnormalizedCnm(2, 0),
+             harmonics.getUnnormalizedCnm(3, 0),
+             harmonics.getUnnormalizedCnm(4, 0),
+             harmonics.getUnnormalizedCnm(5, 0),
+             harmonics.getUnnormalizedCnm(6, 0),
+             initialType);
+    }
+
+    /** Build a propagator from orbit, attitude provider, mass and potential.
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     *
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 10.2
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitudeProv,
+                                     final double mass,
+                                     final double referenceRadius, final double mu,
+                                     final double c20, final double c30, final double c40,
+                                     final double c50, final double c60,
+                                     final PropagationType initialType) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu,
+             c20, c30, c40, c50, c60, initialType, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Build a propagator from orbit, attitude provider, mass and potential.
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     *
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 11.2
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitudeProv,
+                                     final double mass,
+                                     final double referenceRadius, final double mu,
+                                     final double c20, final double c30, final double c40,
+                                     final double c50, final double c60,
+                                     final PropagationType initialType,
+                                     final double epsilon, final int maxIterations) {
         super(attitudeProv);
 
         // store model coefficients
@@ -286,63 +477,207 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             0.0, 0.0, c20, c30, c40, c50, c60
         };
 
-        // compute mean parameters
+        // compute mean parameters if needed
         // transform into circular adapted parameters used by the Eckstein-Hechler model
         resetInitialState(new SpacecraftState(initialOrbit,
                                               attitudeProv.getAttitude(initialOrbit,
                                                                        initialOrbit.getDate(),
                                                                        initialOrbit.getFrame()),
-                                              mass));
+                                              mass),
+                          initialType, epsilon, maxIterations);
 
     }
 
-    /** {@inheritDoc} */
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating osculating orbit to convert
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(osculating.getDate())}
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static CircularOrbit computeMeanOrbit(final Orbit osculating,
+                                                 final UnnormalizedSphericalHarmonicsProvider provider,
+                                                 final UnnormalizedSphericalHarmonics harmonics) {
+        return computeMeanOrbit(osculating, provider, harmonics, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating osculating orbit to convert
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(osculating.getDate())}
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static CircularOrbit computeMeanOrbit(final Orbit osculating,
+                                                 final UnnormalizedSphericalHarmonicsProvider provider,
+                                                 final UnnormalizedSphericalHarmonics harmonics,
+                                                 final double epsilon, final int maxIterations) {
+        return computeMeanOrbit(osculating,
+                                provider.getAe(), provider.getMu(),
+                                harmonics.getUnnormalizedCnm(2, 0),
+                                harmonics.getUnnormalizedCnm(3, 0),
+                                harmonics.getUnnormalizedCnm(4, 0),
+                                harmonics.getUnnormalizedCnm(5, 0),
+                                harmonics.getUnnormalizedCnm(6, 0),
+                                epsilon, maxIterations);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating osculating orbit to convert
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static CircularOrbit computeMeanOrbit(final Orbit osculating,
+                                                 final double referenceRadius, final double mu,
+                                                 final double c20, final double c30, final double c40,
+                                                 final double c50, final double c60,
+                                                 final double epsilon, final int maxIterations) {
+        final EcksteinHechlerPropagator propagator =
+                        new EcksteinHechlerPropagator(osculating,
+                                                      FrameAlignedProvider.of(osculating.getFrame()),
+                                                      DEFAULT_MASS,
+                                                      referenceRadius, mu, c20, c30, c40, c50, c60,
+                                                      PropagationType.OSCULATING, epsilon, maxIterations);
+        return propagator.initialModel.mean;
+    }
+
+    /** {@inheritDoc}
+     * <p>The new initial state to consider
+     * must be defined with an osculating orbit.</p>
+     * @see #resetInitialState(SpacecraftState, PropagationType)
+     */
     public void resetInitialState(final SpacecraftState state) {
+        resetInitialState(state, PropagationType.OSCULATING);
+    }
+
+    /** Reset the propagator initial state.
+     * @param state new initial state to consider
+     * @param stateType mean Eckstein-Hechler orbit or osculating orbit
+     * @since 10.2
+     */
+    public void resetInitialState(final SpacecraftState state, final PropagationType stateType) {
+        resetInitialState(state, stateType, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Reset the propagator initial state.
+     * @param state new initial state to consider
+     * @param stateType mean Eckstein-Hechler orbit or osculating orbit
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @since 11.2
+     */
+    public void resetInitialState(final SpacecraftState state, final PropagationType stateType,
+                                  final double epsilon, final int maxIterations) {
         super.resetInitialState(state);
-        this.initialModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
-                                                  state.getMass());
-        this.models       = new TimeSpanMap<EHModel>(initialModel);
+        final CircularOrbit circular = (CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit());
+        this.initialModel = (stateType == PropagationType.MEAN) ?
+                             new EHModel(circular, state.getMass(), referenceRadius, mu, ck0) :
+                             computeMeanParameters(circular, state.getMass(), epsilon, maxIterations);
+        this.models = new TimeSpanMap<EHModel>(initialModel);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
+        resetIntermediateState(state, forward, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Reset an intermediate state.
+     * @param state new intermediate state to consider
+     * @param forward if true, the intermediate state is valid for
+     * propagations after itself
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @since 11.2
+     */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward,
+                                          final double epsilon, final int maxIterations) {
         final EHModel newModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
-                                                       state.getMass());
+                                                       state.getMass(), epsilon, maxIterations);
         if (forward) {
-            models.addValidAfter(newModel, state.getDate());
+            models.addValidAfter(newModel, state.getDate(), false);
         } else {
-            models.addValidBefore(newModel, state.getDate());
+            models.addValidBefore(newModel, state.getDate(), false);
         }
         stateChanged(state);
     }
 
+
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
      * @param osculating osculating orbit
      * @param mass constant mass
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
      * @return Eckstein-Hechler mean model
      */
-    private EHModel computeMeanParameters(final CircularOrbit osculating, final double mass) {
+    private EHModel computeMeanParameters(final CircularOrbit osculating, final double mass,
+                                          final double epsilon, final int maxIterations) {
 
         // sanity check
         if (osculating.getA() < referenceRadius) {
             throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE,
-                                           osculating.getA());
+                                      osculating.getA());
         }
 
         // rough initialization of the mean parameters
         EHModel current = new EHModel(osculating, mass, referenceRadius, mu, ck0);
 
         // threshold for each parameter
-        final double epsilon         = 1.0e-13;
         final double thresholdA      = epsilon * (1 + FastMath.abs(current.mean.getA()));
         final double thresholdE      = epsilon * (1 + current.mean.getE());
-        final double thresholdAngles = epsilon * FastMath.PI;
+        final double thresholdAngles = epsilon * MathUtils.TWO_PI;
 
         int i = 0;
-        while (i++ < 100) {
+        while (i++ < maxIterations) {
 
             // recompute the osculating parameters from the current mean parameters
-            final DerivativeStructure[] parameters = current.propagateParameters(current.mean.getDate());
+            final UnivariateDerivative2[] parameters = current.propagateParameters(current.mean.getDate());
 
             // adapted parameters residuals
             final double deltaA      = osculating.getA()          - parameters[0].getValue();
@@ -361,18 +696,18 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                                     current.mean.getI()          + deltaI,
                                                     current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                                                     current.mean.getAlphaM()     + deltaAlphaM,
-                                                    PositionAngle.MEAN,
+                                                    PositionAngleType.MEAN,
                                                     current.mean.getFrame(),
                                                     current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
 
             // check convergence
-            if ((FastMath.abs(deltaA)      < thresholdA) &&
-                (FastMath.abs(deltaEx)     < thresholdE) &&
-                (FastMath.abs(deltaEy)     < thresholdE) &&
-                (FastMath.abs(deltaI)      < thresholdAngles) &&
-                (FastMath.abs(deltaRAAN)   < thresholdAngles) &&
-                (FastMath.abs(deltaAlphaM) < thresholdAngles)) {
+            if (FastMath.abs(deltaA)      < thresholdA &&
+                FastMath.abs(deltaEx)     < thresholdE &&
+                FastMath.abs(deltaEy)     < thresholdE &&
+                FastMath.abs(deltaI)      < thresholdAngles &&
+                FastMath.abs(deltaRAAN)   < thresholdAngles &&
+                FastMath.abs(deltaAlphaM) < thresholdAngles) {
                 return current;
             }
 
@@ -391,14 +726,50 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                   current.mean.getFrame(), mu);
     }
 
+    /**
+     * Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
+     * @since 11.1
+     */
+    public double getMu() {
+        return mu;
+    }
+
+    /**
+     * Get the un-normalized zonal coefficients.
+     * @return the un-normalized zonal coefficients
+     * @since 11.1
+     */
+    public double[] getCk0() {
+        return ck0.clone();
+    }
+
+    /**
+     * Get the reference radius of the central body attraction model.
+     * @return the reference radius in meters
+     * @since 11.1
+     */
+    public double getReferenceRadius() {
+        return referenceRadius;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        // Create the harvester
+        final EcksteinHechlerHarvester harvester = new EcksteinHechlerHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Update the list of additional state provider
+        addAdditionalStateProvider(harvester);
+        // Return the configured harvester
+        return harvester;
+    }
+
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
     private static class EHModel implements Serializable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20160115L;
-
-        /** Factory for derivatives. */
-        private static final DSFactory FACTORY = new DSFactory(1, 2);
 
         /** Mean orbit. */
         private final CircularOrbit mean;
@@ -490,8 +861,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             ql *= q;
             final double g6 = ck0[6] * ql;
 
-            final double cosI1 = FastMath.cos(mean.getI());
-            final double sinI1 = FastMath.sin(mean.getI());
+            final SinCos sc    = FastMath.sinCos(mean.getI());
+            final double cosI1 = sc.cos();
+            final double sinI1 = sc.sin();
             final double sinI2 = sinI1 * sinI1;
             final double sinI4 = sinI2 * sinI2;
             final double sinI6 = sinI2 * sinI4;
@@ -604,118 +976,117 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
          * @param date target date for the orbit
          * @return propagated parameters
          */
-        public DerivativeStructure[] propagateParameters(final AbsoluteDate date) {
+        public UnivariateDerivative2[] propagateParameters(final AbsoluteDate date) {
 
             // Keplerian evolution
-            final DerivativeStructure dt = FACTORY.variable(0, date.durationFrom(mean.getDate()));
-            final DerivativeStructure xnot = dt.multiply(xnotDot);
+            final UnivariateDerivative2 dt = new UnivariateDerivative2(date.durationFrom(mean.getDate()), 1.0, 0.0);
+            final UnivariateDerivative2 xnot = dt.multiply(xnotDot);
 
             // secular effects
 
             // eccentricity
-            final DerivativeStructure x   = xnot.multiply(rdpom + rdpomp);
-            final DerivativeStructure cx  = x.cos();
-            final DerivativeStructure sx  = x.sin();
-            final DerivativeStructure exm = cx.multiply(mean.getCircularEx()).
-                                            add(sx.multiply(eps2 - (1.0 - eps1) * mean.getCircularEy()));
-            final DerivativeStructure eym = sx.multiply((1.0 + eps1) * mean.getCircularEx()).
-                                            add(cx.multiply(mean.getCircularEy() - eps2)).
-                                            add(eps2);
+            final UnivariateDerivative2 x   = xnot.multiply(rdpom + rdpomp);
+            final UnivariateDerivative2 cx  = x.cos();
+            final UnivariateDerivative2 sx  = x.sin();
+            final UnivariateDerivative2 exm = cx.multiply(mean.getCircularEx()).
+                                              add(sx.multiply(eps2 - (1.0 - eps1) * mean.getCircularEy()));
+            final UnivariateDerivative2 eym = sx.multiply((1.0 + eps1) * mean.getCircularEx()).
+                                              add(cx.multiply(mean.getCircularEy() - eps2)).
+                                              add(eps2);
 
             // no secular effect on inclination
 
             // right ascension of ascending node
-            final DerivativeStructure omm =
-                            FACTORY.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
-                                                           FastMath.PI),
-                                  ommD * xnotDot,
-                                  0.0);
+            final UnivariateDerivative2 omm = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
+                                                                                               FastMath.PI),
+                                                                      ommD * xnotDot,
+                                                                      0.0);
 
             // latitude argument
-            final DerivativeStructure xlm =
-                            FACTORY.build(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
-                                  aMD * xnotDot,
-                                  0.0);
+            final UnivariateDerivative2 xlm = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(),
+                                                                                                 FastMath.PI),
+                                                                        aMD * xnotDot,
+                                                                        0.0);
 
             // periodical terms
-            final DerivativeStructure cl1 = xlm.cos();
-            final DerivativeStructure sl1 = xlm.sin();
-            final DerivativeStructure cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
-            final DerivativeStructure sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
-            final DerivativeStructure cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
-            final DerivativeStructure sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
-            final DerivativeStructure cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
-            final DerivativeStructure sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
-            final DerivativeStructure cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
-            final DerivativeStructure sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
-            final DerivativeStructure cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
+            final UnivariateDerivative2 cl1 = xlm.cos();
+            final UnivariateDerivative2 sl1 = xlm.sin();
+            final UnivariateDerivative2 cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
+            final UnivariateDerivative2 sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
+            final UnivariateDerivative2 cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
+            final UnivariateDerivative2 sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
+            final UnivariateDerivative2 cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
+            final UnivariateDerivative2 sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
+            final UnivariateDerivative2 cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
+            final UnivariateDerivative2 sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
+            final UnivariateDerivative2 cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
 
-            final DerivativeStructure qh  = eym.subtract(eps2).multiply(kh);
-            final DerivativeStructure ql  = exm.multiply(kl);
+            final UnivariateDerivative2 qh  = eym.subtract(eps2).multiply(kh);
+            final UnivariateDerivative2 ql  = exm.multiply(kl);
 
-            final DerivativeStructure exmCl1 = exm.multiply(cl1);
-            final DerivativeStructure exmSl1 = exm.multiply(sl1);
-            final DerivativeStructure eymCl1 = eym.multiply(cl1);
-            final DerivativeStructure eymSl1 = eym.multiply(sl1);
-            final DerivativeStructure exmCl2 = exm.multiply(cl2);
-            final DerivativeStructure exmSl2 = exm.multiply(sl2);
-            final DerivativeStructure eymCl2 = eym.multiply(cl2);
-            final DerivativeStructure eymSl2 = eym.multiply(sl2);
-            final DerivativeStructure exmCl3 = exm.multiply(cl3);
-            final DerivativeStructure exmSl3 = exm.multiply(sl3);
-            final DerivativeStructure eymCl3 = eym.multiply(cl3);
-            final DerivativeStructure eymSl3 = eym.multiply(sl3);
-            final DerivativeStructure exmCl4 = exm.multiply(cl4);
-            final DerivativeStructure exmSl4 = exm.multiply(sl4);
-            final DerivativeStructure eymCl4 = eym.multiply(cl4);
-            final DerivativeStructure eymSl4 = eym.multiply(sl4);
+            final UnivariateDerivative2 exmCl1 = exm.multiply(cl1);
+            final UnivariateDerivative2 exmSl1 = exm.multiply(sl1);
+            final UnivariateDerivative2 eymCl1 = eym.multiply(cl1);
+            final UnivariateDerivative2 eymSl1 = eym.multiply(sl1);
+            final UnivariateDerivative2 exmCl2 = exm.multiply(cl2);
+            final UnivariateDerivative2 exmSl2 = exm.multiply(sl2);
+            final UnivariateDerivative2 eymCl2 = eym.multiply(cl2);
+            final UnivariateDerivative2 eymSl2 = eym.multiply(sl2);
+            final UnivariateDerivative2 exmCl3 = exm.multiply(cl3);
+            final UnivariateDerivative2 exmSl3 = exm.multiply(sl3);
+            final UnivariateDerivative2 eymCl3 = eym.multiply(cl3);
+            final UnivariateDerivative2 eymSl3 = eym.multiply(sl3);
+            final UnivariateDerivative2 exmCl4 = exm.multiply(cl4);
+            final UnivariateDerivative2 exmSl4 = exm.multiply(sl4);
+            final UnivariateDerivative2 eymCl4 = eym.multiply(cl4);
+            final UnivariateDerivative2 eymSl4 = eym.multiply(sl4);
 
             // semi major axis
-            final DerivativeStructure rda = exmCl1.multiply(ax1).
-                                            add(eymSl1.multiply(ay1)).
-                                            add(sl1.multiply(as1)).
-                                            add(cl2.multiply(ac2)).
-                                            add(exmCl3.add(eymSl3).multiply(axy3)).
-                                            add(sl3.multiply(as3)).
-                                            add(cl4.multiply(ac4)).
-                                            add(sl5.multiply(as5)).
-                                            add(cl6.multiply(ac6));
+            final UnivariateDerivative2 rda = exmCl1.multiply(ax1).
+                                              add(eymSl1.multiply(ay1)).
+                                              add(sl1.multiply(as1)).
+                                              add(cl2.multiply(ac2)).
+                                              add(exmCl3.add(eymSl3).multiply(axy3)).
+                                              add(sl3.multiply(as3)).
+                                              add(cl4.multiply(ac4)).
+                                              add(sl5.multiply(as5)).
+                                              add(cl6.multiply(ac6));
 
             // eccentricity
-            final DerivativeStructure rdex = cl1.multiply(ex1).
-                                             add(exmCl2.multiply(exx2)).
-                                             add(eymSl2.multiply(exy2)).
-                                             add(cl3.multiply(ex3)).
-                                             add(exmCl4.add(eymSl4).multiply(ex4));
-            final DerivativeStructure rdey = sl1.multiply(ey1).
-                                             add(exmSl2.multiply(eyx2)).
-                                             add(eymCl2.multiply(eyy2)).
-                                             add(sl3.multiply(ey3)).
-                                             add(exmSl4.subtract(eymCl4).multiply(ey4));
+            final UnivariateDerivative2 rdex = cl1.multiply(ex1).
+                                               add(exmCl2.multiply(exx2)).
+                                               add(eymSl2.multiply(exy2)).
+                                               add(cl3.multiply(ex3)).
+                                               add(exmCl4.add(eymSl4).multiply(ex4));
+            final UnivariateDerivative2 rdey = sl1.multiply(ey1).
+                                               add(exmSl2.multiply(eyx2)).
+                                               add(eymCl2.multiply(eyy2)).
+                                               add(sl3.multiply(ey3)).
+                                               add(exmSl4.subtract(eymCl4).multiply(ey4));
 
             // ascending node
-            final DerivativeStructure rdom = exmSl1.multiply(rx1).
-                                             add(eymCl1.multiply(ry1)).
-                                             add(sl2.multiply(r2)).
-                                             add(eymCl3.subtract(exmSl3).multiply(r3)).
-                                             add(ql.multiply(rl));
+            final UnivariateDerivative2 rdom = exmSl1.multiply(rx1).
+                                               add(eymCl1.multiply(ry1)).
+                                               add(sl2.multiply(r2)).
+                                               add(eymCl3.subtract(exmSl3).multiply(r3)).
+                                               add(ql.multiply(rl));
 
             // inclination
-            final DerivativeStructure rdxi = eymSl1.multiply(iy1).
-                                             add(exmCl1.multiply(ix1)).
-                                             add(cl2.multiply(i2)).
-                                             add(exmCl3.add(eymSl3).multiply(i3)).
-                                             add(qh.multiply(ih));
+            final UnivariateDerivative2 rdxi = eymSl1.multiply(iy1).
+                                               add(exmCl1.multiply(ix1)).
+                                               add(cl2.multiply(i2)).
+                                               add(exmCl3.add(eymSl3).multiply(i3)).
+                                               add(qh.multiply(ih));
 
             // latitude argument
-            final DerivativeStructure rdxl = exmSl1.multiply(lx1).
-                                             add(eymCl1.multiply(ly1)).
-                                             add(sl2.multiply(l2)).
-                                             add(exmSl3.subtract(eymCl3).multiply(l3)).
-                                             add(ql.multiply(ll));
+            final UnivariateDerivative2 rdxl = exmSl1.multiply(lx1).
+                                               add(eymCl1.multiply(ly1)).
+                                               add(sl2.multiply(l2)).
+                                               add(exmSl3.subtract(eymCl3).multiply(l3)).
+                                               add(ql.multiply(ll));
 
             // osculating parameters
-            return new DerivativeStructure[] {
+            return new UnivariateDerivative2[] {
                 rda.add(1.0).multiply(mean.getA()),
                 rdex.add(exm),
                 rdey.add(eym),
@@ -733,31 +1104,31 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param parameters circular parameters (a, ex, ey, i, raan, alphaM)
      * @return Cartesian coordinates consistent with values and derivatives
      */
-    private TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final DerivativeStructure[] parameters) {
+    private TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final UnivariateDerivative2[] parameters) {
 
         // evaluate coordinates in the orbit canonical reference frame
-        final DerivativeStructure cosOmega = parameters[4].cos();
-        final DerivativeStructure sinOmega = parameters[4].sin();
-        final DerivativeStructure cosI     = parameters[3].cos();
-        final DerivativeStructure sinI     = parameters[3].sin();
-        final DerivativeStructure alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
-        final DerivativeStructure cosAE    = alphaE.cos();
-        final DerivativeStructure sinAE    = alphaE.sin();
-        final DerivativeStructure ex2      = parameters[1].multiply(parameters[1]);
-        final DerivativeStructure ey2      = parameters[2].multiply(parameters[2]);
-        final DerivativeStructure exy      = parameters[1].multiply(parameters[2]);
-        final DerivativeStructure q        = ex2.add(ey2).subtract(1).negate().sqrt();
-        final DerivativeStructure beta     = q.add(1).reciprocal();
-        final DerivativeStructure bx2      = beta.multiply(ex2);
-        final DerivativeStructure by2      = beta.multiply(ey2);
-        final DerivativeStructure bxy      = beta.multiply(exy);
-        final DerivativeStructure u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
-        final DerivativeStructure v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
-        final DerivativeStructure x        = parameters[0].multiply(u);
-        final DerivativeStructure y        = parameters[0].multiply(v);
+        final UnivariateDerivative2 cosOmega = parameters[4].cos();
+        final UnivariateDerivative2 sinOmega = parameters[4].sin();
+        final UnivariateDerivative2 cosI     = parameters[3].cos();
+        final UnivariateDerivative2 sinI     = parameters[3].sin();
+        final UnivariateDerivative2 alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
+        final UnivariateDerivative2 cosAE    = alphaE.cos();
+        final UnivariateDerivative2 sinAE    = alphaE.sin();
+        final UnivariateDerivative2 ex2      = parameters[1].square();
+        final UnivariateDerivative2 ey2      = parameters[2].square();
+        final UnivariateDerivative2 exy      = parameters[1].multiply(parameters[2]);
+        final UnivariateDerivative2 q        = ex2.add(ey2).subtract(1).negate().sqrt();
+        final UnivariateDerivative2 beta     = q.add(1).reciprocal();
+        final UnivariateDerivative2 bx2      = beta.multiply(ex2);
+        final UnivariateDerivative2 by2      = beta.multiply(ey2);
+        final UnivariateDerivative2 bxy      = beta.multiply(exy);
+        final UnivariateDerivative2 u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
+        final UnivariateDerivative2 v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
+        final UnivariateDerivative2 x        = parameters[0].multiply(u);
+        final UnivariateDerivative2 y        = parameters[0].multiply(v);
 
         // canonical orbit reference frame
-        final FieldVector3D<DerivativeStructure> p =
+        final FieldVector3D<UnivariateDerivative2> p =
                 new FieldVector3D<>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
                                     x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
                                     y.multiply(sinI));
@@ -766,12 +1137,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         final Vector3D p0 = new Vector3D(p.getX().getValue(),
                                          p.getY().getValue(),
                                          p.getZ().getValue());
-        final Vector3D p1 = new Vector3D(p.getX().getPartialDerivative(1),
-                                         p.getY().getPartialDerivative(1),
-                                         p.getZ().getPartialDerivative(1));
-        final Vector3D p2 = new Vector3D(p.getX().getPartialDerivative(2),
-                                         p.getY().getPartialDerivative(2),
-                                         p.getZ().getPartialDerivative(2));
+        final Vector3D p1 = new Vector3D(p.getX().getFirstDerivative(),
+                                         p.getY().getFirstDerivative(),
+                                         p.getZ().getFirstDerivative());
+        final Vector3D p2 = new Vector3D(p.getX().getSecondDerivative(),
+                                         p.getY().getSecondDerivative(),
+                                         p.getZ().getSecondDerivative());
         return new TimeStampedPVCoordinates(date, p0, p1, p2);
 
     }
@@ -782,24 +1153,24 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param ey e sin(Ω), second component of circular eccentricity vector
      * @return the eccentric latitude argument.
      */
-    private DerivativeStructure meanToEccentric(final DerivativeStructure alphaM,
-                                                final DerivativeStructure ex,
-                                                final DerivativeStructure ey) {
+    private UnivariateDerivative2 meanToEccentric(final UnivariateDerivative2 alphaM,
+                                                  final UnivariateDerivative2 ex,
+                                                  final UnivariateDerivative2 ey) {
         // Generalization of Kepler equation to circular parameters
         // with alphaE = PA + E and
         //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        DerivativeStructure alphaE        = alphaM;
-        DerivativeStructure shift         = alphaM.getField().getZero();
-        DerivativeStructure alphaEMalphaM = alphaM.getField().getZero();
-        DerivativeStructure cosAlphaE     = alphaE.cos();
-        DerivativeStructure sinAlphaE     = alphaE.sin();
+        UnivariateDerivative2 alphaE        = alphaM;
+        UnivariateDerivative2 shift         = alphaM.getField().getZero();
+        UnivariateDerivative2 alphaEMalphaM = alphaM.getField().getZero();
+        UnivariateDerivative2 cosAlphaE     = alphaE.cos();
+        UnivariateDerivative2 sinAlphaE     = alphaE.sin();
         int                 iter          = 0;
         do {
-            final DerivativeStructure f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
-            final DerivativeStructure f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
-            final DerivativeStructure f0 = alphaEMalphaM.subtract(f2);
+            final UnivariateDerivative2 f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
+            final UnivariateDerivative2 f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
+            final UnivariateDerivative2 f0 = alphaEMalphaM.subtract(f2);
 
-            final DerivativeStructure f12 = f1.multiply(2);
+            final UnivariateDerivative2 f12 = f1.multiply(2);
             shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
 
             alphaEMalphaM  = alphaEMalphaM.subtract(shift);
@@ -807,7 +1178,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             cosAlphaE      = alphaE.cos();
             sinAlphaE      = alphaE.sin();
 
-        } while ((++iter < 50) && (FastMath.abs(shift.getValue()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getValue()) > 1.0e-12);
 
         return alphaE;
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,9 +18,9 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -28,7 +28,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -54,12 +54,12 @@ public class LongitudeExtremumDetectorTest {
                 new LongitudeExtremumDetector(earth).
                 withMaxCheck(60).
                 withThreshold(1.e-6).
-                withHandler(new ContinueOnEvent<LongitudeExtremumDetector>());
+                withHandler(new ContinueOnEvent());
 
-        Assert.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
-        Assert.assertSame(earth, d.getBody());
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertSame(earth, d.getBody());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -83,7 +83,7 @@ public class LongitudeExtremumDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(0, logger.getLoggedEvents().size());
+        Assertions.assertEquals(0, logger.getLoggedEvents().size());
 
     }
 
@@ -96,15 +96,15 @@ public class LongitudeExtremumDetectorTest {
 
         LongitudeExtremumDetector d =
                 new LongitudeExtremumDetector(600.0, 1.e-6, earth).
-                withHandler(new ContinueOnEvent<LongitudeExtremumDetector>());
+                withHandler(new ContinueOnEvent());
 
-        Assert.assertEquals(600.0, d.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertEquals(600.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         KeplerianOrbit orbit =
                         new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                                           0.048363, PositionAngle.MEAN,
+                                           0.048363, PositionAngleType.MEAN,
                                            FramesFactory.getEME2000(),
                                            AbsoluteDate.J2000_EPOCH,
                                            Constants.EIGEN5C_EARTH_MU);
@@ -122,18 +122,18 @@ public class LongitudeExtremumDetectorTest {
         double[] expectedLatitudes  = new double[] {
             -3.8404256460679336, 3.4237236065561536, -3.840419828222964, 3.4237214483413734, -3.840413360572555
         };
-        Assert.assertEquals(5, logger.getLoggedEvents().size());
+        Assertions.assertEquals(5, logger.getLoggedEvents().size());
         for (int i = 0; i < 5; ++i) {
             SpacecraftState state = logger.getLoggedEvents().get(i).getState();
-            GeodeticPoint gp = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            GeodeticPoint gp = earth.transform(state.getPosition(earth.getBodyFrame()),
                                                earth.getBodyFrame(), null);
-            Assert.assertEquals(expectedLongitudes[i], FastMath.toDegrees(gp.getLongitude()), 1.0e-10);
-            Assert.assertEquals(expectedLatitudes[i],  FastMath.toDegrees(gp.getLatitude()),  1.0e-10);
+            Assertions.assertEquals(expectedLongitudes[i], FastMath.toDegrees(gp.getLongitude()), 1.0e-10);
+            Assertions.assertEquals(expectedLatitudes[i],  FastMath.toDegrees(gp.getLatitude()),  1.0e-10);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

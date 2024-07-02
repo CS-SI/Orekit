@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,19 +18,21 @@ package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularAzEl;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
+import java.util.Map;
 
 /** Builder for {@link AngularAzEl} measurements.
  * @author Luc Maisonobe
  * @since 9.3
  */
 public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> {
+
+    /** Zero value for initial dummy measurement. */
+    private static final double[] ZERO = { 0.0, 0.0 };
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
@@ -52,49 +54,11 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
 
     /** {@inheritDoc} */
     @Override
-    public AngularAzEl build(final SpacecraftState[] states) {
-
-        final ObservableSatellite satellite = getSatellites()[0];
-        final double[] sigma                = getTheoreticalStandardDeviation();
-        final double[] baseWeight           = getBaseWeight();
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
-
-        // create a dummy measurement
-        final AngularAzEl dummy = new AngularAzEl(station, state.getDate(),
-                                                  new double[] {
-                                                      0.0, 0.0
-                                                  }, sigma, baseWeight, satellite);
-        for (final EstimationModifier<AngularAzEl> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        final double[] angular = dummy.estimate(0, 0, states).getEstimatedValue();
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            angular[0] += noise[0];
-            angular[1] += noise[1];
-        }
-
-        // generate measurement
-        final AngularAzEl measurement = new AngularAzEl(station, state.getDate(), angular,
-                                                        sigma, baseWeight, satellite);
-        for (final EstimationModifier<AngularAzEl> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected AngularAzEl buildObserved(final AbsoluteDate date,
+                                        final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new AngularAzEl(station, date, ZERO,
+                               getTheoreticalStandardDeviation(),
+                               getBaseWeight(), getSatellites()[0]);
     }
 
 }

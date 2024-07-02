@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * This class is a container for the common "field" parameters used in {@link AbstractGaussianContribution}.
@@ -27,27 +28,28 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * </p>
  * @author Bryan Cazabonne
  * @since 10.0
+ * @param <T> type of the field elements
  */
-class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldAbstractGaussianContributionContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** 2 / (n² * a) . */
     protected T ton2a;
 
-    /** 1 / A .*/
+    /** 1 / A . */
     protected T ooA;
 
-    /** 1 / (A * B) .*/
+    /** 1 / (A * B) . */
     protected T ooAB;
 
-    /** C / (2 * A * B) .*/
+    /** C / (2 * A * B) . */
     protected T co2AB;
 
-    /** 1 / (1 + B) .*/
+    /** 1 / (1 + B) . */
     protected T ooBpo;
 
-    /** 1 / μ .*/
+    /** 1 / μ . */
     protected T ooMu;
 
     /** A = sqrt(μ * a). */
@@ -65,7 +67,12 @@ class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> ex
      * Simple constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param parameters parameters values of the force model parameters
+     * @param parameters        parameters values of the force model parameters
+     *                          (only 1 values for each parameters corresponding
+     *                          to state date) obtained by calling the extract
+     *                          parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     *                          to selected the right value for state date or by
+     *                          getting the parameters for a specific date.
      */
     FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
 
@@ -90,7 +97,7 @@ class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> ex
         // 2 / (n² * a)
         ton2a = (n.multiply(n).multiply(auxiliaryElements.getSma())).divide(2.).reciprocal();
         // 1 / mu
-        ooMu  = mu.reciprocal();
+        ooMu = mu.reciprocal();
 
     }
 

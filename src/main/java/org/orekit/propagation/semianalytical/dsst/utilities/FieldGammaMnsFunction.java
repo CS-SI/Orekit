@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,22 +16,21 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.Arrays;
-
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 
-/** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13). */
-public class FieldGammaMnsFunction <T extends RealFieldElement<T>> {
+import java.util.Arrays;
+
+/** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13).
+ * @param <T> type of the field elements
+ */
+public class FieldGammaMnsFunction <T extends CalculusFieldElement<T>> {
 
     /** Factorial ratios. */
     private static double[] PRECOMPUTED_RATIOS;
-
-    /** Field element. */
-    private final Field<T> field;
 
     /** Factorial ratios. */
     private final double[] ratios;
@@ -52,12 +51,10 @@ public class FieldGammaMnsFunction <T extends RealFieldElement<T>> {
      *  @param field field element
      */
     public FieldGammaMnsFunction(final int nMax, final T gamma, final int I, final Field<T> field) {
-        this.field = field;
-        final T zero = field.getZero();
         final int size = (nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6;
         this.values = MathArrays.buildArray(field, size);
         this.ratios = getRatios(nMax, size);
-        Arrays.fill(values, zero.add(Double.NaN));
+        Arrays.fill(values, field.getZero().add(Double.NaN));
         this.opIg   = gamma.multiply(I).add(1.);
         this.I      = I;
     }
@@ -80,7 +77,7 @@ public class FieldGammaMnsFunction <T extends RealFieldElement<T>> {
      * @return factorial ratios
      */
     private static double[] getRatios(final int nMax, final int size) {
-        synchronized (GammaMnsFunction.class) {
+        synchronized (FieldGammaMnsFunction.class) {
             if (PRECOMPUTED_RATIOS == null || PRECOMPUTED_RATIOS.length < size) {
                 // we need to compute a larger reference array
 
@@ -141,16 +138,13 @@ public class FieldGammaMnsFunction <T extends RealFieldElement<T>> {
      * @return d&Gamma;<sup>m</sup><sub>n,s</sub>(γ)/dγ
      */
     public T getDerivative(final int m, final int n, final int s) {
-        final T zero = field.getZero();
-        T res = zero;
         if (s <= -m) {
-            res = getValue(m, n, s).multiply(I).multiply(-m).divide(opIg);
+            return getValue(m, n, s).multiply(I).multiply(-m).divide(opIg);
         } else if (s >= m) {
-            res =  getValue(m, n, s).multiply(I).multiply(m).divide(opIg);;
+            return getValue(m, n, s).multiply(I).multiply(m).divide(opIg);
         } else {
-            res =  getValue(m, n, s).multiply(I).multiply(s).divide(opIg);;
+            return getValue(m, n, s).multiply(I).multiply(s).divide(opIg);
         }
-        return res;
     }
 
 }

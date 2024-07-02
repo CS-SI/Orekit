@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,10 +18,10 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -30,7 +30,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -59,7 +59,7 @@ public class BackAndForthDetectorTest {
         final double raan = FastMath.toRadians(12.5);
         final double lM = FastMath.toRadians(60.);
         Orbit iniOrb = new KeplerianOrbit(a, e, i, w, raan, lM,
-                                          PositionAngle.MEAN, FramesFactory.getEME2000(), date0,
+                                          PositionAngleType.MEAN, FramesFactory.getEME2000(), date0,
                                           Constants.WGS84_EARTH_MU);
 
         // Propagator
@@ -85,11 +85,11 @@ public class BackAndForthDetectorTest {
         propagator.propagate(date1);
         propagator.propagate(date0);
 
-        Assert.assertEquals(4, visi.getVisiNb());
+        Assertions.assertEquals(4, visi.getVisiNb());
 
     }
 
-    private static class Visibility implements EventHandler<ElevationDetector> {
+    private static class Visibility implements EventHandler {
         private int _visiNb;
 
         public Visibility() {
@@ -100,19 +100,19 @@ public class BackAndForthDetectorTest {
             return _visiNb;
         }
 
-        public Action eventOccurred(SpacecraftState s, ElevationDetector ed, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector ed, boolean increasing) {
             _visiNb++;
             return Action.CONTINUE;
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

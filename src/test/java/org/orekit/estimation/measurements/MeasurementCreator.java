@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,19 +16,19 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class MeasurementCreator implements OrekitFixedStepHandler {
 
     private final List<ObservedMeasurement<?>> measurements;
 
     protected MeasurementCreator() {
-        measurements = new ArrayList<ObservedMeasurement<?>>();
+        measurements = new ArrayList<>();
     }
 
     public List<ObservedMeasurement<?>> getMeasurements() {

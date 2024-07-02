@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,22 +17,21 @@
 package org.orekit.models.earth;
 
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class EarthStandardAtmosphereTest {
 
     private final double epsilon = 1e-15;
 
-    @Before
+    @BeforeEach
     public void setUp()
         throws Exception {
     }
 
-    @After
+    @AfterEach
     public void tearDown()
         throws Exception {
     }
@@ -41,8 +40,8 @@ public class EarthStandardAtmosphereTest {
     public void testEarthStandardAtmosphereRefraction() {
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction();
 
-        Assert.assertEquals(model.getPressure(), EarthStandardAtmosphereRefraction.DEFAULT_PRESSURE, epsilon);
-        Assert.assertEquals(model.getTemperature(), EarthStandardAtmosphereRefraction.DEFAULT_TEMPERATURE, epsilon);
+        Assertions.assertEquals(model.getPressure(), EarthStandardAtmosphereRefraction.DEFAULT_PRESSURE, epsilon);
+        Assertions.assertEquals(model.getTemperature(), EarthStandardAtmosphereRefraction.DEFAULT_TEMPERATURE, epsilon);
     }
 
     @Test
@@ -51,8 +50,8 @@ public class EarthStandardAtmosphereTest {
         final double temperature = 270;
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction(pressure, temperature);
 
-        Assert.assertEquals(model.getPressure(), pressure, epsilon);
-        Assert.assertEquals(model.getTemperature(), temperature, epsilon);
+        Assertions.assertEquals(model.getPressure(), pressure, epsilon);
+        Assertions.assertEquals(model.getTemperature(), temperature, epsilon);
     }
 
     @Test
@@ -61,12 +60,12 @@ public class EarthStandardAtmosphereTest {
         double temperature = 270;
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction(pressure, temperature);
 
-        Assert.assertEquals(model.getPressure(), pressure, epsilon);
+        Assertions.assertEquals(model.getPressure(), pressure, epsilon);
 
         pressure = 105389.2;
         model.setPressure(pressure);
 
-        Assert.assertEquals(model.getPressure(), pressure, epsilon);
+        Assertions.assertEquals(model.getPressure(), pressure, epsilon);
     }
 
     @Test
@@ -75,12 +74,12 @@ public class EarthStandardAtmosphereTest {
         double temperature = 270;
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction(pressure, temperature);
 
-        Assert.assertEquals(model.getTemperature(), temperature, epsilon);
+        Assertions.assertEquals(model.getTemperature(), temperature, epsilon);
 
         temperature = 273;
         model.setTemperature(temperature);
 
-        Assert.assertEquals(model.getTemperature(), temperature, epsilon);
+        Assertions.assertEquals(model.getTemperature(), temperature, epsilon);
 
     }
 
@@ -92,7 +91,7 @@ public class EarthStandardAtmosphereTest {
 
         double refractedElevation = model.getRefraction(FastMath.toRadians(1.0));
 
-        Assert.assertEquals(0.0061922285, refractedElevation, 1e-9);
+        Assertions.assertEquals(0.0061922285, refractedElevation, 1e-9);
     }
 
 }

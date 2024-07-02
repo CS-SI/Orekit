@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2024 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -28,18 +28,18 @@ The main categories are:
 ## Technical contact
 
 If for some reason you cannot use the public forums, you can reach the CS
-Systèmes d'Information Orekit team for any question (either technically
+GROUP Orekit team for any question (either technically
 oriented or administrative) at the following email address:
 [orekit@c-s.fr](mailto:orekit@c-s.fr)
 
 ## Administrative contact
 
-If you want to discuss with the space division staff at CS Systèmes d'Information,
+If you want to discuss with the space division staff at CS GROUP,
 please use the following address:
 
-    CS Systèmes d'Information
-    BU E-space & Geoinformation
-    parc de la plaine - 5 rue Brindejonc des Moulinais
+    CS GROUP
+    Space Business Unit
+    Parc de la Plaine - 6 rue Brindejonc des Moulinais
     BP 15872
     31506 Toulouse CEDEX 5
     FRANCE

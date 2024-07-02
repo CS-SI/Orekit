@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,19 +16,17 @@
  */
 package org.orekit.attitudes;
 
-
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.Line;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.*;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -36,12 +34,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.frames.StaticTransform;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -59,7 +53,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-public class TargetPointingTest {
+class TargetPointingTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -71,18 +65,18 @@ public class TargetPointingTest {
     private Frame itrf;
 
     // Transform from EME2000 to ITRF
-    private Transform eme2000ToItrf;
+    private StaticTransform eme2000ToItrf;
 
     /** Test if both constructors are equivalent
      */
     @Test
-    public void testConstructors() {
+    void testConstructors() {
 
         //  Satellite position
         // ********************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Attitude laws
@@ -110,20 +104,20 @@ public class TargetPointingTest {
         // Rotations composition
         Rotation rotCompo = rotGeo.composeInverse(rotPv, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
-        Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
+        Assertions.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
     }
 
     /** Test if geodetic constructor works
      */
     @Test
-    public void testGeodeticConstructor() {
+    void testGeodeticConstructor() {
 
         //  Satellite position
         // ********************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Attitude law
@@ -142,20 +136,20 @@ public class TargetPointingTest {
         Vector3D pObservedEME2000 = geoTargetAttitudeLaw.getTargetPV(circ, date, FramesFactory.getEME2000()).getPosition();
         GeodeticPoint geoObserved = earthShape.transform(pObservedEME2000, FramesFactory.getEME2000(), date);
 
-        Assert.assertEquals(geoObserved.getLongitude(), geoTargetITRF.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoObserved.getLatitude(), geoTargetITRF.getLatitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoObserved.getAltitude(), geoTargetITRF.getAltitude(), 1.1e-8);
+        Assertions.assertEquals(geoObserved.getLongitude(), geoTargetITRF.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoObserved.getLatitude(), geoTargetITRF.getLatitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoObserved.getAltitude(), geoTargetITRF.getAltitude(), 1.1e-8);
 
     }
 
     @Test
-    public void testIssue115() {
+    void testIssue115() {
 
         //  Satellite position
         // ********************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Attitude law
@@ -175,20 +169,20 @@ public class TargetPointingTest {
         Attitude att1 = geoTargetAttitudeLaw.getAttitude(circ, date, cirf);
         Attitude att2 = geoTargetAttitudeLaw.getAttitude(circ, date, itrf);
         Attitude att3 = att2.withReferenceFrame(cirf);
-        Assert.assertEquals(0.0, Rotation.distance(att3.getRotation(), att1.getRotation()), 1.0e-15);
+        Assertions.assertEquals(0.0, Rotation.distance(att3.getRotation(), att1.getRotation()), 1.0e-15);
 
     }
 
     @Test
-    public void testWrongFrame() {
+    void testWrongFrame() {
         try {
             // in the following line, the frames have been intentionnally reversed
             new TargetPointing(itrf, FramesFactory.getEME2000(),
                                new Vector3D(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oe.getSpecifier());
-            Assert.assertEquals(itrf.getName(), oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oe.getSpecifier());
+            Assertions.assertEquals(itrf.getName(), oe.getParts()[0]);
         }
     }
 
@@ -196,7 +190,7 @@ public class TargetPointingTest {
      * satellite attitude is the same as nadir attitude at the same date, but different at a different date.
      */
     @Test
-    public void testNadirTarget() {
+    void testNadirTarget() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
@@ -204,7 +198,7 @@ public class TargetPointingTest {
         // Satellite on any position
         CircularOrbit circOrbit =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE,
+                                   FastMath.toRadians(90.), PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Target attitude provider with target under satellite nadir
@@ -234,7 +228,7 @@ public class TargetPointingTest {
         // Compose attitude rotations
         Rotation rotCompo = rotTarget.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
-        Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
+        Assertions.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
 
         //  2/ Test that attitudes are different at a different date
@@ -256,14 +250,14 @@ public class TargetPointingTest {
         // Compose attitude rotations
         Rotation extrapRotCompo = extrapRotTarget.composeInverse(extrapRotNadir, RotationConvention.VECTOR_OPERATOR);
         double extrapAngle = extrapRotCompo.getAngle();
-        Assert.assertEquals(extrapAngle, FastMath.toRadians(24.684793905118823), Utils.epsilonAngle);
+        Assertions.assertEquals(extrapAngle, FastMath.toRadians(24.684793905118823), Utils.epsilonAngle);
 
     }
 
     /** Test if defined target belongs to the direction pointed by the satellite
      */
     @Test
-    public void testTargetInPointingDirection() {
+    void testTargetInPointingDirection() {
 
         // Create computation date
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
@@ -285,7 +279,7 @@ public class TargetPointingTest {
         // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 frame
@@ -309,13 +303,13 @@ public class TargetPointingTest {
         // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));
 
-        Assert.assertEquals(0, distance, 1.e-7);
+        Assertions.assertEquals(0, distance, 1.e-7);
     }
 
     /** Test the difference between pointing over two longitudes separated by 5°
      */
     @Test
-    public void testSlewedTarget() {
+    void testSlewedTarget() {
 
         // Spheric earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
@@ -325,7 +319,7 @@ public class TargetPointingTest {
         // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(42164000.0, 0.5e-8, -0.5e-8, 0., 0.,
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Create nadir pointing attitude provider
@@ -355,7 +349,7 @@ public class TargetPointingTest {
         // Get attitude rotation
         Rotation rotSatEME2000 = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
-        checkField(Decimal64Field.getInstance(), targetLaw, circ, circ.getDate(), circ.getFrame());
+        checkField(Binary64Field.getInstance(), targetLaw, circ, circ.getDate(), circ.getFrame());
 
         // Compute difference between both attitude providers
         // *********************************************
@@ -367,12 +361,12 @@ public class TargetPointingTest {
         //  real
         double deltaReal = Rotation.distance(rotSatEME2000, rotSatRefEME2000);
 
-        Assert.assertEquals(deltaReal, deltaExpected, 1.e-4);
+        Assertions.assertEquals(deltaReal, deltaExpected, 1.e-4);
 
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
 
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
@@ -386,7 +380,7 @@ public class TargetPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -401,22 +395,22 @@ public class TargetPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-5 * evolutionAngleMinus);
+        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-5 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-5 * evolutionAnglePlus);
+        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-5 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.1e-10);
+        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.1e-10);
 
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
+    private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
         {
@@ -425,19 +419,51 @@ public class TargetPointingTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assert.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
 
         final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
-        Assert.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 1.0e-15);
 
     }
 
-    @Before
+
+    @Test
+    void testGetTargetPosition() {
+        // GIVEN
+        final CircularOrbit circOrbit =
+                new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
+                        FastMath.toRadians(90.), PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
+        final TargetPointing law = new TargetPointing(circOrbit.getFrame(), FramesFactory.getGTOD(false),
+                Vector3D.PLUS_J);
+        // WHEN
+        final Vector3D actualPosition = law.getTargetPosition(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
+        // THEN
+        final Vector3D expectedPosition = law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame()).getPosition();
+        Assertions.assertEquals(expectedPosition, actualPosition);
+    }
+
+    @Test
+    void testGetTargetPositionField() {
+        // GIVEN
+        final CircularOrbit circOrbit =
+                new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
+                        FastMath.toRadians(90.), PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
+        final TargetPointing law = new TargetPointing(circOrbit.getFrame(), FramesFactory.getGTOD(false),
+                Vector3D.PLUS_J);
+        final FieldCircularOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(ComplexField.getInstance(), circOrbit);
+        // WHEN
+        final FieldVector3D<Complex> actualPosition = law.getTargetPosition(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        // THEN
+        final FieldVector3D<Complex> expectedPosition = law.getTargetPV(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getPosition();
+        Assertions.assertEquals(0., actualPosition.subtract(expectedPosition).getNorm().getReal(), 1e-10);
+    }
+
+    @BeforeEach
     public void setUp() {
         try {
 
@@ -455,15 +481,15 @@ public class TargetPointingTest {
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Transform from EME2000 to ITRF
-            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
+            eme2000ToItrf = FramesFactory.getEME2000().getStaticTransformTo(itrf, date);
 
         } catch (OrekitException oe) {
-            Assert.fail(oe.getMessage());
+            Assertions.fail(oe.getMessage());
         }
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         date = null;
         itrf = null;

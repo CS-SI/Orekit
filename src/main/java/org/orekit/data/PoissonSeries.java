@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,8 +19,10 @@ package org.orekit.data;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.MathUtils.SumAndResidual;
 
 /**
  * Class representing a Poisson series for nutation or ephemeris computations.
@@ -77,20 +79,14 @@ public class PoissonSeries {
         final double p = polynomial.value(elements.getTC());
 
         // non-polynomial part
-        // compute sum accurately, using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
         double npHigh = 0;
         double npLow  = 0;
         for (final Map.Entry<Long, SeriesTerm> entry : series.entrySet()) {
             final double v       = entry.getValue().value(elements)[0];
-            final double sum     = npHigh + v;
-            final double sPrime  = sum - v;
-            final double tPrime  = sum - sPrime;
-            final double deltaS  = npHigh  - sPrime;
-            final double deltaT  = v - tPrime;
-            npLow  += deltaS   + deltaT;
-            npHigh  = sum;
+            // Use 2Sum for high precision.
+            final SumAndResidual sumAndResidual = MathUtils.twoSum(npHigh, v);
+            npHigh = sumAndResidual.getSum();
+            npLow += sumAndResidual.getResidual();
         }
 
         // add the polynomial and the non-polynomial parts
@@ -100,10 +96,10 @@ public class PoissonSeries {
 
     /** Evaluate the value of the series.
      * @param elements bodies elements for nutation
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return value of the series
      */
-    public <T extends RealFieldElement<T>> T value(final FieldBodiesElements<T> elements) {
+    public <T extends CalculusFieldElement<T>> T value(final FieldBodiesElements<T> elements) {
 
         // polynomial part
         final T tc = elements.getTC();
@@ -143,14 +139,14 @@ public class PoissonSeries {
          * @param <S> the type of the field elements
          * @return value of the series
          */
-        <S extends RealFieldElement<S>> S[] value(FieldBodiesElements<S> elements);
+        <S extends CalculusFieldElement<S>> S[] value(FieldBodiesElements<S> elements);
 
         /** Evaluate time derivative of a set of Poisson series.
          * @param elements bodies elements for nutation
          * @param <S> the type of the field elements
          * @return time derivative of the series
          */
-        <S extends RealFieldElement<S>> S[] derivative(FieldBodiesElements<S> elements);
+        <S extends CalculusFieldElement<S>> S[] derivative(FieldBodiesElements<S> elements);
 
     }
 
@@ -220,22 +216,15 @@ public class PoissonSeries {
             public double[] value(final BodiesElements elements) {
 
                 // non-polynomial part
-                // compute sum accurately, using Møller-Knuth TwoSum algorithm without branching
-                // the following statements must NOT be simplified, they rely on floating point
-                // arithmetic properties (rounding and representable numbers)
                 final double[] npHigh = new double[polynomials.length];
                 final double[] npLow  = new double[polynomials.length];
                 for (final SeriesTerm term : joinedTerms) {
                     final double[] termValue = term.value(elements);
                     for (int i = 0; i < termValue.length; ++i) {
-                        final double v       = termValue[i];
-                        final double sum     = npHigh[i] + v;
-                        final double sPrime  = sum - v;
-                        final double tPrime  = sum - sPrime;
-                        final double deltaS  = npHigh[i]  - sPrime;
-                        final double deltaT  = v - tPrime;
-                        npLow[i]  += deltaS   + deltaT;
-                        npHigh[i]  = sum;
+                        // Use 2Sum for high precision.
+                        final SumAndResidual sumAndResidual = MathUtils.twoSum(npHigh[i], termValue[i]);
+                        npHigh[i] = sumAndResidual.getSum();
+                        npLow[i] += sumAndResidual.getResidual();
                     }
                 }
 
@@ -270,7 +259,7 @@ public class PoissonSeries {
 
             /** {@inheritDoc} */
             @Override
-            public <S extends RealFieldElement<S>> S[] value(final FieldBodiesElements<S> elements) {
+            public <S extends CalculusFieldElement<S>> S[] value(final FieldBodiesElements<S> elements) {
 
                // non-polynomial part
                 final S[] v = MathArrays.buildArray(elements.getTC().getField(), polynomials.length);
@@ -292,7 +281,7 @@ public class PoissonSeries {
 
             /** {@inheritDoc} */
             @Override
-            public <S extends RealFieldElement<S>> S[] derivative(final FieldBodiesElements<S> elements) {
+            public <S extends CalculusFieldElement<S>> S[] derivative(final FieldBodiesElements<S> elements) {
 
                // non-polynomial part
                 final S[] v = MathArrays.buildArray(elements.getTC().getField(), polynomials.length);

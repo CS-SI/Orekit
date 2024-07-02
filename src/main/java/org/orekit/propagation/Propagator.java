@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,14 +19,22 @@ package org.orekit.propagation;
 import java.util.Collection;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
@@ -58,117 +66,94 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-    /** Default attitude provider. */
-    AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
-
-    /** Indicator for slave mode. */
-    int SLAVE_MODE = 0;
-
-    /** Indicator for master mode. */
-    int MASTER_MODE = 1;
-
-    /** Indicator for ephemeris generation mode. */
-    int EPHEMERIS_GENERATION_MODE = 2;
-
-    /** Get the current operating mode of the propagator.
-     * @return one of {@link #SLAVE_MODE}, {@link #MASTER_MODE},
-     * {@link #EPHEMERIS_GENERATION_MODE}
-     * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
-     * @see #setEphemerisMode()
+    /**
+     * Get a default law using the given frames.
+     *
+     * @param frames the set of frames to use.
+     * @return attitude law.
      */
-    int getMode();
+    static AttitudeProvider getDefaultLaw(final Frames frames) {
+        return new FrameAlignedProvider(Rotation.IDENTITY, frames.getEME2000());
+    }
 
-    /** Set the propagator to slave mode.
-     * <p>This mode is used when the user needs only the final orbit at the target time.
-     *  The (slave) propagator computes this result and return it to the calling
-     *  (master) application, without any intermediate feedback.
-     * <p>This is the default mode.</p>
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
-     * @see #setEphemerisMode()
-     * @see #getMode()
-     * @see #SLAVE_MODE
+    /** Get the multiplexer holding all step handlers.
+     * @return multiplexer holding all step handlers
+     * @since 11.0
      */
-    void setSlaveMode();
+    StepHandlerMultiplexer getMultiplexer();
 
-    /** Set the propagator to master mode with fixed steps.
-     * <p>This mode is used when the user needs to have some custom function called at the
-     * end of each finalized step during integration. The (master) propagator integration
-     * loop calls the (slave) application callback methods at each finalized step.</p>
+    /** Remove all step handlers.
+     * <p>This convenience method is equivalent to call {@code getMultiplexer().clear()}</p>
+     * @see #getMultiplexer()
+     * @see StepHandlerMultiplexer#clear()
+     * @since 11.0
+     */
+    default void clearStepHandlers() {
+        getMultiplexer().clear();
+    }
+
+    /** Set a single handler for fixed stepsizes.
+     * <p>This convenience method is equivalent to call {@code getMultiplexer().clear()}
+     * followed by {@code getMultiplexer().add(h, handler)}</p>
      * @param h fixed stepsize (s)
      * @param handler handler called at the end of each finalized step
-     * @see #setSlaveMode()
-     * @see #setMasterMode(OrekitStepHandler)
-     * @see #setEphemerisMode()
-     * @see #getMode()
-     * @see #MASTER_MODE
+     * @see #getMultiplexer()
+     * @see StepHandlerMultiplexer#add(double, OrekitFixedStepHandler)
+     * @since 11.0
      */
-    void setMasterMode(double h, OrekitFixedStepHandler handler);
+    default void setStepHandler(final double h, final OrekitFixedStepHandler handler) {
+        getMultiplexer().clear();
+        getMultiplexer().add(h, handler);
+    }
 
-    /** Set the propagator to master mode with variable steps.
-     * <p>This mode is used when the user needs to have some custom function called at the
-     * end of each finalized step during integration. The (master) propagator integration
-     * loop calls the (slave) application callback methods at each finalized step.</p>
+    /** Set a single handler for variable stepsizes.
+     * <p>This convenience method is equivalent to call {@code getMultiplexer().clear()}
+     * followed by {@code getMultiplexer().add(handler)}</p>
      * @param handler handler called at the end of each finalized step
-     * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setEphemerisMode()
-     * @see #getMode()
-     * @see #MASTER_MODE
+     * @see #getMultiplexer()
+     * @see StepHandlerMultiplexer#add(OrekitStepHandler)
+     * @since 11.0
      */
-    void setMasterMode(OrekitStepHandler handler);
-
-    /** Set the propagator to ephemeris generation mode.
-     *  <p>This mode is used when the user needs random access to the orbit state at any time
-     *  between the initial and target times, and in no sequential order. A typical example is
-     *  the implementation of search and iterative algorithms that may navigate forward and
-     *  backward inside the propagation range before finding their result.</p>
-     *  <p>Beware that since this mode stores <strong>all</strong> intermediate results,
-     *  it may be memory intensive for long integration ranges and high precision/short
-     *  time steps.</p>
-     * @see #getGeneratedEphemeris()
-     * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
-     * @see #getMode()
-     * @see #EPHEMERIS_GENERATION_MODE
-     */
-    void setEphemerisMode();
+    default void setStepHandler(final OrekitStepHandler handler) {
+        getMultiplexer().clear();
+        getMultiplexer().add(handler);
+    }
 
     /**
-     * Set the propagator to ephemeris generation mode with the specified handler for each
-     * integration step.
+     * Set up an ephemeris generator that will monitor the propagation for building
+     * an ephemeris from it once completed.
      *
-     * <p>This mode is used when the user needs random access to the orbit state at any
-     * time between the initial and target times, as well as access to the steps computed
-     * by the integrator as in Master Mode. A typical example is the implementation of
-     * search and iterative algorithms that may navigate forward and backward inside the
-     * propagation range before finding their result.</p>
-     *
-     * <p>Beware that since this mode stores <strong>all</strong> intermediate results, it
-     * may be memory intensive for long integration ranges and high precision/short time
-     * steps.</p>
-     *
-     * @param handler handler called at the end of each finalized step
-     * @see #setEphemerisMode()
-     * @see #getGeneratedEphemeris()
-     * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
-     * @see #getMode()
-     * @see #EPHEMERIS_GENERATION_MODE
+     * <p>
+     * This generator can be used when the user needs fast random access to the orbit
+     * state at any time between the initial and target times. A typical example is the
+     * implementation of search and iterative algorithms that may navigate forward and
+     * backward inside the propagation range before finding their result even if the
+     * propagator used is integration-based and only goes from one initial time to one
+     * target time.
+     * </p>
+     * <p>
+     * Beware that when used with integration-based propagators, the generator will
+     * store <strong>all</strong> intermediate results. It is therefore memory intensive
+     * for long integration-based ranges and high precision/short time steps. When
+     * used with analytical propagators, the generator only stores start/stop time
+     * and a reference to the analytical propagator itself to call it back as needed,
+     * so it is less memory intensive.
+     * </p>
+     * <p>
+     * The returned ephemeris generator will be initially empty, it will be filled
+     * with propagation data when a subsequent call to either {@link #propagate(AbsoluteDate)
+     * propagate(target)} or {@link #propagate(AbsoluteDate, AbsoluteDate)
+     * propagate(start, target)} is called. The proper way to use this method is
+     * therefore to do:
+     * </p>
+     * <pre>
+     *   EphemerisGenerator generator = propagator.getEphemerisGenerator();
+     *   propagator.propagate(target);
+     *   BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+     * </pre>
+     * @return ephemeris generator
      */
-    void setEphemerisMode(OrekitStepHandler handler);
-
-    /** Get the ephemeris generated during propagation.
-     * @return generated ephemeris
-     * @exception IllegalStateException if the propagator was not set in ephemeris
-     * generation mode before propagation
-     * @see #setEphemerisMode()
-     */
-    BoundedPropagator getGeneratedEphemeris() throws IllegalStateException;
+    EphemerisGenerator getEphemerisGenerator();
 
     /** Get the propagator initial state.
      * @return initial state
@@ -193,17 +178,9 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Check if an additional state is managed.
      * <p>
      * Managed states are states for which the propagators know how to compute
-     * its evolution. They correspond to additional states for which an
-     * {@link AdditionalStateProvider additional state provider} has been registered
-     * by calling the {@link #addAdditionalStateProvider(AdditionalStateProvider)
-     * addAdditionalStateProvider} method. If the propagator is an {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator integrator-based
-     * propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.AdditionalEquations additional equations} has
-     * been registered by calling the {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(
-     * org.orekit.propagation.integration.AdditionalEquations) addAdditionalEquations}
-     * method are also counted as managed additional states.
+     * its evolution. They correspond to additional states for which a
+     * {@link AdditionalStateProvider provider} has been registered by calling the
+     * {@link #addAdditionalStateProvider(AdditionalStateProvider) addAdditionalStateProvider} method.
      * </p>
      * <p>
      * Additional states that are present in the {@link #getInitialState() initial state}
@@ -267,6 +244,33 @@ public interface Propagator extends PVCoordinatesProvider {
      */
     Frame getFrame();
 
+    /** Set up computation of State Transition Matrix and Jacobians matrix with respect to parameters.
+     * <p>
+     * If this method is called, both State Transition Matrix and Jacobians with respect to the
+     * force models parameters that will be selected when propagation starts will be automatically
+     * computed, and the harvester will allow to retrieve them.
+     * </p>
+     * <p>
+     * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType
+     * orbit type} and {@link PositionAngleType position angle} that will be used by the propagator.
+     * </p>
+     * <p>
+     * The default implementation throws an exception as the method is not supported by all propagators.
+     * </p>
+     * @param stmName State Transition Matrix state name
+     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
+     * if null (which is the most frequent case), assumed to be 6x6 identity
+     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
+     * if null or if some selected parameters are missing from the dictionary, the corresponding
+     * initial column is assumed to be 0
+     * @return harvester to retrieve computed matrices during and after propagation
+     * @since 11.1
+     */
+    default MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
+                                                       final DoubleArrayDictionary initialJacobianColumns) {
+        throw new UnsupportedOperationException();
+    }
+
     /** Propagate towards a target date.
      * <p>Simple propagators use only the target date as the specification for
      * computing the propagated state. More feature rich propagators can consider
@@ -289,5 +293,17 @@ public interface Propagator extends PVCoordinatesProvider {
      * @return propagated state
      */
     SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target);
+
+    /** {@inheritDoc} */
+    @Override
+    default TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+        return propagate(date).getPVCoordinates(frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default Vector3D getPosition(AbsoluteDate date, Frame frame) {
+        return propagate(date).getPosition(frame);
+    }
 
 }

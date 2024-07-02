@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,7 +26,7 @@ import org.hipparchus.util.FastMath;
  * <p>
  * The dates can be aligned to whole steps in some time scale. So for example
  * if a rest period of 3600s is used and the alignment time scale is set to
- * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, the earliest date of
+ * {@link org.orekit.time.TimeScales#getUTC() UTC}, the earliest date of
  * each burst will occur at whole hours in UTC time.
  * </p>
  * <p>

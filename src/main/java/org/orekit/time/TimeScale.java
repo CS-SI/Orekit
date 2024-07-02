@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 
 /** Interface for time scales.
  * <p>This is the interface representing all time scales. Time scales are related
@@ -46,7 +46,7 @@ public interface TimeScale extends Serializable {
      * @see #offsetToTAI(DateComponents, TimeComponents)
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> T offsetFromTAI(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T offsetFromTAI(FieldAbsoluteDate<T> date);
 
     /** Get the offset to convert locations from instance to {@link TAIScale}.
      * @param date date location in the time scale
@@ -56,7 +56,7 @@ public interface TimeScale extends Serializable {
      * @see #offsetFromTAI(AbsoluteDate)
      */
     default double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
+        final AbsoluteDate reference = new AbsoluteDate(date, time, new TAIScale());
         double offset = 0;
         for (int i = 0; i < 8; i++) {
             offset = -offsetFromTAI(reference.shiftedBy(offset));
@@ -88,7 +88,7 @@ public interface TimeScale extends Serializable {
      * @return true if time is within a leap second introduction
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
+    default <T extends CalculusFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
         return false;
     }
 
@@ -120,7 +120,7 @@ public interface TimeScale extends Serializable {
      * @return 60 or 61 depending on leap seconds introduction
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
+    default <T extends CalculusFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
         return 60;
     }
 
@@ -146,7 +146,7 @@ public interface TimeScale extends Serializable {
      * @return value of the previous leap
      * @since 9.0
      */
-    default <T extends RealFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
+    default <T extends CalculusFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
         return date.getField().getZero();
     }
 

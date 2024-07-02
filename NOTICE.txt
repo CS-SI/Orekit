@@ -1,11 +1,14 @@
 OREKIT
-Copyright 2002-2019 CS Systèmes d'Information
+Copyright 2002-2024 CS GROUP
 
 This product includes software developed by
-CS Systèmes d'Information (http://www.c-s.fr/)
+CS GROUP (https://www.csgroup.eu/)
 
 This product includes software developed by
 Bruce R. Bowman (HQ AFSPC, Space Analysis Division)
+
+This product includes software developed by
+Luc Maisonobe (Thales Alenia Space)
 
 This product includes software translated from original work developed by
 David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso

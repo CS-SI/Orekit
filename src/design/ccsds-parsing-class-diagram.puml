@@ -1,0 +1,146 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit #ECEBD8 {
+
+    package data #DDEBD8 {
+      class DataSource
+    }
+
+    package files.ccsds #DDEBD8 {
+
+      package section #CBDBC8 {
+        class HeaderProcessingState
+        class KvnStructureProcessingState
+        class XmlStructureProcessingState
+      }
+
+      package ndm #CBDBC8 {
+
+         package odm.opm #CCCCC7 {
+          class OpmParser
+          class Opm
+        }
+
+        class ParserBuilder {
+          +withConventions()
+          +withDataContext()
+          +withParsedUnitsBehavior()
+          +with...()
+          +buildOpmParser()
+          +buildOmmParser()
+          +buildOemParser()
+          +buildOcmParser()
+          +buildApmParser()
+          +buildAemParser()
+          +buildTdmParser()
+        }
+
+        enum ParsedUnitsBehavior {
+          +IGNORE_PARSED
+          +CONVERT_COMPATIBLE
+          +STRICT_COMPLIANCE
+        }
+
+        ParserBuilder -right-> OpmParser : build
+        ParserBuilder o--> ParsedUnitsBehavior
+        OpmParser --> Opm: "build"
+
+      }
+
+      package utils #CBDBC8 {
+        package lexical #CCCCC7 {
+          interface LexicalAnalyzer
+          enum TokenType {
+            +START
+            +ENTRY
+            +STOP
+            +RAW_LINE
+          }
+          class ParseToken {
+            +getName()
+            +getType()
+            +getContent()
+            +processAsDouble(scaling, doubleConsumer)
+            +processAsDate(dateConsumer, contextBinding)
+            +processAsTimeSystem(timeSystemConsumer)
+            +processAs...(...Consumer, extraParams)
+          }
+          interface "MessageParser<T>" as MessageParser {
+            +parseMessage(Datasource)
+            +reset(FileFormat)
+            +process(ParseToken)
+            +T build()
+          }
+        }
+
+        package parsing #CCCCC7 {
+          abstract class "AbstractMessageParser<T>" as AbstractMessageParser {
+            #reset(fileFormat, initialState)
+            +prepareHeader()
+            +inHeader()
+            +finalizeHeader()
+            +prepareMetadata()
+            +inMetadata()
+            +finalizeMetadata()
+            +prepareData()
+            +inData()
+            +finalizeData()
+            +setFallback(ProcessingState)
+          }
+          interface ProcessingState {
+            +boolean processToken(ParseToken)
+          }
+        }
+
+        enum FileFormat {
+          +KVN
+          +XML
+        }
+      }
+
+    }
+  }
+
+  DataSource <-- LexicalAnalyzer
+  LexicalAnalyzer --> ParseToken : produces
+  LexicalAnalyzer <-- MessageParser
+  TokenType "1" <--o ParseToken
+  ParseToken <-left- ProcessingState
+  MessageParser --> FileFormat
+  ParseToken <-- MessageParser : "process"
+  AbstractMessageParser ..|> MessageParser
+  ProcessingState <--o AbstractMessageParser : "current"
+  ProcessingState <--o AbstractMessageParser : "fallback"
+  HeaderProcessingState       ..|> ProcessingState
+  KvnStructureProcessingState ..|> ProcessingState
+  XmlStructureProcessingState ..|> ProcessingState
+  OpmParser .right.|> ProcessingState
+
+@enduml

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,15 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
 /** Base class for dsst force models parameter containers.
  * @author Bryan Cazabonne
  * @since 10.0
+ * @param <T> type of the field elements
  */
-abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
+public abstract class FieldForceModelContext<T extends CalculusFieldElement<T>> {
 
     /** Common parameters used by all DSST forces. */
     private final FieldAuxiliaryElements<T> auxiliaryElements;
@@ -31,7 +32,7 @@ abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
     /** Simple constructor.
      * @param auxiliaryElements auxiliary elements related to the current orbit
      */
-    protected  FieldForceModelContext(final FieldAuxiliaryElements<T> auxiliaryElements) {
+    protected FieldForceModelContext(final FieldAuxiliaryElements<T> auxiliaryElements) {
         this.auxiliaryElements = auxiliaryElements;
     }
 

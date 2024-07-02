@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,18 +17,18 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitInternalError;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link PVCoordinates}.
@@ -172,16 +172,16 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         this.date = date;
     }
 
-    /** Builds a TimeStampedPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a TimeStampedPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link Derivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.
      * </p>
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public TimeStampedPVCoordinates(final AbsoluteDate date,
-                                    final FieldVector3D<DerivativeStructure> p) {
+    public <U extends Derivative<U>> TimeStampedPVCoordinates(final AbsoluteDate date, final FieldVector3D<U> p) {
         super(p);
         this.date = date;
     }
@@ -219,6 +219,12 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     public PVCoordinatesProvider toTaylorProvider(final Frame instanceFrame) {
         return new PVCoordinatesProvider() {
             /** {@inheritDoc} */
+            public Vector3D getPosition(final AbsoluteDate d,  final Frame f) {
+                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
+                final StaticTransform          transform = instanceFrame.getStaticTransformTo(f, d);
+                return transform.transformPosition(shifted.getPosition());
+            }
+            /** {@inheritDoc} */
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
                 final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(date));
                 final Transform                transform = instanceFrame.getTransformTo(f, d);
@@ -227,106 +233,28 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         };
     }
 
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @return a new position-velocity, interpolated at specified date
+    /** Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @return string representation of this.
      */
-    public static TimeStampedPVCoordinates interpolate(final AbsoluteDate date,
-                                                       final CartesianDerivativesFilter filter,
-                                                       final Collection<TimeStampedPVCoordinates> sample) {
-        return interpolate(date, filter, sample.stream());
-    }
-
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @return a new position-velocity, interpolated at specified date
-     * @since 9.0
-     */
-    public static TimeStampedPVCoordinates interpolate(final AbsoluteDate date,
-                                                       final CartesianDerivativesFilter filter,
-                                                       final Stream<TimeStampedPVCoordinates> sample) {
-
-        // set up an interpolator taking derivatives into account
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
-
-        // add sample points
-        switch (filter) {
-            case USE_P :
-                // populate sample with position data, ignoring velocity
-                sample.forEach(pv -> {
-                    final Vector3D position = pv.getPosition();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray());
-                });
-                break;
-            case USE_PV :
-                // populate sample with position and velocity data
-                sample.forEach(pv -> {
-                    final Vector3D position = pv.getPosition();
-                    final Vector3D velocity = pv.getVelocity();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray());
-                });
-                break;
-            case USE_PVA :
-                // populate sample with position, velocity and acceleration data
-                sample.forEach(pv -> {
-                    final Vector3D position     = pv.getPosition();
-                    final Vector3D velocity     = pv.getVelocity();
-                    final Vector3D acceleration = pv.getAcceleration();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray(), acceleration.toArray());
-                });
-                break;
-            default :
-                // this should never happen
-                throw new OrekitInternalError(null);
-        }
-
-        // interpolate
-        final double[][] p = interpolator.derivatives(0.0, 2);
-
-        // build a new interpolated instance
-        return new TimeStampedPVCoordinates(date, new Vector3D(p[0]), new Vector3D(p[1]), new Vector3D(p[2]));
-
-    }
-
-    /** Return a string representation of this position/velocity pair.
-     * @return string representation of this position/velocity pair
-     */
+    @Override
+    @DefaultDataContext
     public String toString() {
+        return toString(DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * @param utc time scale used to print the date.
+     * @return string representation of this.
+     */
+    public String toString(final TimeScale utc) {
         final String comma = ", ";
-        return new StringBuffer().append('{').append(date).append(", P(").
+        return new StringBuilder().append('{').
+                                  append(date.toString(utc)).append(", P(").
                                   append(getPosition().getX()).append(comma).
                                   append(getPosition().getY()).append(comma).
                                   append(getPosition().getZ()).append("), V(").
@@ -341,11 +269,13 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
@@ -360,8 +290,10 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         private DTO(final TimeStampedPVCoordinates pv) {
 
             // decompose date
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
+            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             this.d = new double[] {
                 epoch, offset,
@@ -376,7 +308,9 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
          * @return replacement {@link TimeStampedPVCoordinates}
          */
         private Object readResolve() {
-            return new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            return new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                                 new Vector3D(d[2], d[3], d[ 4]),
                                                 new Vector3D(d[5], d[6], d[ 7]),
                                                 new Vector3D(d[8], d[9], d[10]));

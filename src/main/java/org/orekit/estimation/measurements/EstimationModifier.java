@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.List;
-
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 
 /** Interface for estimated measurements modifiers used for orbit determination.
@@ -40,16 +38,19 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface EstimationModifier<T extends ObservedMeasurement<T>> {
+public interface EstimationModifier<T extends ObservedMeasurement<T>> extends ParameterDriversProvider {
 
-    /** Get the drivers for this modifier parameters.
-     * @return drivers for this modifier parameters
+    /** Apply a modifier to an estimated measurement without derivatives.
+     * @param estimated estimated measurement to modify
+     * @since 12.0
      */
-    List<ParameterDriver> getParametersDrivers();
+    void modifyWithoutDerivatives(EstimatedMeasurementBase<T> estimated);
 
     /** Apply a modifier to an estimated measurement.
      * @param estimated estimated measurement to modify
      */
-    void modify(EstimatedMeasurement<T> estimated);
+    default void modify(EstimatedMeasurement<T> estimated) {
+        modifyWithoutDerivatives(estimated);
+    }
 
 }

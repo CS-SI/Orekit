@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,26 +16,22 @@
  */
 package org.orekit.frames;
 
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-import org.hipparchus.RealFieldElement;
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -44,6 +40,12 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 
 public class GTODProviderTest {
@@ -93,6 +95,14 @@ public class GTODProviderTest {
         Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
                 getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
         checkPV(fix.transformPVCoordinates(pvPEF), t.transformPVCoordinates(pvTOD), 0.00942, 3.12e-5);
+        StaticTransform st = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+                getStaticTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
+        MatcherAssert.assertThat(
+                st.getTranslation(),
+                OrekitMatchers.vectorCloseTo(t.getTranslation(), 0));
+        MatcherAssert.assertThat(
+                Rotation.distance(st.getRotation(), t.getRotation()),
+                OrekitMatchers.closeTo(0, 0));
 
         // if we forget to apply nutation corrections, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
@@ -170,12 +180,12 @@ public class GTODProviderTest {
                              { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
                              { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN }
                          }));
-        FieldAbsoluteDate<Decimal64> t0 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        FieldAbsoluteDate<Binary64> t0 = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                   new DateComponents(2004, 06, 01),
                                                                   TimeComponents.H00,
                                                                   TimeScalesFactory.getUTC());
 
-        FieldTransform<Decimal64> t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+        FieldTransform<Binary64> t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
                 getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
         // TOD iau76
         PVCoordinates pvTOD =
@@ -189,11 +199,11 @@ public class GTODProviderTest {
 
         // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
         // was not taken into account in the reference paper, so we fix it here for the test
-        final Decimal64 dDeltaPsi =
+        final Binary64 dDeltaPsi =
                 FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
-        final Decimal64 epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
-        final FieldTransform<Decimal64> fix =
-                new FieldTransform<>(t0, new FieldRotation<>(FieldVector3D.getPlusK(Decimal64Field.getInstance()),
+        final Binary64 epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
+        final FieldTransform<Binary64> fix =
+                new FieldTransform<>(t0, new FieldRotation<>(FieldVector3D.getPlusK(Binary64Field.getInstance()),
                                                              dDeltaPsi.multiply(epsilonA.cos()),
                                                              RotationConvention.FRAME_TRANSFORM));
 
@@ -208,14 +218,15 @@ public class GTODProviderTest {
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
         GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
-                                                 FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+                                                 FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                                                 DataContext.getDefault().getTimeScales());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 295000);
-        Assert.assertTrue(bos.size() < 300000);
+        Assertions.assertTrue(bos.size() > 340000);
+        Assertions.assertTrue(bos.size() < 350000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -225,13 +236,47 @@ public class GTODProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
 
-    @Before
+    @Test
+    void testGetKinematicTransform() {
+        // GIVEN
+        final GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
+                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                DataContext.getDefault().getTimeScales());
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final KinematicTransform kinematicTransform = provider.getKinematicTransform(date);
+        // THEN
+        final Transform transform = provider.getTransform(date);
+        Assertions.assertEquals(date, kinematicTransform.getDate());
+        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+    }
+
+    @Test
+    void testGetStaticTransform() {
+        // GIVEN
+        final GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
+                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                DataContext.getDefault().getTimeScales());
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final StaticTransform staticTransform = provider.getStaticTransform(date);
+        // THEN
+        final Transform transform = provider.getTransform(date);
+        Assertions.assertEquals(date, staticTransform.getDate());
+        Assertions.assertEquals(transform.getCartesian().getPosition(), staticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()));
+    }
+
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }
@@ -241,19 +286,19 @@ public class GTODProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
-    private <T extends RealFieldElement<T>> void checkPV(FieldPVCoordinates<T> reference,
+    private <T extends CalculusFieldElement<T>> void checkPV(FieldPVCoordinates<T> reference,
                                                          FieldPVCoordinates<T> result,
                                                          double expectedPositionError,
                                                          double expectedVelocityError) {
 
         FieldVector3D<T> dP = result.getPosition().subtract(reference.getPosition());
         FieldVector3D<T> dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(expectedPositionError, dP.getNorm().getReal(), 0.01 * expectedPositionError);
-        Assert.assertEquals(expectedVelocityError, dV.getNorm().getReal(), 0.01 * expectedVelocityError);
+        Assertions.assertEquals(expectedPositionError, dP.getNorm().getReal(), 0.01 * expectedPositionError);
+        Assertions.assertEquals(expectedVelocityError, dV.getNorm().getReal(), 0.01 * expectedVelocityError);
     }
 
 }

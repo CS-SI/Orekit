@@ -1,0 +1,10 @@
+CCSDS_OCM_VERS            = 3.0
+
+COMMENT  This file intentionally misses DEF_EPOCH_TZERO
+
+CREATION_DATE             = 2019-07-23T10:29:31.576Z
+ORIGINATOR                = JPL
+
+META_START
+TIME_SYSTEM               = UTC
+META_STOP

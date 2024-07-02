@@ -28,10 +28,20 @@ import org.orekit.propagation.events.EventDetector;
  *
  * @author Hank Grabowski
  *
- * @param <T> class type for the generic version
  * @since 6.1
  */
-public class StopOnIncreasing<T extends EventDetector> implements EventHandler<T> {
+public class StopOnIncreasing implements EventHandler {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public StopOnIncreasing() {
+        // nothing to do
+    }
 
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link
@@ -44,7 +54,7 @@ public class StopOnIncreasing<T extends EventDetector> implements EventHandler<T
      * @return {@link Action#STOP} or {@link Action#CONTINUE}
      */
     @Override
-    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
+    public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
         return increasing ? Action.STOP : Action.CONTINUE;
     }
 

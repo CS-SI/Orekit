@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,28 +16,30 @@
  */
 package org.orekit.bodies;
 
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -51,8 +53,8 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -68,37 +70,38 @@ public class SolarBodyTest {
         final Frame refFrame = FramesFactory.getICRF();
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/DE431-ephemeris-NAIF.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8));
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            line = line.trim();
-            if (!line.isEmpty() && !line.startsWith("#")) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8))) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                line = line.trim();
+                if (!line.isEmpty() && !line.startsWith("#")) {
 
-                // extract reference data from Naif
-                String[] fields = line.split("\\s+");
-                final AbsoluteDate date1 = new AbsoluteDate(fields[0], tdb);
-                final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.J2000_EPOCH,
-                                                            Double.parseDouble(fields[1]),
-                                                            tdb);
-                String name       = fields[2];
-                final String barycenter = fields[3];
-                final Vector3D pRef     = new Vector3D(Double.parseDouble(fields[4]) * 1000.0,
-                                                       Double.parseDouble(fields[5]) * 1000.0,
-                                                       Double.parseDouble(fields[6]) * 1000.0);
-                final Vector3D vRef     = new Vector3D(Double.parseDouble(fields[7]) * 1000.0,
-                                                       Double.parseDouble(fields[8]) * 1000.0,
-                                                       Double.parseDouble(fields[9]) * 1000.0);
+                    // extract reference data from Naif
+                    String[] fields = line.split("\\s+");
+                    final AbsoluteDate date1 = new AbsoluteDate(fields[0], tdb);
+                    final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.J2000_EPOCH,
+                                                                Double.parseDouble(fields[1]),
+                                                                tdb);
+                    String name       = fields[2];
+                    final String barycenter = fields[3];
+                    final Vector3D pRef     = new Vector3D(Double.parseDouble(fields[4]) * 1000.0,
+                                                           Double.parseDouble(fields[5]) * 1000.0,
+                                                           Double.parseDouble(fields[6]) * 1000.0);
+                    final Vector3D vRef     = new Vector3D(Double.parseDouble(fields[7]) * 1000.0,
+                                                           Double.parseDouble(fields[8]) * 1000.0,
+                                                           Double.parseDouble(fields[9]) * 1000.0);
 
-                // check position-velocity
-                Assert.assertEquals("BARYCENTER", barycenter);
-                if (name.equals("EARTH")) {
-                    name = "EARTH-MOON BARYCENTER";
+                    // check position-velocity
+                    Assertions.assertEquals("BARYCENTER", barycenter);
+                    if (name.equals("EARTH")) {
+                        name = "EARTH-MOON BARYCENTER";
+                    }
+                    Assertions.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
+                    final PVCoordinates pv = CelestialBodyFactory.getBody(name).getPVCoordinates(date2,
+                                                                                                 refFrame);
+
+                    Assertions.assertEquals(0.0, Vector3D.distance(pRef, pv.getPosition()), 15.0);
+                    Assertions.assertEquals(0.0, Vector3D.distance(vRef, pv.getVelocity()), 1.0e-5);
                 }
-                Assert.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
-                final PVCoordinates pv = CelestialBodyFactory.getBody(name).getPVCoordinates(date2,
-                                                                                             refFrame);
-
-                Assert.assertEquals(0.0, Vector3D.distance(pRef, pv.getPosition()), 15.0);
-                Assert.assertEquals(0.0, Vector3D.distance(vRef, pv.getVelocity()), 1.0e-5);
             }
         }
     }
@@ -201,7 +204,7 @@ public class SolarBodyTest {
             final PVCoordinates relativePV =
                             new PVCoordinates(center.getPVCoordinates(date, FramesFactory.getICRF()),
                                               target.getPVCoordinates(date, FramesFactory.getICRF()));
-            Assert.assertEquals(coordinateValue, getCoordinate(coordinateNumber, relativePV), threshold);
+            Assertions.assertEquals(coordinateValue, getCoordinate(coordinateNumber, relativePV), threshold);
         }
     }
 
@@ -257,70 +260,92 @@ public class SolarBodyTest {
         }
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noMercury() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getMercury();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getMercury();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noVenus() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getVenus();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getVenus();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noEarthMoonBarycenter() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getEarthMoonBarycenter();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getEarthMoonBarycenter();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noMars() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getMars();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getMars();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noJupiter() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getJupiter();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getJupiter();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noSaturn() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getSaturn();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getSaturn();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noUranus() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getUranus();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getUranus();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noNeptune() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getNeptune();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getNeptune();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noPluto() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getPluto();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getPluto();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noMoon() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getMoon();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getMoon();
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void noSun() {
-        Utils.setDataRoot("no-data");
-        CelestialBodyFactory.getSun();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("no-data");
+            CelestialBodyFactory.getSun();
+        });
     }
 
     @Test
@@ -337,10 +362,10 @@ public class SolarBodyTest {
                 final Transform shifted  = transform.shiftedBy(dt);
                 final Transform computed = earth.getTransformTo(moon, transform.getDate().shiftedBy(dt));
                 final Transform error    = new Transform(computed.getDate(), computed, shifted.getInverse());
-                Assert.assertEquals(0.0, error.getTranslation().getNorm(),   100.0);
-                Assert.assertEquals(0.0, error.getVelocity().getNorm(),       20.0);
-                Assert.assertEquals(0.0, error.getRotation().getAngle(),    4.0e-8);
-                Assert.assertEquals(0.0, error.getRotationRate().getNorm(), 8.0e-10);
+                Assertions.assertEquals(0.0, error.getTranslation().getNorm(),   100.0);
+                Assertions.assertEquals(0.0, error.getVelocity().getNorm(),       20.0);
+                Assertions.assertEquals(0.0, error.getRotation().getAngle(),    4.0e-8);
+                Assertions.assertEquals(0.0, error.getRotationRate().getNorm(), 8.0e-10);
             }
         }
     }
@@ -393,27 +418,23 @@ public class SolarBodyTest {
         propag.addForceModel(new BodyAttraction(pluto));
 
         // checks are done within the step handler
-        propag.setMasterMode(1000.0, new OrekitFixedStepHandler() {
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-                {
+        propag.setStepHandler(1000.0, currentState -> {
                 // propagated position should remain within 1400m of ephemeris for one month
-                Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
-                Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
-                Assert.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
-            }
-        });
+                Vector3D propagatedP = currentState.getPosition(icrf);
+                Vector3D ephemerisP  = venus.getPosition(currentState.getDate(), icrf);
+                Assertions.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
+            });
 
         propag.propagate(startingDate, endDate);
-
     }
 
-    private static class BodyAttraction extends AbstractForceModel {
+    private static class BodyAttraction implements ForceModel {
 
         /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
         public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
 
-        /** Drivers for force model parameters. */
-        private final ParameterDriver[] parametersDrivers;
+        /** Driver for force model parameter. */
+        private final ParameterDriver parameterDriver;
 
         /** The body to consider. */
         private final CelestialBody body;
@@ -424,15 +445,9 @@ public class SolarBodyTest {
          * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
          */
         public BodyAttraction(final CelestialBody body) {
-            this.parametersDrivers = new ParameterDriver[1];
-            try {
-                parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                           body.getGM(), 1.0e-5 * body.getGM(),
-                                                           0.0, Double.POSITIVE_INFINITY);
-            } catch (OrekitException oe) {
-                // this should never occur as valueChanged above never throws an exception
-                throw new OrekitInternalError(oe);
-            }
+            parameterDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                                    body.getGM(), 1.0e-5 * body.getGM(),
+                                                    0.0, Double.POSITIVE_INFINITY);
             this.body = body;
         }
 
@@ -450,8 +465,8 @@ public class SolarBodyTest {
             final double gm = parameters[0];
 
             // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-            final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+            final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
+            final Vector3D satToBody     = centralToBody.subtract(s.getPosition());
             final double   r2Sat         = satToBody.getNormSq();
 
             // compute relative acceleration
@@ -461,15 +476,15 @@ public class SolarBodyTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
 
             final T gm = parameters[0];
 
             // compute bodies separation vectors and squared norm
-            final FieldVector3D<T> centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-            final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+            final FieldVector3D<T> centralToBody = body.getPosition(s.getDate(), s.getFrame());
+            final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
             final T                r2Sat         = satToBody.getNormSq();
 
             // compute absolute acceleration
@@ -479,20 +494,20 @@ public class SolarBodyTest {
 
         /** {@inheritDoc} */
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return parametersDrivers.clone();
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.singletonList(parameterDriver);
         }
 
     }
@@ -522,7 +537,7 @@ public class SolarBodyTest {
         Orbit orbit = new KeplerianOrbit(orbiting.getPVCoordinates(start, central.getInertiallyOrientedFrame()),
                                          central.getInertiallyOrientedFrame(), start, central.getGM());
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        Assert.assertEquals(a, orbit.getA(), 0.02 * a);
+        Assertions.assertEquals(a, orbit.getA(), 0.02 * a);
         double duration = FastMath.min(50 * Constants.JULIAN_DAY, 0.01 * orbit.getKeplerianPeriod());
 
         double max = 0;
@@ -532,7 +547,49 @@ public class SolarBodyTest {
             Vector3D error = keplerPV.getPosition().subtract(ephemPV.getPosition());
             max = FastMath.max(max, error.getNorm());
         }
-        Assert.assertTrue(max < epsilon * a);
+        Assertions.assertTrue(max < epsilon * a);
+    }
+    
+    /** Test added for issue  <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1151">1151</a>.
+     * 
+     *  Test implementation of {@link JPLCelestialBody#getPosition(AbsoluteDate, Frame)} method.
+     */
+    @Test
+    public void testGetPosition() {
+        Utils.setDataRoot("regular-data");
+     
+        // double test: Given
+        // -----------
+        
+        // J2000 date and frame
+        final Frame j2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate();
+        
+        // Loop on bodies
+        for (int iBody = 1; iBody <= 13; iBody++) {
+            // When
+            final CelestialBody body = getBody(iBody);
+            final double dP = Vector3D.distance(body.getPosition(date, j2000),
+                                                body.getPosition(date, j2000));
+            // Then
+            Assertions.assertEquals(0., dP, 0.);
+        }
+        
+        // Field test: given
+        // -----------
+        
+        // Fielded date
+        final FieldAbsoluteDate<Binary64> fDate = new FieldAbsoluteDate<>(Binary64Field.getInstance());
+        
+        // Loop on bodies
+        for (int iBody = 1; iBody <= 13; iBody++) {
+            // When
+            final CelestialBody body = getBody(iBody);
+            final Binary64 dP = FieldVector3D.distance(body.getPVCoordinates(fDate, j2000).getPosition(),
+                                                body.getPosition(fDate, j2000));
+            // Then
+            Assertions.assertEquals(0., dP.getReal(), 0.);
+        }
     }
 
 }

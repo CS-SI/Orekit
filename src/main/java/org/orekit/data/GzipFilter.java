@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,15 +27,26 @@ public class GzipFilter implements DataFilter {
     /** Suffix for gzip compressed files. */
     private static final String SUFFIX = ".gz";
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public GzipFilter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
-    public NamedData filter(final NamedData original) {
-        final String                 oName   = original.getName();
-        final NamedData.StreamOpener oOpener = original.getStreamOpener();
+    public DataSource filter(final DataSource original) {
+        final String            oName   = original.getName();
+        final DataSource.Opener oOpener = original.getOpener();
         if (oName.endsWith(SUFFIX)) {
-            final String                 fName   = oName.substring(0, oName.length() - SUFFIX.length());
-            final NamedData.StreamOpener fOpener = () -> new GZIPInputStream(oOpener.openStream());
-            return new NamedData(fName, fOpener);
+            final String                  fName   = oName.substring(0, oName.length() - SUFFIX.length());
+            final DataSource.StreamOpener fOpener = () -> new GZIPInputStream(oOpener.openStreamOnce());
+            return new DataSource(fName, fOpener);
         } else {
             return original;
         }

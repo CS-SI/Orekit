@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,15 +19,17 @@ package org.orekit.propagation;
 import java.util.Collection;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
+import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
@@ -38,103 +40,96 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
  * using rich force models and by continuous models built after numerical
  * integration has been completed and dense output data as been
  * gathered.</p>
+ * @param <T> the type of the field elements
 
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  *
  */
 
-public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVCoordinatesProvider<T> {
+public interface FieldPropagator<T extends CalculusFieldElement<T>> extends FieldPVCoordinatesProvider<T> {
 
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-    /** Default attitude provider. */
-    AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
-
-    /** Indicator for slave mode. */
-    int SLAVE_MODE = 0;
-
-    /** Indicator for master mode. */
-    int MASTER_MODE = 1;
-
-    /** Indicator for ephemeris generation mode. */
-    int EPHEMERIS_GENERATION_MODE = 2;
-
-    /** Get the current operating mode of the propagator.
-     * @return one of {@link #SLAVE_MODE}, {@link #MASTER_MODE},
-     * {@link #EPHEMERIS_GENERATION_MODE}
-     * @see #setSlaveMode()
-     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
-     * @see #setMasterMode(FieldOrekitStepHandler)
-     * @see #setEphemerisMode()
+    /** Get the multiplexer holding all step handlers.
+     * @return multiplexer holding all step handlers
+     * @since 11.0
      */
-    int getMode();
+    FieldStepHandlerMultiplexer<T> getMultiplexer();
 
-    /** Set the propagator to slave mode.
-     * <p>This mode is used when the user needs only the final orbit at the target time.
-     * The (slave) propagator computes this result and return it to the calling
-     * (master) application, without any intermediate feedback.
-     * <p>This is the default mode.
-     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
-     * @see #setMasterMode(FieldOrekitStepHandler)
-     * @see #setEphemerisMode()
-     * @see #getMode()
-     * @see #SLAVE_MODE
+    /** Remove all step handlers.
+     * <p>This convenience method is equivalent to call {@code getMultiplexer().clear()}</p>
+     * @see #getMultiplexer()
+     * @see FieldStepHandlerMultiplexer#clear()
+     * @since 11.0
      */
-    void setSlaveMode();
+    default void clearStepHandlers() {
+        getMultiplexer().clear();
+    }
 
-    /** Set the propagator to master mode with fixed steps.
-     * <p>This mode is used when the user needs to have some custom function called at the
-     * end of each finalized step during integration. The (master) propagator integration
-     * loop calls the (slave) application callback methods at each finalized step.</p>
+    /** Set a single handler for fixed stepsizes.
+     * <p>This convenience method is equivalent to call {@code getMultiplexer().clear()}
+     * followed by {@code getMultiplexer().add(h, handler)}</p>
      * @param h fixed stepsize (s)
      * @param handler handler called at the end of each finalized step
-     * @see #setSlaveMode()
-     * @see #setMasterMode(FieldOrekitStepHandler)
-     * @see #setEphemerisMode()
-     * @see #getMode()
-     * @see #MASTER_MODE
+     * @see #getMultiplexer()
+     * @see FieldStepHandlerMultiplexer#add(CalculusFieldElement, FieldOrekitFixedStepHandler)
+     * @since 11.0
      */
-    void setMasterMode(T h, FieldOrekitFixedStepHandler<T> handler);
+    default void setStepHandler(final T h, final FieldOrekitFixedStepHandler<T> handler) {
+        getMultiplexer().clear();
+        getMultiplexer().add(h, handler);
+    }
 
-    /** Set the propagator to master mode with variable steps.
-     * <p>This mode is used when the user needs to have some custom function called at the
-     * end of each finalized step during integration. The (master) propagator integration
-     * loop calls the (slave) application callback methods at each finalized step.</p>
+    /** Set a single handler for variable stepsizes.
+     * <p>This convenience method is equivalent to call {@code getMultiplexer().clear()}
+     * followed by {@code getMultiplexer().add(handler)}</p>
      * @param handler handler called at the end of each finalized step
-     * @see #setSlaveMode()
-     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
-     * @see #setEphemerisMode()
-     * @see #getMode()
-     * @see #MASTER_MODE
+     * @see #getMultiplexer()
+     * @see FieldStepHandlerMultiplexer#add(FieldOrekitStepHandler)
+     * @since 11.0
      */
-    void setMasterMode(FieldOrekitStepHandler<T> handler);
+    default void setStepHandler(final FieldOrekitStepHandler<T> handler) {
+        getMultiplexer().clear();
+        getMultiplexer().add(handler);
+    }
 
-    /** Set the propagator to ephemeris generation mode.
-     *  <p>This mode is used when the user needs random access to the orbit state at any time
-     *  between the initial and target times, and in no sequential order. A typical example is
-     *  the implementation of search and iterative algorithms that may navigate forward and
-     *  backward inside the propagation range before finding their result.</p>
-     *  <p>Beware that since this mode stores <strong>all</strong> intermediate results,
-     *  it may be memory intensive for long integration ranges and high precision/short
-     *  time steps.</p>
-     * @see #getGeneratedEphemeris()
-     * @see #setSlaveMode()
-     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
-     * @see #setMasterMode(FieldOrekitStepHandler)
-     * @see #getMode()
-     * @see #EPHEMERIS_GENERATION_MODE
+    /**
+     * Set up an ephemeris generator that will monitor the propagation for building
+     * an ephemeris from it once completed.
+     *
+     * <p>
+     * This generator can be used when the user needs fast random access to the orbit
+     * state at any time between the initial and target times. A typical example is the
+     * implementation of search and iterative algorithms that may navigate forward and
+     * backward inside the propagation range before finding their result even if the
+     * propagator used is integration-based and only goes from one initial time to one
+     * target time.
+     * </p>
+     * <p>
+     * Beware that when used with integration-based propagators, the generator will
+     * store <strong>all</strong> intermediate results. It is therefore memory intensive
+     * for long integration-based ranges and high precision/short time steps. When
+     * used with analytical propagators, the generator only stores start/stop time
+     * and a reference to the analytical propagator itself to call it back as needed,
+     * so it is less memory intensive.
+     * </p>
+     * <p>
+     * The returned ephemeris generator will be initially empty, it will be filled
+     * with propagation data when a subsequent call to either {@link #propagate(FieldAbsoluteDate)
+     * propagate(target)} or {@link #propagate(FieldAbsoluteDate, FieldAbsoluteDate)
+     * propagate(start, target)} is called. The proper way to use this method is
+     * therefore to do:
+     * </p>
+     * <pre>
+     *   FieldEphemerisGenerator&lt;T&gt; generator = propagator.getEphemerisGenerator();
+     *   propagator.propagate(target);
+     *   FieldBoundedPropagator&lt;T&gt; ephemeris = generator.getGeneratedEphemeris();
+     * </pre>
+     * @return ephemeris generator
      */
-    void setEphemerisMode();
-
-    /** Get the ephemeris generated during propagation.
-     * @return generated ephemeris
-     * @exception IllegalStateException if the propagator was not set in ephemeris
-     * generation mode before propagation
-     * @see #setEphemerisMode()
-     */
-    FieldBoundedPropagator<T> getGeneratedEphemeris() throws IllegalStateException;
+    FieldEphemerisGenerator<T> getEphemerisGenerator();
 
     /** Get the propagator initial state.
      * @return initial state
@@ -165,10 +160,10 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * addAdditionalStateProvider} method. If the propagator is an {@link
      * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator integrator-based
      * propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.FieldAdditionalEquations additional equations} has
-     * been registered by calling the {@link
-     * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator#addAdditionalEquations(
-     * org.orekit.propagation.integration.FieldAdditionalEquations) addAdditionalEquations}
+     * org.orekit.propagation.integration.FieldAdditionalDerivativesProvider additional derivatives
+     * provider} has been registered by calling the {@link
+     * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator#addAdditionalDerivativesProvider(
+     * org.orekit.propagation.integration.FieldAdditionalDerivativesProvider) addAdditionalDerivativesProvider}
      * method are also counted as managed additional states.
      * </p>
      * <p>
@@ -255,5 +250,17 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @return propagated state
      */
     FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> start, FieldAbsoluteDate<T> target);
+
+    /** {@inheritDoc} */
+    @Override
+    default TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+        return propagate(date).getPVCoordinates(frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return propagate(date).getPosition(frame);
+    }
 
 }

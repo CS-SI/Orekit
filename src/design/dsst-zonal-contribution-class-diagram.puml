@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,21 +25,26 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
     package propagation.semianalytical.dsst #DDEBD8 {
 
-      Package forces #CEEBD8 {
+      Package forces #CBDBC8 {
         interface DSSTForceModel
         interface ShortPeriodTerms
+        interface J2SquaredModel
         DSSTForceModel <|-- DSSTZonal
         DSSTZonal --> ZonalShortPeriodicCoefficients
         ShortPeriodTerms <|-- ZonalShortPeriodicCoefficients
+        DSSTForceModel <|-- DSSTJ2SquaredClosedForm
+        J2SquaredModel "1" <--* DSSTJ2SquaredClosedForm
+        J2SquaredModel <|-- ZeisModel
       }
 
-      package utilities #CEEBD8 {
-        package hansen #EAECE6 {
+      package utilities #CBDBC8 {
+        package hansen #CCCCC7 {
           class HansenZonalLinear
         }
           ZonalShortPeriodicCoefficients *--> "*" ShortPeriodicsInterpolatedCoefficient
@@ -50,6 +55,7 @@
       package forces.gravity.potential #DDEBD8 {
           interface UnnormalizedSphericalHarmonicsProvider
           UnnormalizedSphericalHarmonicsProvider "1" <--* DSSTZonal
+          UnnormalizedSphericalHarmonicsProvider "1" <--* DSSTJ2SquaredClosedForm
       }
   }
 

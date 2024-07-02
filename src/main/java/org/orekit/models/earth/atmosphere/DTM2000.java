@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,29 +16,33 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.PVCoordinatesProvider;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.exception.DummyLocalizable;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
-import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.PVCoordinatesProvider;
 
 /** This atmosphere model is the realization of the DTM-2000 model.
  * <p>
@@ -77,24 +81,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Fabien Maussion (java translation)
  */
 public class DTM2000 implements Atmosphere {
-
-    /** Identifier for hydrogen. */
-    public static final int HYDROGEN = 1;
-
-    /** Identifier for helium. */
-    public static final int HELIUM = 2;
-
-    /** Identifier for atomic oxygen. */
-    public static final int ATOMIC_OXYGEN = 3;
-
-    /** Identifier for molecular nitrogen. */
-    public static final int MOLECULAR_NITROGEN = 4;
-
-    /** Identifier for molecular oxygen. */
-    public static final int MOLECULAR_OXYGEN = 5;
-
-    /** Identifier for atomic nitrogen. */
-    public static final int ATOMIC_NITROGEN = 6;
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170705L;
@@ -171,13 +157,35 @@ public class DTM2000 implements Atmosphere {
     /** Earth body shape. */
     private BodyShape earth;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** Simple constructor for independent computation.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param parameters the solar and magnetic activity data
+     * @param sun the sun position
+     * @param earth the earth body shape
+     * @see #DTM2000(DTM2000InputParameters, PVCoordinatesProvider, BodyShape, TimeScale)
+     */
+    @DefaultDataContext
+    public DTM2000(final DTM2000InputParameters parameters,
+                   final PVCoordinatesProvider sun, final BodyShape earth) {
+        this(parameters, sun, earth, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
     /** Simple constructor for independent computation.
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
+     * @param utc UTC time scale.
+     * @since 10.1
      */
     public DTM2000(final DTM2000InputParameters parameters,
-                   final PVCoordinatesProvider sun, final BodyShape earth) {
+                   final PVCoordinatesProvider sun,
+                   final BodyShape earth,
+                   final TimeScale utc) {
 
         synchronized (DTM2000.class) {
             // lazy reading of model coefficients
@@ -190,6 +198,7 @@ public class DTM2000 implements Atmosphere {
         this.sun = sun;
         this.inputParams = parameters;
 
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
@@ -243,7 +252,7 @@ public class DTM2000 implements Atmosphere {
      * @return the local density (kg/m³)
           * @since 9.0
      */
-    public <T extends RealFieldElement<T>> T getDensity(final int day,
+    public <T extends CalculusFieldElement<T>> T getDensity(final int day,
                                                         final T alti, final T lon, final T lat,
                                                         final T hl, final double f, final double fbar,
                                                         final double akp3, final double akp24) {
@@ -278,13 +287,8 @@ public class DTM2000 implements Atmosphere {
         t0   = new double[size];
         tp   = new double[size];
 
-        final InputStream in = DTM2000.class.getResourceAsStream(DTM2000);
-        if (in == null) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, DTM2000);
-        }
-
-        try (BufferedReader r = new BufferedReader(
-                new InputStreamReader(in, StandardCharsets.UTF_8))) {
+        try (InputStream in = checkNull(DTM2000.class.getResourceAsStream(DTM2000));
+             BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
 
             r.readLine();
             r.readLine();
@@ -324,17 +328,17 @@ public class DTM2000 implements Atmosphere {
                              final Frame frame) {
 
         // check if data are available :
-        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
-            (date.compareTo(inputParams.getMinDate()) < 0)) {
+        if (date.compareTo(inputParams.getMaxDate()) > 0 ||
+            date.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date, inputParams.getMinDate(), inputParams.getMaxDate());
         }
 
         // compute day number in current year
-        final int day = date.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
+        final int day = date.getComponents(utc).getDate().getDayOfYear();
         //position in ECEF so we only have to do the transform once
         final Frame ecef = earth.getBodyFrame();
-        final Vector3D pEcef = frame.getTransformTo(ecef, date)
+        final Vector3D pEcef = frame.getStaticTransformTo(ecef, date)
                 .transformPosition(position);
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(pEcef, ecef, date);
@@ -343,7 +347,7 @@ public class DTM2000 implements Atmosphere {
         final double lat = inBody.getLatitude();
 
         // compute local solar time
-        final Vector3D sunPos = sun.getPVCoordinates(date, ecef).getPosition();
+        final Vector3D sunPos = sun.getPosition(date, ecef);
         final double hl = FastMath.PI + FastMath.atan2(
                 sunPos.getX() * pEcef.getY() - sunPos.getY() * pEcef.getX(),
                 sunPos.getX() * pEcef.getX() + sunPos.getY() * pEcef.getY());
@@ -357,22 +361,22 @@ public class DTM2000 implements Atmosphere {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T
+    public <T extends CalculusFieldElement<T>> T
         getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
                    final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
-        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
-            (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+        if (dateD.compareTo(inputParams.getMaxDate()) > 0 ||
+            dateD.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       dateD, inputParams.getMinDate(), inputParams.getMaxDate());
         }
 
         // compute day number in current year
-        final int day = date.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
+        final int day = date.getComponents(utc).getDate().getDayOfYear();
         // position in ECEF so we only have to do the transform once
         final Frame ecef = earth.getBodyFrame();
-        final FieldVector3D<T> pEcef = frame.getTransformTo(ecef, date).transformPosition(position);
+        final FieldVector3D<T> pEcef = frame.getStaticTransformTo(ecef, date).transformPosition(position);
         // compute geodetic position
         final FieldGeodeticPoint<T> inBody = earth.transform(pEcef, ecef, date);
         final T alti = inBody.getAltitude();
@@ -380,15 +384,29 @@ public class DTM2000 implements Atmosphere {
         final T lat = inBody.getLatitude();
 
         // compute local solar time
-        final Vector3D sunPos = sun.getPVCoordinates(dateD, ecef).getPosition();
+        final Vector3D sunPos = sun.getPosition(dateD, ecef);
         final T y  = pEcef.getY().multiply(sunPos.getX()).subtract(pEcef.getX().multiply(sunPos.getY()));
         final T x  = pEcef.getX().multiply(sunPos.getX()).add(pEcef.getY().multiply(sunPos.getY()));
-        final T hl = y.atan2(x).add(FastMath.PI);
+        final T hl = y.atan2(x).add(y.getPi());
 
         // get current solar activity data and compute
         return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(dateD),
                           inputParams.getMeanFlux(dateD), inputParams.getThreeHourlyKP(dateD),
                           inputParams.get24HoursKp(dateD));
+    }
+
+    /**
+     * Helper method to check for null resources. Throws an exception if {@code
+     * stream} is null.
+     *
+     * @param stream loaded from the class resources.
+     * @return {@code stream}.
+     */
+    private static InputStream checkNull(final InputStream stream) {
+        if (stream == null) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, DTM2000);
+        }
+        return stream;
     }
 
     /** Local holder for intermediate results ensuring the model is reentrant. */
@@ -475,11 +493,15 @@ public class DTM2000 implements Atmosphere {
             this.fbar = fbar;
             this.akp  = akp;
 
+            // Sine and cosine of local latitude and longitude
+            final SinCos scLat = FastMath.sinCos(lat);
+            final SinCos scLon = FastMath.sinCos(lon);
+
             // compute Legendre polynomials wrt geographic pole
-            final double c = FastMath.sin(lat);
+            final double c = scLat.sin();
             final double c2 = c * c;
             final double c4 = c2 * c2;
-            final double s = FastMath.cos(lat);
+            final double s = scLat.cos();
             final double s2 = s * s;
             p10 = c;
             p20 = 1.5 * c2 - 0.5;
@@ -508,13 +530,14 @@ public class DTM2000 implements Atmosphere {
             p20mg = 1.5 * cmg2 - 0.5;
             p40mg = 4.375 * cmg4 - 3.75 * cmg2 + 0.375;
 
-            clfl = FastMath.cos(lon);
-            slfl = FastMath.sin(lon);
+            clfl = scLon.cos();
+            slfl = scLon.sin();
 
             // local time
             hl0 = hl;
-            ch  = FastMath.cos(hl0);
-            sh  = FastMath.sin(hl0);
+            final SinCos scHlo = FastMath.sinCos(hl0);
+            ch  = scHlo.cos();
+            sh  = scHlo.sin();
             c2h = ch * ch - sh * sh;
             s2h = 2.0 * ch * sh;
             c3h = c2h * ch - s2h * sh;
@@ -550,10 +573,10 @@ public class DTM2000 implements Atmosphere {
 
             kleq = 0; // equinox
 
-            if ((day < 59) || (day > 284)) {
+            if (day < 59 || day > 284) {
                 kleq = -1; // north winter
             }
-            if ((day > 99) && (day < 244)) {
+            if (day > 99 && day < 244) {
                 kleq = 1; // north summer
             }
 
@@ -615,7 +638,7 @@ public class DTM2000 implements Atmosphere {
             for (int i = 1; i <= 6; i++) {
                 final double gamma = MA[i] * glb;
                 final double upapg = 1.0 + ALEFA[i] + gamma;
-                final double fzI = FastMath.pow(t120tz, upapg) * FastMath.exp(-sigzeta * gamma);
+                final double fzI = FastMath.exp(FastMath.log(t120tz) * upapg - sigzeta * gamma);
                 // concentrations of H, He, O, N2, O2, N (particles/cm³)
                 final double ccI = dbase[i] * fzI;
                 // contribution of densities of H, He, O, N2, O2, N (g/cm³)
@@ -861,7 +884,7 @@ public class DTM2000 implements Atmosphere {
     /** Local holder for intermediate results ensuring the model is reentrant.
      * @param <T> type of the field elements
      */
-    private static class FieldComputation<T extends RealFieldElement<T>> {
+    private static class FieldComputation<T extends CalculusFieldElement<T>> {
 
         /** Number of days in current year. */
         private int day;
@@ -944,11 +967,15 @@ public class DTM2000 implements Atmosphere {
             this.fbar = far;
             this.akp  = akp;
 
+            // Sine and cosine of local latitude and longitude
+            final FieldSinCos<T> scLat = FastMath.sinCos(lat);
+            final FieldSinCos<T> scLon = FastMath.sinCos(lon);
+
             // compute Legendre polynomials wrt geographic pole
-            final T c = lat.sin();
-            final T c2 = c.multiply(c);
-            final T c4 = c2.multiply(c2);
-            final T s = lat.cos();
+            final T c = scLat.sin();
+            final T c2 = c.square();
+            final T c4 = c2.square();
+            final T s = scLat.cos();
             final T s2 = s.multiply(s);
             p10 = c;
             p20 = c2.multiply(1.5).subtract(0.5);
@@ -977,13 +1004,14 @@ public class DTM2000 implements Atmosphere {
             p20mg = cmg2.multiply(1.5).subtract(0.5);
             p40mg = cmg4.multiply(4.375).subtract(cmg2.multiply(3.75)).add(0.375);
 
-            clfl = lon.cos();
-            slfl = lon.sin();
+            clfl = scLon.cos();
+            slfl = scLon.sin();
 
             // local time
             hl0 = hl;
-            ch  = hl0.cos();
-            sh  = hl0.sin();
+            final FieldSinCos<T> scHlo = FastMath.sinCos(hl0);
+            ch  = scHlo.cos();
+            sh  = scHlo.sin();
             c2h = ch.multiply(ch).subtract(sh.multiply(sh));
             s2h = ch.multiply(sh).multiply(2);
             c3h = c2h.multiply(ch).subtract(s2h.multiply(sh));
@@ -1009,10 +1037,10 @@ public class DTM2000 implements Atmosphere {
 
             kleq = 0; // equinox
 
-            if ((day < 59) || (day > 284)) {
+            if (day < 59 || day > 284) {
                 kleq = -1; // north winter
             }
-            if ((day > 99) && (day < 244)) {
+            if (day > 99 && day < 244) {
                 kleq = 1; // north summer
             }
 
@@ -1074,7 +1102,7 @@ public class DTM2000 implements Atmosphere {
             for (int i = 1; i <= 6; i++) {
                 final T gamma = glb.multiply(MA[i]);
                 final T upapg = gamma.add(1.0 + ALEFA[i]);
-                final T fzI = t120tz.pow(upapg).multiply(sigzeta.negate().multiply(gamma).exp());
+                final T fzI = (t120tz.log().multiply(upapg).subtract(sigzeta.multiply(gamma))).exp();
                 // concentrations of H, He, O, N2, O2, N (particles/cm³)
                 final T ccI = dbase[i].multiply(fzI);
                 // contribution of densities of H, He, O, N2, O2, N (g/cm³)
@@ -1126,8 +1154,8 @@ public class DTM2000 implements Atmosphere {
             fmfb[2]   = f[2] - fbar[2];
             fbm150[1] = fbar[1] - 150.0;
             fbm150[2] = fbar[2];
-            da[4]     = zero.add(fmfb[1]);
-            da[6]     = zero.add(fbm150[1]);
+            da[4]     = zero.newInstance(fmfb[1]);
+            da[6]     = zero.newInstance(fbm150[1]);
             da[4]     = da[4].add(a[70] * fmfb[2]);
             da[6]     = da[6].add(a[71] * fbm150[2]);
             da[70]    = da[4].multiply(a[ 5]).multiply(2).
@@ -1157,7 +1185,7 @@ public class DTM2000 implements Atmosphere {
             final T c2fi = p10mg.multiply(p10mg).negate().add(1);
             final T dkp  = c2fi.multiply(a[ikp + 1]).add(a[ikp]).multiply(akp[2]).add(akp[1]);
             T dakp = p20mg.multiply(a[8]).add(p40mg.multiply(a[68])).
-                     add(p20mg.multiply(a[61]).add(dkp.multiply(dkp).multiply(2 * a[75]).add(a[60])).multiply(dkp.multiply(2))).
+                     add(p20mg.multiply(a[61]).add(dkp.square().multiply(2 * a[75]).add(a[60])).multiply(dkp.multiply(2))).
                      add(a[7]);
             da[ikp]     = dakp.multiply(akp[2]);
             da[ikp + 1] = da[ikp].multiply(c2fi);
@@ -1169,15 +1197,15 @@ public class DTM2000 implements Atmosphere {
             da[7]    = dkp;
             da[8]    = p20mg.multiply(dkp);
             da[68]   = p40mg.multiply(dkp);
-            da[60]   = dkp.multiply(dkp);
+            da[60]   = dkp.square();
             da[61]   = p20mg.multiply(da[60]);
-            da[75]   = da[60].multiply(da[60]);
-            da[64]   = zero.add(dkpm);
+            da[75]   = da[60].square();
+            da[64]   = zero.newInstance(dkpm);
             da[65]   = p20mg.multiply(dkpm);
             da[72]   = p40mg.multiply(dkpm);
-            da[66]   = zero.add(dkpm * dkpm);
+            da[66]   = zero.newInstance(dkpm * dkpm);
             da[73]   = p20mg.multiply(da[66]);
-            da[76]   = da[66].multiply(da[66]);
+            da[76]   = da[66].square();
 
             // non-periodic g(l) function
             T f0 = da[4].multiply(a[4]).
@@ -1212,10 +1240,10 @@ public class DTM2000 implements Atmosphere {
                  add(da[78].multiply(a78)).
                  add(da[79].multiply(a[79]));
 //          termes annuels symetriques en latitude
-            da[9]  = zero.add(FastMath.cos(ROT * (day - a[11])));
+            da[9]  = zero.newInstance(FastMath.cos(ROT * (day - a[11])));
             da[10] = p20.multiply(da[9]);
 //          termes semi-annuels symetriques en latitude
-            da[12] = zero.add(FastMath.cos(ROT2 * (day - a[14])));
+            da[12] = zero.newInstance(FastMath.cos(ROT2 * (day - a[14])));
             da[13] = p20.multiply(da[12]);
 //          termes annuels non symetriques en latitude
             final double coste = FastMath.cos(ROT * (day - a[18]));

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,7 +23,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -46,12 +46,35 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  */
 public class NodeDetector extends AbstractDetector<NodeDetector> {
 
+    /** Default max check interval. */
+    private static final double DEFAULT_MAX_CHECK = 1800.0;
+
+    /** Default convergence threshold. */
+    private static final double DEFAULT_THRESHOLD = 1.0e-3;
+
     /** Frame in which the equator is defined. */
     private final Frame frame;
 
     /** Build a new instance.
+     * <p>The default {@link #getMaxCheckInterval() max check interval}
+     * is set to 1800s, it can be changed using {@link #withMaxCheck(double)}
+     * in the fluent API. The default {@link #getThreshold() convergence threshold}
+     * is set to 1.0e-3s, it can be changed using {@link #withThreshold(double)}
+     * in the fluent API.</p>
+     * @param frame frame in which the equator is defined (typical
+     * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
+     * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
+     * @since 10.3
+     */
+    public NodeDetector(final Frame frame) {
+        this(AdaptableInterval.of(DEFAULT_MAX_CHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing(), frame);
+    }
+
+    /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the max check interval
-     * to period/3 and to set the convergence threshold according to orbit size.</p>
+     * to a value related to nodes separation (as computed by a Keplerian model)
+     * and to set the convergence threshold according to orbit size.</p>
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical
      * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
@@ -63,7 +86,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
 
     /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the max check interval
-     * to period/3.</p>
+     * to a value related to nodes separation (as computed by a Keplerian model).</p>
      * @param threshold convergence threshold (s)
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical
@@ -71,18 +94,18 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
-        this(2 * estimateNodesTimeSeparation(orbit) / 3, threshold,
-             DEFAULT_MAX_ITER, new StopOnIncreasing<NodeDetector>(),
+        this(AdaptableInterval.of(2 * estimateNodesTimeSeparation(orbit) / 3), threshold,
+             DEFAULT_MAX_ITER, new StopOnIncreasing(),
              frame);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -91,17 +114,17 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      * @since 6.1
      */
-    private NodeDetector(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<? super NodeDetector> handler,
-                         final Frame frame) {
+    protected NodeDetector(final AdaptableInterval maxCheck, final double threshold,
+                           final int maxIter, final EventHandler handler,
+                           final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected NodeDetector create(final double newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler<? super NodeDetector> newHandler) {
+    protected NodeDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                  final int newMaxIter, final EventHandler newHandler) {
         return new NodeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }
 
@@ -123,7 +146,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
                                                        keplerian.getI(),
                                                        keplerian.getPerigeeArgument(),
                                                        keplerian.getRightAscensionOfAscendingNode(),
-                                                       -keplerian.getPerigeeArgument(), PositionAngle.TRUE,
+                                                       -keplerian.getPerigeeArgument(), PositionAngleType.TRUE,
                                                        keplerian.getFrame(), keplerian.getDate(),
                                                        keplerian.getMu()).getMeanAnomaly();
 
@@ -132,7 +155,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
                                                        keplerian.getI(),
                                                        keplerian.getPerigeeArgument(),
                                                        keplerian.getRightAscensionOfAscendingNode(),
-                                                       FastMath.PI - keplerian.getPerigeeArgument(), PositionAngle.TRUE,
+                                                       FastMath.PI - keplerian.getPerigeeArgument(), PositionAngleType.TRUE,
                                                        keplerian.getFrame(), keplerian.getDate(),
                                                        keplerian.getMu()).getMeanAnomaly();
 
@@ -158,7 +181,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        return s.getPVCoordinates(frame).getPosition().getZ();
+        return s.getPosition(frame).getZ();
     }
 
 }

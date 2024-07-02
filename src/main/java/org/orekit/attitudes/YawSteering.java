@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.attitudes;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
@@ -29,8 +29,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -47,7 +45,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * but gets more and more <i>square like</i> as the Sun gets closer to the
  * orbital plane. The degenerate extreme case with the Sun in the orbital
  * plane leads to a yaw angle switching between two steady states, with
- * instantaneaous π radians rotations at each switch, two times per orbit.
+ * instantaneous π radians rotations at each switch, two times per orbit.
  * This degenerate case is clearly not operationally sound so another pointing
  * mode is chosen when Sun comes closer than some predefined threshold to the
  * orbital plane.
@@ -68,14 +66,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @see    GroundPointing
  * @author Luc Maisonobe
  */
-public class YawSteering extends GroundPointing implements AttitudeProviderModifier {
+public class YawSteering extends GroundPointingAttitudeModifier implements AttitudeProviderModifier {
 
     /** Pointing axis. */
     private static final PVCoordinates PLUS_Z =
             new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
-
-    /** Underlying ground pointing attitude provider.  */
-    private final GroundPointing groundPointingLaw;
 
     /** Sun motion model. */
     private final PVCoordinatesProvider sun;
@@ -95,56 +90,11 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
                        final GroundPointing groundPointingLaw,
                        final PVCoordinatesProvider sun,
                        final Vector3D phasingAxis) {
-        super(inertialFrame, groundPointingLaw.getBodyFrame());
-        this.groundPointingLaw = groundPointingLaw;
+        super(inertialFrame, groundPointingLaw.getBodyFrame(), groundPointingLaw);
         this.sun = sun;
         this.phasingNormal = new PVCoordinates(Vector3D.crossProduct(Vector3D.PLUS_K, phasingAxis).normalize(),
                                                Vector3D.ZERO,
                                                Vector3D.ZERO);
-    }
-
-    /** Get the underlying (ground pointing) attitude provider.
-     * @return underlying attitude provider, which in this case is a {@link GroundPointing} instance
-     */
-    public AttitudeProvider getUnderlyingAttitudeProvider() {
-        return groundPointingLaw;
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame) {
-        return groundPointingLaw.getTargetPV(pvProv, date, frame);
-    }
-
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame) {
-        return groundPointingLaw.getTargetPV(pvProv, date, frame);
-    }
-
-    /** Compute the base system state at given date, without compensation.
-     * @param pvProv provider for PV coordinates
-     * @param date date at which state is requested
-     * @param frame reference frame from which attitude is computed
-     * @return satellite base attitude state, i.e without compensation.
-     */
-    public Attitude getBaseState(final PVCoordinatesProvider pvProv,
-                                 final AbsoluteDate date, final Frame frame) {
-        return groundPointingLaw.getAttitude(pvProv, date, frame);
-    }
-
-    /** Compute the base system state at given date, without compensation.
-     * @param pvProv provider for PV coordinates
-     * @param date date at which state is requested
-     * @param frame reference frame from which attitude is computed
-     * @param <T> type of the field elements
-     * @return satellite base attitude state, i.e without compensation.
-     * @since 9.0
-     */
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
-        return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
@@ -175,7 +125,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
 
         final Field<T>              field = date.getField();

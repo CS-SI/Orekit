@@ -1,0 +1,51 @@
+CCSDS_OPM_VERS           = 3.0
+CREATION_DATE            = 1998-11-06T09:23:57.0
+ORIGINATOR               = JAXA
+MESSAGE_ID               = OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C
+
+COMMENT                     GEOCENTRIC, CARTESIAN, EARTH FIXED
+OBJECT_NAME              = GODZILLA 5
+OBJECT_ID                = 1998-057A
+CENTER_NAME              = EARTH
+REF_FRAME                = TOD
+REF_FRAME_EPOCH          = 1998-12-18T14:28:15.1172
+TIME_SYSTEM              = GMST
+COMMENT                     epoch comment 1
+COMMENT                     epoch comment 2
+EPOCH                    = 1998-12-18T14:28:15.1172
+X                        = 6503514.0                        [m]
+Y                        = 1239647.0                        [m]
+Z                        = -717490.0                        [m]
+X_DOT                    = -873.16                          [m×s⁻¹]
+Y_DOT                    = 8740.42                          [m×s⁻¹]
+Z_DOT                    = -4191.076                        [m×s⁻¹]
+MASS                     = 3000.0                           [kg]
+SOLAR_RAD_AREA           = 18.77                            [m²]
+SOLAR_RAD_COEFF          = 1.0
+DRAG_AREA                = 18.77                            [m²]
+DRAG_COEFF               = 2.5
+COMMENT                     covariance comment 1
+COMMENT                     covariance comment 2
+COV_REF_FRAME            = TEME
+CX_X                     = 3.331349476038534E-4             [km²]
+CY_X                     = 4.618927349220216E-4             [km²]
+CY_Y                     = 6.782421679971363E-4             [km²]
+CZ_X                     = -3.070007847730449E-4            [km²]
+CZ_Y                     = -4.221234189514228E-4            [km²]
+CZ_Z                     = 3.231931992380369E-4             [km²]
+CX_DOT_X                 = -3.34936503392263E-7             [km²·s⁻¹]
+CX_DOT_Y                 = -4.686084221046758E-7            [km²·s⁻¹]
+CX_DOT_Z                 = 2.484949578400095E-7             [km²·s⁻¹]
+CX_DOT_X_DOT             = 4.29602280558729E-10             [km².s⁻²]
+CY_DOT_X                 = -2.211832501084875E-7            [km²·s⁻¹]
+CY_DOT_Y                 = -2.864186892102733E-7            [km²·s⁻¹]
+CY_DOT_Z                 = 1.798098699846038E-7             [km²·s⁻¹]
+CY_DOT_X_DOT             = 2.608899201686016E-10            [km².s⁻²]
+CY_DOT_Y_DOT             = 1.767514756338532E-10            [km².s⁻²]
+CZ_DOT_X                 = -3.041346050686871E-7            [km²·s⁻¹]
+CZ_DOT_Y                 = -4.989496988610662E-7            [km²·s⁻¹]
+CZ_DOT_Z                 = 3.540310904497689E-7             [km²·s⁻¹]
+CZ_DOT_X_DOT             = 1.86926319295459E-10             [km².s⁻²]
+CZ_DOT_Y_DOT             = 1.008862586240695E-10            [km².s⁻²]
+CZ_DOT_Z_DOT             = 6.2244443386355E-10              [km².s⁻²]
+USER_DEFINED_EARTH_MODEL = WGS-84

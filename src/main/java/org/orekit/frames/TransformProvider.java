@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,7 +19,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -41,8 +41,65 @@ public interface TransformProvider extends Serializable {
      * @param date current date
      * @param <T> type of the field elements
      * @return transform at specified date
-          * @since 9.0
+     * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date);
+
+    /**
+     * Get a transform for position and velocity, not acceleration.
+     *
+     * <p>The default implementation returns {@link #getTransform(AbsoluteDate)}
+     * but implementations may override it for better performance.
+     *
+     * @param date current date.
+     * @return the kinematic transform.
+     * @since 12.1
+     */
+    default KinematicTransform getKinematicTransform(AbsoluteDate date) {
+        return getTransform(date);
+    }
+
+    /**
+     * Get a transform for position and velocity, not acceleration.
+     *
+     * <p>The default implementation returns {@link #getTransform(AbsoluteDate)}
+     * but implementations may override it for better performance.
+     *
+     * @param <T> type of the elements
+     * @param date current date.
+     * @return the kinematic transform.
+     * @since 12.1
+     */
+    default <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(FieldAbsoluteDate<T> date) {
+        return getTransform(date);
+    }
+
+    /**
+     * Get a transform for only rotations and translations on the specified date.
+     *
+     * <p>The default implementation calls {@link #getTransform(AbsoluteDate)}
+     * but implementations may override it for better performance.
+     *
+     * @param date current date.
+     * @return the static transform.
+     */
+    default StaticTransform getStaticTransform(AbsoluteDate date) {
+        return getTransform(date).toStaticTransform();
+    }
+
+    /**
+     * Get a transform for only rotations and translations on the specified date.
+     *
+     * <p>The default implementation returns {@link #getTransform(AbsoluteDate)}
+     * but implementations may override it for better performance.
+     *
+     * @param <T> type of the elements
+     * @param date current date.
+     * @return the static transform.
+     * @since 12.0
+     */
+    default <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(FieldAbsoluteDate<T> date) {
+        return getTransform(date).toStaticTransform();
+    }
 
 }

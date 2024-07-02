@@ -8,13 +8,20 @@
 in Java. Orekit is designed to be easily used in very different contexts, from
 quick studies up to critical operations. As a library, Orekit provides basic
 elements (orbits, dates, attitude, frames, ...) and various algorithms to
-handle them (conversions, propagations, pointing, ...).
+handle them (conversions, propagations, pointing, events detection, orbit determination ...).
+
+[![](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![](https://sonar.orekit.org/api/project_badges/measure?project=orekit%3Aorekit&metric=alert_status)](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit)
+[![](https://sonar.orekit.org/api/project_badges/measure?project=orekit%3Aorekit&metric=coverage)](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7249096.svg)](https://doi.org/10.5281/zenodo.7249096)
+
+
 
 ## Download
 
 ### Official releases
 
-[Official Orekit releases](https://gitlab.orekit.org/orekit/orekit/releases)
+[Official Orekit releases](https://gitlab.orekit.org/orekit/orekit/-/releases)
 are available on our [Gitlab instance](https://gitlab.orekit.org/). They are
 also available in the
 [Maven repository](https://mvnrepository.com/artifact/org.orekit/orekit).
@@ -33,7 +40,7 @@ __Note:__ Our official repository is
 ## Documentation
 
 Project overview, architecture and development, detailed features list,
-tutorials, Javadoc and a lot of other information is available on the
+Javadoc and a lot of other information is available on the
 [Maven site](https://www.orekit.org/site-orekit-development/).
 
 ## Getting help
@@ -69,7 +76,7 @@ all released under business friendly FOSS licenses.
 
 ### Test-time dependencies
 
-* [JUnit 4](http://www.junit.org/), a widely used unit test framework released
+* [JUnit 5](http://www.junit.org/), a widely used unit test framework released
   under the Eclipse Public License, version 1.0.
 
 * [Mockito](https://site.mockito.org/), a mocking framework for unit tests,
@@ -80,6 +87,6 @@ More detailed information is available in the
 
 ## License
 
-Orekit is licensed by [CS Systèmes d'Information](https://www.c-s.fr/) under
+Orekit is licensed by [CS GROUP](https://www.c-s.fr/) under
 the [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 A copy of this license is provided in the [LICENSE.txt](LICENSE.txt) file.

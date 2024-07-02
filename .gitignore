@@ -2,8 +2,13 @@
 .project
 .settings
 .checkstyle
+.idea
 bin
 target
 /build
 /lib
 *.class
+.idea/
+orekit.iml
+hs_err_pid*
+replay_pid*

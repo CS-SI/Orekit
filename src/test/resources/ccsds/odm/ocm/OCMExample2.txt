@@ -1,0 +1,70 @@
+CCSDS_OCM_VERS  = 3.0
+COMMENT This OCM reflects the latest conditions post-maneuver A67Z
+COMMENT This example shows the specification of multiple comment lines
+CREATION_DATE         = 1998-11-06T09:23:57
+ORIGINATOR            = JAXA
+MESSAGE_ID            = OCM 201113719185
+
+META_START
+OBJECT_NAME           = OSPREY 5
+INTERNATIONAL_DESIGNATOR = 1998-999A
+
+ORIGINATOR_POC        = R. Rabbit
+ORIGINATOR_POSITION   = Flight Dynamics Mission Design Lead
+ORIGINATOR_PHONE      = (719)555-1234
+ORIGINATOR_EMAIL      = R.Rabbit@example.net
+ORIGINATOR_ADDRESS    = 5040 Spaceflight Ave., Cocoa Beach, FL, USA, 12345
+
+TECH_POC              = Mr. Rodgers
+TECH_PHONE            = (719)555-4321
+TECH_EMAIL            = Rodgers@elsewhere.org
+TECH_ADDRESS          = 125 CCSDS Road, Easter Island
+
+TIME_SYSTEM           = UT1
+EPOCH_TZERO           = 1998-12-18T00:00:00.0000
+
+TAIMUTC_AT_TZERO      = 36      [s]
+NEXT_LEAP_EPOCH       = 2016-12-31T23:59:60
+NEXT_LEAP_TAIMUTC     = 37      [s]
+UT1MUTC_AT_TZERO      = .357    [s]
+META_STOP
+
+TRAJ_START
+COMMENT          GEOCENTRIC, CARTESIAN, EARTH FIXED
+COMMENT          THIS IS MY SECOND COMMENT LINE
+TRAJ_BASIS            = PREDICTED
+TRAJ_REF_FRAME        = EFG
+TRAJ_TYPE             = CARTPV
+TRAJ_UNITS            = [km, km, km, km/s, km/s, km/s]
+1998-12-18T14:28:25.1172 2854.533 -2916.187 -5360.774 5.688 4.652 0.520
+TRAJ_STOP
+
+PHYS_START
+COMMENT S/C Physical Characteristics:
+WET_MASS             = 100.0    [kg]
+OEB_Q1               = 0.03123
+OEB_Q2               = 0.78543
+OEB_Q3               = 0.39158
+OEB_QC               = 0.47832
+OEB_MAX              = 2.0      [m]
+OEB_INT              = 1.0      [m]
+OEB_MIN              = 0.5      [m]
+AREA_ALONG_OEB_MAX   = 0.15     [m**2]
+AREA_ALONG_OEB_INT   = 0.3      [m**2]
+AREA_ALONG_OEB_MIN   = 0.5      [m**2]
+PHYS_STOP
+
+PERT_START
+COMMENT Perturbations Specification:
+ATMOSPHERIC_MODEL    = NRLMSIS00
+GRAVITY_MODEL        = EGM-96: 36D 36O
+GM                   = 398600.4415         [km**3/s**2]
+N_BODY_PERTURBATIONS = MOON, SUN
+FIXED_GEOMAG_KP      = 12.0
+FIXED_F10P7          = 105.0
+FIXED_F10P7_MEAN     = 120.0
+PERT_STOP
+
+USER_START
+USER_DEFINED_CONSOLE_POC = MAXWELL RAFERTY
+USER_STOP

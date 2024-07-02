@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,29 @@
  */
 package org.orekit.frames;
 
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.OrekitMatchers;
+import org.orekit.Utils;
+import org.orekit.data.DataContext;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,22 +50,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.Utils;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
 
 /**
  * Unit tests for {@link TIRFProvider}.
@@ -70,8 +77,8 @@ public class TIRFProviderTest {
                              { 53104, -0.4399619, 0.0015563, -0.140682, 0.333309, Double.NaN, Double.NaN, -0.000199, -0.000252 },
                              { 53105, -0.4399619, 0.0015563, -0.140682, 0.333309, Double.NaN, Double.NaN, -0.000199, -0.000252 }
                          }));
-        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
-                                           new TimeComponents(07, 51, 28.386009),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 4, 6),
+                                           new TimeComponents(7, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
         // Positions LEO
@@ -88,6 +95,9 @@ public class TIRFProviderTest {
         checkPV(pvTIRF,
                 itrfA.getTransformTo(tirf, t0).transformPVCoordinates(pvITRF),
                 6.379e-5, 3.78e-7);
+        checkP(pvTIRF.getPosition(),
+                itrfA.getStaticTransformTo(tirf, t0).transformPosition(pvITRF.getPosition()),
+                6.379e-5);
 
         Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvCIRF =
@@ -96,6 +106,9 @@ public class TIRFProviderTest {
         checkPV(pvCIRF,
                 tirf.getTransformTo(cirf, t0).transformPVCoordinates(pvTIRF),
                 8.59e-3, 4.65e-6);
+        checkP(pvCIRF.getPosition(),
+                tirf.getStaticTransformTo(cirf, t0).transformPosition(pvTIRF.getPosition()),
+                8.59e-3);
 
     }
 
@@ -118,7 +131,7 @@ public class TIRFProviderTest {
                              { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, Double.NaN, Double.NaN, -0.000199, -0.000252 }
                          }));
 
-        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 6, 1),
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
@@ -135,6 +148,9 @@ public class TIRFProviderTest {
         checkPV(pvTIRF,
                 itrfA.getTransformTo(tirf, t0).transformPVCoordinates(pvITRF),
                 5.697e-5, 4.69e-7);
+        checkP(pvTIRF.getPosition(),
+                itrfA.getStaticTransformTo(tirf, t0).transformPosition(pvITRF.getPosition()),
+                5.697e-5);
 
         Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvCIRF =
@@ -143,19 +159,54 @@ public class TIRFProviderTest {
         checkPV(pvCIRF,
                 tirf.getTransformTo(cirf, t0).transformPVCoordinates(pvTIRF),
                 0.0505, 3.60e-6);
+        checkP(pvCIRF.getPosition(),
+                tirf.getStaticTransformTo(cirf, t0).transformPosition(pvTIRF.getPosition()),
+                0.0505);
 
+    }
+
+    /** Issue #636 */
+    @Test
+    public void testContinuousDuringLeap() {
+        // setup
+        Utils.setDataRoot("regular-data");
+        Frame tirf = FramesFactory.getTIRF(IERSConventions.IERS_2010, true);
+        Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate dateA = new AbsoluteDate(2005, 12, 31, 23, 59, 0.0, utc);
+        AbsoluteDate dateB = new AbsoluteDate(2006, 1, 1, 0, 1, 0.0, utc);
+        double dt = 0.5;
+        double expected = dt * 2 * FastMath.PI / (23 * 3600 + 56 * 60 + 4.1);
+        double tol = expected * 1e-6;
+        Rotation previous = cirf.getTransformTo(tirf, dateA.shiftedBy(-dt)).getRotation();
+
+        // action + verify
+        for (AbsoluteDate d = dateA; d.compareTo(dateB) < 0; d = d.shiftedBy(dt)) {
+            Rotation actual = cirf.getTransformTo(tirf, d).getRotation();
+            Assertions.assertEquals(expected,
+                    Rotation.distance(previous, actual),
+                    tol, "At " + d.toString(utc));
+            Assertions.assertEquals(expected,
+                    Rotation.distance(
+                            previous,
+                            cirf.getStaticTransformTo(tirf, d).getRotation()),
+                    tol, "At " + d.toString(utc));
+            previous = actual;
+        }
     }
 
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        TIRFProvider provider = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+        TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 295000);
-        Assert.assertTrue(bos.size() < 300000);
+        Assertions.assertTrue(bos.size() > 340000);
+        Assertions.assertTrue(bos.size() < 350000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -165,8 +216,8 @@ public class TIRFProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
@@ -179,7 +230,9 @@ public class TIRFProviderTest {
         throws InterruptedException, ExecutionException {
 
         // subject under test
-        final TIRFProvider tirf = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false));
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider tirf = new TIRFProvider(eopHistory, ut1);
         // arbitrary date
         final AbsoluteDate start = new AbsoluteDate("2009-09-19T23:59:45.000", TimeScalesFactory.getUTC());
         // in seconds = 15min
@@ -191,7 +244,7 @@ public class TIRFProviderTest {
         // tolerance of comparisons
         final double absTol = Precision.EPSILON;
         // the expected result
-        final List<Transform> expecteds = new ArrayList<Transform>();
+        final List<Transform> expecteds = new ArrayList<>();
         for (int j = 0; j < nPerJob; j++) {
             final AbsoluteDate date = start.shiftedBy(timeStep * j);
             // action
@@ -201,19 +254,17 @@ public class TIRFProviderTest {
         }
 
         // build jobs for concurrent execution
-        final List<Callable<Boolean>> jobs = new ArrayList<Callable<Boolean>>();
+        final List<Callable<Boolean>> jobs = new ArrayList<>();
         for (int i = 0; i < nJobs; i++) {
-            jobs.add(new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    for (int j = 0; j < nPerJob; j++) {
-                        final AbsoluteDate date = start.shiftedBy(timeStep * j);
-                        // action
-                        final Transform actual = tirf.getTransform(date);
-                        // verify
-                        assertTransformEquals(expecteds.get(j), actual, absTol);
-                    }
-                    return true;
+            jobs.add(() -> {
+                for (int j = 0; j < nPerJob; j++) {
+                    final AbsoluteDate date = start.shiftedBy(timeStep * j);
+                    // action
+                    final Transform actual = tirf.getTransform(date);
+                    // verify
+                    assertTransformEquals(expecteds.get(j), actual, absTol);
                 }
+                return true;
             });
         }
 
@@ -237,7 +288,7 @@ public class TIRFProviderTest {
 
         // verify - necessary to throw AssertionErrors from the Callable
         for (Future<Boolean> future : futures) {
-            Assert.assertEquals(true, future.get());
+            Assertions.assertEquals(true, future.get());
         }
 
     }
@@ -254,13 +305,70 @@ public class TIRFProviderTest {
         final PVCoordinates actualPV = actual.getCartesian();
 
         // transform
-        Assert.assertEquals(Rotation.distance(actualRotation, expectedRotation), 0, absTol);
-        Assert.assertEquals(expectedAngular.getRotationRate(), actualAngular.getRotationRate());
-        Assert.assertEquals(expectedPV.getPosition(), actualPV.getPosition());
-        Assert.assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
+        Assertions.assertEquals(Rotation.distance(actualRotation, expectedRotation), 0, absTol);
+        Assertions.assertEquals(expectedAngular.getRotationRate(), actualAngular.getRotationRate());
+        Assertions.assertEquals(expectedPV.getPosition(), actualPV.getPosition());
+        Assertions.assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
     }
 
-    @Before
+    @Test
+    void testGetKinematicTransform() {
+        // GIVEN
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final KinematicTransform kinematicTransform = provider.getKinematicTransform(date);
+        // THEN
+        final Transform transform = provider.getTransform(date);
+        Assertions.assertEquals(date, kinematicTransform.getDate());
+        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+    }
+
+    @Test
+    void testFieldGetKinematicTransform() {
+        // GIVEN
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final FieldKinematicTransform<Complex> fieldKinematicTransform = provider.getKinematicTransform(date);
+        // THEN
+        final KinematicTransform kinematicTransform = provider.getKinematicTransform(date.toAbsoluteDate());
+        Assertions.assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
+        Assertions.assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
+        Assertions.assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
+        Assertions.assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
+                fieldKinematicTransform.getRotation().toRotation()), 1e-15);
+        Assertions.assertEquals(kinematicTransform.getRotationRate(), fieldKinematicTransform.getRotationRate().toVector3D());
+    }
+
+    @Test
+    void testFieldGetStaticTransform() {
+        // GIVEN
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final FieldStaticTransform<Complex> fieldStaticTransform = provider.getStaticTransform(date);
+        // THEN
+        final StaticTransform staticTransform = provider.getStaticTransform(date.toAbsoluteDate());
+        Assertions.assertEquals(staticTransform.getDate(), fieldStaticTransform.getDate());
+        Assertions.assertEquals(staticTransform.getTranslation(), fieldStaticTransform.getTranslation().toVector3D());
+        Assertions.assertEquals(0., Rotation.distance(staticTransform.getRotation(),
+                fieldStaticTransform.getRotation().toRotation()), 1e-15);
+
+    }
+
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }
@@ -270,8 +378,16 @@ public class TIRFProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+    }
+
+    private void checkP(Vector3D position,
+                        Vector3D transformPosition,
+                        double tol) {
+        MatcherAssert.assertThat(
+                transformPosition,
+                OrekitMatchers.vectorCloseTo(position, tol));
     }
 
 }

@@ -20,8 +20,8 @@ package org.orekit.propagation.events;
 import org.hipparchus.ode.nonstiff.AdamsBashforthIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsMoultonFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -34,11 +34,11 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  *
  * @author Evan Ward
  */
-public class FieldCloseEventsNumericalAMTest extends FieldCloseEventsAbstractTest<Decimal64> {
+public class FieldCloseEventsNumericalAMTest extends FieldCloseEventsAbstractTest<Binary64> {
 
     /** Constructor. */
     public FieldCloseEventsNumericalAMTest() {
-        super(Decimal64Field.getInstance());
+        super(Binary64Field.getInstance());
     }
 
     /**
@@ -47,17 +47,17 @@ public class FieldCloseEventsNumericalAMTest extends FieldCloseEventsAbstractTes
      * @param stepSize of integrator.
      * @return a usable propagator.
      */
-    public FieldPropagator<Decimal64> getPropagator(double stepSize) {
+    public FieldPropagator<Binary64> getPropagator(double stepSize) {
         double[][] tol = FieldNumericalPropagator
                 .tolerances(v(1), initialOrbit, OrbitType.CARTESIAN);
-        final AdamsMoultonFieldIntegrator<Decimal64> integrator =
+        final AdamsMoultonFieldIntegrator<Binary64> integrator =
                 new AdamsMoultonFieldIntegrator<>(field, 4, stepSize, stepSize, tol[0], tol[1]);
-        final DormandPrince853FieldIntegrator<Decimal64> starter =
+        final DormandPrince853FieldIntegrator<Binary64> starter =
                 new DormandPrince853FieldIntegrator<>(
                         field, stepSize / 100, stepSize / 10, tol[0], tol[1]);
-        starter.setInitialStepSize(v(stepSize / 20));
+        starter.setInitialStepSize(stepSize / 20);
         integrator.setStarterIntegrator(starter);
-        final FieldNumericalPropagator<Decimal64> propagator = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
         return propagator;

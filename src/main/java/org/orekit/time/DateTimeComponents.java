@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,11 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
+import java.util.concurrent.TimeUnit;
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
@@ -30,6 +34,14 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  */
 public class DateTimeComponents implements Serializable, Comparable<DateTimeComponents> {
+
+    /**
+     * The Julian Epoch.
+     *
+     * @see TimeScales#getJulianEpoch()
+     */
+    public static final DateTimeComponents JULIAN_EPOCH =
+            new DateTimeComponents(DateComponents.JULIAN_EPOCH, TimeComponents.H12);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 5061129505488924484L;
@@ -143,6 +155,41 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
 
     }
 
+    /** Build an instance from a seconds offset with respect to another one.
+     * @param reference reference date/time
+     * @param offset offset from the reference
+     * @param timeUnit the {@link TimeUnit} for the offset
+     * @see #offsetFrom(DateTimeComponents, TimeUnit)
+     * @since 12.1
+     */
+    public DateTimeComponents(final DateTimeComponents reference,
+        final long offset, final TimeUnit timeUnit) {
+
+        // extract linear data from reference date/time
+        int    day     = reference.getDate().getJ2000Day();
+        double seconds = reference.getTime().getSecondsInLocalDay();
+
+        // apply offset
+        long offsetInNanos = TimeUnit.NANOSECONDS.convert(offset, timeUnit);
+        final long daysInNanoseconds = TimeUnit.NANOSECONDS.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
+        final int nanoDayShift = (int) FastMath.floorDiv(offsetInNanos, daysInNanoseconds);
+        offsetInNanos -= daysInNanoseconds * nanoDayShift;
+
+        seconds += offsetInNanos / (double) TimeUnit.SECONDS.toNanos(1);
+
+        // fix range
+        final int dayShift = (int) FastMath.floor(seconds / Constants.JULIAN_DAY);
+        seconds -= Constants.JULIAN_DAY * dayShift;
+        day     += dayShift + nanoDayShift;
+        final TimeComponents tmpTime = new TimeComponents(seconds);
+
+        // set up components
+        this.date = new DateComponents(day);
+        this.time = new TimeComponents(tmpTime.getHour(), tmpTime.getMinute(), tmpTime.getSecond(),
+            reference.getTime().getMinutesFromUTC());
+
+    }
+
     /** Parse a string in ISO-8601 format to build a date/time.
      * <p>The supported formats are all date formats supported by {@link DateComponents#parseDate(String)}
      * and all time formats supported by {@link TimeComponents#parseTime(String)} separated
@@ -178,6 +225,24 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         return Constants.JULIAN_DAY * dateOffset + timeOffset;
     }
 
+    /** Compute the seconds offset between two instances.
+     * @param dateTime dateTime to subtract from the instance
+     * @param timeUnit the desired {@link TimeUnit}
+     * @return offset in the given timeunit between the two instants (positive
+     * if the instance is posterior to the argument), rounded to the nearest integer {@link TimeUnit}
+     * @see #DateTimeComponents(DateTimeComponents, long, TimeUnit)
+     * @since 12.1
+     */
+    public long offsetFrom(final DateTimeComponents dateTime, final TimeUnit timeUnit) {
+        final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
+        final double timeOffset = time.getSecondsInUTCDay() - dateTime.time.getSecondsInUTCDay();
+
+        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
+
+        return timeUnit.convert(Math.round(Constants.JULIAN_DAY * dateOffset), TimeUnit.SECONDS) +
+            FastMath.round(timeOffset * multiplier);
+    }
+
     /** Get the date component.
      * @return date component
      */
@@ -207,7 +272,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     public boolean equals(final Object other) {
         try {
             final DateTimeComponents otherDateTime = (DateTimeComponents) other;
-            return (otherDateTime != null) &&
+            return otherDateTime != null &&
                    date.equals(otherDateTime.date) && time.equals(otherDateTime.time);
         } catch (ClassCastException cce) {
             return false;
@@ -220,24 +285,122 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     }
 
     /** Return a string representation of this pair.
-     * <p>The format used is ISO8601.</p>
+     * <p>The format used is ISO8601 including the UTC offset.</p>
      * @return string representation of this pair
      */
     public String toString() {
-        return toString(60);
+        return date.toString() + 'T' + time.toString();
     }
 
-    /** Return a string representation of this pair.
-     * <p>The format used is ISO8601.</p>
-     * @param minuteDuration 60 or 61 depending on the date being
-     * close to a leap second introduction
-     * @return string representation of this pair
+    /**
+     * Get a string representation of the date-time without the offset from UTC. The
+     * format used is ISO6801, except without the offset from UTC.
+     *
+     * @return a string representation of the date-time.
+     * @see #toStringWithoutUtcOffset(int, int)
+     * @see #toString(int, int)
+     * @see #toStringRfc3339()
+     */
+    public String toStringWithoutUtcOffset() {
+        return date.toString() + 'T' + time.toStringWithoutUtcOffset();
+    }
+
+
+    /**
+     * Return a string representation of this date-time, rounded to millisecond
+     * precision.
+     *
+     * <p>The format used is ISO8601 including the UTC offset.</p>
+     *
+     * @param minuteDuration 60, 61, or 62 seconds depending on the date being close to a
+     *                       leap second introduction and the magnitude of the leap
+     *                       second.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toString(int, int)
      */
     public String toString(final int minuteDuration) {
+        return toString(minuteDuration, 3);
+    }
+
+    /**
+     * Return a string representation of this date-time, rounded to the given precision.
+     *
+     * <p>The format used is ISO8601 including the UTC offset.</p>
+     *
+     * @param minuteDuration 59, 60, 61, or 62 seconds depending on the date being close
+     *                       to a leap second introduction and the magnitude of the leap
+     *                       second.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must
+     *                       be greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toStringRfc3339()
+     * @see #toStringWithoutUtcOffset()
+     * @see #toStringWithoutUtcOffset(int, int)
+     * @since 11.0
+     */
+    public String toString(final int minuteDuration, final int fractionDigits) {
+        return toStringWithoutUtcOffset(minuteDuration, fractionDigits) +
+                time.formatUtcOffset();
+    }
+
+    /**
+     * Return a string representation of this date-time, rounded to the given precision.
+     *
+     * <p>The format used is ISO8601 without the UTC offset.</p>
+     *
+     * @param minuteDuration 59, 60, 61, or 62 seconds depending on the date being close
+     *                       to a leap second introduction and the magnitude of the leap
+     *                       second.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must
+     *                       be greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toStringRfc3339()
+     * @see #toStringWithoutUtcOffset()
+     * @see #toString(int, int)
+     * @since 11.1
+     */
+    public String toStringWithoutUtcOffset(final int minuteDuration,
+                                           final int fractionDigits) {
+        final DecimalFormat secondsFormat =
+                new DecimalFormat("00", new DecimalFormatSymbols(Locale.US));
+        secondsFormat.setMaximumFractionDigits(fractionDigits);
+        secondsFormat.setMinimumFractionDigits(fractionDigits);
+        final DateTimeComponents rounded = roundIfNeeded(minuteDuration, fractionDigits);
+        return rounded.getDate().toString() + 'T' +
+                rounded.getTime().toStringWithoutUtcOffset(secondsFormat);
+    }
+
+    /**
+     * Round this date-time to the given precision if needed to prevent rounding up to an
+     * invalid seconds number. This is useful, for example, when writing custom date-time
+     * formatting methods so one does not, e.g., end up with "60.0" seconds during a
+     * normal minute when the value of seconds is {@code 59.999}. This method will instead
+     * round up the minute, hour, day, month, and year as needed.
+     *
+     * @param minuteDuration 59, 60, 61, or 62 seconds depending on the date being close
+     *                       to a leap second introduction and the magnitude of the leap
+     *                       second.
+     * @param fractionDigits the number of decimal digits after the decimal point in the
+     *                       seconds number that will be printed. This date-time is
+     *                       rounded to {@code fractionDigits} after the decimal point if
+     *                       necessary to prevent rounding up to {@code minuteDuration}.
+     *                       {@code fractionDigits} must be greater than or equal to
+     *                       {@code 0}.
+     * @return a date-time within {@code 0.5 * 10**-fractionDigits} seconds of this, and
+     * with a seconds number that will not round up to {@code minuteDuration} when rounded
+     * to {@code fractionDigits} after the decimal point.
+     * @since 11.3
+     */
+    public DateTimeComponents roundIfNeeded(final int minuteDuration,
+                                            final int fractionDigits) {
         double second = time.getSecond();
-        final double wrap = minuteDuration - 0.0005;
+        final double wrap = minuteDuration - 0.5 * FastMath.pow(10, -fractionDigits);
         if (second >= wrap) {
-            // we should wrap around next millisecond
+            // we should wrap around to the next minute
             int minute = time.getMinute();
             int hour   = time.getHour();
             int j2000  = date.getJ2000Day();
@@ -251,9 +414,59 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
                     ++j2000;
                 }
             }
-            return new DateComponents(j2000).toString() + 'T' + new TimeComponents(hour, minute, second).toString();
+            return new DateTimeComponents(
+                    new DateComponents(j2000),
+                    new TimeComponents(hour, minute, second));
         }
-        return date.toString() + 'T' + time.toString();
+        return this;
+    }
+
+    /**
+     * Represent the given date and time as a string according to the format in RFC 3339.
+     * RFC3339 is a restricted subset of ISO 8601 with a well defined grammar. This method
+     * includes enough precision to represent the point in time without rounding up to the
+     * next minute.
+     *
+     * <p>RFC3339 is unable to represent BC years, years of 10000 or more, time zone
+     * offsets of 100 hours or more, or NaN. In these cases the value returned from this
+     * method will not be valid RFC3339 format.
+     *
+     * @return RFC 3339 format string.
+     * @see <a href="https://tools.ietf.org/html/rfc3339#page-8">RFC 3339</a>
+     * @see AbsoluteDate#toStringRfc3339(TimeScale)
+     * @see #toString(int, int)
+     * @see #toStringWithoutUtcOffset()
+     */
+    public String toStringRfc3339() {
+        final DateComponents d = this.getDate();
+        final TimeComponents t = this.getTime();
+        // date
+        final String dateString = String.format("%04d-%02d-%02dT",
+                d.getYear(), d.getMonth(), d.getDay());
+        // time
+        final String timeString;
+        if (t.getSecondsInLocalDay() != 0) {
+            final DecimalFormat format = new DecimalFormat("00.##############", new DecimalFormatSymbols(Locale.US));
+            timeString = String.format("%02d:%02d:", t.getHour(), t.getMinute()) +
+                    format.format(t.getSecond());
+        } else {
+            // shortcut for midnight local time
+            timeString = "00:00:00";
+        }
+        // offset
+        final int minutesFromUTC = t.getMinutesFromUTC();
+        final String timeZoneString;
+        if (minutesFromUTC == 0) {
+            timeZoneString = "Z";
+        } else {
+            // sign must be accounted for separately because there is no -0 in Java.
+            final String sign = minutesFromUTC < 0 ? "-" : "+";
+            final int utcOffset = FastMath.abs(minutesFromUTC);
+            final int hourOffset = utcOffset / 60;
+            final int minuteOffset = utcOffset % 60;
+            timeZoneString = sign + String.format("%02d:%02d", hourOffset, minuteOffset);
+        }
+        return dateString + timeString + timeZoneString;
     }
 
 }

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2024 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -57,13 +57,19 @@ The force models implemented are as follows:
 
 * solar radiation pressure force, taking into account force reduction in
   penumbra and no force at all during complete eclipse, and taking attitude
-  into account if spacecraft shape is defined,
+  into account if spacecraft shape is defined ; several occulting bodies
+  can be defined as oblate spheroids
+
+* Earth Albedo and IR emission force model. Our implementation is based on
+  paper: _EARTH RADIATION PRESSURE EFFECTS ON SATELLITES", 1988, by
+  P. C. Knocke, J. C. Ries, and B. D. Tapley_.
 
 * solid tides, with or without solid pole tide,
 
 * ocean tides, with or without ocean pole tide,
 
-* post-Newtonian correction due to general relativity,
+* post-Newtonian correction due to general relativity with
+  De Sitter and Lense-Thirring terms,
 
 * forces induced by maneuvers. At present, only constant thrust maneuvers 
   are implemented, with the possibility to define an impulse maneuver, thanks 
@@ -83,10 +89,26 @@ accurate `BoxAndSolarArraySpacraft` shape.
 
 The spherical shape will be independent of attitude.
 
-The box and solar array will consider the contribution of all box facets facing
+The box and solar array will consider the contribution of all box panels facing
 the flux as computed from the current attitude, and also the contribution of a
 pivoting solar array, whose orientation is a combination of the spacecraft body
 attitude and either the true Sun direction or a regularized rotation angle.
-The box can have any number of facets, and they can have any orientation as long
-as the body remains convex. As of 9.0, the box and solar array does not compute
+The box can have any number of panels, and they can have any orientation as long
+as the body remains convex. The coefficients (drag, lift, absorption, reflection)
+are panel-dependent. As of 12.0, the box and solar array does not compute
 yet shadowing effects.
+
+All these shapes define various `ParameterDrivers` that can be used to control
+dynamic parameters like drag coefficient or absorption coefficient. Several
+conventions are available. For estimation purposes, it is possible to use a global
+multiplication factor that is applied to the acceleration rather than attempting
+to estimate several coefficients at once like absorption and specular reflection
+for solar radiation pressure. For `BoxAndSolarArraySpacraft` shape, as each
+panel has its own set of coefficients and this would not be observable, the
+coefficients are fixed and only the global multiplication factor is available
+and can be estimated. For `Isotropic` shapes, it is possible to estimate
+either the coefficients or the global multiplication factor. Of course in
+order to avoid ill-conditioned systems, users should not attempt to estimate
+both a coefficient and a global multiplication factor at the same time in
+`Isotropic` cases; they should select one parameter to estimate and let the
+other one fixed.

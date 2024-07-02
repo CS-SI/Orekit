@@ -1,5 +1,5 @@
-' Copyright 2002-2019 CS Systèmes d'Information
-' Licensed to CS Systèmes d'Information (CS) under one or more
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
 ' CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
@@ -41,11 +42,10 @@
     package attitude #DDEBD8 {
 
       class Attitude {
-	    +Vector3D estimateSpin
-    	+Attitude withReferenceFrame
-    	+Frame getReferenceFrame
+        +Attitude withReferenceFrame
+        +Frame getReferenceFrame
         +Rotation getRotation
-	    +Vector3D getSpin
+        +Vector3D getSpin
       }
 
       class AttitudesSequence {
@@ -66,18 +66,9 @@
         +AttitudeProvider getUnderlyingAttitudeProvider()
       }
 
-      class SpinStabilized {
-        +AttitudeProvider getNonRotatingLaw()
-      }
-
       abstract class GroundPointing {
         #Vector3D getTargetPoint
         #PVCoordinates getTargetPV
-      }
-
-      abstract class GroundPointingWrapper {
-        +Attitude getBaseState
-        +Rotation getCompensation
       }
 
       Frame            <-up- "1" Attitude 
@@ -91,7 +82,6 @@
       AttitudesSequence "*" o--> AttitudeProvider
       AttitudeProvider <--* "1" LofOffsetPointing 
       AttitudeProvider <|.. GroundPointing
-      GroundPointing   <|-- GroundPointingWrapper
       LofOffsetPointing            --|> GroundPointing
 
       AttitudeProviderModifier     <|-- SpinStabilized
@@ -99,13 +89,15 @@
       GroundPointing               <|-- BodyCenterPointing
       GroundPointing               <|-- NadirPointing
       GroundPointing               <|-- TargetPointing
-      GroundPointingWrapper    "1" *--> GroundPointing
-      GroundPointingWrapper        <|-- YawCompensation
-      GroundPointingWrapper        <|-- YawSteering
+      GroundPointing               <|-- YawCompensation
+      AttitudeProviderModifier     <|-- YawCompensation
+      GroundPointing               <|-- YawSteering
+      AttitudeProviderModifier     <|-- YawSteering
       AttitudeProvider             <|-- CelestialBodyPointed
-      AttitudeProvider             <|-- InertialProvider
+      AttitudeProvider             <|-- FrameAlignedProvider
       AttitudeProvider             <|-- LofOffset
       AttitudeProvider             <|-- TabulatedProvider
+      AttitudeProvider             <|-- TorqueFree
 
     }
 

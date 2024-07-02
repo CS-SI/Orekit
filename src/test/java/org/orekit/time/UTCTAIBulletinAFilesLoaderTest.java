@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,8 @@
  */
 package org.orekit.time;
 
-
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,11 +32,11 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.4228180,
+        Assertions.assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
         afterLeap = new AbsoluteDate(2006, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.0,
+        Assertions.assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
 
@@ -66,11 +64,11 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.4228180,
+        Assertions.assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
         afterLeap = new AbsoluteDate(2009, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.0,
+        Assertions.assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
 
@@ -88,11 +86,11 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.4228180,
+        Assertions.assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
         afterLeap = new AbsoluteDate(2009, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.0,
+        Assertions.assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
 
@@ -110,13 +108,13 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.4228180,
+        Assertions.assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
 
         // the artificial first leap is big ...
         afterLeap = new AbsoluteDate(1972, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertTrue(afterLeap.durationFrom(utc.getLastKnownLeapSecond()) > 25.1);
+        Assertions.assertTrue(afterLeap.durationFrom(utc.getLastKnownLeapSecond()) > 25.1);
 
         // as there are no leap seconds identified, everything should be at 35s
         checkOffset("1973-01-01", -35.0);
@@ -163,7 +161,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
     private void checkOffset(final String s, final double expected) {
         final AbsoluteDate date = new AbsoluteDate(s, TimeScalesFactory.getTAI());
-        Assert.assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date), 10e-8);
+        Assertions.assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date), 10e-8);
     }
 
     private void checkException(String name, OrekitMessages message) {
@@ -171,9 +169,9 @@ public class UTCTAIBulletinAFilesLoaderTest {
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader(name));
         try {
             TimeScalesFactory.getUTC();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(message, oe.getSpecifier());
+            Assertions.assertEquals(message, oe.getSpecifier());
         }
     }
 

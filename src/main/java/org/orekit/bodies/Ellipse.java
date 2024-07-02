@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.frames.Frame;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -158,7 +159,8 @@ public class Ellipse implements Serializable {
      * @return ellipse point at theta, in underlying ellipsoid frame
      */
     public Vector3D pointAt(final double theta) {
-        return toSpace(new Vector2D(a * FastMath.cos(theta), b * FastMath.sin(theta)));
+        final SinCos scTheta = FastMath.sinCos(theta);
+        return toSpace(new Vector2D(a * scTheta.cos(), b * scTheta.sin()));
     }
 
     /** Create a point from its ellipse-relative coordinates.
@@ -221,31 +223,42 @@ public class Ellipse implements Serializable {
                                 FastMath.copySign(g * FastMath.sqrt(a2 - rEllipse * rEllipse), y));
 
         } else {
-            final double k = FastMath.hypot(x / a, y / b);
-            double projectedX = x / k;
-            double projectedY = y / k;
-            double deltaX = Double.POSITIVE_INFINITY;
-            double deltaY = Double.POSITIVE_INFINITY;
+
+            // initial point at evolute cusp along major axis
+            double omegaX = a * e2;
+            double omegaY = 0.0;
+
+            double projectedX = x;
+            double projectedY = y;
+            double deltaX     = Double.POSITIVE_INFINITY;
+            double deltaY     = Double.POSITIVE_INFINITY;
             int count = 0;
             final double threshold = ANGULAR_THRESHOLD * ANGULAR_THRESHOLD * a2;
             while ((deltaX * deltaX + deltaY * deltaY) > threshold && count++ < 100) { // this loop usually converges in 3 iterations
-                final double omegaX     = evoluteFactorX * projectedX * projectedX * projectedX;
-                final double omegaY     = evoluteFactorY * projectedY * projectedY * projectedY;
+
+                // find point at the intersection of ellipse and line going from query point to evolute point
                 final double dx         = x - omegaX;
                 final double dy         = y - omegaY;
                 final double alpha      = b2 * dx * dx + a2 * dy * dy;
-                final double beta       = b2 * omegaX * dx + a2 * omegaY * dy;
+                final double betaPrime  = b2 * omegaX * dx + a2 * omegaY * dy;
                 final double gamma      = b2 * omegaX * omegaX + a2 * omegaY * omegaY - a2 * b2;
-                final double deltaPrime = MathArrays.linearCombination(beta, beta, -alpha, gamma);
-                final double ratio      = (beta <= 0) ?
-                                          (FastMath.sqrt(deltaPrime) - beta) / alpha :
-                                          -gamma / (FastMath.sqrt(deltaPrime) + beta);
+                final double deltaPrime = MathArrays.linearCombination(betaPrime, betaPrime, -alpha, gamma);
+                final double ratio      = (betaPrime <= 0) ?
+                                          (FastMath.sqrt(deltaPrime) - betaPrime) / alpha :
+                                          -gamma / (FastMath.sqrt(deltaPrime) + betaPrime);
                 final double previousX  = projectedX;
                 final double previousY  = projectedY;
                 projectedX = omegaX + ratio * dx;
                 projectedY = omegaY + ratio * dy;
+
+                // find new evolute point
+                omegaX     = evoluteFactorX * projectedX * projectedX * projectedX;
+                omegaY     = evoluteFactorY * projectedY * projectedY * projectedY;
+
+                // compute convergence parameters
                 deltaX     = projectedX - previousX;
                 deltaY     = projectedY - previousY;
+
             }
             return new Vector2D(FastMath.copySign(projectedX, p.getX()), projectedY);
         }

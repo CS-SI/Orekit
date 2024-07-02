@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,24 +22,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.Month;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for bulletin B files.
  * <p>Bulletin B files contain {@link EOPEntry
@@ -71,20 +74,21 @@ import org.orekit.utils.IERSConventions;
  * files with different name was published each month between March 2003 and January 2010).
  * </p>
  * <p>
+ * Bulletin B in csv format must be read using {@link EopCsvFilesLoader} rather
+ * than using this loader. Bulletin B in xml format must be read using {@link EopXmlLoader}
+ * rather than using this loader.
+ * </p>
+ * <p>
  * This class handles both the old and the new format.
  * </p>
  * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
+ * @see EopCsvFilesLoader
+ * @see EopXmlLoader
  */
-class BulletinBFilesLoader implements EOPHistoryLoader {
-
-    /** Conversion factor. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
-
-    /** Conversion factor. */
-    private static final double MILLI_SECONDS_TO_SECONDS = 1.e-3;
+class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Section 1 header pattern. */
     private static final Pattern SECTION_1_HEADER;
@@ -221,38 +225,37 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
 
     }
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Build a loader for IERS bulletins B files.
-    * @param supportedNames regular expression for supported files names
-    */
-    BulletinBFilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+     * @param supportedNames regular expression for supported files names
+     * @param manager provides access to the bulletin B files.
+     * @param utcSupplier UTC time scale.
+     */
+    BulletinBFilesLoader(final String supportedNames,
+                         final DataProvidersManager manager,
+                         final Supplier<TimeScale> utcSupplier) {
+        super(supportedNames, manager, utcSupplier);
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
-        final Parser parser = new Parser(converter);
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
-        history.addAll(parser.history);
+        final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
+                ITRFVersionLoader.SUPPORTED_NAMES,
+                getDataProvidersManager());
+        final Parser parser = new Parser(converter, itrfVersionProvider, getUtc());
+        final EopParserLoader loader = new EopParserLoader(parser);
+        this.feed(loader);
+        history.addAll(loader.getEop());
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
-
-        /** Converter for nutation corrections. */
-        private final IERSConventions.NutationCorrectionConverter converter;
-
-        /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
+    static class Parser extends AbstractEopParser {
 
         /** ITRF version configuration. */
         private ITRFVersionLoader.ITRFVersionConfiguration configuration;
 
         /** History entries. */
-        private final List<EOPEntry> history;
+        private List<EOPEntry> history;
 
         /** Map for fields read in different sections. */
         private final Map<Integer, double[]> fieldsMap;
@@ -269,84 +272,87 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
         /** End of final data. */
         private int mjdMax;
 
-        /** Simple constructor.
-         * @param converter converter to use
+        /**
+         * Simple constructor.
+         *
+         * @param converter           converter to use
+         * @param itrfVersionProvider to use for determining the ITRF version of the EOP.
+         * @param utc                 time scale for parsing dates.
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter         = converter;
-            this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
-            this.history           = new ArrayList<EOPEntry>();
-            this.fieldsMap         = new HashMap<Integer, double[]>();
+        Parser(final NutationCorrectionConverter converter,
+               final ItrfVersionProvider itrfVersionProvider,
+               final TimeScale utc) {
+            super(converter, itrfVersionProvider, utc);
+            this.fieldsMap         = new HashMap<>();
             this.lineNumber        = 0;
             this.mjdMin            = Integer.MAX_VALUE;
             this.mjdMax            = Integer.MIN_VALUE;
         }
 
         /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        public void loadData(final InputStream input, final String name)
+        @Override
+        public Collection<EOPEntry> parse(final InputStream input, final String name)
             throws IOException {
 
-            configuration = null;
-
             // set up a reader for line-oriented bulletin B files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                // reset parse info to start new file
+                fieldsMap.clear();
+                lineNumber = 0;
+                mjdMin     = Integer.MAX_VALUE;
+                mjdMax     = Integer.MIN_VALUE;
+                history = new ArrayList<>();
+                configuration = null;
 
-            // reset parse info to start new file (do not clear history!)
-            fieldsMap.clear();
-            lineNumber = 0;
-            mjdMin     = Integer.MAX_VALUE;
-            mjdMax     = Integer.MIN_VALUE;
+                // skip header up to section 1 and check if we are parsing an old or new format file
+                final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
+                final boolean isOldFormat = "EARTH".equals(section1Matcher.group(1));
 
-            // skip header up to section 1 and check if we are parsing an old or new format file
-            final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
-            final boolean isOldFormat = "EARTH".equals(section1Matcher.group(1));
+                if (isOldFormat) {
 
-            if (isOldFormat) {
+                    // extract MJD bounds for final data from section 1
+                    loadMJDBoundsOldFormat(reader, name);
 
-                // extract MJD bounds for final data from section 1
-                loadMJDBoundsOldFormat(reader, name);
+                    final Matcher section2Matcher = seekToLine(SECTION_2_HEADER_OLD, reader, name);
+                    final boolean isNonRotatingOrigin = section2Matcher.group(1).startsWith("dX");
+                    loadEOPOldFormat(isNonRotatingOrigin, reader, name);
 
-                final Matcher section2Matcher = seekToLine(SECTION_2_HEADER_OLD, reader, name);
-                final boolean isNonRotatingOrigin = section2Matcher.group(1).startsWith("dX");
-                loadEOPOldFormat(isNonRotatingOrigin, reader, name);
+                } else {
 
-            } else {
+                    // extract x, y, UT1-UTC, dx, dy from section 1
+                    loadXYDTDxDyNewFormat(reader, name);
 
-                // extract x, y, UT1-UTC, dx, dy from section 1
-                loadXYDTDxDyNewFormat(reader, name);
+                    // skip to section 3
+                    seekToLine(SECTION_3_HEADER, reader, name);
 
-                // skip to section 3
-                seekToLine(SECTION_3_HEADER, reader, name);
+                    // extract LOD data from section 3
+                    loadLODNewFormat(reader, name);
 
-                // extract LOD data from section 3
-                loadLODNewFormat(reader, name);
-
-                // set up the EOP entries
-                for (Map.Entry<Integer, double[]> entry : fieldsMap.entrySet()) {
-                    final int mjd = entry.getKey();
-                    final double[] array = entry.getValue();
-                    if (Double.isNaN(array[0] + array[1] + array[2] + array[3] + array[4] + array[5])) {
-                        throw notifyUnexpectedErrorEncountered(name);
+                    // set up the EOP entries
+                    for (Map.Entry<Integer, double[]> entry : fieldsMap.entrySet()) {
+                        final int mjd = entry.getKey();
+                        final double[] array = entry.getValue();
+                        if (Double.isNaN(array[0] + array[1] + array[2] + array[3] + array[4] + array[5])) {
+                            throw notifyUnexpectedErrorEncountered(name);
+                        }
+                        final AbsoluteDate mjdDate =
+                                new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                                 getUtc());
+                        final double[] equinox = getConverter().toEquinox(mjdDate, array[4], array[5]);
+                        if (configuration == null || !configuration.isValid(mjd)) {
+                            // get a configuration for current name and date range
+                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
+                        }
+                        history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
+                                                 Double.NaN, Double.NaN,
+                                                 equinox[0], equinox[1], array[4], array[5],
+                                                 configuration.getVersion(), mjdDate));
                     }
-                    final AbsoluteDate mjdDate =
-                            new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                             TimeScalesFactory.getUTC());
-                    final double[] equinox = converter.toEquinox(mjdDate, array[4], array[5]);
-                    if (configuration == null || !configuration.isValid(mjd)) {
-                        // get a configuration for current name and date range
-                        configuration = itrfVersionLoader.getConfiguration(name, mjd);
-                    }
-                    history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
-                                             equinox[0], equinox[1], array[4], array[5],
-                                             configuration.getVersion()));
+
                 }
-
             }
+
+            return history;
 
         }
 
@@ -432,32 +438,33 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                     final double x     = Double.parseDouble(matcher.group(2)) * Constants.ARC_SECONDS_TO_RADIANS;
                     final double y     = Double.parseDouble(matcher.group(3)) * Constants.ARC_SECONDS_TO_RADIANS;
                     final double dtu1  = Double.parseDouble(matcher.group(4));
-                    final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
+                    final double lod   = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(matcher.group(5)));
                     if (mjd >= mjdMin) {
                         final AbsoluteDate mjdDate =
                                 new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                                 TimeScalesFactory.getUTC());
+                                                 getUtc());
                         final double[] equinox;
                         final double[] nro;
                         if (isNonRotatingOrigin) {
                             nro = new double[] {
-                                Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS,
-                                Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS
+                                UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(6))),
+                                UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(7)))
                             };
-                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
-                                Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS,
-                                Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS
+                                UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(6))),
+                                UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(7)))
                             };
-                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion()));
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                                 equinox[0], equinox[1], nro[0], nro[1],
+                                                 configuration.getVersion(), mjdDate));
                         line = mjd < mjdMax ? reader.readLine() : null;
                     } else {
                         line = reader.readLine();
@@ -500,11 +507,11 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                         }
                         mjdMin = FastMath.min(mjdMin, mjd);
                         mjdMax = FastMath.max(mjdMax, mjd);
-                        final double x    = Double.parseDouble(matcher.group(5)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                        final double y    = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                        final double dtu1 = Double.parseDouble(matcher.group(7)) * MILLI_SECONDS_TO_SECONDS;
-                        final double dx   = Double.parseDouble(matcher.group(8)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                        final double dy   = Double.parseDouble(matcher.group(9)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                        final double x    = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(5)));
+                        final double y    = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(6)));
+                        final double dtu1 = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(matcher.group(7)));
+                        final double dx   = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(8)));
+                        final double dy   = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(matcher.group(9)));
                         fieldsMap.put(mjd,
                                       new double[] {
                                           dtu1, Double.NaN, x, y, dx, dy
@@ -535,7 +542,7 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                     // this is a data line, build an entry from the extracted fields
                     final int    mjd = Integer.parseInt(matcher.group(1));
                     if (mjd >= mjdMin) {
-                        final double lod = Double.parseDouble(matcher.group(2)) * MILLI_SECONDS_TO_SECONDS;
+                        final double lod = UnitsConverter.MILLI_SECONDS_TO_SECONDS.convert(Double.parseDouble(matcher.group(2)));
                         final double[] array = fieldsMap.get(mjd);
                         if (array == null) {
                             throw notifyUnexpectedErrorEncountered(name);

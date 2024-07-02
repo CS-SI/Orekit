@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,11 +17,12 @@
 package org.orekit.propagation.analytical;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -145,17 +146,16 @@ public class J2DifferentialEffect
         // compute reference drifts
         final double oMe2       = 1 - e0 * e0;
         final double ratio      = referenceRadius / (a0 * oMe2);
-        final double cosI       = FastMath.cos(i0);
-        final double sinI       = FastMath.sin(i0);
+        final SinCos scI        = FastMath.sinCos(i0);
         final double n          = FastMath.sqrt(mu / a0) / a0;
         final double c          = ratio * ratio * n * j2;
-        final double refPaDot   =  0.75 * c * (4 - 5 * sinI * sinI);
-        final double refRaanDot = -1.5  * c * cosI;
+        final double refPaDot   =  0.75 * c * (4 - 5 * scI.sin() * scI.sin());
+        final double refRaanDot = -1.5  * c * scI.cos();
 
         // differential model on perigee argument drift
         final double dPaDotDa = -3.5 * refPaDot / a0;
         final double dPaDotDe = 4 * refPaDot * e0 / oMe2;
-        final double dPaDotDi = -7.5 * c * sinI * cosI;
+        final double dPaDotDi = -7.5 * c * scI.sin() * scI.cos();
         dPaDot = dPaDotDa * (a1 - a0) + dPaDotDe * (e1 - e0) + dPaDotDi * (i1 - i0);
 
         // differential model on ascending node drift
@@ -210,23 +210,21 @@ public class J2DifferentialEffect
         final AbsoluteDate date = original.getDate();
         final double dt         = date.durationFrom(referenceDate);
         final double dPaRaan    = (dPaDot + dRaanDot) * dt;
-        final double cPaRaan    = FastMath.cos(dPaRaan);
-        final double sPaRaan    = FastMath.sin(dPaRaan);
+        final SinCos scPaRaan   = FastMath.sinCos(dPaRaan);
         final double dRaan      = dRaanDot * dt;
-        final double cRaan      = FastMath.cos(dRaan);
-        final double sRaan      = FastMath.sin(dRaan);
+        final SinCos scRaan     = FastMath.sinCos(dRaan);
 
-        final double ex         = original.getEquinoctialEx() * cPaRaan -
-                                  original.getEquinoctialEy() * sPaRaan;
-        final double ey         = original.getEquinoctialEx() * sPaRaan +
-                                  original.getEquinoctialEy() * cPaRaan;
-        final double hx         = original.getHx() * cRaan - original.getHy() * sRaan;
-        final double hy         = original.getHx() * sRaan + original.getHy() * cRaan;
+        final double ex         = original.getEquinoctialEx() * scPaRaan.cos() -
+                                  original.getEquinoctialEy() * scPaRaan.sin();
+        final double ey         = original.getEquinoctialEx() * scPaRaan.sin() +
+                                  original.getEquinoctialEy() * scPaRaan.cos();
+        final double hx         = original.getHx() * scRaan.cos() - original.getHy() * scRaan.sin();
+        final double hy         = original.getHx() * scRaan.sin() + original.getHy() * scRaan.cos();
         final double lambda     = original.getLv() + dPaRaan;
 
         // build updated orbit
         final EquinoctialOrbit updated =
-                new EquinoctialOrbit(original.getA(), ex, ey, hx, hy, lambda, PositionAngle.TRUE,
+                new EquinoctialOrbit(original.getA(), ex, ey, hx, hy, lambda, PositionAngleType.TRUE,
                                      original.getFrame(), date, original.getMu());
 
         // convert to required type

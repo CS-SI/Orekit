@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,26 +16,33 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
@@ -46,11 +53,15 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * retrograde).</p>
  * @see FieldOrbit
  * @author Guylaine Prat
+ * @param <T> type of the field elements
  */
-public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
+public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
-    /** Factory for the derivatives. */
-    private final FDSFactory<T> factory;
+    /** Default convergence threshold for mean parameters conversion. */
+    private static final double EPSILON_DEFAULT = 1.0e-13;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 100;
 
     /** Initial Eckstein-Hechler model. */
     private FieldEHModel<T> initialModel;
@@ -69,29 +80,40 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
 
     /** Build a propagator from FieldOrbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
+     *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial FieldOrbit
      * @param provider for un-normalized zonal coefficients
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
+     * UnnormalizedSphericalHarmonicsProvider)
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, UnnormalizedSphericalHarmonicsProvider,
+     * PropagationType)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, DEFAULT_LAW, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
     /**
      * Private helper constructor.
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
      * @param initialOrbit initial FieldOrbit
      * @param attitude attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
+     * UnnormalizedSphericalHarmonicsProvider, UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics, PropagationType)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                          final  AttitudeProvider attitude,
+                                          final AttitudeProvider attitude,
                                           final T mass,
                                           final UnnormalizedSphericalHarmonicsProvider provider,
                                           final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics) {
-        this(initialOrbit, attitude,  mass, provider.getAe(), initialOrbit.getA().getField().getZero().add(provider.getMu()),
+        this(initialOrbit, attitude,  mass, provider.getAe(), initialOrbit.getMu().newInstance(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
@@ -110,6 +132,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
      * <p>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial FieldOrbit
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m³/s²)
@@ -118,25 +143,34 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-          * @see org.orekit.utils.Constants
+     * @see org.orekit.utils.Constants
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, double,
+     * CalculusFieldElement, double, double, double, double, double)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, DEFAULT_LAW, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             initialOrbit.getMu().newInstance(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit, mass and potential provider.
      * <p>Attitude law is set to an unspecified non-null arbitrary value.</p>
+     *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial FieldOrbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
+     * CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
     /** Build a propagator from FieldOrbit, mass and potential.
@@ -151,6 +185,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * <p>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial FieldOrbit
      * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -160,16 +196,20 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
+     * CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, double)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit, attitude provider and potential provider.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
      * @param initialOrbit initial FieldOrbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
@@ -177,7 +217,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, attitudeProv, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+        this(initialOrbit, attitudeProv, initialOrbit.getMu().newInstance(DEFAULT_MASS), provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
     /** Build a propagator from FieldOrbit, attitude provider and potential.
@@ -191,6 +231,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      *                     <span style="text-decoration: overline">C</span><sub>n,0</sub>
      * <p>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
      *
      * @param initialOrbit initial FieldOrbit
      * @param attitudeProv attitude provider
@@ -207,15 +249,18 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, attitudeProv, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
+        this(initialOrbit, attitudeProv, initialOrbit.getMu().newInstance(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit, attitude provider, mass and potential provider.
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
      * @param initialOrbit initial FieldOrbit
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
+     * UnnormalizedSphericalHarmonicsProvider, PropagationType)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
@@ -235,6 +280,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * <p>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     *
      * @param initialOrbit initial FieldOrbit
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
@@ -245,6 +292,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double,
+     *                                      CalculusFieldElement, double, double, double, double, double, PropagationType)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
@@ -252,10 +301,149 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50, c60, PropagationType.OSCULATING);
+    }
 
+    /** Build a propagator from orbit and potential provider.
+     * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
+     *
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     *
+     * @param initialOrbit initial orbit
+     * @param provider for un-normalized zonal coefficients
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 10.2
+     */
+    public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
+                                          final UnnormalizedSphericalHarmonicsProvider provider,
+                                          final PropagationType initialType) {
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType);
+    }
+
+    /** Build a propagator from orbit, attitude provider, mass and potential provider.
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 10.2
+     */
+    public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
+                                          final AttitudeProvider attitudeProv,
+                                          final T mass,
+                                          final UnnormalizedSphericalHarmonicsProvider provider,
+                                          final PropagationType initialType) {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType);
+    }
+
+    /**
+     * Private helper constructor.
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     * @param initialOrbit initial orbit
+     * @param attitude attitude provider
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 10.2
+     */
+    public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
+                                          final AttitudeProvider attitude,
+                                          final T mass,
+                                          final UnnormalizedSphericalHarmonicsProvider provider,
+                                          final UnnormalizedSphericalHarmonics harmonics,
+                                          final PropagationType initialType) {
+        this(initialOrbit, attitude, mass, provider.getAe(), initialOrbit.getMu().newInstance(provider.getMu()),
+             harmonics.getUnnormalizedCnm(2, 0),
+             harmonics.getUnnormalizedCnm(3, 0),
+             harmonics.getUnnormalizedCnm(4, 0),
+             harmonics.getUnnormalizedCnm(5, 0),
+             harmonics.getUnnormalizedCnm(6, 0),
+             initialType);
+    }
+
+    /** Build a propagator from FieldOrbit, attitude provider, mass and potential.
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     * <p>
+     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     * <p>
+     *   C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     *
+     * @param initialOrbit initial FieldOrbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @since 10.2
+     */
+    public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
+                                          final AttitudeProvider attitudeProv,
+                                          final T mass,
+                                          final double referenceRadius, final T mu,
+                                          final double c20, final double c30, final double c40,
+                                          final double c50, final double c60,
+                                          final PropagationType initialType) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu,
+             c20, c30, c40, c50, c60, initialType, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Build a propagator from FieldOrbit, attitude provider, mass and potential.
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     * <p>
+     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     * <p>
+     *   C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Eckstein-Hechler orbit or an osculating one.</p>
+     *
+     * @param initialOrbit initial FieldOrbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @param initialType initial orbit type (mean Eckstein-Hechler orbit or osculating orbit)
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @since 11.2
+     */
+    public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
+                                          final AttitudeProvider attitudeProv,
+                                          final T mass,
+                                          final double referenceRadius, final T mu,
+                                          final double c20, final double c30, final double c40,
+                                          final double c50, final double c60,
+                                          final PropagationType initialType,
+                                          final double epsilon, final int maxIterations) {
         super(mass.getField(), attitudeProv);
-        final Field<T> field = mass.getField();
-        factory = new FDSFactory<>(field, 1, 2);
         try {
 
             // store model coefficients
@@ -265,31 +453,178 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                 0.0, 0.0, c20, c30, c40, c50, c60
             };
 
-            // compute mean parameters
+            // compute mean parameters if needed
             // transform into circular adapted parameters used by the Eckstein-Hechler model
             resetInitialState(new FieldSpacecraftState<>(initialOrbit,
                                                          attitudeProv.getAttitude(initialOrbit,
                                                                                   initialOrbit.getDate(),
                                                                                   initialOrbit.getFrame()),
-                                                         mass));
+                                                         mass),
+                              initialType, epsilon, maxIterations);
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
         }
     }
 
-    /** {@inheritDoc} */
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param <T> type of the filed elements
+     * @param osculating osculating orbit to convert
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(osculating.getDate())}
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
+                                                                                             final UnnormalizedSphericalHarmonicsProvider provider,
+                                                                                             final UnnormalizedSphericalHarmonics harmonics) {
+        return computeMeanOrbit(osculating, provider, harmonics, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param <T> type of the filed elements
+     * @param osculating osculating orbit to convert
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(osculating.getDate())}
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
+                                                                                             final UnnormalizedSphericalHarmonicsProvider provider,
+                                                                                             final UnnormalizedSphericalHarmonics harmonics,
+                                                                                             final double epsilon, final int maxIterations) {
+        return computeMeanOrbit(osculating,
+                                provider.getAe(), provider.getMu(),
+                                harmonics.getUnnormalizedCnm(2, 0),
+                                harmonics.getUnnormalizedCnm(3, 0),
+                                harmonics.getUnnormalizedCnm(4, 0),
+                                harmonics.getUnnormalizedCnm(5, 0),
+                                harmonics.getUnnormalizedCnm(6, 0),
+                                epsilon, maxIterations);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Eckstein-Hechler sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * the gravity field parameterized in input.
+     * </p>
+     * <p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param <T> type of the filed elements
+     * @param osculating osculating orbit to convert
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @return mean orbit in a Eckstein-Hechler sense
+     * @since 11.2
+     */
+    public static <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
+                                                                                             final double referenceRadius, final double mu,
+                                                                                             final double c20, final double c30, final double c40,
+                                                                                             final double c50, final double c60,
+                                                                                             final double epsilon, final int maxIterations) {
+        final FieldEcksteinHechlerPropagator<T> propagator =
+                        new FieldEcksteinHechlerPropagator<>(osculating,
+                                                             FrameAlignedProvider.of(osculating.getFrame()),
+                                                             osculating.getMu().newInstance(DEFAULT_MASS),
+                                                             referenceRadius, osculating.getMu().newInstance(mu),
+                                                             c20, c30, c40, c50, c60,
+                                                             PropagationType.OSCULATING, epsilon, maxIterations);
+        return propagator.initialModel.mean;
+    }
+
+    /** {@inheritDoc}
+     * <p>The new initial state to consider
+     * must be defined with an osculating orbit.</p>
+     * @see #resetInitialState(FieldSpacecraftState, PropagationType)
+     */
+    @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
+        resetInitialState(state, PropagationType.OSCULATING);
+    }
+
+    /** Reset the propagator initial state.
+     * @param state new initial state to consider
+     * @param stateType mean Eckstein-Hechler orbit or osculating orbit
+     * @since 10.2
+     */
+    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
+        resetInitialState(state, stateType, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Reset the propagator initial state.
+     * @param state new initial state to consider
+     * @param stateType mean Eckstein-Hechler orbit or osculating orbit
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @since 11.2
+     */
+    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType,
+                                  final double epsilon, final int maxIterations) {
         super.resetInitialState(state);
-        this.initialModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
-                                                  state.getMass());
-        this.models       = new FieldTimeSpanMap<FieldEHModel<T>, T>(initialModel, state.getA().getField());
+        final FieldCircularOrbit<T> circular = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit());
+        this.initialModel = (stateType == PropagationType.MEAN) ?
+                             new FieldEHModel<>(circular, state.getMass(), referenceRadius, mu, ck0) :
+                             computeMeanParameters(circular, state.getMass(), epsilon, maxIterations);
+        this.models = new FieldTimeSpanMap<FieldEHModel<T>, T>(initialModel, state.getA().getField());
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
+        resetIntermediateState(state, forward, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Reset an intermediate state.
+     * @param state new intermediate state to consider
+     * @param forward if true, the intermediate state is valid for
+     * propagations after itself
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @since 11.2
+     */
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward,
+                                          final double epsilon, final int maxIterations) {
         final FieldEHModel<T> newModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
-                                                       state.getMass());
+                                                               state.getMass(), epsilon, maxIterations);
         if (forward) {
             models.addValidAfter(newModel, state.getDate());
         } else {
@@ -301,9 +636,12 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
      * @param osculating osculating FieldOrbit
      * @param mass constant mass
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
      * @return Eckstein-Hechler mean model
      */
-    private FieldEHModel<T> computeMeanParameters(final FieldCircularOrbit<T> osculating, final T mass) {
+    private FieldEHModel<T> computeMeanParameters(final FieldCircularOrbit<T> osculating, final T mass,
+                                                  final double epsilon, final int maxIterations) {
 
         // sanity check
         if (osculating.getA().getReal() < referenceRadius) {
@@ -314,19 +652,18 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         final T one = field.getOne();
         final T zero = field.getZero();
         // rough initialization of the mean parameters
-        FieldEHModel<T> current = new FieldEHModel<>(factory, osculating, mass, referenceRadius, mu, ck0);
+        FieldEHModel<T> current = new FieldEHModel<>(osculating, mass, referenceRadius, mu, ck0);
         // threshold for each parameter
-        final T epsilon         = one .multiply(1.0e-13);
-        final T thresholdA      = epsilon.multiply(current.mean.getA().abs().add(1.0));
-        final T thresholdE      = epsilon.multiply(current.mean.getE().add(1.0));
-        final T thresholdAngles = epsilon.multiply(FastMath.PI);
+        final T thresholdA      = current.mean.getA().abs().add(1.0).multiply(epsilon);
+        final T thresholdE      = current.mean.getE().add(1.0).multiply(epsilon);
+        final T thresholdAngles = one.getPi().multiply(2).multiply(epsilon);
 
 
         int i = 0;
-        while (i++ < 100) {
+        while (i++ < maxIterations) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldDerivativeStructure<T>[] parameters = current.propagateParameters(current.mean.getDate());
+            final FieldUnivariateDerivative2<T>[] parameters = current.propagateParameters(current.mean.getDate());
             // adapted parameters residuals
             final T deltaA      = osculating.getA()         .subtract(parameters[0].getValue());
             final T deltaEx     = osculating.getCircularEx().subtract(parameters[1].getValue());
@@ -337,24 +674,23 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                                                 zero);
             final T deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM().subtract(parameters[5].getValue()), zero);
             // update mean parameters
-            current = new FieldEHModel<>(factory,
-                                         new FieldCircularOrbit<>(current.mean.getA().add(deltaA),
+            current = new FieldEHModel<>(new FieldCircularOrbit<>(current.mean.getA().add(deltaA),
                                                                   current.mean.getCircularEx().add( deltaEx),
                                                                   current.mean.getCircularEy().add( deltaEy),
                                                                   current.mean.getI()         .add( deltaI ),
                                                                   current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
                                                                   current.mean.getAlphaM().add(deltaAlphaM),
-                                                                  PositionAngle.MEAN,
+                                                                  PositionAngleType.MEAN,
                                                                   current.mean.getFrame(),
                                                                   current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
             // check convergence
-            if ((FastMath.abs(deltaA.getReal())      < thresholdA.getReal()) &&
-                (FastMath.abs(deltaEx.getReal())     < thresholdE.getReal()) &&
-                (FastMath.abs(deltaEy.getReal())     < thresholdE.getReal()) &&
-                (FastMath.abs(deltaI.getReal())      < thresholdAngles.getReal()) &&
-                (FastMath.abs(deltaRAAN.getReal())   < thresholdAngles.getReal()) &&
-                (FastMath.abs(deltaAlphaM.getReal()) < thresholdAngles.getReal())) {
+            if (FastMath.abs(deltaA.getReal())      < thresholdA.getReal() &&
+                FastMath.abs(deltaEx.getReal())     < thresholdE.getReal() &&
+                FastMath.abs(deltaEy.getReal())     < thresholdE.getReal() &&
+                FastMath.abs(deltaI.getReal())      < thresholdAngles.getReal() &&
+                FastMath.abs(deltaRAAN.getReal())   < thresholdAngles.getReal() &&
+                FastMath.abs(deltaAlphaM.getReal()) < thresholdAngles.getReal()) {
                 return current;
             }
 
@@ -365,7 +701,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
-    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    @Override
+    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final FieldEHModel<T> current = models.get(date);
@@ -374,10 +711,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
-    private static class FieldEHModel<T extends RealFieldElement<T>> {
-
-        /** Factory for the derivatives. */
-        private final FDSFactory<T> factory;
+    private static class FieldEHModel<T extends CalculusFieldElement<T>> {
 
         /** Mean FieldOrbit. */
         private final FieldCircularOrbit<T> mean;
@@ -443,23 +777,21 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         // CHECKSTYLE: resume JavadocVariable check
 
         /** Create a model for specified mean FieldOrbit.
-         * @param factory factory for the derivatives
          * @param mean mean FieldOrbit
          * @param mass constant mass
          * @param referenceRadius reference radius of the central body attraction model (m)
          * @param mu central attraction coefficient (m³/s²)
          * @param ck0 un-normalized zonal coefficients
          */
-        FieldEHModel(final FDSFactory<T> factory, final FieldCircularOrbit<T> mean, final T mass,
+        FieldEHModel(final FieldCircularOrbit<T> mean, final T mass,
                      final double referenceRadius, final T mu, final double[] ck0) {
 
-            this.factory         = factory;
             this.mean            = mean;
             this.mass            = mass;
             final T zero = mass.getField().getZero();
             final T one  = mass.getField().getOne();
             // preliminary processing
-            T q =  zero.add(referenceRadius).divide(mean.getA());
+            T q =  zero.newInstance(referenceRadius).divide(mean.getA());
             T ql = q.multiply(q);
             final T g2 = ql.multiply(ck0[2]);
             ql = ql.multiply(q);
@@ -471,8 +803,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             ql = ql.multiply(q);
             final T g6 = ql.multiply(ck0[6]);
 
-            final T cosI1 = mean.getI().cos();
-            final T sinI1 = mean.getI().sin();
+            final FieldSinCos<T> sc = FastMath.sinCos(mean.getI());
+            final T cosI1 = sc.cos();
+            final T sinI1 = sc.sin();
             final T sinI2 = sinI1.multiply(sinI1);
             final T sinI4 = sinI2.multiply(sinI2);
             final T sinI6 = sinI2.multiply(sinI4);
@@ -500,7 +833,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                     g6.multiply(13.125).multiply(one.subtract(sinI2.multiply(8.0)).add(sinI4.multiply(129.0 / 8.0)).subtract(sinI6.multiply(297.0 / 32.0)) ));
 
 
-            q = zero.add(3.0).divide(rdpom.multiply(32.0));
+            q = zero.newInstance(3.0).divide(rdpom.multiply(32.0));
             eps1 = q.multiply(g4).multiply(sinI2).multiply(sinI2.multiply(-35.0).add(30.0)).subtract(
                    q.multiply(175.0).multiply(g6).multiply(sinI2).multiply(sinI2.multiply(-3.0).add(sinI4.multiply(2.0625)).add(1.0)));
             q = sinI1.multiply(3.0).divide(rdpom.multiply(8.0));
@@ -523,7 +856,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             final T qC   = g6.multiply(105.0 / 16.0).multiply(sinI2);
             final T qD   = g3.multiply(-0.75).multiply(sinI1);
             final T qE   = g5.multiply(3.75).multiply(sinI1);
-            kh = zero.add(0.375).divide(rdpom);
+            kh = zero.newInstance(0.375).divide(rdpom);
             kl = kh.divide(sinI1);
 
             ax1 = qq.multiply(sinI2.multiply(-3.5).add(2.0));
@@ -585,75 +918,75 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
          * @param date target date for the FieldOrbit
          * @return propagated parameters
          */
-        public FieldDerivativeStructure<T>[] propagateParameters(final FieldAbsoluteDate<T> date) {
+        public FieldUnivariateDerivative2<T>[] propagateParameters(final FieldAbsoluteDate<T> date) {
             final Field<T> field = date.durationFrom(mean.getDate()).getField();
             final T one = field.getOne();
             final T zero = field.getZero();
             // Keplerian evolution
-            final FieldDerivativeStructure<T> dt =
-                    factory.build(date.durationFrom(mean.getDate()), one, zero);
-            final FieldDerivativeStructure<T> xnot = dt.multiply(xnotDot);
+            final FieldUnivariateDerivative2<T> dt = new FieldUnivariateDerivative2<>(date.durationFrom(mean.getDate()), one, zero);
+            final FieldUnivariateDerivative2<T> xnot = dt.multiply(xnotDot);
 
             // secular effects
 
             // eccentricity
-            final FieldDerivativeStructure<T> x   = xnot.multiply(rdpom.add(rdpomp));
-            final FieldDerivativeStructure<T> cx  = x.cos();
-            final FieldDerivativeStructure<T> sx  = x.sin();
-            final FieldDerivativeStructure<T> exm = cx.multiply(mean.getCircularEx()).
+            final FieldUnivariateDerivative2<T> x   = xnot.multiply(rdpom.add(rdpomp));
+            final FieldUnivariateDerivative2<T> cx  = x.cos();
+            final FieldUnivariateDerivative2<T> sx  = x.sin();
+            final FieldUnivariateDerivative2<T> exm = cx.multiply(mean.getCircularEx()).
                                             add(sx.multiply(eps2.subtract(one.subtract(eps1).multiply(mean.getCircularEy()))));
-            final FieldDerivativeStructure<T> eym = sx.multiply(eps1.add(1.0).multiply(mean.getCircularEx())).
+            final FieldUnivariateDerivative2<T> eym = sx.multiply(eps1.add(1.0).multiply(mean.getCircularEx())).
                                             add(cx.multiply(mean.getCircularEy().subtract(eps2))).
                                             add(eps2);
             // no secular effect on inclination
 
             // right ascension of ascending node
-            final FieldDerivativeStructure<T> omm =
-                            factory.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
-                                                         zero.add(FastMath.PI)),
-                                          ommD.multiply(xnotDot),
-                                          zero);
+            final FieldUnivariateDerivative2<T> omm =
+                           new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
+                                                                                     one.getPi()),
+                                                            ommD.multiply(xnotDot),
+                                                            zero);
             // latitude argument
-            final FieldDerivativeStructure<T> xlm =
-                            factory.build(MathUtils.normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())), zero.add(FastMath.PI)),
-                                          aMD.multiply(xnotDot),
-                                          zero);
+            final FieldUnivariateDerivative2<T> xlm =
+                            new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())),
+                                                                                      one.getPi()),
+                                                           aMD.multiply(xnotDot),
+                                                           zero);
 
             // periodical terms
-            final FieldDerivativeStructure<T> cl1 = xlm.cos();
-            final FieldDerivativeStructure<T> sl1 = xlm.sin();
-            final FieldDerivativeStructure<T> cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
-            final FieldDerivativeStructure<T> sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
-            final FieldDerivativeStructure<T> cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
-            final FieldDerivativeStructure<T> sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
-            final FieldDerivativeStructure<T> cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
-            final FieldDerivativeStructure<T> sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
-            final FieldDerivativeStructure<T> cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
-            final FieldDerivativeStructure<T> sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
-            final FieldDerivativeStructure<T> cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
+            final FieldUnivariateDerivative2<T> cl1 = xlm.cos();
+            final FieldUnivariateDerivative2<T> sl1 = xlm.sin();
+            final FieldUnivariateDerivative2<T> cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
+            final FieldUnivariateDerivative2<T> sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
+            final FieldUnivariateDerivative2<T> cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
+            final FieldUnivariateDerivative2<T> sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
+            final FieldUnivariateDerivative2<T> cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
+            final FieldUnivariateDerivative2<T> sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
+            final FieldUnivariateDerivative2<T> cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
+            final FieldUnivariateDerivative2<T> sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
+            final FieldUnivariateDerivative2<T> cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
 
-            final FieldDerivativeStructure<T> qh  = eym.subtract(eps2).multiply(kh);
-            final FieldDerivativeStructure<T> ql  = exm.multiply(kl);
+            final FieldUnivariateDerivative2<T> qh  = eym.subtract(eps2).multiply(kh);
+            final FieldUnivariateDerivative2<T> ql  = exm.multiply(kl);
 
-            final FieldDerivativeStructure<T> exmCl1 = exm.multiply(cl1);
-            final FieldDerivativeStructure<T> exmSl1 = exm.multiply(sl1);
-            final FieldDerivativeStructure<T> eymCl1 = eym.multiply(cl1);
-            final FieldDerivativeStructure<T> eymSl1 = eym.multiply(sl1);
-            final FieldDerivativeStructure<T> exmCl2 = exm.multiply(cl2);
-            final FieldDerivativeStructure<T> exmSl2 = exm.multiply(sl2);
-            final FieldDerivativeStructure<T> eymCl2 = eym.multiply(cl2);
-            final FieldDerivativeStructure<T> eymSl2 = eym.multiply(sl2);
-            final FieldDerivativeStructure<T> exmCl3 = exm.multiply(cl3);
-            final FieldDerivativeStructure<T> exmSl3 = exm.multiply(sl3);
-            final FieldDerivativeStructure<T> eymCl3 = eym.multiply(cl3);
-            final FieldDerivativeStructure<T> eymSl3 = eym.multiply(sl3);
-            final FieldDerivativeStructure<T> exmCl4 = exm.multiply(cl4);
-            final FieldDerivativeStructure<T> exmSl4 = exm.multiply(sl4);
-            final FieldDerivativeStructure<T> eymCl4 = eym.multiply(cl4);
-            final FieldDerivativeStructure<T> eymSl4 = eym.multiply(sl4);
+            final FieldUnivariateDerivative2<T> exmCl1 = exm.multiply(cl1);
+            final FieldUnivariateDerivative2<T> exmSl1 = exm.multiply(sl1);
+            final FieldUnivariateDerivative2<T> eymCl1 = eym.multiply(cl1);
+            final FieldUnivariateDerivative2<T> eymSl1 = eym.multiply(sl1);
+            final FieldUnivariateDerivative2<T> exmCl2 = exm.multiply(cl2);
+            final FieldUnivariateDerivative2<T> exmSl2 = exm.multiply(sl2);
+            final FieldUnivariateDerivative2<T> eymCl2 = eym.multiply(cl2);
+            final FieldUnivariateDerivative2<T> eymSl2 = eym.multiply(sl2);
+            final FieldUnivariateDerivative2<T> exmCl3 = exm.multiply(cl3);
+            final FieldUnivariateDerivative2<T> exmSl3 = exm.multiply(sl3);
+            final FieldUnivariateDerivative2<T> eymCl3 = eym.multiply(cl3);
+            final FieldUnivariateDerivative2<T> eymSl3 = eym.multiply(sl3);
+            final FieldUnivariateDerivative2<T> exmCl4 = exm.multiply(cl4);
+            final FieldUnivariateDerivative2<T> exmSl4 = exm.multiply(sl4);
+            final FieldUnivariateDerivative2<T> eymCl4 = eym.multiply(cl4);
+            final FieldUnivariateDerivative2<T> eymSl4 = eym.multiply(sl4);
 
             // semi major axis
-            final FieldDerivativeStructure<T> rda = exmCl1.multiply(ax1).
+            final FieldUnivariateDerivative2<T> rda = exmCl1.multiply(ax1).
                                             add(eymSl1.multiply(ay1)).
                                             add(sl1.multiply(as1)).
                                             add(cl2.multiply(ac2)).
@@ -664,39 +997,39 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                             add(cl6.multiply(ac6));
 
             // eccentricity
-            final FieldDerivativeStructure<T> rdex = cl1.multiply(ex1).
+            final FieldUnivariateDerivative2<T> rdex = cl1.multiply(ex1).
                                              add(exmCl2.multiply(exx2)).
                                              add(eymSl2.multiply(exy2)).
                                              add(cl3.multiply(ex3)).
                                              add(exmCl4.add(eymSl4).multiply(ex4));
-            final FieldDerivativeStructure<T> rdey = sl1.multiply(ey1).
+            final FieldUnivariateDerivative2<T> rdey = sl1.multiply(ey1).
                                              add(exmSl2.multiply(eyx2)).
                                              add(eymCl2.multiply(eyy2)).
                                              add(sl3.multiply(ey3)).
                                              add(exmSl4.subtract(eymCl4).multiply(ey4));
 
             // ascending node
-            final FieldDerivativeStructure<T> rdom = exmSl1.multiply(rx1).
+            final FieldUnivariateDerivative2<T> rdom = exmSl1.multiply(rx1).
                                              add(eymCl1.multiply(ry1)).
                                              add(sl2.multiply(r2)).
                                              add(eymCl3.subtract(exmSl3).multiply(r3)).
                                              add(ql.multiply(rl));
 
             // inclination
-            final FieldDerivativeStructure<T> rdxi = eymSl1.multiply(iy1).
+            final FieldUnivariateDerivative2<T> rdxi = eymSl1.multiply(iy1).
                                              add(exmCl1.multiply(ix1)).
                                              add(cl2.multiply(i2)).
                                              add(exmCl3.add(eymSl3).multiply(i3)).
                                              add(qh.multiply(ih));
 
             // latitude argument
-            final FieldDerivativeStructure<T> rdxl = exmSl1.multiply(lx1).
+            final FieldUnivariateDerivative2<T> rdxl = exmSl1.multiply(lx1).
                                              add(eymCl1.multiply(ly1)).
                                              add(sl2.multiply(l2)).
                                              add(exmSl3.subtract(eymCl3).multiply(l3)).
                                              add(ql.multiply(ll));
             // osculating parameters
-            final FieldDerivativeStructure<T>[] FTD = MathArrays.buildArray(rdxl.getField(), 6);
+            final FieldUnivariateDerivative2<T>[] FTD = MathArrays.buildArray(rdxl.getField(), 6);
 
             FTD[0] = rda.add(1.0).multiply(mean.getA());
             FTD[1] = rdex.add(exm);
@@ -715,45 +1048,45 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param parameters circular parameters (a, ex, ey, i, raan, alphaM)
      * @return Cartesian coordinates consistent with values and derivatives
      */
-    private TimeStampedFieldPVCoordinates<T> toCartesian(final FieldAbsoluteDate<T> date, final FieldDerivativeStructure<T>[] parameters) {
+    private TimeStampedFieldPVCoordinates<T> toCartesian(final FieldAbsoluteDate<T> date, final FieldUnivariateDerivative2<T>[] parameters) {
 
         // evaluate coordinates in the FieldOrbit canonical reference frame
-        final FieldDerivativeStructure<T> cosOmega = parameters[4].cos();
-        final FieldDerivativeStructure<T> sinOmega = parameters[4].sin();
-        final FieldDerivativeStructure<T> cosI     = parameters[3].cos();
-        final FieldDerivativeStructure<T> sinI     = parameters[3].sin();
-        final FieldDerivativeStructure<T> alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
-        final FieldDerivativeStructure<T> cosAE    = alphaE.cos();
-        final FieldDerivativeStructure<T> sinAE    = alphaE.sin();
-        final FieldDerivativeStructure<T> ex2      = parameters[1].multiply(parameters[1]);
-        final FieldDerivativeStructure<T> ey2      = parameters[2].multiply(parameters[2]);
-        final FieldDerivativeStructure<T> exy      = parameters[1].multiply(parameters[2]);
-        final FieldDerivativeStructure<T> q        = ex2.add(ey2).subtract(1).negate().sqrt();
-        final FieldDerivativeStructure<T> beta     = q.add(1).reciprocal();
-        final FieldDerivativeStructure<T> bx2      = beta.multiply(ex2);
-        final FieldDerivativeStructure<T> by2      = beta.multiply(ey2);
-        final FieldDerivativeStructure<T> bxy      = beta.multiply(exy);
-        final FieldDerivativeStructure<T> u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
-        final FieldDerivativeStructure<T> v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
-        final FieldDerivativeStructure<T> x        = parameters[0].multiply(u);
-        final FieldDerivativeStructure<T> y        = parameters[0].multiply(v);
+        final FieldUnivariateDerivative2<T> cosOmega = parameters[4].cos();
+        final FieldUnivariateDerivative2<T> sinOmega = parameters[4].sin();
+        final FieldUnivariateDerivative2<T> cosI     = parameters[3].cos();
+        final FieldUnivariateDerivative2<T> sinI     = parameters[3].sin();
+        final FieldUnivariateDerivative2<T> alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
+        final FieldUnivariateDerivative2<T> cosAE    = alphaE.cos();
+        final FieldUnivariateDerivative2<T> sinAE    = alphaE.sin();
+        final FieldUnivariateDerivative2<T> ex2      = parameters[1].square();
+        final FieldUnivariateDerivative2<T> ey2      = parameters[2].square();
+        final FieldUnivariateDerivative2<T> exy      = parameters[1].multiply(parameters[2]);
+        final FieldUnivariateDerivative2<T> q        = ex2.add(ey2).subtract(1).negate().sqrt();
+        final FieldUnivariateDerivative2<T> beta     = q.add(1).reciprocal();
+        final FieldUnivariateDerivative2<T> bx2      = beta.multiply(ex2);
+        final FieldUnivariateDerivative2<T> by2      = beta.multiply(ey2);
+        final FieldUnivariateDerivative2<T> bxy      = beta.multiply(exy);
+        final FieldUnivariateDerivative2<T> u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
+        final FieldUnivariateDerivative2<T> v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
+        final FieldUnivariateDerivative2<T> x        = parameters[0].multiply(u);
+        final FieldUnivariateDerivative2<T> y        = parameters[0].multiply(v);
 
         // canonical FieldOrbit reference frame
-        final FieldVector3D<FieldDerivativeStructure<T>> p =
-                new FieldVector3D<FieldDerivativeStructure<T>>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
-                                                       x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
-                                                       y.multiply(sinI));
+        final FieldVector3D<FieldUnivariateDerivative2<T>> p =
+                new FieldVector3D<>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
+                                    x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
+                                    y.multiply(sinI));
 
         // dispatch derivatives
         final FieldVector3D<T> p0 = new FieldVector3D<>(p.getX().getValue(),
                                                         p.getY().getValue(),
                                                         p.getZ().getValue());
-        final FieldVector3D<T> p1 = new FieldVector3D<>(p.getX().getPartialDerivative(1),
-                                                        p.getY().getPartialDerivative(1),
-                                                        p.getZ().getPartialDerivative(1));
-        final FieldVector3D<T> p2 = new FieldVector3D<>(p.getX().getPartialDerivative(2),
-                                                        p.getY().getPartialDerivative(2),
-                                                        p.getZ().getPartialDerivative(2));
+        final FieldVector3D<T> p1 = new FieldVector3D<>(p.getX().getFirstDerivative(),
+                                                        p.getY().getFirstDerivative(),
+                                                        p.getZ().getFirstDerivative());
+        final FieldVector3D<T> p2 = new FieldVector3D<>(p.getX().getSecondDerivative(),
+                                                        p.getY().getSecondDerivative(),
+                                                        p.getZ().getSecondDerivative());
         return new TimeStampedFieldPVCoordinates<>(date, p0, p1, p2);
 
     }
@@ -764,24 +1097,24 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param ey e sin(Ω), second component of circular eccentricity vector
      * @return the eccentric latitude argument.
      */
-    private FieldDerivativeStructure<T> meanToEccentric(final FieldDerivativeStructure<T> alphaM,
-                                                final FieldDerivativeStructure<T> ex,
-                                                final FieldDerivativeStructure<T> ey) {
+    private FieldUnivariateDerivative2<T> meanToEccentric(final FieldUnivariateDerivative2<T> alphaM,
+                                                final FieldUnivariateDerivative2<T> ex,
+                                                final FieldUnivariateDerivative2<T> ey) {
         // Generalization of Kepler equation to circular parameters
         // with alphaE = PA + E and
         //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        FieldDerivativeStructure<T> alphaE        = alphaM;
-        FieldDerivativeStructure<T> shift         = alphaM.getField().getZero();
-        FieldDerivativeStructure<T> alphaEMalphaM = alphaM.getField().getZero();
-        FieldDerivativeStructure<T> cosAlphaE     = alphaE.cos();
-        FieldDerivativeStructure<T> sinAlphaE     = alphaE.sin();
+        FieldUnivariateDerivative2<T> alphaE        = alphaM;
+        FieldUnivariateDerivative2<T> shift         = alphaM.getField().getZero();
+        FieldUnivariateDerivative2<T> alphaEMalphaM = alphaM.getField().getZero();
+        FieldUnivariateDerivative2<T> cosAlphaE     = alphaE.cos();
+        FieldUnivariateDerivative2<T> sinAlphaE     = alphaE.sin();
         int                 iter          = 0;
         do {
-            final FieldDerivativeStructure<T> f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
-            final FieldDerivativeStructure<T> f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
-            final FieldDerivativeStructure<T> f0 = alphaEMalphaM.subtract(f2);
+            final FieldUnivariateDerivative2<T> f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
+            final FieldUnivariateDerivative2<T> f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
+            final FieldUnivariateDerivative2<T> f0 = alphaEMalphaM.subtract(f2);
 
-            final FieldDerivativeStructure<T> f12 = f1.multiply(2);
+            final FieldUnivariateDerivative2<T> f12 = f1.multiply(2);
             shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
 
             alphaEMalphaM  = alphaEMalphaM.subtract(shift);
@@ -789,40 +1122,23 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             cosAlphaE      = alphaE.cos();
             sinAlphaE      = alphaE.sin();
 
-        } while ((++iter < 50) && (FastMath.abs(shift.getValue().getReal()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getValue().getReal()) > 1.0e-12);
 
         return alphaE;
 
     }
 
     /** {@inheritDoc} */
+    @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return models.get(date).mass;
     }
-    /**
-     * Normalize an angle in a 2&pi; wide interval around a center value.
-     * <p>This method has three main uses:</p>
-     * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br>
-     *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br>
-     *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
-     *   <li>compute the angle between two defining angular positions:<br>
-     *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
-     * </ul>
-     * <p>Note that due to numerical accuracy and since &pi; cannot be represented
-     * exactly, the result interval is <em>closed</em>, it cannot be half-closed
-     * as would be more satisfactory in a purely mathematical view.</p>
-     * @param a angle to normalize
-     * @param center center of the desired 2&pi; interval for the result
-     * @param <T> the type of the field elements
-     * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @since 1.2
-     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
-        return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        // Eckstein Hechler propagation model does not have parameter drivers.
+        return Collections.emptyList();
     }
 
 }

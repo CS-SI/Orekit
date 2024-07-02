@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,9 +21,10 @@
  * <p>
  * This includes the {@link org.orekit.forces.radiation.RadiationSensitive
  * RadiationSensitive} interface that represents each specific spacecraft
- * sensitivity to radiation and the {@link
+ * sensitivity to radiation, as well as the {@link
  * org.orekit.forces.radiation.SolarRadiationPressure SolarRadiationPressure}
- * force model that uses the interface to compute the resulting acceleration.
+ * and the {@link org.orekit.forces.radiation.KnockeRediffusedForceModel Albedo/IR}
+ * force models that use the interface to compute the resulting accelerations.
  * </p>
  */
 package org.orekit.forces.radiation;

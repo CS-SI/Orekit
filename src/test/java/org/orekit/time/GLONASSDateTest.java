@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,22 +16,22 @@
  */
 package org.orekit.time;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.Utils;
-
 public class GLONASSDateTest {
 
     private TimeScale glo;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         glo = TimeScalesFactory.getGLONASS();
@@ -43,11 +43,11 @@ public class GLONASSDateTest {
         AbsoluteDate ref  = new AbsoluteDate(new DateComponents(2012, 9, 7),
                                              new TimeComponents(2, 0, 0.0),
                                              glo);
-        Assert.assertEquals(251, date.getDayNumber());
-        Assert.assertEquals(5,   date.getIntervalNumber());
-        Assert.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
-        Assert.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
-        Assert.assertEquals(0,   date.getDate().durationFrom(ref), 1.0e-15);
+        Assertions.assertEquals(251, date.getDayNumber());
+        Assertions.assertEquals(5,   date.getIntervalNumber());
+        Assertions.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
+        Assertions.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
+        Assertions.assertEquals(0,   date.getDate().durationFrom(ref), 1.0e-15);
     }
 
     @Test
@@ -55,11 +55,11 @@ public class GLONASSDateTest {
         GLONASSDate date = new GLONASSDate(new AbsoluteDate(new DateComponents(2012, 9, 7),
                                                             new TimeComponents(2, 0, 0.0),
                                                             glo));
-        Assert.assertEquals(251,    date.getDayNumber());
-        Assert.assertEquals(5,      date.getIntervalNumber());
-        Assert.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
-        Assert.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
-        Assert.assertEquals(7200.0, date.getSecInDay(), 1.0e-15);
+        Assertions.assertEquals(251,    date.getDayNumber());
+        Assertions.assertEquals(5,      date.getIntervalNumber());
+        Assertions.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
+        Assertions.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
+        Assertions.assertEquals(7200.0, date.getSecInDay(), 1.0e-15);
     }
 
     @Test
@@ -70,8 +70,8 @@ public class GLONASSDateTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(date);
 
-        Assert.assertTrue(bos.size() > 95);
-        Assert.assertTrue(bos.size() < 105);
+        Assertions.assertTrue(bos.size() > 95);
+        Assertions.assertTrue(bos.size() < 105);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -79,11 +79,11 @@ public class GLONASSDateTest {
         AbsoluteDate ref  = new AbsoluteDate(new DateComponents(2012, 9, 7),
                                              new TimeComponents(2, 0, 0),
                                              glo);
-        Assert.assertEquals(251, deserialized.getDayNumber());
-        Assert.assertEquals(5, deserialized.getIntervalNumber());
-        Assert.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
-        Assert.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
-        Assert.assertEquals(0, deserialized.getDate().durationFrom(ref), 1.0e-15);
+        Assertions.assertEquals(251, deserialized.getDayNumber());
+        Assertions.assertEquals(5, deserialized.getIntervalNumber());
+        Assertions.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
+        Assertions.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
+        Assertions.assertEquals(0, deserialized.getDate().durationFrom(ref), 1.0e-15);
 
     }
 

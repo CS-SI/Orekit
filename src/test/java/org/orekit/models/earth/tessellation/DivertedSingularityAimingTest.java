@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,16 +17,17 @@
 package org.orekit.models.earth.tessellation;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -38,9 +39,9 @@ public class DivertedSingularityAimingTest {
 
     @Test
     public void testSingularityOutside() {
-        Assert.assertEquals(1, aiming.getSingularPoints().size());
+        Assertions.assertEquals(1, aiming.getSingularPoints().size());
         final GeodeticPoint singularity = aiming.getSingularPoints().get(0);
-        Assert.assertEquals(Location.OUTSIDE, aoi.checkPoint(toS2Point(singularity)));
+        Assertions.assertEquals(Location.OUTSIDE, aoi.checkPoint(toS2Point(singularity)));
     }
 
     @Test
@@ -48,7 +49,7 @@ public class DivertedSingularityAimingTest {
 
         GeodeticPoint singularityGP = aiming.getSingularPoints().get(0);
         Vector3D singularity = earth.transform(singularityGP);
-        Assert.assertEquals(GeodeticPoint.SOUTH_POLE.getLatitude(), singularityGP.getLatitude(), 1.0e-10);
+        Assertions.assertEquals(GeodeticPoint.SOUTH_POLE.getLatitude(), singularityGP.getLatitude(), 1.0e-10);
 
         // in a small disk (less than 1cm radius) around singularity, aiming direction changes a lot
         double lat = GeodeticPoint.SOUTH_POLE.getLatitude() + 1.0e-9;
@@ -58,9 +59,9 @@ public class DivertedSingularityAimingTest {
         GeodeticPoint gp090  = new GeodeticPoint(lat, 0.5 * FastMath.PI, 0.0);
         Vector3D      p090   = earth.transform(gp090);
         Vector3D      dir090 = aiming.alongTileDirection(p090, gp090);
-        Assert.assertEquals(0.0064, Vector3D.distance(singularity, p000), 1.0e-4);
-        Assert.assertEquals(0.0064, Vector3D.distance(singularity, p090), 1.0e-4);
-        Assert.assertEquals(FastMath.PI, Vector3D.angle(dir000, dir090), 5.0e-7);
+        Assertions.assertEquals(0.0064, Vector3D.distance(singularity, p000), 1.0e-4);
+        Assertions.assertEquals(0.0064, Vector3D.distance(singularity, p090), 1.0e-4);
+        Assertions.assertEquals(FastMath.PI, Vector3D.angle(dir000, dir090), 5.0e-7);
 
     }
 
@@ -71,7 +72,7 @@ public class DivertedSingularityAimingTest {
         Vector3D singularity = earth.transform(singularityGP);
         Vector3D opposite    = singularity.negate();
         GeodeticPoint oppositeGP = earth.transform(opposite, earth.getBodyFrame(), null);
-        Assert.assertEquals(GeodeticPoint.NORTH_POLE.getLatitude(), oppositeGP.getLatitude(), 1.0e-10);
+        Assertions.assertEquals(GeodeticPoint.NORTH_POLE.getLatitude(), oppositeGP.getLatitude(), 1.0e-10);
 
         // around opposite of singularity, aiming direction is almost constant
         // (as we use dipole field to model aiming direction, there is only one singularity)
@@ -81,9 +82,60 @@ public class DivertedSingularityAimingTest {
             GeodeticPoint gp = new GeodeticPoint(lat, lon, 0.0);
             Vector3D      p  = earth.transform(gp);
             Vector3D      dir = aiming.alongTileDirection(p, gp);
-            Assert.assertEquals(0.0064, Vector3D.distance(opposite, p), 1.0e-4);
-            Assert.assertEquals(0.0, Vector3D.angle(refDir, dir), 1.1e-9);
+            Assertions.assertEquals(0.0064, Vector3D.distance(opposite, p), 1.0e-4);
+            Assertions.assertEquals(0.0, Vector3D.angle(refDir, dir), 1.1e-9);
         }
+
+    }
+
+    /** Test issue 969 on computation of singularity point.
+     * Issue was due to an Hipparchus bug (see https://github.com/Hipparchus-Math/hipparchus/issues/208).
+     * It was fixed by upgrading to Hipparchus 2.3. 
+     */
+    @Test
+    public void testIssue969() throws IOException {
+
+        // Given
+        // -----
+        
+        // Zone on Earth
+        final GeodeticPoint northWest = new GeodeticPoint(FastMath.toRadians(30.), FastMath.toRadians(-30.), 10.);
+        final GeodeticPoint southWest = new GeodeticPoint(FastMath.toRadians(-10.), FastMath.toRadians(-30.), 3000.);
+        final GeodeticPoint southEast = new GeodeticPoint(FastMath.toRadians(-10.), FastMath.toRadians(20.), -2000.);
+        final GeodeticPoint northEast = new GeodeticPoint(FastMath.toRadians(30.), FastMath.toRadians(20.), -30.);
+
+        // When
+        // ----
+        
+        // Counter clockwise zone definition
+        final SphericalPolygonsSet targetZone = EllipsoidTessellator.buildSimpleZone(1.0e-10, northWest, southWest,
+                                                                                     southEast, northEast);
+        // Build DivertedSingularityAiming
+        final TileAiming tileAiming = new DivertedSingularityAiming(targetZone);
+
+        // Then
+        // ----
+        
+        // Check center and singularity
+        final S2Point centerZone = targetZone.getEnclosingCap().getCenter();
+        final GeodeticPoint centerGP = new GeodeticPoint(0.5 * FastMath.PI - centerZone.getPhi(), centerZone.getTheta(), 0.0);       
+
+        // Get singularity point (there should be just one)
+        List<GeodeticPoint> singularGPs = tileAiming.getSingularPoints();
+        final GeodeticPoint singularGP = singularGPs.get(0);
+
+        // Singular list size
+        Assertions.assertEquals(1, singularGPs.size());
+
+        // Check center
+        Assertions.assertEquals(9.0794674733, FastMath.toDegrees(centerGP.getLatitude()), 1.0e-10);
+        Assertions.assertEquals(-5., FastMath.toDegrees(centerGP.getLongitude()), 1.0e-14);
+        Assertions.assertEquals(0., FastMath.toDegrees(centerGP.getAltitude()), 0.);
+
+        // Check singularity (should be at the antipodes of center)
+        Assertions.assertEquals(-9.0794674733, FastMath.toDegrees(singularGP.getLatitude()), 1.0e-10);
+        Assertions.assertEquals(175., FastMath.toDegrees(singularGP.getLongitude()), 1.0e-13);
+        Assertions.assertEquals(0., FastMath.toDegrees(singularGP.getAltitude()), 0.);
 
     }
 
@@ -91,7 +143,7 @@ public class DivertedSingularityAimingTest {
         return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -105,7 +157,7 @@ public class DivertedSingularityAimingTest {
         aiming = new DivertedSingularityAiming(aoi);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         earth  = null;
         aoi    = null;

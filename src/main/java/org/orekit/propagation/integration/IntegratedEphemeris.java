@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,11 +16,12 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ODEStateAndDerivative;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -31,17 +32,17 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.DoubleArrayDictionary;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.
  *
  * <p>
- * Instances of this class are built and then must be fed with the results
- * provided by {@link org.orekit.propagation.Propagator Propagator} objects
- * configured in {@link org.orekit.propagation.Propagator#setEphemerisMode()
- * ephemeris generation mode}. Once propagation is o, random access to any
- * intermediate state of the orbit throughout the propagation range is possible.
+ * Instances of this class are built automatically when the {@link
+ * org.orekit.propagation.Propagator#getEphemerisGenerator()
+ * getEphemerisGenerator} method has been called. They are created when propagation is over.
+ * Random access to any intermediate state of the orbit throughout the propagation range is
+ * possible afterwards through this object.
  * </p>
  * <p>
  * A typical use case is for numerically integrated orbits, which can be used by
@@ -93,7 +94,17 @@ public class IntegratedEphemeris
     private DenseOutputModel model;
 
     /** Unmanaged additional states that must be simply copied. */
-    private final Map<String, double[]> unmanaged;
+    private final DoubleArrayDictionary unmanaged;
+
+    /** Names of additional equations.
+     * @since 11.2
+     */
+    private final String[] equations;
+
+    /** Dimensions of additional equations.
+     * @since 11.2
+     */
+    private final int[] dimensions;
 
     /** Creates a new instance of IntegratedEphemeris.
      * @param startDate Start date of the integration (can be minDate or maxDate)
@@ -105,14 +116,16 @@ public class IntegratedEphemeris
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
+     * @param dimensions dimensions of additional equations
+     * @since 11.1.2
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                final StateMapper mapper, final PropagationType type,
                                final DenseOutputModel model,
-                               final Map<String, double[]> unmanaged,
+                               final DoubleArrayDictionary unmanaged,
                                final List<AdditionalStateProvider> providers,
-                               final String[] equations) {
+                               final String[] equations, final int[] dimensions) {
 
         super(mapper.getAttitudeProvider());
 
@@ -129,10 +142,11 @@ public class IntegratedEphemeris
             addAdditionalStateProvider(provider);
         }
 
-        // set up providers to map the final elements of the model array to additional states
-        for (int i = 0; i < equations.length; ++i) {
-            addAdditionalStateProvider(new LocalProvider(equations[i], i));
-        }
+        this.equations  = equations.clone();
+        this.dimensions = dimensions.clone();
+
+        // set up initial state
+        super.resetInitialState(getInitialState());
 
     }
 
@@ -144,11 +158,15 @@ public class IntegratedEphemeris
 
         // compare using double precision instead of AbsoluteDate.compareTo(...)
         // because time is expressed as a double when searching for events
-        if (date.compareTo(minDate.shiftedBy(-EXTRAPOLATION_TOLERANCE)) < 0 ||
-                date.compareTo(maxDate.shiftedBy(EXTRAPOLATION_TOLERANCE)) > 0 ) {
+        if (date.compareTo(minDate.shiftedBy(-EXTRAPOLATION_TOLERANCE)) < 0) {
             // date is outside of supported range
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
-                                           date, minDate, maxDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE,
+                    date, minDate, maxDate, minDate.durationFrom(date));
+        }
+        if (date.compareTo(maxDate.shiftedBy(EXTRAPOLATION_TOLERANCE)) > 0) {
+            // date is outside of supported range
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER,
+                    date, minDate, maxDate, date.durationFrom(maxDate));
         }
 
         return model.getInterpolatedState(date.durationFrom(startDate));
@@ -162,7 +180,7 @@ public class IntegratedEphemeris
         SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                        os.getPrimaryState(), os.getPrimaryDerivative(),
                                                        type);
-        for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
+        for (DoubleArrayDictionary.Entry initial : unmanaged.getData()) {
             state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
         return state;
@@ -176,11 +194,6 @@ public class IntegratedEphemeris
     /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Get the first date of the range.
@@ -213,40 +226,43 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
+    @Override
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        super.setAttitudeProvider(attitudeProvider);
+        if (mapper != null) {
+            // At the construction, the mapper is not set yet
+            // However, if the attitude provider is changed afterwards, it must be changed in the mapper too
+            mapper.setAttitudeProvider(attitudeProvider);
+        }
+    }
+
+    /** {@inheritDoc} */
     public SpacecraftState getInitialState() {
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
-    /** Local provider for additional state data. */
-    private class LocalProvider implements AdditionalStateProvider {
+    /** {@inheritDoc} */
+    @Override
+    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
 
-        /** Name of the additional state. */
-        private final String name;
+        SpacecraftState updated = super.updateAdditionalStates(original);
 
-        /** Index of the additional state. */
-        private final int index;
-
-        /** Simple constructor.
-         * @param name name of the additional state
-         * @param index index of the additional state
-         */
-        LocalProvider(final String name, final int index) {
-            this.name  = name;
-            this.index = index;
+        if (equations.length > 0) {
+            final ODEStateAndDerivative osd                = getInterpolatedState(updated.getDate());
+            final double[]              combinedState      = osd.getSecondaryState(1);
+            final double[]              combinedDerivative = osd.getSecondaryDerivative(1);
+            int index = 0;
+            for (int i = 0; i < equations.length; ++i) {
+                final double[] state      = Arrays.copyOfRange(combinedState,      index, index + dimensions[i]);
+                final double[] derivative = Arrays.copyOfRange(combinedDerivative, index, index + dimensions[i]);
+                updated = updated.
+                          addAdditionalState(equations[i], state).
+                          addAdditionalStateDerivative(equations[i], derivative);
+                index += dimensions[i];
+            }
         }
 
-        /** {@inheritDoc} */
-        public String getName() {
-            return name;
-        }
-
-        /** {@inheritDoc} */
-        public double[] getAdditionalState(final SpacecraftState state) {
-
-            // extract the part of the interpolated array corresponding to the additional state
-            return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);
-
-        }
+        return updated;
 
     }
 

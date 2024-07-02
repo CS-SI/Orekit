@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,30 +16,27 @@
  */
 package org.orekit.utils;
 
-import java.util.stream.Stream;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
-import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeStamped;
 
 /** Field implementation of AbsolutePVCoordinates.
  * @see AbsolutePVCoordinates
  * @author Vincent Mouraux
+ * @param <T> type of the field elements
  */
-public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
-    implements FieldTimeStamped<T>, FieldTimeInterpolable<FieldAbsolutePVCoordinates<T>, T>,
-               FieldPVCoordinatesProvider<T> {
+public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
+    implements FieldTimeStamped<T>, FieldPVCoordinatesProvider<T> {
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
@@ -196,9 +193,10 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
      * @param frame the frame in which the parameters are defined
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
-            final FieldVector3D<FieldDerivativeStructure<T>> p) {
+    public <U extends FieldDerivative<T, U>> FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
+                                                                        final FieldVector3D<U> p) {
         super(date, p);
         this.frame = frame;
     }
@@ -209,7 +207,7 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
      * @param <T> the type of the field elements
      * @throws OrekitIllegalArgumentException if frames are different
      */
-    private static <T extends RealFieldElement<T>> void ensureIdenticalFrames(final FieldAbsolutePVCoordinates<T> absPv1, final FieldAbsolutePVCoordinates<T> absPv2)
+    private static <T extends CalculusFieldElement<T>> void ensureIdenticalFrames(final FieldAbsolutePVCoordinates<T> absPv1, final FieldAbsolutePVCoordinates<T> absPv2)
         throws OrekitIllegalArgumentException {
         if (!absPv1.frame.equals(absPv2.frame)) {
             throw new OrekitIllegalArgumentException(OrekitMessages.INCOMPATIBLE_FRAMES,
@@ -258,6 +256,12 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
     public FieldPVCoordinatesProvider<T> toTaylorProvider() {
         return new FieldPVCoordinatesProvider<T>() {
             /** {@inheritDoc} */
+            public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> d,  final Frame f) {
+                final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));
+                final FieldStaticTransform<T>          transform = frame.getStaticTransformTo(f, d);
+                return transform.transformPosition(shifted.getPosition());
+            }
+            /** {@inheritDoc} */
             public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> d,  final Frame f) {
                 final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));
                 final FieldTransform<T>                transform = frame.getTransformTo(f, d);
@@ -278,6 +282,24 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
         return this;
+    }
+
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position
+     * @see #getPVCoordinates(Frame)
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition(final Frame outputFrame) {
+        // If output frame requested is the same as definition frame,
+        // Position vector is returned directly
+        if (outputFrame == frame) {
+            return getPosition();
+        }
+
+        // Else, position vector is transformed to output frame
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(outputFrame, getDate());
+        return t.transformPosition(getPosition());
     }
 
     /** Get the TimeStampedFieldPVCoordinates in a specified frame.
@@ -301,83 +323,6 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
     @Override
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame outputFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
-    }
-
-    @Override
-    public FieldAbsolutePVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldAbsolutePVCoordinates<T>> sample) {
-        return interpolate(getFrame(), date, CartesianDerivativesFilter.USE_PVA, sample);
-    }
-
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param frame frame for the interpolted instance
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @param <T> the type of the field elements
-     * @return a new position-velocity, interpolated at specified date
-     * @exception OrekitIllegalArgumentException if some elements in the sample do not
-     * have the same defining frame as other
-     */
-    public static <T extends RealFieldElement<T>> FieldAbsolutePVCoordinates<T> interpolate(final Frame frame, final FieldAbsoluteDate<T> date,
-                                                    final CartesianDerivativesFilter filter,
-                                                    final Stream<FieldAbsolutePVCoordinates<T>> sample) {
-
-
-        // set up an interpolator taking derivatives into account
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
-
-        // add sample points
-        switch (filter) {
-            case USE_P :
-                // populate sample with position data, ignoring velocity
-                sample.forEach(pv -> {
-                    final FieldVector3D<T> position = pv.getPosition();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray());
-                });
-                break;
-            case USE_PV :
-                // populate sample with position and velocity data
-                sample.forEach(pv -> {
-                    final FieldVector3D<T> position = pv.getPosition();
-                    final FieldVector3D<T> velocity = pv.getVelocity();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray());
-                });
-                break;
-            case USE_PVA :
-                // populate sample with position, velocity and acceleration data
-                sample.forEach(pv -> {
-                    final FieldVector3D<T> position     = pv.getPosition();
-                    final FieldVector3D<T> velocity     = pv.getVelocity();
-                    final FieldVector3D<T> acceleration = pv.getAcceleration();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray(), acceleration.toArray());
-                });
-                break;
-            default :
-                // this should never happen
-                throw new OrekitInternalError(null);
-        }
-
-        // interpolate
-        final T[][] p = interpolator.derivatives(date.getField().getZero(), 2);
-
-        // build a new interpolated instance
-        return new FieldAbsolutePVCoordinates<>(frame, date, new FieldVector3D<>(p[0]), new FieldVector3D<>(p[1]), new FieldVector3D<>(p[2]));
     }
 
     /**

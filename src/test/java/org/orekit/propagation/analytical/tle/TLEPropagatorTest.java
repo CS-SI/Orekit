@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,28 +16,32 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
 
 
 public class TLEPropagatorTest {
@@ -46,7 +50,7 @@ public class TLEPropagatorTest {
     private double period;
 
     @Test
-    public void testSlaveMode() {
+    public void testsecondaryMode() {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         AbsoluteDate initDate = tle.getDate();
@@ -57,12 +61,12 @@ public class TLEPropagatorTest {
         SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(period));
 
         // Check results
-        Assert.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
-        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
-        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
-        Assert.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
-        Assert.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
-        Assert.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
+        Assertions.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
+        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
+        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
+        Assertions.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
+        Assertions.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
+        Assertions.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
 
     }
 
@@ -70,7 +74,7 @@ public class TLEPropagatorTest {
     public void testEphemerisMode() {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
-        propagator.setEphemerisMode();
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
 
         AbsoluteDate initDate = tle.getDate();
         SpacecraftState initialState = propagator.getInitialState();
@@ -81,29 +85,29 @@ public class TLEPropagatorTest {
         propagator.propagate(endDate);
 
         // get the ephemeris
-        BoundedPropagator boundedProp = propagator.getGeneratedEphemeris();
+        BoundedPropagator boundedProp = generator.getGeneratedEphemeris();
 
         // get the initial state from the ephemeris and check if it is the same as
         // the initial state from the TLE
         SpacecraftState boundedState = boundedProp.propagate(initDate);
 
         // Check results
-        Assert.assertEquals(initialState.getA(), boundedState.getA(), 0.);
-        Assert.assertEquals(initialState.getEquinoctialEx(), boundedState.getEquinoctialEx(), 0.);
-        Assert.assertEquals(initialState.getEquinoctialEy(), boundedState.getEquinoctialEy(), 0.);
-        Assert.assertEquals(initialState.getHx(), boundedState.getHx(), 0.);
-        Assert.assertEquals(initialState.getHy(), boundedState.getHy(), 0.);
-        Assert.assertEquals(initialState.getLM(), boundedState.getLM(), 1e-14);
+        Assertions.assertEquals(initialState.getA(), boundedState.getA(), 0.);
+        Assertions.assertEquals(initialState.getEquinoctialEx(), boundedState.getEquinoctialEx(), 0.);
+        Assertions.assertEquals(initialState.getEquinoctialEy(), boundedState.getEquinoctialEy(), 0.);
+        Assertions.assertEquals(initialState.getHx(), boundedState.getHx(), 0.);
+        Assertions.assertEquals(initialState.getHy(), boundedState.getHy(), 0.);
+        Assertions.assertEquals(initialState.getLM(), boundedState.getLM(), 1e-14);
 
         SpacecraftState finalState = boundedProp.propagate(endDate);
 
         // Check results
-        Assert.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
-        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
-        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
-        Assert.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
-        Assert.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
-        Assert.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
+        Assertions.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
+        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
+        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
+        Assertions.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
+        Assertions.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
+        Assertions.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
 
     }
 
@@ -123,16 +127,17 @@ public class TLEPropagatorTest {
                 TLEPropagator.selectExtrapolator(tle,
                                                  new BodyCenterPointing(FramesFactory.getTEME(), earth),
                                                  Propagator.DEFAULT_MASS);
-        propagator.setMasterMode(900.0, checker);
+        propagator.setStepHandler(900.0, checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
-        Assert.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
+        Assertions.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
 
         // with default attitude mode, distance should be large
         propagator = TLEPropagator.selectExtrapolator(tle);
-        propagator.setMasterMode(900.0, checker);
+        propagator.setStepHandler(900.0, checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
-        Assert.assertEquals(1.5219e7, checker.getMinDistance(), 1000.0);
-        Assert.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
+        MatcherAssert.assertThat(checker.getMinDistance(),
+                OrekitMatchers.greaterThan(1.5218e7));
+        Assertions.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
 
     }
 
@@ -159,8 +164,7 @@ public class TLEPropagatorTest {
             maxDistance = Double.NEGATIVE_INFINITY;
         }
 
-        public void handleStep(SpacecraftState currentState, boolean isLast)
-            {
+        public void handleStep(SpacecraftState currentState) {
             // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
             Rotation rotSat = currentState.getAttitude().getRotation();
 
@@ -168,16 +172,16 @@ public class TLEPropagatorTest {
             Vector3D zSat = rotSat.applyInverseTo(Vector3D.PLUS_K);
 
             // Transform Z axis from inertial frame to ITRF
-            Transform transform = currentState.getFrame().getTransformTo(itrf, currentState.getDate());
+            StaticTransform transform = currentState.getFrame().getStaticTransformTo(itrf, currentState.getDate());
             Vector3D zSatITRF = transform.transformVector(zSat);
 
             // Transform satellite position/velocity from inertial frame to ITRF
-            PVCoordinates pvSatITRF = transform.transformPVCoordinates(currentState.getPVCoordinates());
+            Vector3D posSatITRF = transform.transformPosition(currentState.getPosition());
 
             // Line containing satellite point and following pointing direction
-            Line pointingLine = new Line(pvSatITRF.getPosition(),
-                                         pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                     zSatITRF),
+            Line pointingLine = new Line(posSatITRF,
+                                         posSatITRF.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                        zSatITRF),
                                          1.0e-10);
 
             double distance = pointingLine.distance(Vector3D.ZERO);
@@ -187,7 +191,88 @@ public class TLEPropagatorTest {
 
     }
 
-    @Before
+    @Test
+    void testResetInitialState() {
+        // GIVEN
+        final TLEPropagator tlePropagator = TLEPropagator.selectExtrapolator(tle);
+        final SpacecraftState initialState = tlePropagator.getInitialState();
+        final double unexpectedMass = initialState.getMass();
+        final double expectedMass = 2. * unexpectedMass;
+        final SpacecraftState newState = new SpacecraftState(initialState.getOrbit(), initialState.getAttitude(),
+                expectedMass);
+
+        // WHEN
+        tlePropagator.resetInitialState(newState);
+
+        // THEN
+        final SpacecraftState actualState = tlePropagator.getInitialState();
+        Assertions.assertEquals(expectedMass, tlePropagator.getMass(actualState.getDate()));
+        Assertions.assertEquals(expectedMass, actualState.getMass());
+        Assertions.assertNotEquals(unexpectedMass, actualState.getMass());
+    }
+
+    @Test
+    void testResetIntermediateStateForward() {
+        testResetIntermediateStateTemplate(true);
+    }
+
+    @Test
+    void testResetIntermediateStateBackward() {
+        testResetIntermediateStateTemplate(false);
+    }
+
+    void testResetIntermediateStateTemplate(final boolean isForward) {
+        // GIVEN
+        final TLEPropagator tlePropagator = TLEPropagator.selectExtrapolator(tle);
+        final double expectedMass = 2000.;
+        final SpacecraftState propagatedState = tlePropagator.propagate(tle.getDate().shiftedBy(1));
+        final SpacecraftState modifiedState = new SpacecraftState(propagatedState.getOrbit(), expectedMass);
+
+        // WHEN
+        tlePropagator.resetIntermediateState(modifiedState, isForward);
+
+        // THEN
+        final double tinyTimeShift = (isForward) ? 1e-3 : -1e-3;
+        final double actualMass = tlePropagator.getMass(modifiedState.getDate().shiftedBy(tinyTimeShift));
+        Assertions.assertEquals(expectedMass, actualMass);
+    }
+
+    @Test
+    void testResetIntermediateStateHighLevelForward() {
+        testResetIntermediateStateHighLevelTemplate(true);
+    }
+
+    @Test
+    void testResetIntermediateStateHighLevelBackward() {
+        testResetIntermediateStateHighLevelTemplate(false);
+    }
+
+    void testResetIntermediateStateHighLevelTemplate(final boolean isForward) {
+        // GIVEN
+        final TLEPropagator tlePropagator = TLEPropagator.selectExtrapolator(tle);
+        final AbsoluteDate epoch = tlePropagator.getInitialState().getDate();
+        final double totalShift = 1e4;
+        final double shiftSign = isForward ? 1 : -1;
+        final AbsoluteDate targetDate = epoch.shiftedBy(totalShift * shiftSign);
+        final EventHandler stateResetter = (s, detector, increasing) -> Action.RESET_STATE;
+        final DateDetector detector = new DateDetector(targetDate)
+                .withThreshold(1e-8).withHandler(stateResetter);
+        tlePropagator.addEventDetector(detector);
+
+        // WHEN
+        final SpacecraftState actualState = tlePropagator.propagate(targetDate);
+
+        // THEN
+        final SpacecraftState expectedState = TLEPropagator.selectExtrapolator(tle).propagate(targetDate);
+        final Vector3D expectedPosition = expectedState.getPosition();
+        final Vector3D actualPosition = actualState.getPosition();
+        final double tolerance = 1e-1;
+        Assertions.assertEquals(expectedPosition.getX(), actualPosition.getX(), tolerance);
+        Assertions.assertEquals(expectedPosition.getY(), actualPosition.getY(), tolerance);
+        Assertions.assertEquals(expectedPosition.getZ(), actualPosition.getZ(), tolerance);
+    }
+
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 

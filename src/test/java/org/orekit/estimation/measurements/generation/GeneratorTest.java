@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,21 +16,19 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.SortedSet;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.AngularAzEl;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.ElevationDetector;
@@ -40,12 +38,15 @@ import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
+import java.util.SortedSet;
+
 public class GeneratorTest {
 
     @Test
     public void testIssue557() {
 
-        final EventDetector detector = new ElevationDetector(context.stations.get(0).getBaseFrame());
+        final EventDetector detector = EstimationTestUtils.getElevationDetector(context.stations.get(0).getBaseFrame(),
+                                                                                FastMath.toRadians(0.0));
 
         double[] azElError = new double[] {
             FastMath.toRadians(0.015),
@@ -60,7 +61,7 @@ public class GeneratorTest {
         double rangeBW = 1;
         ObservableSatellite obs = new ObservableSatellite(0);
         RangeBuilder rB = new RangeBuilder(null, context.stations.get(0), false, rangeSigma, rangeBW,obs);
-        AngularAzElBuilder aAEB = new AngularAzElBuilder(null, context.stations.get(0), azElError, baseweight, obs);  
+        AngularAzElBuilder aAEB = new AngularAzElBuilder(null, context.stations.get(0), azElError, baseweight, obs);
         double  timeToEnd = Constants.JULIAN_DAY;
 
         AbsoluteDate initialDate = context.initialOrbit.getDate();
@@ -69,35 +70,38 @@ public class GeneratorTest {
         FixedStepSelector fssAE = new FixedStepSelector(10., TimeScalesFactory.getUTC());
         EventBasedScheduler<Range> eBS = new EventBasedScheduler<>(rB, fssAE, numProp, detector, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_NEGATIVE);
         FixedStepSelector fssR = new FixedStepSelector(10., TimeScalesFactory.getUTC());
-        EventBasedScheduler<AngularAzEl> aeBS = new EventBasedScheduler<>(aAEB, fssR, numProp, detector, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_NEGATIVE);      
+        EventBasedScheduler<AngularAzEl> aeBS = new EventBasedScheduler<>(aAEB, fssR, numProp, detector, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_NEGATIVE);
         Generator genR = new Generator();
         genR.addPropagator(numProp);
         genR.addScheduler(aeBS);
         genR.addScheduler(eBS);
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        genR.addSubscriber(gatherer);
 
-        SortedSet<ObservedMeasurement<?>> generated = genR.generate(initialDate, finalDate);
+        genR.generate(initialDate, finalDate);
+        SortedSet<EstimatedMeasurementBase<?>> generated = gatherer.getGeneratedMeasurements();
 
         int nbAzEl  = 0;
         int nbRange = 0;
-        for (final ObservedMeasurement<?> m : generated) {
-            if (m instanceof AngularAzEl) {
+        for (final EstimatedMeasurementBase<?> m : generated) {
+            if (m.getObservedMeasurement().getMeasurementType().equals(AngularAzEl.MEASUREMENT_TYPE)) {
                 ++nbAzEl;
-            } else if (m instanceof Range) {
+            } else if (m.getObservedMeasurement().getMeasurementType().equals(Range.MEASUREMENT_TYPE)) {
                 ++nbRange;
             } else {
-                Assert.fail("unexpected measurement type: " + m.getClass().getSimpleName());
+                Assertions.fail("unexpected measurement type: " + m.getClass().getSimpleName());
             }
         }
-        Assert.assertEquals(740, nbAzEl);
-        Assert.assertEquals(740, nbRange);
+        Assertions.assertEquals(740, nbAzEl);
+        Assertions.assertEquals(740, nbRange);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+        propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                   1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                   Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
     }

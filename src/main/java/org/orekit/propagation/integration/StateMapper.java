@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,7 +19,7 @@ package org.orekit.propagation.integration;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -37,16 +37,16 @@ public abstract class StateMapper {
     private final OrbitType orbitType;
 
     /** Position angle type. */
-    private final PositionAngle angleType;
-
-    /** Attitude provider. */
-    private final AttitudeProvider attitudeProvider;
+    private final PositionAngleType angleType;
 
     /** Central attraction coefficient. */
     private final double mu;
 
     /** Inertial frame. */
     private final Frame frame;
+
+    /** Attitude provider. */
+    private AttitudeProvider attitudeProvider;
 
     /** Simple constructor.
      * <p>
@@ -65,7 +65,7 @@ public abstract class StateMapper {
      * @param frame inertial frame
      */
     protected StateMapper(final AbsoluteDate referenceDate, final double mu,
-                          final OrbitType orbitType, final PositionAngle positionAngleType,
+                          final OrbitType orbitType, final PositionAngleType positionAngleType,
                           final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
@@ -89,15 +89,10 @@ public abstract class StateMapper {
         return orbitType;
     }
 
-    /** Set position angle type.
-     */
-    public void setPositionAngleType() {
-    }
-
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    public PositionAngle getPositionAngleType() {
+    public PositionAngleType getPositionAngleType() {
         return angleType;
     }
 
@@ -120,6 +115,13 @@ public abstract class StateMapper {
      */
     public AttitudeProvider getAttitudeProvider() {
         return attitudeProvider;
+    }
+
+    /** Set the attitude provider.
+     * @param attitudeProvider the provider to set
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** Map the raw double time offset to a date.

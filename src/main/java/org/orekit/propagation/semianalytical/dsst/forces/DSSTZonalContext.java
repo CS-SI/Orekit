@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,11 +25,11 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * <p>
  * It performs parameters initialization at each integration step for the Zonal contribution
  * to the central body gravitational perturbation.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class DSSTZonalContext extends ForceModelContext {
+public class DSSTZonalContext extends ForceModelContext {
 
     // Common factors for potential computation
     /** A = sqrt(μ * a). */
@@ -40,19 +40,19 @@ class DSSTZonalContext extends ForceModelContext {
     private double XX;
     /** &Chi;³. */
     private double XXX;
-    /** 1 / (A * B) .*/
+    /** 1 / (A * B) . */
     private double ooAB;
-    /** B / A .*/
+    /** B / A . */
     private double BoA;
-    /** B / A(1 + B) .*/
+    /** B / A(1 + B) . */
     private double BoABpo;
-    /** -C / (2 * A * B) .*/
+    /** -C / (2 * A * B) . */
     private double mCo2AB;
-    /** -2 * a / A .*/
+    /** -2 * a / A . */
     private double m2aoA;
-    /** μ / a .*/
+    /** μ / a . */
     private double muoa;
-    /** R / a .*/
+    /** R / a . */
     private double roa;
 
     /** Keplerian mean motion. */
@@ -77,19 +77,19 @@ class DSSTZonalContext extends ForceModelContext {
     private double cxo2n2a2;
     /** (χ²) / (n² * a² * (χ + 1 ) ). */
     private double x2on2a2xp1;
-    /** B * B.*/
+    /** B * B. */
     private double BB;
 
     /**
      * Simple constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param provider provider for spherical harmonics
-     * @param parameters values of the force model parameters
+     * @param provider          provider for spherical harmonics
+     * @param parameters        values of the force model parameters
      */
     DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
                      final UnnormalizedSphericalHarmonicsProvider provider,
-                     final double[] parameters) {
+            final double[] parameters) {
 
         super(auxiliaryElements);
 
@@ -102,24 +102,24 @@ class DSSTZonalContext extends ForceModelContext {
         A = FastMath.sqrt(mu * auxiliaryElements.getSma());
 
         // &Chi; = 1 / B
-        X   = 1. / auxiliaryElements.getB();
-        XX  = X * X;
+        X = 1. / auxiliaryElements.getB();
+        XX = X * X;
         XXX = X * XX;
 
         // 1 / AB
-        ooAB   = 1. / (A * auxiliaryElements.getB());
+        ooAB = 1. / (A * auxiliaryElements.getB());
         // B / A
-        BoA    = auxiliaryElements.getB() / A;
+        BoA = auxiliaryElements.getB() / A;
         // -C / 2AB
         mCo2AB = -auxiliaryElements.getC() * ooAB / 2.;
         // B / A(1 + B)
         BoABpo = BoA / (1. + auxiliaryElements.getB());
         // -2 * a / A
-        m2aoA  = -2 * auxiliaryElements.getSma() / A;
+        m2aoA = -2 * auxiliaryElements.getSma() / A;
         // μ / a
-        muoa   = mu / auxiliaryElements.getSma();
+        muoa = mu / auxiliaryElements.getSma();
         // R / a
-        roa    = provider.getAe() / auxiliaryElements.getSma();
+        roa = provider.getAe() / auxiliaryElements.getSma();
 
         // Short period terms
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,14 +16,13 @@
  */
 package org.orekit.utils;
 
-
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Test;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -34,16 +33,15 @@ public class ExtendedPVCoordinatesTest {
     @Test
     public void testConversion() {
         final ExtendedPVCoordinatesProvider provider = new ExtendedPVCoordinatesProvider() {
-            
+
             @Override
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
                 return null;
             }
-            
+
             @Override
-            public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-                    {
+            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
+                getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
                 return new TimeStampedFieldPVCoordinates<>(date,
                                                            FieldVector3D.getPlusI(date.getField()),
                                                            FieldVector3D.getPlusJ(date.getField()),
@@ -51,14 +49,16 @@ public class ExtendedPVCoordinatesTest {
             }
         };
 
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        final FieldPVCoordinatesProvider<Decimal64> converted =
-                        provider.toFieldPVCoordinatesProvider(field);
-        FieldPVCoordinates<Decimal64> pv = converted.getPVCoordinates(FieldAbsoluteDate.getJ2000Epoch(field),
-                                                                      FramesFactory.getGCRF());
-        Assert.assertEquals(0.0, FieldVector3D.distance(pv.getPosition(),FieldVector3D.getPlusI(field)).getReal(), 1.0e-15);
-        Assert.assertEquals(0.0, FieldVector3D.distance(pv.getVelocity(),FieldVector3D.getPlusJ(field)).getReal(), 1.0e-15);
-        Assert.assertEquals(0.0, FieldVector3D.distance(pv.getAcceleration(),FieldVector3D.getPlusK(field)).getReal(), 1.0e-15);
+        Field<Binary64> field = Binary64Field.getInstance();
+        final FieldPVCoordinatesProvider<Binary64> converted = provider.toFieldPVCoordinatesProvider(field);
+
+        FieldVector3D<Binary64> p = converted.getPosition(FieldAbsoluteDate.getJ2000Epoch(field), FramesFactory.getGCRF());
+        Assertions.assertEquals(0.0, FieldVector3D.distance(p, FieldVector3D.getPlusI(field)).getReal(), 1.0e-15);
+
+        FieldPVCoordinates<Binary64> pv = converted.getPVCoordinates(FieldAbsoluteDate.getJ2000Epoch(field), FramesFactory.getGCRF());
+        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getPosition(),     FieldVector3D.getPlusI(field)).getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getVelocity(),     FieldVector3D.getPlusJ(field)).getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getAcceleration(), FieldVector3D.getPlusK(field)).getReal(), 1.0e-15);
 
     }
 

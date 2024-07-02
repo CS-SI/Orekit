@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,48 +16,48 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
-public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
+class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 6.1e-15, 4.5e-16, false);
+    void testPatchedLargeNegativeBeta() {
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 6.3e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIA.txt", 5.1e-6, 6.1e-16, false);
+    void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIA.txt", 5.1e-6, 1.2e-15, false);
     }
 
     @Test
-    public void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIA.txt", 5.2e-4, 7.7e-16, false);
+    void testPatchedCrossingBeta() {
+        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIA.txt", 5.2e-4, 8.3e-16, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIA.txt", 1.1e-5, 9.8e-16, false);
+    void testPatchedSmallPositiveBeta() {
+        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIA.txt", 1.1e-5, 1.1e-15, false);
     }
 
     @Test
-    public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIA.txt", 7.0e-15, 8.0e-16, false);
+    void testPatchedLargePositiveBeta() {
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIA.txt", 7.2e-15, 8.8e-16, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 6.1e-15, 4.5e-16, false);
+    void testOriginalLargeNegativeBeta() {
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 6.3e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIA.txt", 1.2e-3, 6.1e-16, false);
+    void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIA.txt", 1.2e-3, 1.2e-15, false);
     }
 
     @Test
-    public void testOriginalCrossingBeta() {
+    void testOriginalCrossingBeta() {
         // the very high threshold (2.13 radians) is due to a probable bug in original eclips
         // the output of the routine is limited to the x-sat vector, the yaw angle itself
         // is not output. However, in some cases the x-sat vector is not normalized at all.
@@ -75,26 +75,26 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
         // This point however does not explain the 2.13 radians error. The 2.13 radians comes
         // from the following point. Here, the original eclips considers the turn has already
         // converged and it jump backs to nominal attitude. The reason is another probable
-        // bug in original eclips (which was adressed by our patch number 04). As the Sun
+        // bug in original eclips (which was addressed by our patch number 04). As the Sun
         // crosses plane, the sign of beta changes and the sign of nominal yaw changes. However,
         // the sign of the *linear* yaw is normalized according to the initial beta (betaini),
         // not to the current beta. Near the end of the computation, a test (PHI/YANGLE).LT.0.d0
         // fails and the attitude is set back to nominal, despite it should not (the yaw angle
         // should be about 58.4° and jumps directly to 180.5°).
         // As a conclusion, we consider here that the reference output is wrong and that
-        // Orekit behaviour is correct, so we increased the threshold so the test pass,
+        // Orekit behavior is correct, so we increased the threshold so the test pass,
         // and wrote this big comment to explain the situation
-        doTestAxes("original-eclips/beta-crossing-BLOCK-IIA.txt", 2.13, 7.7e-16, false);
+        doTestAxes("original-eclips/beta-crossing-BLOCK-IIA.txt", 2.13, 8.3e-16, false);
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIA.txt", 1.2e-3, 9.8e-16, false);
+    void testOriginalSmallPositiveBeta() {
+        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIA.txt", 1.2e-3, 1.1e-15, false);
     }
 
     @Test
-    public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIA.txt", 7.0e-15, 8.0e-16, false);
+    void testOriginalLargePositiveBeta() {
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIA.txt", 7.2e-15, 8.8e-16, false);
     }
 
 }

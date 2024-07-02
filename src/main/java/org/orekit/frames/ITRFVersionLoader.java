@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,6 +27,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -39,12 +41,12 @@ import org.orekit.time.DateComponents;
  * the {@link ITRFVersion ITRF versions} that each
  * type of Earth Orientation Parameter file contains
  * for each date. This configuration file is used to
- * interpret {@link EOPC04FilesLoader EOP C04} files,
+ * interpret {@link EopC04FilesLoader EOP C04} files,
  * {@link BulletinAFilesLoader Bulletin A} files,
  * {@link BulletinBFilesLoader Bulletin B} files,
  * {@link RapidDataAndPredictionColumnsLoader rapid data
  * and prediction files in columns format} files,
- * {@link RapidDataAndPredictionXMLLoader rapid data
+ * {@link EopXmlLoader rapid data
  * and prediction files in XML format} files...
  * </p>
  * <p>This file is an Orekit-specific configuration file.
@@ -52,15 +54,15 @@ import org.orekit.time.DateComponents;
  * <p>
  * This class is immutable and hence thread-safe
  * </p>
- * @see EOPC04FilesLoader
+ * @see EopC04FilesLoader
  * @see BulletinAFilesLoader
  * @see BulletinBFilesLoader
  * @see RapidDataAndPredictionColumnsLoader
- * @see RapidDataAndPredictionXMLLoader
+ * @see EopXmlLoader
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class ITRFVersionLoader {
+public class ITRFVersionLoader implements ItrfVersionProvider {
 
     /** Regular expression for supported files names. */
     public static final String SUPPORTED_NAMES = "itrf-versions.conf";
@@ -73,29 +75,47 @@ public class ITRFVersionLoader {
     /** Configuration. */
     private final List<ITRFVersionConfiguration> configurations;
 
-    /** Build a loader for ITRF version configuration file.
+    /**
+     * Build a loader for ITRF version configuration file. This constructor uses the
+     * {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
+     * @see #ITRFVersionLoader(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public ITRFVersionLoader(final String supportedNames) {
-        this.configurations = new ArrayList<>();
-        DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
     }
 
     /**
-     * Build a loader for ITRF version configuration file using the default name.
+     * Build a loader for ITRF version configuration file.
+     *
+     * @param supportedNames       regular expression for supported files names
+     * @param dataProvidersManager provides access to the {@code itrf-versions.conf}
+     *                             file.
+     */
+    public ITRFVersionLoader(final String supportedNames,
+                             final DataProvidersManager dataProvidersManager) {
+        this.configurations = new ArrayList<>();
+        dataProvidersManager.feed(supportedNames, new Parser());
+    }
+
+    /**
+     * Build a loader for ITRF version configuration file using the default name. This
+     * constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @see #ITRFVersionLoader(String)
+     * @see #ITRFVersionLoader(String, DataProvidersManager)
      * @see #SUPPORTED_NAMES
      */
+    @DefaultDataContext
     public ITRFVersionLoader() {
         this(SUPPORTED_NAMES);
     }
 
-    /** Get the ITRF version configuration defined by a given file at specified date.
-     * @param name EOP file name
-     * @param mjd date of the EOP in modified Julian day
-     * @return configuration valid around specified date in the file
-     */
+    @Override
     public ITRFVersionConfiguration getConfiguration(final String name, final int mjd) {
 
         for (final ITRFVersionConfiguration configuration : configurations) {
@@ -126,7 +146,7 @@ public class ITRFVersionLoader {
         private static final String INFINITY_DATE  = "\\s+-+";
 
         /** Regular expression matching an ITRF version. */
-        private static final String ITRF  = "\\s+(ITRF-\\d\\d(?:\\d\\d)?)";
+        private static final String ITRF  = "\\s+([Ii][Tt][Rr][Ff][-_ ]?[0-9]{2,4})";
 
         /** Regular expression matching end of line. */
         private static final String END  = "$";
@@ -146,12 +166,11 @@ public class ITRFVersionLoader {
             final Pattern patternDI = Pattern.compile(START + NON_BLANK_FIELD + CALENDAR_DATE + INFINITY_DATE + ITRF + END);
             final Pattern patternDD = Pattern.compile(START + NON_BLANK_FIELD + CALENDAR_DATE + CALENDAR_DATE + ITRF + END);
 
-            // set up a reader for line-oriented bulletin A files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+
             int lineNumber =  0;
             String line = null;
-
-            try {
+            // set up a reader for line-oriented bulletin A files
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
                 for (line = reader.readLine(); line != null; line = reader.readLine()) {
 
                     lineNumber++;
@@ -248,13 +267,13 @@ public class ITRFVersionLoader {
         /** Simple constructor.
          * @param prefix file names to which this configuration applies
          * @param version ITRF version
-         * @param validityStart start of validity (included)
-         * @param validityEnd end of validity (excluded)
+         * @param validityStart start of validity MJD (included)
+         * @param validityEnd end of validity MJD (excluded)
          */
-        ITRFVersionConfiguration(final String prefix,
-                                 final ITRFVersion version,
-                                 final int validityStart,
-                                 final int validityEnd) {
+        public ITRFVersionConfiguration(final String prefix,
+                                        final ITRFVersion version,
+                                        final int validityStart,
+                                        final int validityEnd) {
             this.prefix        = prefix;
             this.version       = version;
             this.validityStart = validityStart;

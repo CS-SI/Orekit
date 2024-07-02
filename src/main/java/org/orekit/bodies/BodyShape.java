@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -72,7 +72,7 @@ public interface BodyShape extends Serializable {
      * not intersect the surface
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(FieldLine<T> line, FieldVector3D<T> close,
+    <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(FieldLine<T> line, FieldVector3D<T> close,
                                                                                Frame frame, FieldAbsoluteDate<T> date);
 
     /** Project a point to the ground.
@@ -106,13 +106,13 @@ public interface BodyShape extends Serializable {
 
     /** Transform a Cartesian point to a surface-relative point.
      * @param point Cartesian point
-     * @param <T> type fo the filed elements
+     * @param <T> type of the filed elements
      * @param frame frame in which Cartesian point is expressed
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(FieldVector3D<T> point, Frame frame,
+    <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> transform(FieldVector3D<T> point, Frame frame,
                                                                     FieldAbsoluteDate<T> date);
 
     /** Transform a surface-relative point to a Cartesian point.
@@ -123,10 +123,10 @@ public interface BodyShape extends Serializable {
 
     /** Transform a surface-relative point to a Cartesian point.
      * @param point surface-relative point
-     * @param <T> type fo the filed elements
+     * @param <T> type of the filed elements
      * @return point at the same location but as a Cartesian point
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> transform(FieldGeodeticPoint<T> point);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> transform(FieldGeodeticPoint<T> point);
 
 }
