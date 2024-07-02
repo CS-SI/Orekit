@@ -323,4 +323,13 @@ public class FieldIntelsatElevenElementsPropagator<T extends CalculusFieldElemen
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
     }
+
+    /**
+     * Get the Intelsat's 11 elements used by the propagator.
+     *
+     * @return the Intelsat's 11 elements used by the propagator
+     */
+    public FieldIntelsatElevenElements<T> getIntelsatElevenElements() {
+        return elements;
+    }
 }
