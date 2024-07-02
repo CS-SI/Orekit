@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="12.1.2" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="1445">
+        IntervalEventTrigger should initialize firingIntervalDetector in init.
+      </action>
+      <action dev="serrof" type="fix" issue="1444">
+        Fixed performance issue in HolmesFeatherstoneAttractionModel.
+      </action>
       <action dev="bryan" type="fix" issue="1451">
         Allow accessing generated elements of Intelsat 11 elements propagator.
       </action>
