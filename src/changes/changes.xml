@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="1452">
+        Fixed inappropriate DefaultDataContext annotations in ModifiedSaatamoinenModel.
+      </action>
       <action dev="serrof" type="fix" issue="1445">
         IntervalEventTrigger should initialize firingIntervalDetector in init.
       </action>
