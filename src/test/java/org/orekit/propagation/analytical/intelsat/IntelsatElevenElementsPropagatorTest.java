@@ -69,7 +69,7 @@ class IntelsatElevenElementsPropagatorTest {
         propagator.propagateInEcef(ELEMENTS.getEpoch().shiftedBy(170 * 3600.0));
         Assertions.assertEquals(referenceLongitude170Hours, propagator.getEastLongitudeDegrees().getValue(), tolerance);
         Assertions.assertEquals(referenceLatitude170Hours, propagator.getGeocentricLatitudeDegrees().getValue(), tolerance);
-        Assertions.assertNotNull(propagator.getIntelsatElevenElements);
+        Assertions.assertNotNull(propagator.getIntelsatElevenElements());
     }
 
     @Test
@@ -77,7 +77,7 @@ class IntelsatElevenElementsPropagatorTest {
         // Reference use of the Intelsat's 11 elements propagator developed in STK
         IntelsatElevenElementsPropagator propagator = new IntelsatElevenElementsPropagator(ELEMENTS, FramesFactory.getTOD(IERSConventions.IERS_2010, false),
                                                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, false));
-        Assertions.assertNotNull(propagator.getIntelsatElevenElements);
+        Assertions.assertNotNull(propagator.getIntelsatElevenElements());
         KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.propagateOrbit(ELEMENTS.getEpoch()));
         Assertions.assertEquals(302.0355, propagator.getEastLongitudeDegrees().getValue(), 0.0001);
         Assertions.assertEquals(0.0378, propagator.getGeocentricLatitudeDegrees().getValue(), 0.0001);
