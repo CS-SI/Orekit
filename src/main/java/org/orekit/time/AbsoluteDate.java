@@ -26,8 +26,6 @@ import java.util.TimeZone;
 
 import java.util.concurrent.TimeUnit;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.MathUtils.SumAndResidual;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -255,15 +253,23 @@ public class AbsoluteDate
      */
     public static final AbsoluteDate FUTURE_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
+    /** Attoseconds in one second. */
+    private static final long ATTOS_IN_SECOND = 1000000000000000000L;
+
+    /** Attoseconds in one half-second. */
+    private static final long ATTOS_IN_HALF_SECOND = 500000000000000000L;
+
     /** Serializable UID. */
-    private static final long serialVersionUID = 617061803741806846L;
+    private static final long serialVersionUID = 20240702L;
 
     /** Reference epoch in seconds from 2000-01-01T12:00:00 TAI.
      * <p>Beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT.</p> */
     private final long epoch;
 
-    /** Offset from the reference epoch in seconds. */
-    private final double offset;
+    /** Offset from the reference epoch in units of 2^-SHIFT seconds (about 0.217 attoseconds, 2.17 10⁻¹⁹s).
+     * Negative values denote dates at infinity.
+     */
+    private final long offset;
 
     /** Create an instance with a default value ({@link #J2000_EPOCH}).
      *
@@ -311,19 +317,15 @@ public class AbsoluteDate
     public AbsoluteDate(final DateComponents date, final TimeComponents time,
                         final TimeScale timeScale) {
 
-        final double seconds  = time.getSecond();
-        final double tsOffset = timeScale.offsetToTAI(date, time);
+        // epoch without the seconds and sub-seconds part
+        final long epochToMinute = 60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
+                                   time.getMinute() - time.getMinutesFromUTC() - 720L);
 
-        final double tiSeconds = FastMath.floor(seconds);
-        final long   tiSub     = FastMath.round(FastMath.scalb(seconds - tiSeconds, SHIFT));
-        final double tsSeconds = FastMath.floor(tsOffset);
-        final long   tsSub     = FastMath.round(FastMath.scalb(tsOffset - tsSeconds, SHIFT));
-        final long   sumSub    = tiSub + tsSub;
+        final SplitOffset sum = SplitOffset.add(new SplitOffset(time.getSecond()),
+                                                new SplitOffset(timeScale.offsetToTAI(date, time)));
 
-        offset = sumSub & MASK;
-        epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
-                        time.getMinute() - time.getMinutesFromUTC() - 720l) +
-                 (long) (tiSeconds + tsSeconds) + (sumSub >>> SHIFT);
+        this.epoch  = epochToMinute + sum.getSeconds();
+        this.offset = sum.getAttoSeconds();
 
     }
 
@@ -449,26 +451,20 @@ public class AbsoluteDate
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-
-        final double sum = since.offset + elapsedDuration;
-        if (Double.isInfinite(sum)) {
-            offset = sum;
-            epoch  = (sum < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+        if (since.offset < 0) {
+            // date was already at infinity
+            offset = since.offset;
+            epoch  = since.epoch;
+        } else if (Double.isInfinite(elapsedDuration)) {
+            // date at infinity
+            offset = -1L;
+            epoch  = (elapsedDuration < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
-            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-            // the following statements must NOT be simplified, they rely on floating point
-            // arithmetic properties (rounding and representable numbers)
-            // at the end, the EXACT result of addition since.offset + elapsedDuration
-            // is sum + residual, where sum is the closest representable number to the exact
-            // result and residual is the missing part that does not fit in the first number
-            final double oPrime   = sum - elapsedDuration;
-            final double dPrime   = sum - oPrime;
-            final double deltaO   = since.offset - oPrime;
-            final double deltaD   = elapsedDuration - dPrime;
-            final double residual = deltaO + deltaD;
-            final long   dl       = (long) FastMath.floor(sum);
-            offset = (sum - dl) + residual;
-            epoch  = since.epoch  + dl;
+            // regular offset
+            final SplitOffset sum = SplitOffset.add(new SplitOffset(elapsedDuration),
+                                                    new SplitOffset(since.epoch, since.offset));
+            this.epoch  = sum.getSeconds();
+            this.offset = sum.getAttoSeconds();
         }
     }
 
@@ -490,21 +486,10 @@ public class AbsoluteDate
      * @since 12.1
      */
     public AbsoluteDate(final AbsoluteDate since, final long elapsedDuration, final TimeUnit timeUnit) {
-        final long elapsedDurationNanoseconds = TimeUnit.NANOSECONDS.convert(elapsedDuration, timeUnit);
-        final long deltaEpoch = elapsedDurationNanoseconds / TimeUnit.SECONDS.toNanos(1);
-        final double deltaOffset = (elapsedDurationNanoseconds - (deltaEpoch * TimeUnit.SECONDS.toNanos(1))) / (double) TimeUnit.SECONDS.toNanos(1);
-        final double newOffset = since.offset + deltaOffset;
-        if (newOffset >= 1.0) {
-            // newOffset is in [1.0, 2.0]
-            epoch = since.epoch + deltaEpoch + 1L;
-            offset = newOffset - 1.0;
-        } else if (newOffset < 0) {
-            epoch = since.epoch + deltaEpoch - 1L;
-            offset = 1.0 + newOffset;
-        } else {
-            epoch = since.epoch + deltaEpoch;
-            offset = newOffset;
-        }
+        final SplitOffset sum = SplitOffset.add(new SplitOffset(elapsedDuration, timeUnit),
+                                                new SplitOffset(since.epoch, since.offset));
+        this.epoch  = sum.getSeconds();
+        this.offset = sum.getAttoSeconds();
     }
 
     /** Build an instance from an apparent clock offset with respect to another
@@ -542,7 +527,7 @@ public class AbsoluteDate
      */
     AbsoluteDate(final long epoch, final double offset) {
         this.epoch  = epoch;
-        this.offset = FastMath.round(FastMath.scalb(offset, SHIFT));
+        this.offset = FastMath.round(offset * ATTOS_IN_SECOND);
     }
 
     /** Extract time components from a number of milliseconds within the day.
@@ -584,7 +569,7 @@ public class AbsoluteDate
      * @since 9.0
      */
     double getOffset() {
-        return FastMath.scalb((double) offset, -SHIFT);
+        return ((double) offset) / ATTOS_IN_SECOND;
     }
 
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
@@ -936,12 +921,33 @@ public class AbsoluteDate
     public double durationFrom(final AbsoluteDate instant) {
         if (offset < 0) {
             // date at infinity
-            return epoch < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+            if (instant.offset < 0) {
+                // both dates at infinity
+                if (epoch * instant.epoch < 0) {
+                    // one date at future infinity, the other one at past infinity
+                    return epoch < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+                } else {
+                    // both dates at same infinity
+                    return Double.NaN;
+                }
+            } else {
+                return epoch < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+            }
         } else if (instant.offset < 0) {
             // date at infinity
             return instant.epoch < 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
         } else {
-            return (epoch - instant.epoch) + FastMath.scalb((double) (offset - instant.offset), -SHIFT);
+            // compute differences avoiding cancellations around whole seconds
+            long deltaE = epoch - instant.epoch;
+            long deltaO = offset - instant.offset;
+            if (deltaO < -ATTOS_IN_HALF_SECOND) {
+                deltaE -= 1;
+                deltaO += ATTOS_IN_SECOND;
+            } else if (deltaO > ATTOS_IN_HALF_SECOND) {
+                deltaE += 1;
+                deltaO -= ATTOS_IN_SECOND;
+            }
+            return deltaE + ((double) deltaO) / ATTOS_IN_SECOND;
         }
     }
 
@@ -964,8 +970,8 @@ public class AbsoluteDate
     public long durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
         final long deltaEpoch = timeUnit.convert(epoch - instant.epoch, TimeUnit.SECONDS);
 
-        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
-        final long deltaOffset = FastMath.round((offset - instant.offset) * multiplier);
+        final long multiplier = timeUnit.convert(1, TimeUnit.NANOSECONDS);
+        final long deltaOffset = ((offset - instant.offset) * multiplier) / 1000000000L;
 
         return deltaEpoch + deltaOffset;
     }
@@ -994,11 +1000,10 @@ public class AbsoluteDate
      * @see #AbsoluteDate(AbsoluteDate, double, TimeScale)
      */
     public double offsetFrom(final AbsoluteDate instant, final TimeScale timeScale) {
-        final long   elapsedDurationA = epoch - instant.epoch;
-        final long   subDuration      = offset - instant.offset;
-        final double elapsedDurationB = timeScale.offsetFromTAI(this) -
-                                        timeScale.offsetFromTAI(instant);
-        return  elapsedDurationA + FastMath.scalb((double) subDuration, -SHIFT) + elapsedDurationB;
+        final SplitOffset durationA = new SplitOffset(epoch - instant.epoch, offset - instant.offset);
+        final SplitOffset durationB = new SplitOffset(timeScale.offsetFromTAI(this) - timeScale.offsetFromTAI(instant));
+        final SplitOffset sum       = SplitOffset.add(durationA, durationB);
+        return sum.getSeconds() + ((double) sum.getAttoSeconds()) / ATTOS_IN_SECOND;
     }
 
     /** Compute the offset between two time scales at the current instant.
@@ -1024,7 +1029,7 @@ public class AbsoluteDate
      * of the instant in the time scale
      */
     public Date toDate(final TimeScale timeScale) {
-        final double time = epoch + (FastMath.scalb((double) offset, -SHIFT) + timeScale.offsetFromTAI(this));
+        final double time = epoch + ((double) offset) / ATTOS_IN_SECOND + timeScale.offsetFromTAI(this);
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
     }
 
@@ -1074,28 +1079,26 @@ public class AbsoluteDate
             }
         }
 
-        final double taiOffset  = timeScale.offsetFromTAI(this);
-        final double taiSeconds = FastMath.floor(taiOffset);
-        final long   taiSub     = FastMath.round(FastMath.scalb(taiOffset - taiSeconds, SHIFT));
-        final long   sumSub     = offset + taiSub;
+        final SplitOffset sum = SplitOffset.add(new SplitOffset(epoch, offset),
+                                                new SplitOffset(timeScale.offsetFromTAI(this)));
 
         // split date and time
-        final long offset2000A = epoch + FastMath.round(taiSeconds) + (sumSub >>> SHIFT) + 43200l;
-        long time = offset2000A % 86400l;
-        if (time < 0l) {
-            time += 86400l;
+        final long offset2000A = sum.getSeconds() + 43200L;
+        long time = offset2000A % 86400L;
+        if (time < 0L) {
+            time += 86400L;
         }
         final int date = (int) ((offset2000A - time) / 86400L);
 
         // extract calendar elements
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
-        TimeComponents timeComponents = new TimeComponents((int) time, FastMath.scalb((double) (sumSub & MASK), -SHIFT));
 
         // extract time element, accounting for leap seconds
         final double leap = timeScale.insideLeap(this) ? timeScale.getLeap(this) : 0;
         final int minuteDuration = timeScale.minuteDuration(this);
         final TimeComponents timeComponents =
-                TimeComponents.fromSeconds((int) time, offset2000B, leap, minuteDuration);
+                TimeComponents.fromSeconds((int) time, ((double) sum.getAttoSeconds()) / ATTOS_IN_SECOND,
+                                           leap, minuteDuration);
 
         // build the components
         return new DateTimeComponents(dateComponents, timeComponents);
@@ -1199,12 +1202,7 @@ public class AbsoluteDate
      * is before, simultaneous, or after the specified date.
      */
     public int compareTo(final AbsoluteDate date) {
-        final double duration = durationFrom(date);
-        if (!Double.isNaN(duration)) {
-            return Double.compare(duration, 0.0);
-        }
-        // both dates are infinity or one is NaN or both are NaN
-        return Double.compare(offset, date.offset);
+        return epoch == date.epoch ? Long.compare(offset, date.offset) : Long.compare(epoch, date.epoch);
     }
 
     /** {@inheritDoc} */
@@ -1223,7 +1221,7 @@ public class AbsoluteDate
             return true;
         }
 
-        if ((other != null) && (other instanceof AbsoluteDate)) {
+        if (other instanceof AbsoluteDate) {
             final AbsoluteDate date = (AbsoluteDate) other;
             return epoch == date.epoch && offset == date.offset;
         }
@@ -1370,14 +1368,7 @@ public class AbsoluteDate
                 // catch OrekitException, OrekitIllegalStateException, etc.
                 // Likely failed to convert to ymdhms.
                 // Give user some indication of what time it is.
-                try {
-                    return "(" + this.epoch + " + " + this.offset + ") seconds past epoch";
-                } catch (RuntimeException e3) {
-                    // give up and throw an exception
-                    e2.addSuppressed(e3);
-                    e1.addSuppressed(e2);
-                    throw e1;
-                }
+                return "(" + this.epoch + " + " + this.offset + ") seconds past epoch";
             }
         }
         // CHECKSTYLE: resume IllegalCatch check

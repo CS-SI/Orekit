@@ -860,33 +860,33 @@ public class AbsoluteDateTest {
     @Test
     public void testShiftPastInfinity() {
         AbsoluteDate shifted = AbsoluteDate.PAST_INFINITY.shiftedBy(Constants.JULIAN_DAY);
-        Assert.assertEquals(AbsoluteDate.PAST_INFINITY.getEpoch(), shifted.getEpoch());
-        Assert.assertEquals(AbsoluteDate.PAST_INFINITY.getOffset(), shifted.getOffset(), 1.0e-15);
+        Assertions.assertEquals(AbsoluteDate.PAST_INFINITY.getEpoch(), shifted.getEpoch());
+        Assertions.assertEquals(AbsoluteDate.PAST_INFINITY.getOffset(), shifted.getOffset(), 1.0e-15);
     }
 
     @Test
     public void testShiftFutureInfinity() {
         AbsoluteDate shifted = AbsoluteDate.FUTURE_INFINITY.shiftedBy(Constants.JULIAN_DAY);
-        Assert.assertEquals(AbsoluteDate.FUTURE_INFINITY.getEpoch(), shifted.getEpoch());
-        Assert.assertEquals(AbsoluteDate.FUTURE_INFINITY.getOffset(), shifted.getOffset(), 1.0e-15);
+        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY.getEpoch(), shifted.getEpoch());
+        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY.getOffset(), shifted.getOffset(), 1.0e-15);
     }
 
     @Test
-    public void testSubAttoSecondPositiveShift() {
+    public void testSubFemtoSecondPositiveShift() {
         TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate since = new AbsoluteDate(2008, 4, 7, 0, 53, 0.0078125, tai);
-        double deltaT = FastMath.scalb(1.0, -62);
+        double deltaT = FastMath.scalb(1.0, -51);
         AbsoluteDate shifted = since.shiftedBy(deltaT);
-        Assert.assertEquals(deltaT, shifted.durationFrom(since), 1.0e-15 * deltaT);
+        Assertions.assertEquals(deltaT, shifted.durationFrom(since), 2.1e-4 * deltaT);
     }
 
     @Test
-    public void testSubAttoSecondNegativeShift() {
+    public void testSubFemtoSecondNegativeShift() {
         TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate since = new AbsoluteDate(2008, 4, 7, 0, 53, 0.0078125, tai);
-        double deltaT = FastMath.scalb(-1.0, -62);
+        double deltaT = FastMath.scalb(-1.0, -51);
         AbsoluteDate shifted = since.shiftedBy(deltaT);
-        Assert.assertEquals(deltaT, shifted.durationFrom(since), -1.0e-15 * deltaT);
+        Assertions.assertEquals(deltaT, shifted.durationFrom(since), -2.1e-4 * deltaT);
     }
 
     @Test
@@ -1252,7 +1252,7 @@ public class AbsoluteDateTest {
         // test proleptic
         check(new AbsoluteDate(123, 4, 5, 6, 7, 8.9, utc), "0123-04-05T06:07:08.9Z");
 
-        // there is not way to produce valid RFC3339 for these cases
+        // there is no way to produce valid RFC3339 for these cases
         // I would rather print something useful than throw an exception
         // so these cases don't check for a correct answer, just an informative one
         check(new AbsoluteDate(-123, 4, 5, 6, 7, 8.9, utc), "-123-04-05T06:07:08.9Z");
@@ -1511,8 +1511,8 @@ public class AbsoluteDateTest {
             Field offsetField = AbsoluteDate.class.getDeclaredField("offset");
             offsetField.setAccessible(true);
             Assertions.assertEquals(624098367L, epochField.getLong(date));
-            Assertions.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), offsetField.getDouble(date), 1.0e-20);
-            Assertions.assertEquals(Precision.EPSILON, after.durationFrom(date), 1.0e-20);
+            Assertions.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), 1.0e-18 * offsetField.getLong(date), 1.0e-18);
+            Assertions.assertEquals(Precision.EPSILON, after.durationFrom(date), 1.0e-18);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
             Assertions.fail(e.getLocalizedMessage());
         }
@@ -1531,8 +1531,8 @@ public class AbsoluteDateTest {
             Field offsetField = AbsoluteDate.class.getDeclaredField("offset");
             offsetField.setAccessible(true);
             Assertions.assertEquals(624110398L, epochField.getLong(shifted));
-            Assertions.assertEquals(1.0 - 1.69267e-13, offsetField.getDouble(shifted), 1.0e-15);
-            Assertions.assertEquals(Precision.EPSILON, after.durationFrom(shifted), 1.0e-20);
+            Assertions.assertEquals((1.0 - 1.69267e-13) * 1.0e18, (double) offsetField.getLong(shifted), 1.0e-15);
+            Assertions.assertEquals(Precision.EPSILON, after.durationFrom(shifted), 1.0e-18);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
             Assertions.fail(e.getLocalizedMessage());
         }
