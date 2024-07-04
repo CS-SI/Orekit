@@ -33,6 +33,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.oned.Vector1D;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -69,45 +70,45 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 
-public class OneAxisEllipsoidTest {
+class OneAxisEllipsoidTest {
 
     @Test
-    public void testStandard() {
+    void testStandard() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     4637885.347, 121344.608, 4362452.869,
                                     0.026157811533131, 0.757987116290729, 260.455572965555);
     }
 
     @Test
-    public void testLongitudeZero() {
+    void testLongitudeZero() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     6378400.0, 0, 6379000.0,
                                     0.0, 0.787815771252351, 2653416.77864152);
     }
 
     @Test
-    public void testLongitudePi() {
+    void testLongitudePi() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     -6379999.0, 0, 6379000.0,
                                     3.14159265358979, 0.787690146758403, 2654544.7767725);
     }
 
     @Test
-    public void testNorthPole() {
+    void testNorthPole() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     0.0, 0.0, 7000000.0,
                                     0.0, 1.57079632679490, 643247.685859644);
     }
 
     @Test
-    public void testEquator() {
+    void testEquator() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     6379888.0, 6377000.0, 0.0,
                                     0.785171775899913, 0.0, 2642345.24279301);
     }
 
     @Test
-    public void testNoFlattening() {
+    void testNoFlattening() {
         final double r      = 7000000.0;
         final double lambda = 2.345;
         final double phi    = -1.23;
@@ -121,7 +122,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testNoFlatteningPolar() {
+    void testNoFlatteningPolar() {
         final double r = 1000.0;
         final double h = 100;
         checkCartesianToEllipsoidic(r, 0,
@@ -139,7 +140,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testOnSurface() {
+    void testOnSurface() {
         Vector3D surfacePoint = new Vector3D(-1092200.775949484,
                                              -3944945.7282234835,
                                               4874931.946956173);
@@ -152,28 +153,28 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testInside3Roots() {
+    void testInside3Roots() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     9219.0, -5322.0, 6056743.0,
                                     5.75963470503781, 1.56905114598949, -300000.009586231);
     }
 
     @Test
-    public void testInsideLessThan3Roots() {
+    void testInsideLessThan3Roots() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     1366863.0, -789159.0, -5848.988,
                                     -0.523598928689, -0.00380885831963, -4799808.27951);
     }
 
     @Test
-    public void testOutside() {
+    void testOutside() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     5722966.0, -3304156.0, -24621187.0,
                                     5.75958652642615, -1.3089969725151, 19134410.3342696);
     }
 
     @Test
-    public void testGeoCar() {
+    void testGeoCar() {
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -186,7 +187,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundProjectionPosition() {
+    void testGroundProjectionPosition() {
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                  Constants.WGS84_EARTH_FLATTENING,
@@ -221,7 +222,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundProjectionDerivatives() {
+    void testGroundProjectionDerivatives() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -244,7 +245,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundToGroundIssue181() {
+    void testGroundToGroundIssue181() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -302,7 +303,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundProjectionTaylor() {
+    void testGroundProjectionTaylor() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -339,7 +340,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testLineIntersection() {
+    void testLineIntersection() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
@@ -388,7 +389,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testNoLineIntersection() {
+    void testNoLineIntersection() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
@@ -399,7 +400,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testNegativeZ() {
+    void testNegativeZ() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
@@ -410,7 +411,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testNumerousIteration() {
+    void testNumerousIteration() {
         // this test, which corresponds to an unrealistic extremely flat ellipsoid,
         // is designed to need more than the usual 2 or 3 iterations in the iterative
         // version of the Toshio Fukushima's algorithm. It reaches convergence at
@@ -425,7 +426,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testEquatorialInside() {
+    void testEquatorialInside() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
@@ -438,7 +439,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testFarPoint() {
+    void testFarPoint() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
@@ -449,7 +450,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testIssue141() {
+    void testIssue141() {
         AbsoluteDate date = new AbsoluteDate("2002-03-06T20:50:20.44188731559965033", TimeScalesFactory.getUTC());
         Frame frame = FramesFactory.getGTOD(IERSConventions.IERS_1996, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -462,7 +463,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         OneAxisEllipsoid original = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                          Constants.WGS84_EARTH_FLATTENING,
                                                          FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true));
@@ -483,7 +484,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testIntersectionFromPoints() {
+    void testIntersectionFromPoints() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 03, 21),
                                              TimeComponents.H12,
                                              TimeScalesFactory.getUTC());
@@ -610,7 +611,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testMovingGeodeticPointSymmetry() {
+    void testMovingGeodeticPointSymmetry() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -631,7 +632,7 @@ public class OneAxisEllipsoidTest {
 
         // direct computation of position, velocity and acceleration
         PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<>(latDS, lonDS, altDS)));
-        FieldGeodeticPoint<DerivativeStructure> rebuilt = earth.transform(pv, earth.getBodyFrame(), null);
+        FieldGeodeticPoint<UnivariateDerivative2> rebuilt = earth.transform(pv, earth.getBodyFrame(), null);
         Assertions.assertEquals(lat0, rebuilt.getLatitude().getReal(),                1.0e-16);
         Assertions.assertEquals(lat1, rebuilt.getLatitude().getPartialDerivative(1),  5.0e-19);
         Assertions.assertEquals(lat2, rebuilt.getLatitude().getPartialDerivative(2),  5.0e-14);
@@ -645,7 +646,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testMovingGeodeticPoint() {
+    void testMovingGeodeticPoint() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -751,7 +752,7 @@ public class OneAxisEllipsoidTest {
         Assertions.assertEquals(0.0,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
 
         // project pv to ground
-        FieldGeodeticPoint<DerivativeStructure> gpDs = model.transform(
+        FieldGeodeticPoint<UnivariateDerivative2> gpDs = model.transform(
                 model.projectToGround(
                         new TimeStampedPVCoordinates(
                                 date,
@@ -767,7 +768,7 @@ public class OneAxisEllipsoidTest {
         }
 
     @Test
-    public void testTransformVsOldIterativeSobol() {
+    void testTransformVsOldIterativeSobol() {
 
         OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -783,7 +784,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testTransformVsOldIterativePolarAxis() {
+    void testTransformVsOldIterativePolarAxis() {
         OneAxisEllipsoid model = new OneAxisEllipsoid(90, 5.0 / 9.0,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Stream<Vector3D> points = DoubleStream.iterate(0, x -> x + 1.0).limit(150).mapToObj(z -> new Vector3D(0, 0, z));
@@ -791,7 +792,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testTransformVsOldIterativeEquatorial() {
+    void testTransformVsOldIterativeEquatorial() {
         OneAxisEllipsoid model = new OneAxisEllipsoid(90, 5.0 / 9.0,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Stream<Vector3D> points = DoubleStream.iterate(0, x -> x + 1.0).limit(150).mapToObj(x -> new Vector3D(x, 0, 0));
@@ -799,7 +800,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testIssue373() {
+    void testIssue373() {
         final Frame            ecef   = FramesFactory.getITRF(IERSConventions.IERS_2010,true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1./298.257223563, ecef);
         final Vector3D         sunPos = new Vector3D(-149757851422.23358, 8410610314.781021, 14717269835.161688 );
@@ -808,7 +809,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testIsometricLatitude() {
+    void testIsometricLatitude() {
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
 
@@ -829,7 +830,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testFieldIsometricLatitude() {
+    void testFieldIsometricLatitude() {
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
 
@@ -852,7 +853,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testAzimuthBetweenPoints() {
+    void testAzimuthBetweenPoints() {
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
 
@@ -872,7 +873,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testAzimuthBetweenFieldPoints() {
+    void testAzimuthBetweenFieldPoints() {
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
 
@@ -905,7 +906,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testPointNearCenter1() {
+    void testPointNearCenter1() {
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                              Constants.WGS84_EARTH_FLATTENING,
                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, false));
@@ -918,7 +919,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testPointNearCenter2() {
+    void testPointNearCenter2() {
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                              Constants.WGS84_EARTH_FLATTENING,
                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, false));
@@ -931,7 +932,7 @@ public class OneAxisEllipsoidTest {
 
 
     @Test
-    public void testLowestAltitudeIntermediate() {
+    void testLowestAltitudeIntermediate() {
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, false));
@@ -967,7 +968,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testLowestAltitudeIntermediateField() {
+    void testLowestAltitudeIntermediateField() {
         doTestLowestAltitudeIntermediateField(Binary64Field.getInstance());
     }
 
