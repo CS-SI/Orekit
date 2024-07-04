@@ -42,6 +42,6 @@ public interface ObservationType {
      * @param system satellite system
      * @return signal for the satellite system, or null if satellite system not compatible
      */
-    GnssSignal getSignal(final SatelliteSystem system);
+    GnssSignal getSignal(SatelliteSystem system);
 
 }
