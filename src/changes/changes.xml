@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1411">
+            Use Field date when possible in CelestialBodyPointed.
+        </action>
+        <action dev="serrof" type="update" issue="1421">
+            Use UnivariateDerivative2 instead of DerivativeStructure in OneAxisEllispoid.
+        </action>
         <action dev="luc" type="add">
             Allow reading and writing Rinex files with custom satellite systems and observation types.
         </action>
