@@ -164,9 +164,8 @@ public enum PredefinedGnssSignal implements GnssSignal {
         return name;
     }
 
-    /** Get the satellite system for which this frequency is defined.
-     * @return satellite system for which this frequency is defined
-     */
+    /** {@inheritDoc} */
+    @Override
     public SatelliteSystem getSatelliteSystem() {
         return satelliteSystem;
     }
