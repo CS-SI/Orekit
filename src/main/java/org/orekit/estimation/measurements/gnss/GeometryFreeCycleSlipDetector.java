@@ -92,11 +92,11 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
         for (CombinedObservationData cod : phasesGF) {
             final String nameSat = setName(prn, observation.getSatellite().getSystem());
             // Check for cycle-slip detection
-            final GnssSignal signal = cod.getUsedObservationData().get(0).getObservationType().getFrequency(system);
+            final GnssSignal signal = cod.getUsedObservationData().get(0).getObservationType().getSignal(system);
             final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), signal);
             if (!slip) {
                 // Update cycle slip data
-                cycleSlipDataSet(nameSat, date, cod.getValue(), cod.getUsedObservationData().get(0).getObservationType().getFrequency(system));
+                cycleSlipDataSet(nameSat, date, cod.getValue(), cod.getUsedObservationData().get(0).getObservationType().getSignal(system));
             }
         }
 

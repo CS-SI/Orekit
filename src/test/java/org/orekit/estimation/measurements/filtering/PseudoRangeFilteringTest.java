@@ -40,6 +40,7 @@ import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservationParser;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 
@@ -56,8 +57,8 @@ public class PseudoRangeFilteringTest {
     public void testHatchDoppler() throws IOException {
 
         // Definition of the ObservationTypes to study
-        ObservationType dopplerType = ObservationType.D1C;
-        ObservationType rangeType = ObservationType.C1C;
+        ObservationType dopplerType = PredefinedObservationType.D1C;
+        ObservationType rangeType = PredefinedObservationType.C1C;
 
         // Definition of the Satellite to study
         SatelliteSystem system = SatelliteSystem.GPS;
@@ -95,7 +96,7 @@ public class PseudoRangeFilteringTest {
         copiedListObsDataSet.add(obsDataSetNullDoppler);
 
         SingleFrequencySmoother prs = new SingleFrequencySmoother(MeasurementType.DOPPLER, 100.0, 1, 50.0);
-        prs.filterDataSet(copiedListObsDataSet, system, prnNumber, ObservationType.D1C);
+        prs.filterDataSet(copiedListObsDataSet, system, prnNumber, PredefinedObservationType.D1C);
 
         List<SmoothedObservationDataSet> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType);
 
@@ -126,9 +127,9 @@ public class PseudoRangeFilteringTest {
          * Hatch filter.
          */
 
-        ObservationType rangeType = ObservationType.C1;
-        ObservationType phaseTypeF1 = ObservationType.L1;
-        ObservationType phaseTypeF2 = ObservationType.L2;
+        ObservationType rangeType = PredefinedObservationType.C1;
+        ObservationType phaseTypeF1 = PredefinedObservationType.L1;
+        ObservationType phaseTypeF2 = PredefinedObservationType.L2;
 
         SatelliteSystem system = SatelliteSystem.GPS;
         int prnNumber = 3;
@@ -206,9 +207,9 @@ public class PseudoRangeFilteringTest {
 
     @Test
     public void testHatchCarrierPhase2() {
-        ObservationType rangeType = ObservationType.C1;
-        ObservationType phaseTypeF1 = ObservationType.L1;
-        ObservationType phaseTypeF2 = ObservationType.L2;
+        ObservationType rangeType = PredefinedObservationType.C1;
+        ObservationType phaseTypeF1 = PredefinedObservationType.L1;
+        ObservationType phaseTypeF2 = PredefinedObservationType.L2;
 
         SatelliteSystem system = SatelliteSystem.GPS;
         int prnNumber = 7;

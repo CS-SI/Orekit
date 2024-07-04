@@ -19,12 +19,13 @@ package org.orekit.files.rinex.observation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 
-public class ObservationTypeTest {
+public class PredefinedObservationTypeTest {
 
     @Test
     public void testMeasurementType() {
-        for (final ObservationType rf : ObservationType.values()) {
+        for (final ObservationType rf : PredefinedObservationType.values()) {
             final char c = rf.toString().charAt(0);
             switch (rf.getMeasurementType()) {
                 case PSEUDO_RANGE :
