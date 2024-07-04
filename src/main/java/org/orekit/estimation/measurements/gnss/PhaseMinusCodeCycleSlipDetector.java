@@ -97,24 +97,24 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
             // Loop on range measurement
             for (final ObservationData pseudoRange : pseudoRanges) {
                 // Change unit of phase measurement
-                final double wavelength = phase.getObservationType().getFrequency(system).getWavelength();
+                final double wavelength = phase.getObservationType().getSignal(system).getWavelength();
                 final ObservationData phaseInMeters = new ObservationData(phase.getObservationType(),
                                                                           wavelength * phase.getValue(),
                                                                           phase.getLossOfLockIndicator(),
                                                                           phase.getSignalStrength());
 
                 // Check if measurement frequencies are the same
-                if (phase.getObservationType().getFrequency(system) == pseudoRange.getObservationType().getFrequency(system)) {
+                if (phase.getObservationType().getSignal(system) == pseudoRange.getObservationType().getSignal(system)) {
                     // Phase minus Code combination
                     final PhaseMinusCodeCombination phaseMinusCode = MeasurementCombinationFactory.getPhaseMinusCodeCombination(system);
                     final CombinedObservationData cod = phaseMinusCode.combine(phaseInMeters, pseudoRange);
                     final String nameSat = setName(prn, observation.getSatellite().getSystem());
 
                     // Check for cycle-slip detection
-                    final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system));
+                    final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), phase.getObservationType().getSignal(system));
                     if (!slip) {
                         // Update cycle slip data
-                        cycleSlipDataSet(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system));
+                        cycleSlipDataSet(nameSat, date, cod.getValue(), phase.getObservationType().getSignal(system));
                     }
                 }
             }

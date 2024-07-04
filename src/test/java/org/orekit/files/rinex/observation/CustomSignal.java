@@ -14,34 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.files.rinex.observation;
 
+import org.orekit.gnss.GnssSignal;
+import org.orekit.gnss.SatelliteSystem;
 
-/** Observation Types for GNSS measurements.
- * @author Luc Maisonobe
- * @since 13.0
- */
-public interface ObservationType {
+class CustomSignal implements GnssSignal {
 
-    /** Get the name of the observation type.
-     * @return name of the observation type
-     */
-    String getName();
+    @Override
+    public double getRatio() {
+        return 1;
+    }
 
-    /** Get the measurement type.
-     * @return measurement type
-     */
-    MeasurementType getMeasurementType();
+    @Override
+    public String getName() {
+        return "U09";
+    }
 
-    /** Get the signal code.
-     * @return signal code
-     */
-    SignalCode getSignalCode();
+    @Override
+    public SatelliteSystem getSatelliteSystem() {
+        return SatelliteSystem.USER_DEFINED_K;
+    }
 
-    /** Get the signal for a specified satellite system.
-     * @param system satellite system
-     * @return signal for the satellite system, or null if satellite system not compatible
-     */
-    GnssSignal getSignal(final SatelliteSystem system);
+    @Override
+    public double getFrequency() {
+        return GnssSignal.F0;
+    }
 
 }

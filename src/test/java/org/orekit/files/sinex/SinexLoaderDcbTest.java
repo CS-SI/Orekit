@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -110,10 +111,10 @@ public class SinexLoaderDcbTest {
         HashSet<Pair<ObservationType, ObservationType>> ObsPairs = DCBTest.getAvailableObservationPairs();
         
         // Defining the observation pair present in the truncated file.
-        Pair<ObservationType, ObservationType> OP1 = new Pair<>(ObservationType.valueOf("C1C"), ObservationType.valueOf("C1W"));
-        Pair<ObservationType, ObservationType> OP2 = new Pair<>(ObservationType.valueOf("C1C"), ObservationType.valueOf("C2W"));
-        Pair<ObservationType, ObservationType> OP3 = new Pair<>(ObservationType.valueOf("C1C"), ObservationType.valueOf("C5Q"));
-        Pair<ObservationType, ObservationType> OP4 = new Pair<>(ObservationType.valueOf("C2W"), ObservationType.valueOf("C2L"));
+        Pair<ObservationType, ObservationType> OP1 = new Pair<>(PredefinedObservationType.valueOf("C1C"), PredefinedObservationType.valueOf("C1W"));
+        Pair<ObservationType, ObservationType> OP2 = new Pair<>(PredefinedObservationType.valueOf("C1C"), PredefinedObservationType.valueOf("C2W"));
+        Pair<ObservationType, ObservationType> OP3 = new Pair<>(PredefinedObservationType.valueOf("C1C"), PredefinedObservationType.valueOf("C5Q"));
+        Pair<ObservationType, ObservationType> OP4 = new Pair<>(PredefinedObservationType.valueOf("C2W"), PredefinedObservationType.valueOf("C2L"));
         
         HashSet<Pair<ObservationType, ObservationType>> observationSetsRef = new HashSet<>();
         observationSetsRef.add(OP1);

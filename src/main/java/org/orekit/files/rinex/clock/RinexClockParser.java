@@ -45,6 +45,7 @@ import org.orekit.files.rinex.clock.RinexClock.ReferenceClock;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -103,10 +104,15 @@ public class RinexClockParser {
     /** Set of time scales. */
     private final TimeScales timeScales;
 
+    /** Mapper from string to observation type.
+     * @since 13.0
+     */
+    private final Function<? super String, ? extends ObservationType> typeBuilder;
+
     /** Create a clock file parser using default values.
      * <p>
      * This constructor uses the {@link DataContext#getDefault() default data context},
-     * and {@link IGSUtils#guessFrame}.
+     * and {@link IGSUtils#guessFrame} and recognizes only {@link PredefinedObservationType}.
      * </p>
      * @see #RinexClockParser(Function)
      */
@@ -117,27 +123,33 @@ public class RinexClockParser {
 
     /** Create a clock file parser and specify the frame builder.
      * <p>
-     * This constructor uses the {@link DataContext#getDefault() default data context}.
+     * This constructor uses the {@link DataContext#getDefault() default data context}
+     * and recognizes only {@link PredefinedObservationType}.
      * </p>
      * @param frameBuilder is a function that can construct a frame from a clock file
      *                     coordinate system string. The coordinate system can be
      *                     any 5 character string e.g. ITR92, IGb08.
-     * @see #RinexClockParser(Function, TimeScales)
+     * @see #RinexClockParser(Function, Function, TimeScales)
      */
     @DefaultDataContext
     public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder) {
-        this(frameBuilder, DataContext.getDefault().getTimeScales());
+        this(frameBuilder, PredefinedObservationType::valueOf,
+             DataContext.getDefault().getTimeScales());
     }
 
     /** Constructor, build the IGS clock file parser.
      * @param frameBuilder is a function that can construct a frame from a clock file
      *                     coordinate system string. The coordinate system can be
      *                     any 5 character string e.g. ITR92, IGb08.
+     * @param typeBuilder mapper from string to observation type
      * @param timeScales   the set of time scales used for parsing dates.
+     * @since 13.0
      */
     public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder,
+                            final Function<? super String, ? extends ObservationType> typeBuilder,
                             final TimeScales timeScales) {
         this.frameBuilder = frameBuilder;
+        this.typeBuilder  = typeBuilder;
         this.timeScales   = timeScales;
     }
 
@@ -279,6 +291,15 @@ public class RinexClockParser {
             this.file = new RinexClock(frameBuilder);
             this.pendingReferenceClocks = new ArrayList<>();
         }
+
+        /** Build an observation type.
+         * @param type observation type
+         * @return built type
+         */
+        ObservationType buildType(final String type) {
+            return RinexClockParser.this.typeBuilder.apply(type);
+        }
+
     }
 
 
@@ -400,8 +421,7 @@ public class RinexClockParser {
                     // Parse all observation types
                     String currentObsType = scanner.next();
                     while (!currentObsType.equals(SYS)) {
-                        final ObservationType obsType = ObservationType.valueOf(currentObsType);
-                        pi.file.addSystemObservationType(satelliteSystem, obsType);
+                        pi.file.addSystemObservationType(satelliteSystem, pi.buildType(currentObsType));
                         currentObsType = scanner.next();
                     }
                 }
@@ -423,8 +443,7 @@ public class RinexClockParser {
                     // Parse all observation types
                     String currentObsType = scanner.next();
                     while (!currentObsType.equals(SYS)) {
-                        final ObservationType obsType = ObservationType.valueOf(currentObsType);
-                        pi.file.addSystemObservationType(pi.currentSatelliteSystem, obsType);
+                        pi.file.addSystemObservationType(pi.currentSatelliteSystem, pi.buildType(currentObsType));
                         currentObsType = scanner.next();
                     }
                 }
