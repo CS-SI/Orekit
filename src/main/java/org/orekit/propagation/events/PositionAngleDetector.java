@@ -42,7 +42,7 @@ import org.orekit.utils.TimeSpanMap;
  * orbits, latitude argument for {@link OrbitType#CIRCULAR circular} orbits,
  * or longitude argument for {@link OrbitType#EQUINOCTIAL equinoctial} orbits.
  * It does not support {@link OrbitType#CARTESIAN Cartesian} orbits. The
- * angles can be either {@link PositionAngleType#TRUE true}, {link {@link PositionAngleType#MEAN
+ * angles can be either {@link PositionAngleType#TRUE true}, {@link PositionAngleType#MEAN
  * mean} or {@link PositionAngleType#ECCENTRIC eccentric} angles.
  * </p>
  * @author Luc Maisonobe
