@@ -16,8 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import java.util.List;
-
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
@@ -25,6 +23,8 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.List;
 
 /** Factory used to read gravity field files in several supported formats.
  * @author Fabien Maussion
@@ -97,7 +97,7 @@ public class GravityFieldFactory {
      * <p>
      * The default READERS supports ICGEM, SHM, EGM, GRGS and SHA formats with the
      * default names {@link #ICGEM_FILENAME}, {@link #SHM_FILENAME}, {@link
-     * #EGM_FILENAME}, {@link #GRGS_FILENAME}, {@link #SHA_FILENAME} 
+     * #EGM_FILENAME}, {@link #GRGS_FILENAME}, {@link #SHA_FILENAME}
      * and don't allow missing coefficients.
      * </p>
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
