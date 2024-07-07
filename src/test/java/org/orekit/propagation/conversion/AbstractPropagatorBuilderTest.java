@@ -16,8 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
@@ -30,8 +29,12 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.List;
 
 import static org.orekit.Utils.assertParametersDriversValues;
 
@@ -49,6 +52,7 @@ public class AbstractPropagatorBuilderTest {
         final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngleType.TRUE, 10., true) {
 
             @Override
+            @Deprecated
             public PropagatorBuilder copy() {
                 return null;
             }
@@ -113,6 +117,14 @@ public class AbstractPropagatorBuilderTest {
         Assertions.assertEquals(expected.getPositionScale(), actual.getPositionScale());
         Assertions.assertEquals(expected.getInitialOrbitDate(), actual.getInitialOrbitDate());
         Assertions.assertEquals(expected.getAdditionalDerivativesProviders(), actual.getAdditionalDerivativesProviders());
+
+        // Verify that the propagations give the same results
+        AbsoluteDate targetEpoch = expected.getInitialOrbitDate().shiftedBy(7200.0);
+        TimeStampedPVCoordinates expectedCoordinates = expected.buildPropagator().propagate(targetEpoch).getPVCoordinates();
+        TimeStampedPVCoordinates actualCoordinates   = actual.buildPropagator().propagate(targetEpoch).getPVCoordinates();
+        Assertions.assertEquals(0.0, Vector3D.distance(expectedCoordinates.getPosition(), actualCoordinates.getPosition()));
+        Assertions.assertEquals(0.0, Vector3D.distance(expectedCoordinates.getVelocity(), actualCoordinates.getVelocity()));
+
     }
 }
 

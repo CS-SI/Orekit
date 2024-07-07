@@ -22,9 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -132,7 +130,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
 
     @BeforeEach
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("potential:regular-data");
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(583.);
         final Frame inertialFrame = FramesFactory.getEME2000();
@@ -159,7 +157,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
     }
 
     @Test
-    @DisplayName("Test copy method")
+    @SuppressWarnings("deprecation")
     void testCopyMethod() {
 
         // Given
@@ -167,23 +165,40 @@ public class BrouwerLyddanePropagatorBuilderTest {
                 new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
                 new Vector3D(10, 7668.6, 3)), FramesFactory.getGCRF(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider =
-                Mockito.mock(UnnormalizedSphericalHarmonicsProvider.class);
-        Mockito.when(harmonicsProvider.getMu()).thenReturn(Constants.EIGEN5C_EARTH_MU);
-
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        positionScale = 10;
-        final double        m2            = 0;
+        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
 
         final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit, harmonicsProvider,
-                positionAngleType, positionScale,
-                                                                                            m2);
+                PositionAngleType.MEAN, 10.0, 0.0);
 
         // When
         final BrouwerLyddanePropagatorBuilder copyBuilder = builder.copy();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
+    }
+
+    @Test
+    void testClone() {
+
+        // Given
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
+                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                new Vector3D(10, 7668.6, 3)), FramesFactory.getGCRF(),
+                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
+
+        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit, harmonicsProvider,
+                PositionAngleType.MEAN, 10.0, 1.0e-8);
+        builder.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
+
+        // When
+        final BrouwerLyddanePropagatorBuilder copyBuilder = (BrouwerLyddanePropagatorBuilder) builder.clone();
+
+        // Then
+        assertPropagatorBuilderIsACopy(builder, copyBuilder);
+        Assertions.assertEquals(builder.getM2Value(), copyBuilder.getM2Value());
+        Assertions.assertTrue(builder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
+        Assertions.assertTrue(copyBuilder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
     }
 
 }

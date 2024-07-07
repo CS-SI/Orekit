@@ -18,7 +18,6 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -31,19 +30,35 @@ import org.orekit.utils.PVCoordinates;
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 public class KeplerianPropagatorBuilderTest {
+
     @Test
-    @DisplayName("Test copy method")
-    void testCopyMethod() {
+    void testClone() {
 
         // Given
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(
                 new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
                 new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-        final PositionAngleType positionAngleType = null;
-        final double        positionScale = 1;
+        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
 
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, positionAngleType, positionScale);
+        // When
+        final KeplerianPropagatorBuilder copyBuilder = (KeplerianPropagatorBuilder) builder.clone();
+
+        // Then
+        assertPropagatorBuilderIsACopy(builder, copyBuilder);
+
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void testCopyMethod() {
+
+        // Given
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
+                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
+                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
 
         // When
         final KeplerianPropagatorBuilder copyBuilder = builder.copy();

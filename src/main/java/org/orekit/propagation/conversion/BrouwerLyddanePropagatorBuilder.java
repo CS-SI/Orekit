@@ -240,6 +240,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public BrouwerLyddanePropagatorBuilder copy() {
 
         // Find M2 value
@@ -290,4 +291,22 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
+    /**
+     * Get the value of the M2 parameter.
+     * <p>
+     *  M2 represents the combination of all unmodeled secular along-track effects
+     *  (e.g. drag). It is usually fitted during an orbit determination.
+     * </p>
+     * @return the value of the M2 parameter
+     * @since 12.2
+     */
+    public double getM2Value() {
+        double m2 = 0.0;
+        for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
+            if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
+                m2 = driver.getValue();
+            }
+        }
+        return m2;
+    }
 }
