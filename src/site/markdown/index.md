@@ -95,7 +95,7 @@
         * central attraction
         * gravity models including time-dependent like trends and pulsations
           (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
-          EGM and GRGS gravity field files formats, even compressed)
+          EGM, SHA (GRGM1200B and GRGM1200L) and GRGS gravity field files formats, even compressed)
         * atmospheric drag
         * third body attraction (with data for Sun, Moon and all solar systems planets)
         * radiation pressure with eclipses (multiple oblate spheroids occulting bodies, multiple coefficients for bow and wing models)
