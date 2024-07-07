@@ -97,6 +97,15 @@ public class SHAFormatReaderTest {
         });
     }
 
+    @Test
+    public void testCannotParseHeader() {
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Utils.setDataRoot("potential");
+            GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-4_sha.grgm1200b_sigma_truncated_5x5", false));
+            GravityFieldFactory.getUnnormalizedProvider(2, 2);
+        });
+    }
+
     private void checkValue(final double value, final int n, final int m,
                             final double constant, final int maxUlps)
         {
