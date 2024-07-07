@@ -16,18 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -41,6 +29,18 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Reader for the ICGEM gravity field format.
  *
@@ -232,7 +232,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 boolean parseError = false;
                 ++lineNumber;
                 line = line.trim();
-                if (line.length() == 0) {
+                if (line.isEmpty()) {
                     continue;
                 }
                 final String[] tab = SEPARATOR.split(line);
