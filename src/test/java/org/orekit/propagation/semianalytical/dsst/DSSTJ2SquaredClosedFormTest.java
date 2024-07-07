@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -27,9 +24,11 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -37,13 +36,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -60,6 +53,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 public class DSSTJ2SquaredClosedFormTest {
 
     private UnnormalizedSphericalHarmonicsProvider provider;
@@ -70,6 +66,21 @@ public class DSSTJ2SquaredClosedFormTest {
         provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testShortPeriodZeis() {
+        DSSTJ2SquaredClosedForm j2Squared = new DSSTJ2SquaredClosedForm(new ZeisModel(), provider);
+        AuxiliaryElements auxiliaryElements = Mockito.mock(AuxiliaryElements.class);
+        FieldAuxiliaryElements<Binary64> fAuxiliaryElements = Mockito.mock(FieldAuxiliaryElements.class);
+        Binary64[] emptyArray = MathArrays.buildArray(Binary64Field.getInstance(), 0);
+
+        Assertions.assertTrue(j2Squared.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, new double[0]).isEmpty());
+        Assertions.assertTrue(j2Squared.initializeShortPeriodTerms(fAuxiliaryElements, PropagationType.MEAN, emptyArray).isEmpty());
+        j2Squared.updateShortPeriodTerms(new double[0]);
+        j2Squared.updateShortPeriodTerms(emptyArray);
+        Assertions.assertTrue(j2Squared.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, new double[0]).isEmpty());
+        Assertions.assertTrue(j2Squared.initializeShortPeriodTerms(fAuxiliaryElements, PropagationType.MEAN, emptyArray).isEmpty());
+    }
     /**
      * Non regression test for mean element rates using Zeis formulation of J2-squared
      */
@@ -133,7 +144,7 @@ public class DSSTJ2SquaredClosedFormTest {
 
     private void doTestComparisonWithNumerical(final double perigeeAltitude, final double apogeeAltitude,
                                                final double currentDifferenceWithoutJ2Squared,
-                                               final double currenDifferenceWithJ2Squared) {
+                                               final double currentDifferenceWithJ2Squared) {
 
         // Initial spacecraft state
         final Orbit initialOrbit = createOrbit(perigeeAltitude, apogeeAltitude);
@@ -174,7 +185,7 @@ public class DSSTJ2SquaredClosedFormTest {
         // Verify
         Assertions.assertTrue(differenceWithJ2Squared < differenceWithoutJ2Squared);
         Assertions.assertEquals(0.0, differenceWithoutJ2Squared, currentDifferenceWithoutJ2Squared); // Difference between DSST and numerical without J2-Squared
-        Assertions.assertEquals(0.0, differenceWithJ2Squared, currenDifferenceWithJ2Squared); // Difference between DSST and numerical with J2-Squared (not 0.0 due to J2-squared short periods which are not implemented)
+        Assertions.assertEquals(0.0, differenceWithJ2Squared, currentDifferenceWithJ2Squared); // Difference between DSST and numerical with J2-Squared (not 0.0 due to J2-squared short periods which are not implemented)
 
     }
 
@@ -403,5 +414,4 @@ public class DSSTJ2SquaredClosedFormTest {
             jacobian[index][i] += derivatives[i];
         }
     }
-
 }

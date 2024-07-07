@@ -58,6 +58,12 @@
       </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="1390">
+        J2-squared model can now implement their own short period model.
+      </action>
+      <action dev="rafa" type="add" issue="1368">
+        Added a parser for gravity models in SHA format.
+      </action>
       <action dev="luc" type="fix" issue="1449">
         Allow IER91 orIGb08 as valid ITRF names in SP3 files.
       </action>
