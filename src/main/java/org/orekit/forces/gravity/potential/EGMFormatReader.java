@@ -16,21 +16,20 @@
  */
 package org.orekit.forces.gravity.potential;
 
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.Constants;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 
 /**This reader is adapted to the EGM Format.
  *
@@ -101,8 +100,8 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             setTideSystem(TideSystem.TIDE_FREE);
         }
 
-        Container container = new Container(START_DEGREE_ORDER, START_DEGREE_ORDER,
-                                            missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+        TemporaryCoefficientsContainer container = new TemporaryCoefficientsContainer(START_DEGREE_ORDER, START_DEGREE_ORDER,
+                                                                                      missingCoefficientsAllowed() ? 0.0 : Double.NaN);
         boolean okFields = true;
         int       maxDegree  = -1;
         int       maxOrder   = -1;
@@ -128,14 +127,14 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
 
                     if (i <= getMaxParseDegree() && j <= getMaxParseOrder()) {
 
-                        while (!container.flattener.withinRange(i, j)) {
+                        while (!container.getFlattener().withinRange(i, j)) {
                             // we need to resize the container
-                            container = container.resize(container.flattener.getDegree() * 2,
-                                                         container.flattener.getOrder() * 2);
+                            container = container.resize(container.getFlattener().getDegree() * 2,
+                                                         container.getFlattener().getOrder() * 2);
                         }
 
-                        parseCoefficient(tab[2], container.flattener, container.c, i, j, "C", name);
-                        parseCoefficient(tab[3], container.flattener, container.s, i, j, "S", name);
+                        parseCoefficient(tab[2], container.getFlattener(), container.getC(), i, j, "C", name);
+                        parseCoefficient(tab[3], container.getFlattener(), container.getS(), i, j, "S", name);
                         maxDegree = FastMath.max(maxDegree, i);
                         maxOrder  = FastMath.max(maxOrder,  j);
 
@@ -150,8 +149,8 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
 
         if (missingCoefficientsAllowed() && getMaxParseDegree() > 0 && getMaxParseOrder() > 0) {
             // ensure at least the (0, 0) element is properly set
-            if (Precision.equals(container.c[container.flattener.index(0, 0)], 0.0, 0)) {
-                container.c[container.flattener.index(0, 0)] = 1.0;
+            if (Precision.equals(container.getC()[container.getFlattener().index(0, 0)], 0.0, 0)) {
+                container.getC()[container.getFlattener().index(0, 0)] = 1.0;
             }
         }
 
@@ -163,7 +162,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         }
 
         container = container.resize(maxDegree, maxOrder);
-        setRawCoefficients(true, container.flattener, container.c, container.s, name);
+        setRawCoefficients(true, container.getFlattener(), container.getC(), container.getS(), name);
         setReadComplete(true);
 
     }
@@ -184,58 +183,4 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
                                                      final int degree, final int order) {
         return getBaseProvider(wantNormalized, degree, order);
     }
-
-    /** Temporary container for reading coefficients.
-     * @since 11.1
-     */
-    private static class Container {
-
-        /** Converter from triangular to flat form. */
-        private final Flattener flattener;
-
-        /** Cosine coefficients. */
-        private final double[] c;
-
-        /** Sine coefficients. */
-        private final double[] s;
-
-        /** Initial value for coefficients. */
-        private final double initialValue;
-
-        /** Build a container with given degree and order.
-         * @param degree degree of the container
-         * @param order order of the container
-         * @param initialValue initial value for coefficients
-         */
-        Container(final int degree, final int order, final double initialValue) {
-            this.flattener    = new Flattener(degree, order);
-            this.c            = new double[flattener.arraySize()];
-            this.s            = new double[flattener.arraySize()];
-            this.initialValue = initialValue;
-            Arrays.fill(c, initialValue);
-            Arrays.fill(s, initialValue);
-        }
-
-        /** Build a resized container.
-         * @param degree degree of the resized container
-         * @param order order of the resized container
-         * @return resized container
-         */
-        Container resize(final int degree, final int order) {
-            final Container resized = new Container(degree, order, initialValue);
-            for (int n = 0; n <= degree; ++n) {
-                for (int m = 0; m <= FastMath.min(n, order); ++m) {
-                    if (flattener.withinRange(n, m)) {
-                        final int rIndex = resized.flattener.index(n, m);
-                        final int index  = flattener.index(n, m);
-                        resized.c[rIndex] = c[index];
-                        resized.s[rIndex] = s[index];
-                    }
-                }
-            }
-            return resized;
-        }
-
-    }
-
 }

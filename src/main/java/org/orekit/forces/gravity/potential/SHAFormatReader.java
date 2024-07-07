@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -26,7 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /** Reader for the SHA gravity field format.
@@ -46,7 +44,6 @@ import java.util.regex.Pattern;
  * @author Rafael Ayala
  */
 public class SHAFormatReader extends PotentialCoefficientsReader {
-
 
     /** Default "0" text value. */
     private static final String ZERO = "0.0";
@@ -91,8 +88,8 @@ public class SHAFormatReader extends PotentialCoefficientsReader {
         int       maxDegree;
         int       maxOrder;
         String    line = null;
-        Container container = new Container(START_DEGREE_ORDER, START_DEGREE_ORDER,
-                                            missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+        TemporaryCoefficientsContainer container = new TemporaryCoefficientsContainer(START_DEGREE_ORDER, START_DEGREE_ORDER,
+                                                                                      missingCoefficientsAllowed() ? 0.0 : Double.NaN);
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             for (line = r.readLine(); line != null; line = r.readLine()) {
                 ++lineNumber;
@@ -108,12 +105,12 @@ public class SHAFormatReader extends PotentialCoefficientsReader {
                     maxDegree = Integer.parseInt(headerFields[2]);
                     maxOrder = Integer.parseInt(headerFields[3]);
                     container = container.resize(maxDegree, maxOrder);
-                    parseCoefficient(ONE, container.flattener, container.c, 0, 0, "C", name);
-                    parseCoefficient(ZERO, container.flattener, container.s, 0, 0, "S", name);
-                    parseCoefficient(ZERO, container.flattener, container.s, 1, 0, "C", name);
-                    parseCoefficient(ZERO, container.flattener, container.s, 1, 0, "S", name);
-                    parseCoefficient(ZERO, container.flattener, container.s, 1, 1, "C", name);
-                    parseCoefficient(ZERO, container.flattener, container.s, 1, 1, "S", name);
+                    parseCoefficient(ONE, container.getFlattener(), container.getC(), 0, 0, "C", name);
+                    parseCoefficient(ZERO, container.getFlattener(), container.getS(), 0, 0, "S", name);
+                    parseCoefficient(ZERO, container.getFlattener(), container.getS(), 1, 0, "C", name);
+                    parseCoefficient(ZERO, container.getFlattener(), container.getS(), 1, 0, "S", name);
+                    parseCoefficient(ZERO, container.getFlattener(), container.getS(), 1, 1, "C", name);
+                    parseCoefficient(ZERO, container.getFlattener(), container.getS(), 1, 1, "S", name);
                 } else if (lineNumber > 1) {
                     // match the pattern of the data lines
                     if (!DATA_LINE.matcher(line).matches()) {
@@ -124,15 +121,15 @@ public class SHAFormatReader extends PotentialCoefficientsReader {
                     // we want to assign the values of the data fields to the corresponding variables
                     final int n = Integer.parseInt(dataFields[0]);
                     final int m = Integer.parseInt(dataFields[1]);
-                    parseCoefficient(dataFields[2], container.flattener, container.c, n, m, "C", name);
-                    parseCoefficient(dataFields[3], container.flattener, container.s, n, m, "S", name);
+                    parseCoefficient(dataFields[2], container.getFlattener(), container.getC(), n, m, "C", name);
+                    parseCoefficient(dataFields[3], container.getFlattener(), container.getS(), n, m, "S", name);
                 }
             }
         } catch (NumberFormatException nfe) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                       lineNumber, name, line);
         }
-        setRawCoefficients(true, container.flattener, container.c, container.s, name);
+        setRawCoefficients(true, container.getFlattener(), container.getC(), container.getS(), name);
         setReadComplete(true);
     }
 
@@ -151,55 +148,4 @@ public class SHAFormatReader extends PotentialCoefficientsReader {
         return getBaseProvider(wantNormalized, degree, order);
     }
 
-    /** Temporary container for reading coefficients.
-     * @since 12.2
-     */
-    private static class Container {
-
-        /** Converter from triangular to flat form. */
-        private final Flattener flattener;
-
-        /** Cosine coefficients. */
-        private final double[] c;
-
-        /** Sine coefficients. */
-        private final double[] s;
-
-        /** Initial value for coefficients. */
-        private final double initialValue;
-
-        /** Build a container with given degree and order.
-         * @param degree degree of the container
-         * @param order order of the container
-         * @param initialValue initial value for coefficients
-         */
-        Container(final int degree, final int order, final double initialValue) {
-            this.flattener    = new Flattener(degree, order);
-            this.c            = new double[flattener.arraySize()];
-            this.s            = new double[flattener.arraySize()];
-            this.initialValue = initialValue;
-            Arrays.fill(c, initialValue);
-            Arrays.fill(s, initialValue);
-        }
-
-        /** Build a resized container.
-         * @param degree degree of the resized container
-         * @param order order of the resized container
-         * @return resized container
-         */
-        Container resize(final int degree, final int order) {
-            final Container resized = new Container(degree, order, initialValue);
-            for (int n = 0; n <= degree; ++n) {
-                for (int m = 0; m <= FastMath.min(n, order); ++m) {
-                    if (flattener.withinRange(n, m)) {
-                        final int rIndex = resized.flattener.index(n, m);
-                        final int index  = flattener.index(n, m);
-                        resized.c[rIndex] = c[index];
-                        resized.s[rIndex] = s[index];
-                    }
-                }
-            }
-            return resized;
-        }
-    }
 }
