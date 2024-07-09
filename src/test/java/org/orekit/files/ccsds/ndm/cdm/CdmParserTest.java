@@ -1913,4 +1913,22 @@ public class CdmParserTest {
         OrekitException exception = Assertions.assertThrows(OrekitException.class, () -> parser.parseMessage(source));
         Assertions.assertEquals("value for key X has not been initialized", exception.getMessage());
     }
+
+    @Test
+    public void test_issue_1458() {
+
+        // File
+        final String ex = "/ccsds/cdm/CDMExample_issue1458.xml";
+
+        // Initialize the parser
+        final CdmParser parser = new ParserBuilder().buildCdmParser();
+
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+
+        // Generated CDM file
+        Cdm file = parser.parseMessage(source);
+
+        // dummy assertion: the aim of the test is to show that empty unit can be parsed
+        Assertions.assertEquals(null, file.getDataObject1().getODParametersBlock());
+    }
 }
