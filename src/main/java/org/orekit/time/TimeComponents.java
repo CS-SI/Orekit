@@ -44,6 +44,11 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Constant for commonly used hour 12:00:00. */
     public static final TimeComponents H12 = new TimeComponents(12, 0, 0);
 
+    /** Constant for NaN time.
+     * @since 13.0
+     */
+    public static final TimeComponents NaN   = new TimeComponents(0, 0, Double.NaN);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20160331L;
 

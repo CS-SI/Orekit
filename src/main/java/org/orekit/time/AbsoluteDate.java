@@ -883,7 +883,7 @@ public class AbsoluteDate
      * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
     public AbsoluteDate shiftedBy(final double dt) {
-        return new AbsoluteDate(this, dt);
+        return Double.isNaN(dt) ? new NaNDate(this) : new AbsoluteDate(this, dt);
     }
 
     /** Get a time-shifted date.
@@ -1498,6 +1498,48 @@ public class AbsoluteDate
                                            final int fractionDigits) {
         return this.getComponents(timeScale)
                 .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
+    }
+
+    /** Local class for NaN dates.
+     * @since 13.0
+     */
+    private static final class NaNDate extends AbsoluteDate {
+
+        /** Base date. */
+        private final AbsoluteDate base;
+
+        /** Simple constructor.
+         * @param base base date
+         */
+        NaNDate(final AbsoluteDate base) {
+            super(base.epoch, base.offset);
+            this.base = base;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double getOffset() {
+            return Double.NaN;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double durationFrom(final AbsoluteDate date) {
+            return Double.NaN;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double offsetFrom(final AbsoluteDate date, final TimeScale timeScale) {
+            return Double.NaN;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public DateTimeComponents getComponents(final TimeScale timeScale) {
+            return new DateTimeComponents(base.getComponents(timeScale).getDate(), TimeComponents.NaN);
+        }
+
     }
 
 }
