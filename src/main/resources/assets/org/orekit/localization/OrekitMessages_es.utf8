@@ -888,3 +888,6 @@ WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
 INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
 
+# offset {0} is out of range for time unit {1}: [ {2}, {3} ]
+OFFSET_OUT_OF_RANGE_FOR_TIME_UNIT = <MISSING TRANSLATION>
+

@@ -895,9 +895,9 @@ public class AbsoluteDateTest {
         final TimeScale tai = TimeScalesFactory.getTAI();
         final AbsoluteDate t0 = new AbsoluteDate(2010, 6, 21, 18, 42, 0.281, tai);
 
-        // 0.1 is not representable exactly as a double, and is not either a multiple of 2⁻⁶²
-        // we will accumulate small errors at each iteration
-        checkIteration(0.1, t0, 10000, 3.0, 0.0124, 1.0e-4);
+        // 0.1 is not representable exactly in double precision
+        // we will accumulate error, between -0.5ULP and -3ULP at each iteration
+        checkIteration(0.1, t0, 10000, 3.0, -0.3876, 1.0e-4);
 
         // 0.125 is representable exactly in double precision
         // error will be null
@@ -1555,6 +1555,10 @@ public class AbsoluteDateTest {
               Assertions.assertEquals(-i * dayInTimeUnit, reference.durationFrom(plusDays, timeUnit));
             }
 
+            long d1 = 124000001L;
+            AbsoluteDate m = reference.shiftedBy(-1.0e-9 * d1);
+            long d2 = reference.durationFrom(m, timeUnit);
+            System.out.println(d1 + " "  + d2 + " " + reference.durationFrom(m));
             for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
               AbsoluteDate minus = reference.shiftedBy(-1e-9 * ns);
               AbsoluteDate plus = reference.shiftedBy(1e-9 * ns);

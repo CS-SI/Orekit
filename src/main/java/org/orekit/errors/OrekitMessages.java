@@ -927,7 +927,10 @@ public enum OrekitMessages implements Localizable {
     WALKER_INCONSISTENT_PLANES("number of planes {0} is inconsistent with number of satellites {1} in Walker constellation"),
 
     /** INFINITE_NRMSISE00_DENSITY. */
-    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model");
+    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model"),
+
+    /** OFFSET_OUT_OF_RANGE_FOR_TIME_UNIT. */
+    OFFSET_OUT_OF_RANGE_FOR_TIME_UNIT("offset {0} is out of range for time unit {1}: [ {2}, {3} ]");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

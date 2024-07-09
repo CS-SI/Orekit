@@ -266,7 +266,7 @@ public class AbsoluteDate
      * <p>Beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT.</p> */
     private final long epoch;
 
-    /** Offset from the reference epoch in units of 2^-SHIFT seconds (about 0.217 attoseconds, 2.17 10⁻¹⁹s).
+    /** Offset from the reference epoch in attoseconds.
      * Negative values denote dates at infinity.
      */
     private final long offset;
@@ -968,12 +968,9 @@ public class AbsoluteDate
      * @since 12.1
      */
     public long durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
-        final long deltaEpoch = timeUnit.convert(epoch - instant.epoch, TimeUnit.SECONDS);
-
-        final long multiplier = timeUnit.convert(1, TimeUnit.NANOSECONDS);
-        final long deltaOffset = ((offset - instant.offset) * multiplier) / 1000000000L;
-
-        return deltaEpoch + deltaOffset;
+        return SplitOffset.subtract(new SplitOffset(epoch, offset),
+                                    new SplitOffset(instant.epoch, instant.offset)).
+            getRoundedOffset(timeUnit);
     }
 
     /** Compute the apparent <em>clock</em> offset between two instant <em>in the
