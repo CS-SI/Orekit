@@ -1460,9 +1460,14 @@ public class AbsoluteDateTest {
                 CoreMatchers.is("2000-01-01T00:00:" + nan + " TAI"));
         // infinity is special cased, but I can make AbsoluteDate.offset larger than
         // Long.MAX_VALUE see #584
-        AbsoluteDate d = present.shiftedBy(1e300).shiftedBy(1e300).shiftedBy(1e300);
-        MatcherAssert.assertThat(d.toString(),
-                CoreMatchers.is("(-9223372036854775779 + 3.0E300) seconds past epoch"));
+        try {
+            present.shiftedBy(1e300);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException e) {
+            Assertions.assertEquals(OrekitMessages.OFFSET_OUT_OF_RANGE_FOR_TIME_UNIT, e.getSpecifier());
+            Assertions.assertEquals(1.0e300, (Double) e.getParts()[0], 1.0e285);
+            Assertions.assertEquals(TimeUnit.SECONDS, e.getParts()[1]);
+        }
     }
 
     /** Test for issue 943: management of past and future infinity in equality checks. */

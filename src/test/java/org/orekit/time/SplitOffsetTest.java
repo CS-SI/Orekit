@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
@@ -70,6 +71,11 @@ public class SplitOffsetTest {
         final SplitOffset so = new SplitOffset(123.4567890123456789);
         Assertions.assertEquals(123L, so.getSeconds());
         Assertions.assertEquals(456789012345680576L, so.getAttoSeconds());
+    }
+
+    @Test
+    public void testOutOfRangeDouble() {
+        doTestOutOfRange((double) Long.MAX_VALUE);
     }
 
     @Test
@@ -150,9 +156,27 @@ public class SplitOffsetTest {
 
     }
 
+    private void doTestOutOfRange(final double offset) {
+        Assertions.assertEquals( offset, new SplitOffset( offset).getRoundedOffset(TimeUnit.SECONDS), 1.0e-15 * offset);
+        Assertions.assertEquals(-offset, new SplitOffset(-offset).getRoundedOffset(TimeUnit.SECONDS), 1.0e-15 * offset);
+        checkException(FastMath.nextAfter( offset, Double.POSITIVE_INFINITY));
+        checkException(FastMath.nextAfter(-offset, Double.NEGATIVE_INFINITY));
+    }
+
+    private void checkException(final double offset) {
+        try {
+            new SplitOffset(offset);
+            Assertions.fail("an exceptions should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.OFFSET_OUT_OF_RANGE_FOR_TIME_UNIT, oe.getSpecifier());
+            Assertions.assertEquals(offset, (Double) oe.getParts()[0], 1.0e-15 * FastMath.abs(offset));
+            Assertions.assertEquals(TimeUnit.SECONDS, oe.getParts()[1]);
+        }
+    }
+
     private void doTestOutOfRange(final long offset, final TimeUnit unit) {
-        Assertions.assertEquals(offset, new SplitOffset( offset, unit).getRoundedOffset(unit));
-        Assertions.assertEquals(offset, new SplitOffset(-offset, unit).getRoundedOffset(unit));
+        Assertions.assertEquals( offset, new SplitOffset( offset, unit).getRoundedOffset(unit));
+        Assertions.assertEquals(-offset, new SplitOffset(-offset, unit).getRoundedOffset(unit));
         checkException( offset + 1L, unit);
         checkException(-offset - 1L, unit);
     }

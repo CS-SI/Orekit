@@ -94,6 +94,11 @@ public class SplitOffset {
      * @param offset offset
      */
     public SplitOffset(final double offset) {
+        if (offset < Long.MIN_VALUE || offset > Long.MAX_VALUE) {
+            throw new OrekitException(OrekitMessages.OFFSET_OUT_OF_RANGE_FOR_TIME_UNIT,
+                                      offset, TimeUnit.SECONDS, Long.MIN_VALUE, Long.MIN_VALUE);
+        }
+
         final double tiSeconds = offset < 0.0 ? FastMath.ceil(offset) : FastMath.floor(offset);
         seconds     = (long) tiSeconds;
         attoSeconds = FastMath.round((offset - tiSeconds) * ATTOS_IN_SECOND);
