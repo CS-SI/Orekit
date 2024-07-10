@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="12.1.2" date="TBD" description="TBD">
+      <action dev="dorian" type="fix" issue="1458">
+        Fixed parsing of CDM in case of empty unit value.
+      </action>
+      <action dev="dorian" type="fix" issue="1319">
+        Fixed parsing of CDM in case of empty optional value.
+      </action>
       <action dev="bryan" type="fix" issue="1452">
         Fixed inappropriate DefaultDataContext annotations in ModifiedSaatamoinenModel.
       </action>
