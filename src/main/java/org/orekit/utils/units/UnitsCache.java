@@ -46,7 +46,7 @@ public class UnitsCache {
      */
     public Unit getUnits(final String specification) {
 
-        if (specification == null) {
+        if (specification == null || specification.isEmpty()) {
             return Unit.NONE;
         }
 
