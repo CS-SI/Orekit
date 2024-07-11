@@ -157,13 +157,6 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
         this.provider               = attitudeProvider;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public EphemerisPropagatorBuilder copy() {
-        return new EphemerisPropagatorBuilder(states, stateInterpolator, covariances, covarianceInterpolator, provider);
-    }
-
     /** {@inheritDoc}. */
     @Override
     public Propagator buildPropagator(final double[] normalizedParameters) {

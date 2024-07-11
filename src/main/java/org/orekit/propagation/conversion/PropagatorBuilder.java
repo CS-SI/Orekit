@@ -35,13 +35,6 @@ import java.util.List;
  */
 public interface PropagatorBuilder extends Cloneable {
 
-    /** Create a new instance identical to this one.
-     * @return new instance identical to this one
-     * @deprecated as of 12.2, replaced by {@link Object#clone()}
-     */
-    @Deprecated
-    PropagatorBuilder copy();
-
     /** Build a propagator.
      * @param normalizedParameters normalized values for the selected parameters
      * @return an initialized propagator

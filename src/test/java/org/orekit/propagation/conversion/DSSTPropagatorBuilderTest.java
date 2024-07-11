@@ -158,30 +158,6 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testCopyMethod() {
-
-        // Given
-        final ODEIntegratorBuilder integratorBuilder = new ClassicalRungeKuttaIntegratorBuilder(3600.0);
-        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
-                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
-                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
-                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-
-        final DSSTPropagatorBuilder builder =
-                new DSSTPropagatorBuilder(orbit, integratorBuilder, 1.0, PropagationType.OSCULATING, PropagationType.OSCULATING);
-
-        builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
-
-        // When
-        final DSSTPropagatorBuilder copyBuilder = builder.copy();
-
-        // Then
-        assertDSSTPropagatorBuilderIsACopy(builder, copyBuilder);
-
-    }
-
-    @Test
     void testClone() {
 
         // Given

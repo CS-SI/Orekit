@@ -215,11 +215,4 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public EcksteinHechlerPropagatorBuilder copy() {
-        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
-                                                    getPositionScale(), getAttitudeProvider());
-    }
 }

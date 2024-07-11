@@ -46,31 +46,6 @@ public class NumericalPropagatorBuilderTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testCopyMethod() {
-
-        // Given
-        final ODEIntegratorBuilder integratorBuilder = new ClassicalRungeKuttaIntegratorBuilder(60);
-        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
-                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
-                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
-                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-
-        final NumericalPropagatorBuilder builder =
-                new NumericalPropagatorBuilder(orbit, integratorBuilder, PositionAngleType.MEAN, 1.0, Utils.defaultLaw());
-
-        builder.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                                    GravityFieldFactory.getNormalizedProvider(2, 0)));
-
-        // When
-        final NumericalPropagatorBuilder copyBuilder = builder.copy();
-
-        // Then
-        assertNumericalPropagatorBuilderIsACopy(builder, copyBuilder);
-
-    }
-
-    @Test
     void testClone() {
 
         // Given

@@ -41,29 +41,6 @@ public class EcksteinHechlerPropagatorBuilderTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testCopyMethod() {
-
-        // Given
-        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
-                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
-                new Vector3D(10, 7668.6, 3)), FramesFactory.getGCRF(),
-                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-
-        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(6, 0);
-
-        final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit, harmonicsProvider,
-                PositionAngleType.MEAN, 10.0);
-
-        // When
-        final EcksteinHechlerPropagatorBuilder copyBuilder = builder.copy();
-
-        // Then
-        assertPropagatorBuilderIsACopy(builder, copyBuilder);
-
-    }
-
-    @Test
     void testClone() {
 
         // Given

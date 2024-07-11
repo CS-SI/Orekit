@@ -108,24 +108,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         this.mass        = Propagator.DEFAULT_MASS;
     }
 
-    /** Create a copy of a NumericalPropagatorBuilder object.
-     * @return Copied version of the NumericalPropagatorBuilder
-     */
-    @Deprecated
-    public NumericalPropagatorBuilder copy() {
-        final NumericalPropagatorBuilder copyBuilder =
-                        new NumericalPropagatorBuilder(createInitialOrbit(),
-                                                       builder,
-                                                       getPositionAngleType(),
-                                                       getPositionScale(),
-                                                       getAttitudeProvider());
-        copyBuilder.setMass(mass);
-        for (ForceModel model : forceModels) {
-            copyBuilder.addForceModel(model);
-        }
-        return copyBuilder;
-    }
-
     /** Get the integrator builder.
      * @return the integrator builder
      * @since 9.2
