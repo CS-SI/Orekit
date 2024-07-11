@@ -17,6 +17,7 @@
 package org.orekit.forces.drag;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -25,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -33,9 +35,15 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 import java.util.Collections;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AbstractDragForceModelTest {
 
@@ -125,6 +133,104 @@ class AbstractDragForceModelTest {
         @Override
         public List<ParameterDriver> getParametersDrivers() {
             return Collections.emptyList();
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testIssue1453() {
+        // GIVEN
+        // Load Orekit data
+        Utils.setDataRoot("regular-data");
+
+        // Create mock field
+        final Field<Gradient> fakeField = new Field<Gradient>() {
+            @Override
+            public Gradient getZero() {
+                return new Gradient(0, 0);
+            }
+
+            @Override
+            public Gradient getOne() {
+                return new Gradient(1, 1);
+            }
+
+            @Override
+            public Class<Gradient> getRuntimeClass() {
+                return null;
+            }
+        };
+
+        // Create mock date
+        final FieldAbsoluteDate<Gradient> fakeFieldAbsoluteDate = new FieldAbsoluteDate<>(fakeField);
+
+        // Create fake PV
+        final FieldVector3D<Gradient> pos =
+                new FieldVector3D<>(new FakeGradient(1, 1), new FakeGradient(2, 20), new FakeGradient(3, 30));
+
+        final FieldVector3D<Gradient> vel =
+                new FieldVector3D<>(new FakeGradient(4, 40), new FakeGradient(5, 50), new FakeGradient(6, 60));
+
+        final TimeStampedFieldPVCoordinates<Gradient> fakePV =
+                new TimeStampedFieldPVCoordinates<>(fakeFieldAbsoluteDate, pos, vel, FieldVector3D.getZero(fakeField));
+
+        // Create mock mass
+        final Gradient mockMass = mock(Gradient.class);
+        when(mockMass.getFreeParameters()).thenReturn(6);
+
+        // Create mock spacecraft state
+        final FieldSpacecraftState<Gradient> mockSpacecraftState = mock(FieldSpacecraftState.class);
+        when(mockSpacecraftState.getPVCoordinates()).thenReturn(fakePV);
+        when(mockSpacecraftState.getMass()).thenReturn(mockMass);
+
+        // Create drag force
+        final DragForce dragForce = new DragForce(null,null);
+
+        // WHEN & THEN
+        assertFalse(dragForce.isGradientStateDerivative(mockSpacecraftState));
+        ((FakeGradient) pos.getY()).setMutableGradient(new double[] { 0, 1 });
+        assertFalse(dragForce.isGradientStateDerivative(mockSpacecraftState));
+
+        ((FakeGradient) pos.getZ()).setMutableGradient(new double[] { 0, 0, 1 });
+        assertFalse(dragForce.isGradientStateDerivative(mockSpacecraftState));
+
+        ((FakeGradient) vel.getX()).setMutableGradient(new double[] { 0, 0, 0, 1 });
+        assertFalse(dragForce.isGradientStateDerivative(mockSpacecraftState));
+
+        ((FakeGradient) vel.getY()).setMutableGradient(new double[] { 0, 0, 0, 0, 1 });
+        assertFalse(dragForce.isGradientStateDerivative(mockSpacecraftState));
+
+        ((FakeGradient) vel.getZ()).setMutableGradient(new double[] { 0, 0, 0, 0, 0, 1 });
+        assertTrue(dragForce.isGradientStateDerivative(mockSpacecraftState));
+    }
+
+    private static class FakeGradient extends Gradient {
+
+        private double   mutableValue;
+        private double[] mutableGradient;
+
+        public FakeGradient(final double value, final double... gradient) {
+            super(value, gradient);
+            this.mutableValue    = value;
+            this.mutableGradient = gradient;
+        }
+
+        @Override
+        public double getValue() {
+            return mutableValue;
+        }
+
+        @Override
+        public double[] getGradient() {
+            return mutableGradient;
+        }
+
+        public void setMutableValue(final double mutableValue) {
+            this.mutableValue = mutableValue;
+        }
+
+        public void setMutableGradient(final double[] mutableGradient) {
+            this.mutableGradient = mutableGradient;
         }
     }
 
