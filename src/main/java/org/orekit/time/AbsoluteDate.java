@@ -74,7 +74,7 @@ import org.orekit.utils.Constants;
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double)},
  *   {@link #parseCCSDSUnsegmentedTimeCode(byte, byte, byte[], AbsoluteDate)},
  *   {@link #parseCCSDSDaySegmentedTimeCode(byte, byte[], DateComponents)},
- *   {@link #durationFrom(AbsoluteDate)}, {@link #compareTo(AbsoluteDate)}, {@link #equals(Object)}
+ *   {@link #durationFrom(AbsoluteDate)}, {@link #compareTo(SplitOffset)}, {@link #equals(Object)}
  *   and {@link #hashCode()}.</p>
  *   </li>
  * </ul>
@@ -102,7 +102,8 @@ import org.orekit.utils.Constants;
  * @see ChronologicalComparator
  */
 public class AbsoluteDate
-    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<AbsoluteDate>, Serializable {
+    extends SplitOffset
+    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<SplitOffset>, Serializable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
      * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes
@@ -256,20 +257,8 @@ public class AbsoluteDate
     /** Attoseconds in one second. */
     private static final long ATTOS_IN_SECOND = 1000000000000000000L;
 
-    /** Attoseconds in one half-second. */
-    private static final long ATTOS_IN_HALF_SECOND = 500000000000000000L;
-
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240702L;
-
-    /** Reference epoch in seconds from 2000-01-01T12:00:00 TAI.
-     * <p>Beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT.</p> */
-    private final long epoch;
-
-    /** Offset from the reference epoch in attoseconds.
-     * Negative values denote dates at infinity.
-     */
-    private final long offset;
+    private static final long serialVersionUID = 20240711L;
 
     /** Create an instance with a default value ({@link #J2000_EPOCH}).
      *
@@ -279,8 +268,7 @@ public class AbsoluteDate
      */
     @DefaultDataContext
     public AbsoluteDate() {
-        epoch  = J2000_EPOCH.epoch;
-        offset = J2000_EPOCH.offset;
+        super(J2000_EPOCH.getSeconds(), J2000_EPOCH.getAttoSeconds());
     }
 
     /** Build an instance from a location (parsed from a string) in a {@link TimeScale time scale}.
@@ -316,17 +304,11 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final DateComponents date, final TimeComponents time,
                         final TimeScale timeScale) {
-
-        // epoch without the seconds and sub-seconds part
-        final long epochToMinute = 60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
-                                   time.getMinute() - time.getMinutesFromUTC() - 720L);
-
-        final SplitOffset sum = SplitOffset.add(new SplitOffset(time.getSecond()),
-                                                new SplitOffset(timeScale.offsetToTAI(date, time)));
-
-        this.epoch  = epochToMinute + sum.getSeconds();
-        this.offset = sum.getAttoSeconds();
-
+        super(new SplitOffset(60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
+                              time.getMinute() - time.getMinutesFromUTC() - 720L),
+                              0L),
+              new SplitOffset(time.getSecond()),
+              new SplitOffset(timeScale.offsetToTAI(date, time)));
     }
 
     /** Build an instance from a location in a {@link TimeScale time scale}.
@@ -451,21 +433,7 @@ public class AbsoluteDate
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-        if (since.offset < 0) {
-            // date was already at infinity
-            offset = since.offset;
-            epoch  = since.epoch;
-        } else if (Double.isInfinite(elapsedDuration)) {
-            // date at infinity
-            offset = -1L;
-            epoch  = (elapsedDuration < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
-        } else {
-            // regular offset
-            final SplitOffset sum = SplitOffset.add(new SplitOffset(elapsedDuration),
-                                                    new SplitOffset(since.epoch, since.offset));
-            this.epoch  = sum.getSeconds();
-            this.offset = sum.getAttoSeconds();
-        }
+         super(since, new SplitOffset(elapsedDuration));
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -486,10 +454,7 @@ public class AbsoluteDate
      * @since 12.1
      */
     public AbsoluteDate(final AbsoluteDate since, final long elapsedDuration, final TimeUnit timeUnit) {
-        final SplitOffset sum = SplitOffset.add(new SplitOffset(elapsedDuration, timeUnit),
-                                                new SplitOffset(since.epoch, since.offset));
-        this.epoch  = sum.getSeconds();
-        this.offset = sum.getAttoSeconds();
+        super(since, new SplitOffset(elapsedDuration, timeUnit));
     }
 
     /** Build an instance from an apparent clock offset with respect to another
@@ -526,8 +491,7 @@ public class AbsoluteDate
      * @since 9.0
      */
     AbsoluteDate(final long epoch, final double offset) {
-        this.epoch  = epoch;
-        this.offset = FastMath.round(offset * ATTOS_IN_SECOND);
+        super(new SplitOffset(epoch, 0L), new SplitOffset(offset));
     }
 
     /** Extract time components from a number of milliseconds within the day.
@@ -558,7 +522,7 @@ public class AbsoluteDate
      * @since 9.0
      */
     long getEpoch() {
-        return epoch;
+        return getSeconds();
     }
 
     /** Get the offset from the reference epoch in seconds.
@@ -569,7 +533,7 @@ public class AbsoluteDate
      * @since 9.0
      */
     double getOffset() {
-        return ((double) offset) / ATTOS_IN_SECOND;
+        return ((double) getAttoSeconds()) / ATTOS_IN_SECOND;
     }
 
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
@@ -883,7 +847,7 @@ public class AbsoluteDate
      * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
     public AbsoluteDate shiftedBy(final double dt) {
-        return Double.isNaN(dt) ? new NaNDate(this) : new AbsoluteDate(this, dt);
+        return new AbsoluteDate(this, dt);
     }
 
     /** Get a time-shifted date.
@@ -919,36 +883,7 @@ public class AbsoluteDate
      * @see #AbsoluteDate(AbsoluteDate, double)
      */
     public double durationFrom(final AbsoluteDate instant) {
-        if (offset < 0) {
-            // date at infinity
-            if (instant.offset < 0) {
-                // both dates at infinity
-                if (epoch * instant.epoch < 0) {
-                    // one date at future infinity, the other one at past infinity
-                    return epoch < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-                } else {
-                    // both dates at same infinity
-                    return Double.NaN;
-                }
-            } else {
-                return epoch < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-            }
-        } else if (instant.offset < 0) {
-            // date at infinity
-            return instant.epoch < 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-        } else {
-            // compute differences avoiding cancellations around whole seconds
-            long deltaE = epoch - instant.epoch;
-            long deltaO = offset - instant.offset;
-            if (deltaO < -ATTOS_IN_HALF_SECOND) {
-                deltaE -= 1;
-                deltaO += ATTOS_IN_SECOND;
-            } else if (deltaO > ATTOS_IN_HALF_SECOND) {
-                deltaE += 1;
-                deltaO -= ATTOS_IN_SECOND;
-            }
-            return deltaE + ((double) deltaO) / ATTOS_IN_SECOND;
-        }
+        return SplitOffset.subtract(this, instant).toDouble();
     }
 
     /** Compute the physically elapsed duration between two instants.
@@ -968,9 +903,7 @@ public class AbsoluteDate
      * @since 12.1
      */
     public long durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
-        return SplitOffset.subtract(new SplitOffset(epoch, offset),
-                                    new SplitOffset(instant.epoch, instant.offset)).
-            getRoundedOffset(timeUnit);
+        return SplitOffset.subtract(this, instant).getRoundedOffset(timeUnit);
     }
 
     /** Compute the apparent <em>clock</em> offset between two instant <em>in the
@@ -997,10 +930,10 @@ public class AbsoluteDate
      * @see #AbsoluteDate(AbsoluteDate, double, TimeScale)
      */
     public double offsetFrom(final AbsoluteDate instant, final TimeScale timeScale) {
-        final SplitOffset durationA = new SplitOffset(epoch - instant.epoch, offset - instant.offset);
-        final SplitOffset durationB = new SplitOffset(timeScale.offsetFromTAI(this) - timeScale.offsetFromTAI(instant));
-        final SplitOffset sum       = SplitOffset.add(durationA, durationB);
-        return sum.getSeconds() + ((double) sum.getAttoSeconds()) / ATTOS_IN_SECOND;
+        final SplitOffset duration = new SplitOffset(SplitOffset.subtract(this, instant),
+                                                     new SplitOffset(timeScale.offsetFromTAI(this) -
+                                                                     timeScale.offsetFromTAI(instant)));
+        return duration.getSeconds() + ((double) duration.getAttoSeconds()) / ATTOS_IN_SECOND;
     }
 
     /** Compute the offset between two time scales at the current instant.
@@ -1026,7 +959,7 @@ public class AbsoluteDate
      * of the instant in the time scale
      */
     public Date toDate(final TimeScale timeScale) {
-        final double time = epoch + ((double) offset) / ATTOS_IN_SECOND + timeScale.offsetFromTAI(this);
+        final double time = toDouble() + timeScale.offsetFromTAI(this);
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
     }
 
@@ -1066,18 +999,18 @@ public class AbsoluteDate
      */
     public DateTimeComponents getComponents(final TimeScale timeScale) {
 
-        if (offset < 0) {
-            // special handling for past and future infinity
-            if (epoch < 0) {
+        if (!isFinite()) {
+            // special handling for NaN, past and future infinity
+            if (isNaN()) {
+                return new DateTimeComponents(DateComponents.J2000_EPOCH, new TimeComponents(0, 0, Double.NaN));
+            } else if (isNegativeInfinity()) {
                 return new DateTimeComponents(DateComponents.MIN_EPOCH, TimeComponents.H00);
             } else {
-                return new DateTimeComponents(DateComponents.MAX_EPOCH,
-                                              new TimeComponents(23, 59, 59.999));
+                return new DateTimeComponents(DateComponents.MAX_EPOCH, new TimeComponents(23, 59, 59.999));
             }
         }
 
-        final SplitOffset sum = SplitOffset.add(new SplitOffset(epoch, offset),
-                                                new SplitOffset(timeScale.offsetFromTAI(this)));
+        final SplitOffset sum = SplitOffset.add(this, new SplitOffset(timeScale.offsetFromTAI(this)));
 
         // split date and time
         final long offset2000A = sum.getSeconds() + 43200L;
@@ -1193,15 +1126,6 @@ public class AbsoluteDate
         return getComponents(timeZone.getOffset(milliseconds) / 60000, utc);
     }
 
-    /** Compare the instance with another date.
-     * @param date other date to compare the instance to
-     * @return a negative integer, zero, or a positive integer as this date
-     * is before, simultaneous, or after the specified date.
-     */
-    public int compareTo(final AbsoluteDate date) {
-        return epoch == date.epoch ? Long.compare(offset, date.offset) : Long.compare(epoch, date.epoch);
-    }
-
     /** {@inheritDoc} */
     public AbsoluteDate getDate() {
         return this;
@@ -1219,8 +1143,7 @@ public class AbsoluteDate
         }
 
         if (other instanceof AbsoluteDate) {
-            final AbsoluteDate date = (AbsoluteDate) other;
-            return epoch == date.epoch && offset == date.offset;
+            return compareTo((AbsoluteDate) other) == 0;
         }
 
         return false;
@@ -1329,7 +1252,7 @@ public class AbsoluteDate
      * @return hashcode
      */
     public int hashCode() {
-        return (int) ((epoch ^ (epoch >>> 32)) ^ (offset ^ (offset >>> 32)));
+        return (int) ((getSeconds() ^ (getSeconds() >>> 32)) ^ (getAttoSeconds() ^ (getAttoSeconds() >>> 32)));
     }
 
     /**
@@ -1365,7 +1288,7 @@ public class AbsoluteDate
                 // catch OrekitException, OrekitIllegalStateException, etc.
                 // Likely failed to convert to ymdhms.
                 // Give user some indication of what time it is.
-                return "(" + this.epoch + " + " + this.offset + ") seconds past epoch";
+                return "(" + this.getSeconds() + "s + " + this.getAttoSeconds() + "as) seconds past epoch";
             }
         }
         // CHECKSTYLE: resume IllegalCatch check
@@ -1498,48 +1421,6 @@ public class AbsoluteDate
                                            final int fractionDigits) {
         return this.getComponents(timeScale)
                 .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
-    }
-
-    /** Local class for NaN dates.
-     * @since 13.0
-     */
-    private static final class NaNDate extends AbsoluteDate {
-
-        /** Base date. */
-        private final AbsoluteDate base;
-
-        /** Simple constructor.
-         * @param base base date
-         */
-        NaNDate(final AbsoluteDate base) {
-            super(base.epoch, base.offset);
-            this.base = base;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        double getOffset() {
-            return Double.NaN;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public double durationFrom(final AbsoluteDate date) {
-            return Double.NaN;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public double offsetFrom(final AbsoluteDate date, final TimeScale timeScale) {
-            return Double.NaN;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public DateTimeComponents getComponents(final TimeScale timeScale) {
-            return new DateTimeComponents(base.getComponents(timeScale).getDate(), TimeComponents.NaN);
-        }
-
     }
 
 }

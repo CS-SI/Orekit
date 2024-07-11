@@ -280,8 +280,7 @@ public class PredictedEOPHistoryTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(predicted);
 
-        Assertions.assertTrue(bos.size() > 215000);
-        Assertions.assertTrue(bos.size() < 216000);
+        Assertions.assertEquals(215376, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

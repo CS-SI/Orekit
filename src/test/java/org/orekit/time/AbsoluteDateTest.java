@@ -875,18 +875,18 @@ public class AbsoluteDateTest {
     public void testSubFemtoSecondPositiveShift() {
         TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate since = new AbsoluteDate(2008, 4, 7, 0, 53, 0.0078125, tai);
-        double deltaT = FastMath.scalb(1.0, -51);
+        double deltaT = 1.0e-17;
         AbsoluteDate shifted = since.shiftedBy(deltaT);
-        Assertions.assertEquals(deltaT, shifted.durationFrom(since), 2.1e-4 * deltaT);
+        Assertions.assertEquals(deltaT, shifted.durationFrom(since), 1.0e-25);
     }
 
     @Test
     public void testSubFemtoSecondNegativeShift() {
         TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate since = new AbsoluteDate(2008, 4, 7, 0, 53, 0.0078125, tai);
-        double deltaT = FastMath.scalb(-1.0, -51);
+        double deltaT = -1.0e-17;
         AbsoluteDate shifted = since.shiftedBy(deltaT);
-        Assertions.assertEquals(deltaT, shifted.durationFrom(since), -2.1e-4 * deltaT);
+        Assertions.assertEquals(deltaT, shifted.durationFrom(since), 1.0e-25);
     }
 
     @Test
@@ -897,7 +897,7 @@ public class AbsoluteDateTest {
 
         // 0.1 is not representable exactly in double precision
         // we will accumulate error, between -0.5ULP and -3ULP at each iteration
-        checkIteration(0.1, t0, 10000, 3.0, -0.3876, 1.0e-4);
+        checkIteration(0.1, t0, 10000, 3.0, -0.3874, 1.0e-4);
 
         // 0.125 is representable exactly in double precision
         // error will be null
@@ -1100,7 +1100,7 @@ public class AbsoluteDateTest {
         check(d, 1966, 1, 1, 0, 0, 0, 1, 0, 0);
         check(d.shiftedBy(zeroUlp), 1966, 1, 1, 0, 0, 0, 0.5, 0, 0);
         check(d.shiftedBy(attoSecond), 1966, 1, 1, 0, 0, attoSecond, 0.5, 0, 0);
-        check(d.shiftedBy(one), 1966, 1, 1, 0, 0, one * (1 - factorPost), 0.5, 2, 0);
+        check(d.shiftedBy(one), 1966, 1, 1, 0, 0, one * (1 - factorPost), 1, 3, 0);
         check(d.shiftedBy(59).shiftedBy(one), 1966, 1, 1, 0, 0, sixty * (1 - factorPost), 1, 1, 0);
         check(d.shiftedBy(86399).shiftedBy(one), 1966, 1, 1, 23, 59, sixty - 86400 * factorPost, 1, 1, 0);
         check(d.shiftedBy(-zeroUlp), 1966, 1, 1, 0, 0, 0, 0.5, 0, 0);
@@ -1141,7 +1141,7 @@ public class AbsoluteDateTest {
         DateTimeComponents actual = date.shiftedBy(Double.NaN).getComponents(utc);
         DateComponents dc = actual.getDate();
         TimeComponents tc = actual.getTime();
-        MatcherAssert.assertThat(dc.getYear(), CoreMatchers.is(2009));
+        MatcherAssert.assertThat(dc.getYear(), CoreMatchers.is(2000));
         MatcherAssert.assertThat(dc.getMonth(), CoreMatchers.is(1));
         MatcherAssert.assertThat(dc.getDay(), CoreMatchers.is(1));
         MatcherAssert.assertThat(tc.getHour(), CoreMatchers.is(0));
@@ -1263,9 +1263,9 @@ public class AbsoluteDateTest {
         if ("1.8".equals(System.getProperty("java.specification.version"))) {
             // \uFFFD is "�", the unicode replacement character
             // that is what DecimalFormat uses instead of "NaN"
-            check(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFDZ");
+            check(date.shiftedBy(Double.NaN), "2000-01-01T00:00:\uFFFDZ");
         } else {
-            check(date.shiftedBy(Double.NaN), "2009-01-01T00:00:NaNZ");
+            check(date.shiftedBy(Double.NaN), "2000-01-01T00:00:NaNZ");
         }
     }
 
@@ -1373,9 +1373,9 @@ public class AbsoluteDateTest {
         if ("1.8".equals(System.getProperty("java.specification.version"))) {
             // \uFFFD is "�", the unicode replacement character
             // that is what DecimalFormat used instead of "NaN" up to Java 8
-            checkToString(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFD");
+            checkToString(date.shiftedBy(Double.NaN), "2000-01-01T00:00:\uFFFD");
         } else {
-            checkToString(date.shiftedBy(Double.NaN), "2009-01-01T00:00:NaN");
+            checkToString(date.shiftedBy(Double.NaN), "2000-01-01T00:00:NaN");
         }
     }
 
@@ -1460,14 +1460,7 @@ public class AbsoluteDateTest {
                 CoreMatchers.is("2000-01-01T00:00:" + nan + " TAI"));
         // infinity is special cased, but I can make AbsoluteDate.offset larger than
         // Long.MAX_VALUE see #584
-        try {
-            present.shiftedBy(1e300);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException e) {
-            Assertions.assertEquals(OrekitMessages.OFFSET_OUT_OF_RANGE_FOR_TIME_UNIT, e.getSpecifier());
-            Assertions.assertEquals(1.0e300, (Double) e.getParts()[0], 1.0e285);
-            Assertions.assertEquals(TimeUnit.SECONDS, e.getParts()[1]);
-        }
+        Assertions.assertTrue(Double.isInfinite(present.shiftedBy(1e300).durationFrom(present)));
     }
 
     /** Test for issue 943: management of past and future infinity in equality checks. */
@@ -1508,12 +1501,12 @@ public class AbsoluteDateTest {
                                                  FastMath.scalb(6629298651489277.0, -55),
                                                  TimeScalesFactory.getTT());
             AbsoluteDate after = date.shiftedBy(Precision.EPSILON);
-            Field epochField = AbsoluteDate.class.getDeclaredField("epoch");
-            epochField.setAccessible(true);
-            Field offsetField = AbsoluteDate.class.getDeclaredField("offset");
-            offsetField.setAccessible(true);
-            Assertions.assertEquals(624098367L, epochField.getLong(date));
-            Assertions.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), 1.0e-18 * offsetField.getLong(date), 1.0e-18);
+            Field secondsField = SplitOffset.class.getDeclaredField("seconds");
+            secondsField.setAccessible(true);
+            Field attosecondsField = SplitOffset.class.getDeclaredField("attoSeconds");
+            attosecondsField.setAccessible(true);
+            Assertions.assertEquals(624098367L, secondsField.getLong(date));
+            Assertions.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), 1.0e-18 * attosecondsField.getLong(date), 1.0e-18);
             Assertions.assertEquals(Precision.EPSILON, after.durationFrom(date), 1.0e-18);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
             Assertions.fail(e.getLocalizedMessage());
@@ -1528,12 +1521,12 @@ public class AbsoluteDateTest {
             double dt = FastMath.scalb(6596520010750484.0, -39);
             AbsoluteDate shifted = reference.shiftedBy(dt);
             AbsoluteDate after   = shifted.shiftedBy(Precision.EPSILON);
-            Field epochField = AbsoluteDate.class.getDeclaredField("epoch");
-            epochField.setAccessible(true);
-            Field offsetField = AbsoluteDate.class.getDeclaredField("offset");
-            offsetField.setAccessible(true);
-            Assertions.assertEquals(624110398L, epochField.getLong(shifted));
-            Assertions.assertEquals((1.0 - 1.69267e-13) * 1.0e18, (double) offsetField.getLong(shifted), 1.0e-15);
+            Field secondsField = SplitOffset.class.getDeclaredField("seconds");
+            secondsField.setAccessible(true);
+            Field attosecondsField = SplitOffset.class.getDeclaredField("attoSeconds");
+            attosecondsField.setAccessible(true);
+            Assertions.assertEquals(624110398L, secondsField.getLong(shifted));
+            Assertions.assertEquals((1.0 - 1.6922e-13) * 1.0e18, (double) attosecondsField.getLong(shifted), 1.0e-15);
             Assertions.assertEquals(Precision.EPSILON, after.durationFrom(shifted), 1.0e-18);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
             Assertions.fail(e.getLocalizedMessage());

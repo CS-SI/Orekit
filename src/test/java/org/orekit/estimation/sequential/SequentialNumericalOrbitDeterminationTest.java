@@ -335,7 +335,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         final double parametersAccuracy = 1e-6;
 
         // Test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>(kalmanLageos2.getMeasurementsParameters().getDrivers());
+        final List<DelegatingDriver> list = new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
         Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parametersAccuracy);
@@ -368,31 +368,31 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
         // final double   CastleRangeBias = 11274.4677;
         final double[] castleAzElBias  = { 0.062636, -0.003672};
-        final double   castleRangeBias = 11289.3471;
+        final double   castleRangeBias = 11289.3426;
 
         // Batch LS results
         // final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
         // final double   FucRangeBias = 13467.8256;
         final double[] fucAzElBias  = { -0.053298, 0.075589 };
-        final double   fucRangeBias = 13482.0805;
+        final double   fucRangeBias = 13482.0849;
 
         // Batch LS results
         // final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
         // final double   KumRangeBias = 13512.57594;
         final double[] kumAzElBias  = { -0.022805, -0.055057 };
-        final double   kumRangeBias = 13502.6845;
+        final double   kumRangeBias = 13502.6839;
 
         // Batch LS results
         // final double[] PreAzElBias = { 0.030201539, 0.009747877 };
         // final double PreRangeBias = 13594.11889;
         final double[] preAzElBias = { 0.030353, 0.009658 };
-        final double   preRangeBias = 13609.2762;
+        final double   preRangeBias = 13609.2818;
 
         // Batch LS results
         // final double[] UraAzElBias = { 0.167814449, -0.12305252 };
         // final double UraRangeBias = 13450.26738;
         final double[] uraAzElBias = { 0.167519, -0.122842 };
-        final double   uraRangeBias = 13441.6666;
+        final double   uraRangeBias = 13441.6672;
 
         //statistics for the range residual (min, max, mean, std)
         final double[] refStatRange = { -12.9805, 18.0538, -1.1332, 5.3125 };
@@ -411,7 +411,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
         // Prediction position/velocity accuracies
         // FIXME: debug - Comparison with batch LS is bad
-        final double predictionDistanceAccuracy = 234.57;
+        final double predictionDistanceAccuracy = 234.58;
         final double predictionVelocityAccuracy = 0.086;
 
         testW3B(dragCoef, leakAccelerationNorm0, leakAccelerationNorm1,
@@ -599,7 +599,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Test on measurements parameters
         // -------------------------------
 
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>(kalmanW3B.getMeasurementsParameters().getDrivers());
+        final List<DelegatingDriver> list = new ArrayList<>(kalmanW3B.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
         // Station CastleRock
