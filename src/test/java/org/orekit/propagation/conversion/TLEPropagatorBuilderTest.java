@@ -17,10 +17,7 @@
 
 package org.orekit.propagation.conversion;
 
-import static org.orekit.Utils.assertParametersDriversValues;
-
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
@@ -28,52 +25,46 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 
+import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
+
 public class TLEPropagatorBuilderTest {
 
     @Test
-    @DisplayName("Test copy method")
+    @SuppressWarnings("deprecation")
     void testCopyMethod() {
 
         // Given
         final DataContext dataContext = Utils.setDataRoot("regular-data");
         final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        final PositionAngleType positionAngleType = null;
-        final double        positionScale = 1;
-
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, positionAngleType, positionScale, dataContext,
+        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0, dataContext,
                                                                       new FixedPointTleGenerationAlgorithm());
 
         // When
         final TLEPropagatorBuilder copyBuilder = builder.copy();
 
         // Then
-        assertTlePropagatorBuilderIsACopy(builder, copyBuilder);
+        assertPropagatorBuilderIsACopy(builder, copyBuilder);
+        Assertions.assertEquals(builder.getTemplateTLE(), copyBuilder.getTemplateTLE());
 
     }
 
-    private void assertTlePropagatorBuilderIsACopy(final TLEPropagatorBuilder expected, final TLEPropagatorBuilder actual) {
+    @Test
+    void testClone() {
 
-        // They should not be the same instance
-        Assertions.assertNotEquals(expected, actual);
+        // Given
+        final DataContext dataContext = Utils.setDataRoot("regular-data");
+        final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0, dataContext,
+                new FixedPointTleGenerationAlgorithm());
 
-        Assertions.assertArrayEquals(expected.getSelectedNormalizedParameters(),
-                                     actual.getSelectedNormalizedParameters());
+        // When
+        final TLEPropagatorBuilder copyBuilder = (TLEPropagatorBuilder) builder.clone();
 
-        assertParametersDriversValues(expected.getOrbitalParametersDrivers(),
-                                      actual.getOrbitalParametersDrivers());
+        // Then
+        assertPropagatorBuilderIsACopy(builder, copyBuilder);
+        Assertions.assertEquals(builder.getTemplateTLE(), copyBuilder.getTemplateTLE());
 
-        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
-        Assertions.assertEquals(expected.getMu(), actual.getMu());
-        Assertions.assertEquals(expected.getOrbitType(), actual.getOrbitType());
-        Assertions.assertEquals(expected.getPositionAngleType(), actual.getPositionAngleType());
-        Assertions.assertEquals(expected.getPositionScale(), actual.getPositionScale());
-        Assertions.assertEquals(expected.getInitialOrbitDate(), actual.getInitialOrbitDate());
-        Assertions.assertEquals(expected.getAdditionalDerivativesProviders(), actual.getAdditionalDerivativesProviders());
-        Assertions.assertEquals(expected.getTemplateTLE(), actual.getTemplateTLE());
-
-        // Attitude provider is necessarily different due to how a TLEPropagatorBuilder is defined
-        //Assertions.assertEquals(expected.getAttitudeProvider(), actual.getAttitudeProvider());
     }
-
 }
