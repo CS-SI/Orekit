@@ -16,14 +16,13 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -37,6 +36,9 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Base class for propagator builders.
  * @author Pascal Parraud
@@ -216,6 +218,15 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** {@inheritDoc} */
     public ParameterDriversList getPropagationParametersDrivers() {
         return propagationDrivers;
+    }
+
+    @Override
+    public AbstractPropagatorBuilder clone() {
+        try {
+            return (AbstractPropagatorBuilder) super.clone();
+        } catch (CloneNotSupportedException cnse) {
+            throw new OrekitException(OrekitMessages.PROPAGATOR_BUILDER_NOT_CLONEABLE);
+        }
     }
 
     /**

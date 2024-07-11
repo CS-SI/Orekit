@@ -51,7 +51,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
-
 /** This class provides elements to propagate TLE's.
  * <p>
  * The models used are SGP4 and SDP4, initially proposed by NORAD as the unique convenient
@@ -247,13 +246,21 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param teme TEME frame.
      * @return the correct propagator.
      * @since 10.1
+     * @see #selectExtrapolator(TLE, Frame, AttitudeProvider)
      */
     public static TLEPropagator selectExtrapolator(final TLE tle, final Frame teme) {
-        return selectExtrapolator(
-                tle,
-                FrameAlignedProvider.of(teme),
-                DEFAULT_MASS,
-                teme);
+        return selectExtrapolator(tle, teme, FrameAlignedProvider.of(teme));
+    }
+
+    /** Selects the extrapolator to use with the selected TLE.
+     * @param tle the TLE to propagate.
+     * @param teme TEME frame.
+     * @param attitudeProvider provider for attitude computation
+     * @return the correct propagator.
+     * @since 12.2
+     */
+    public static TLEPropagator selectExtrapolator(final TLE tle, final Frame teme, final AttitudeProvider attitudeProvider) {
+        return selectExtrapolator(tle, attitudeProvider, DEFAULT_MASS, teme);
     }
 
     /** Selects the extrapolator to use with the selected TLE.

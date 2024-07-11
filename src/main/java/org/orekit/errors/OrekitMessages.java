@@ -927,7 +927,10 @@ public enum OrekitMessages implements Localizable {
     WALKER_INCONSISTENT_PLANES("number of planes {0} is inconsistent with number of satellites {1} in Walker constellation"),
 
     /** INFINITE_NRMSISE00_DENSITY. */
-    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model");
+    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model"),
+
+    /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
+    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

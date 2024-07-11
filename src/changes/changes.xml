@@ -58,6 +58,9 @@
       </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="1378">
+        PropagatorBuilder are now Cloneable.
+      </action>
       <action dev="bryan" type="update" issue="1390">
         J2-squared model can now implement their own short period model.
       </action>

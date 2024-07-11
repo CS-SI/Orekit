@@ -159,6 +159,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public EphemerisPropagatorBuilder copy() {
         return new EphemerisPropagatorBuilder(states, stateInterpolator, covariances, covarianceInterpolator, provider);
     }
