@@ -31,30 +31,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class SplitOffset implements Serializable {
 
-    /** Indicator for NaN offset. */
-    private static final long NAN_INDICATOR      = -1L;
-
-    /** Indicator for infinite offset. */
-    private static final long INFINITY_INDICATOR = -2L;
-
-    /** Milliseconds in one second. */
-    private static final long MILLIS_IN_SECOND = 1000L;
-
-    /** Microseconds in one second. */
-    private static final long MICROS_IN_SECOND = 1000000L;
-
-    /** Nanoseconds in one second. */
-    private static final long NANOS_IN_SECOND = 1000000000L;
-
-    /** Attoseconds in one second. */
-    private static final long ATTOS_IN_SECOND = 1000000000000000000L;
-
-    /** Attoseconds in one half-second. */
-    private static final long ATTOS_IN_HALF_SECOND = 500000000000000000L;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240711L;
-
     /** Split offset representing 0. */
     public static final SplitOffset ZERO = new SplitOffset(0L, 0L);
 
@@ -88,14 +64,40 @@ public class SplitOffset implements Serializable {
     /** Split offset representing 1 day. */
     public static final SplitOffset DAY = new SplitOffset(86400L, 0L);
 
+    // CHECKSTYLE: stop ConstantName
     /** Split offset representing a NaN. */
     public static final SplitOffset NaN = new SplitOffset(Double.NaN);
+    // CHECKSTYLE: resume ConstantName
 
     /** Split offset representing netgative infinity. */
     public static final SplitOffset NEGATIVE_INFINITY = new SplitOffset(Double.NEGATIVE_INFINITY);
 
     /** Split offset representing netgative infinity. */
     public static final SplitOffset POSITIVE_INFINITY = new SplitOffset(Double.POSITIVE_INFINITY);
+
+    /** Indicator for NaN offset. */
+    private static final long NAN_INDICATOR      = -1L;
+
+    /** Indicator for infinite offset. */
+    private static final long INFINITY_INDICATOR = -2L;
+
+    /** Milliseconds in one second. */
+    private static final long MILLIS_IN_SECOND = 1000L;
+
+    /** Microseconds in one second. */
+    private static final long MICROS_IN_SECOND = 1000000L;
+
+    /** Nanoseconds in one second. */
+    private static final long NANOS_IN_SECOND = 1000000000L;
+
+    /** Attoseconds in one second. */
+    private static final long ATTOS_IN_SECOND = 1000000000000000000L;
+
+    /** Attoseconds in one half-second. */
+    private static final long ATTOS_IN_HALF_SECOND = 500000000000000000L;
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20240711L;
 
     /** Seconds part. */
     private final long seconds;
