@@ -433,7 +433,7 @@ public class AbsoluteDate
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-         super(since, new SplitOffset(elapsedDuration));
+        super(since, new SplitOffset(elapsedDuration));
     }
 
     /** Build an instance from an elapsed duration since to another instant.
