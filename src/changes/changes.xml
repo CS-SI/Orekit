@@ -30,6 +30,37 @@
       <action dev="rafa" type="add" issue="1368">
         Added a parser for gravity models in SHA format.
       </action>
+    </release>
+    <release version="12.1.2" date="13/07/2024"
+             description="Version 12.1.2 is a patch release of Orekit.
+             It fixes multiple issues related to the parsing of CCSDS CDM, the generation of
+             IntelsatElevenElements, the initialization of the IntervalEventTrigger, and the
+             parsing of IGS related files.
+             Version 12.1.2 also include multiple JavaDoc fixes.">
+      <action dev="bryan" type="fix" issue="1459">
+        Fixed JavaDoc typo in WalkerConstellationSlot.
+      </action>
+      <action dev="vincent" type="update" issue="1453">
+        Increased validation coverage on branching conditions.
+      </action>
+      <action dev="dorian" type="fix" issue="1458">
+        Fixed parsing of CDM in case of empty unit value.
+      </action>
+      <action dev="dorian" type="fix" issue="1319">
+        Fixed parsing of CDM in case of empty optional value.
+      </action>
+      <action dev="bryan" type="fix" issue="1452">
+        Fixed inappropriate DefaultDataContext annotations in ModifiedSaatamoinenModel.
+      </action>
+      <action dev="serrof" type="fix" issue="1445">
+        IntervalEventTrigger should initialize firingIntervalDetector in init.
+      </action>
+      <action dev="serrof" type="fix" issue="1444">
+        Fixed performance issue in HolmesFeatherstoneAttractionModel.
+      </action>
+      <action dev="bryan" type="fix" issue="1451">
+        Allow accessing generated elements of Intelsat 11 elements propagator.
+      </action>
       <action dev="luc" type="fix" issue="1449">
         Allow IER91 orIGb08 as valid ITRF names in SP3 files.
       </action>

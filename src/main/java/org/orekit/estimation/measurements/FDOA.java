@@ -62,9 +62,9 @@ public class FDOA extends GroundReceiverMeasurement<FDOA> {
     /** Simple constructor.
      * @param primeStation ground station that gives the date of the measurement
      * @param secondStation ground station that gives the measurement
-     * @param centreFrequency satellite emitter frequency
+     * @param centreFrequency satellite emitter frequency (Hz)
      * @param date date of the measurement
-     * @param fdoa observed value (s)
+     * @param fdoa observed value (Hz)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
