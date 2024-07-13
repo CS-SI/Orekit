@@ -16,10 +16,6 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
@@ -45,6 +41,10 @@ import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.InterpolationTableLoader;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /** The modified Saastamoinen model. Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
@@ -216,7 +216,6 @@ public class ModifiedSaastamoinenModel implements TroposphericModel, DiscreteTro
      * @param pth0Provider provider for atmospheric pressure, temperature and humidity at reference altitude
      * @see #ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider, String, DataProvidersManager)
      */
-    @DefaultDataContext
     public ModifiedSaastamoinenModel(final PressureTemperatureHumidityProvider pth0Provider) {
         this(pth0Provider, defaultDeltaR());
     }
@@ -282,7 +281,6 @@ public class ModifiedSaastamoinenModel implements TroposphericModel, DiscreteTro
      *
      * @return a Saastamoinen model with standard environmental values
      */
-    @DefaultDataContext
     public static ModifiedSaastamoinenModel getStandardModel() {
         final double altitude    = 0;
         final double pressure    = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);

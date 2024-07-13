@@ -34,18 +34,16 @@ If you need help with either ask on the development section of the Orekit
 forum.
 
 Once you have a SonaType OSS account, the corresponding credentials must be set
-in the `servers` section of the `$HOME/.m2/settings.xml` file, using an id of
-`ossrh`:
+in the `servers` section of the `$HOME/.m2/settings.xml` file, using a generated
+token. Token generation procedure is detailed in [sonatype website](https://central.sonatype.org/publish/generate-token/?__hstc=31049440.752958227ec9a663b14fcde02f9eff5e.1718741134490.1718741134490.1718741740031.2&__hssc=31049440.2.1718741740031&__hsfp=677136553):
 
     <servers>
       <server>
         <id>ossrh</id>
-        <username>the user name to connect to the OSS site</username>
-        <password>the encrypted password</password>
+        <username>the generated tokenuser</username>
+        <password>the generated tokenkey</password>
       </server>
     </servers>
-
-Use `mvn -ep` to generate an encrypted password.
 
 ### Install Graphviz 2.38
 

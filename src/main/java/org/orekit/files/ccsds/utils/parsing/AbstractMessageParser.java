@@ -23,12 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.LexicalAnalyzerSelector;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
@@ -211,25 +209,31 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
             if (filteredToken.getType() == TokenType.ENTRY &&
                 !COMMENT.equals(filteredToken.getName()) &&
                 (filteredToken.getRawContent() == null || filteredToken.getRawContent().isEmpty())) {
-                // value is empty, which is forbidden by CCSDS standards
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, filteredToken.getName());
+                // value is empty, token is ignored
+                if (--remaining == 0) {
+                    // we have processed all filtered tokens
+                    return;
+                }
             }
-
-            // loop over the various states until one really processes the token
-            for (int i = 0; i < MAX_LOOP; ++i) {
-                if (current.processToken(filteredToken)) {
-                    // filtered token was properly processed
-                    if (--remaining == 0) {
-                        // we have processed all filtered tokens
-                        return;
-                    } else {
-                        // we need to continue processing the remaining filtered tokens
-                        break;
+            else {
+                // loop over the various states until one really processes the token
+                for (int i = 0; i < MAX_LOOP; ++i) {
+                    if (current.processToken(filteredToken)) {
+                        // filtered token was properly processed
+                        if (--remaining == 0) {
+                            // we have processed all filtered tokens
+                            return;
+                        }
+                        else {
+                            // we need to continue processing the remaining filtered tokens
+                            break;
+                        }
                     }
-                } else {
-                    // filtered token was not processed by current processing state, switch to next one
-                    current = next;
-                    next    = fallback;
+                    else {
+                        // filtered token was not processed by current processing state, switch to next one
+                        current = next;
+                        next = fallback;
+                    }
                 }
             }
 

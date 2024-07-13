@@ -21,14 +21,21 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.maneuvers.trigger.IntervalEventTrigger;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -84,4 +91,55 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
         Assertions.assertEquals(100.0, dates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 
+    @Test
+    void testInit() {
+        // GIVEN
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final DateDetector mockedDetector = Mockito.mock(DateDetector.class);
+        final OrekitException expectedException = Mockito.mock(OrekitException.class);
+        Mockito.doThrow(expectedException).when(mockedDetector).init(mockedState, date);
+        Mockito.when(mockedDetector.withHandler(Mockito.any(EventHandler.class))).thenReturn(mockedDetector);
+        final TestIntervalEventTrigger trigger = new TestIntervalEventTrigger(mockedDetector);
+        // WHEN & THEN
+        final Exception actualException = Assertions.assertThrows(Exception.class,
+                () -> trigger.init(mockedState, date));
+        Assertions.assertEquals(expectedException, actualException);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testInitField() {
+        // GIVEN
+        final FieldSpacecraftState<Complex> mockedState = Mockito.mock(FieldSpacecraftState.class);
+        Mockito.when(mockedState.toSpacecraftState()).thenReturn(Mockito.mock(SpacecraftState.class));
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance());
+        final DateDetector mockedDetector = Mockito.mock(DateDetector.class);
+        final OrekitException expectedException = Mockito.mock(OrekitException.class);
+        Mockito.doThrow(expectedException).when(mockedDetector)
+                .init(Mockito.any(SpacecraftState.class), Mockito.any(AbsoluteDate.class));
+        Mockito.when(mockedDetector.withHandler(Mockito.any(EventHandler.class))).thenReturn(mockedDetector);
+        final TestIntervalEventTrigger trigger = new TestIntervalEventTrigger(mockedDetector);
+        // WHEN & THEN
+        final Exception actualException = Assertions.assertThrows(Exception.class,
+                () -> trigger.init(mockedState, date));
+        Assertions.assertEquals(expectedException, actualException);
+    }
+
+    private static class TestIntervalEventTrigger extends IntervalEventTrigger<DateDetector> {
+
+        public TestIntervalEventTrigger(DateDetector prototypeFiringIntervalDetector) {
+            super(prototypeFiringIntervalDetector);
+        }
+
+        @Override
+        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S> convertIntervalDetector(Field<S> field, DateDetector detector) {
+            return null;
+        }
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
+        }
+    }
 }
