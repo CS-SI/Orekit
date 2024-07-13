@@ -43,10 +43,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
-import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
-import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.*;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Segment;
@@ -91,12 +88,12 @@ public class AEMParserTest {
         Assertions.assertEquals("UTC",     segment0.getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
         Assertions.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
-        Assertions.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
+        Assertions.assertTrue(segment0.getMetadata().getCenter().isPresent());
+        segment0.getMetadata().getCenter().ifPresent(c ->  Assertions.assertEquals("MARS BARYCENTER", c.getName()));
         Assertions.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
         Assertions.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
         Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
-        Assertions.assertNull(segment0.getMetadata().getCenter().getBody());
         Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStartTime());
         Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, 2.5555, TimeScalesFactory.getUTC()),
@@ -140,12 +137,12 @@ public class AEMParserTest {
         Assertions.assertEquals("UTC",                      segment1.getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR",     segment1.getMetadata().getObjectName());
         Assertions.assertEquals("1996-062A",                segment1.getMetadata().getObjectID());
-        Assertions.assertEquals("MARS BARYCENTER",          segment1.getMetadata().getCenter().getName());
+        Assertions.assertTrue(segment1.getMetadata().getCenter().isPresent());
+        segment1.getMetadata().getCenter().ifPresent(c ->  Assertions.assertEquals("MARS BARYCENTER", c.getName()));
         Assertions.assertEquals(1996,                       segment1.getMetadata().getLaunchYear());
         Assertions.assertEquals(62,                         segment1.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",                        segment1.getMetadata().getLaunchPiece());
         Assertions.assertFalse(segment1.getMetadata().getHasCreatableBody());
-        Assertions.assertNull(segment1.getMetadata().getCenter().getBody());
         Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getStartTime());
         Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.5555, TimeScalesFactory.getUTC()),
@@ -347,14 +344,15 @@ public class AEMParserTest {
         Assertions.assertEquals("UTC",                  segment0.getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
         Assertions.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
-        Assertions.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
+        Assertions.assertTrue(segment0.getMetadata().getCenter().isPresent());
+        Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
+        segment0.getMetadata().getCenter().ifPresent(c ->  Assertions.assertEquals("MARS BARYCENTER", c.getName()));
+        segment0.getMetadata().getCenter().ifPresent(c ->  Assertions.assertNull(c.getBody()));
         Assertions.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
         Assertions.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
         Assertions.assertEquals(RotationOrder.ZXY,      segment0.getMetadata().getEulerRotSeq());
         Assertions.assertTrue(segment0.getMetadata().rateFrameIsA());
-        Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
-        Assertions.assertNull(segment0.getMetadata().getCenter().getBody());
 
         // Reference values
         final AbsoluteDate refDate = new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC());
@@ -418,12 +416,13 @@ public class AEMParserTest {
         Assertions.assertEquals(TimeSystem.UTC,         segment0.getMetadata().getTimeSystem());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
         Assertions.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
-        Assertions.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
+        Assertions.assertTrue(segment0.getMetadata().getCenter().isPresent());
+        Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
+        segment0.getMetadata().getCenter().ifPresent(c ->  Assertions.assertEquals("MARS BARYCENTER", c.getName()));
+        segment0.getMetadata().getCenter().ifPresent(c ->  Assertions.assertNull(c.getBody()));
         Assertions.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
         Assertions.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
-        Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
-        Assertions.assertNull(segment0.getMetadata().getCenter().getBody());
         Assertions.assertEquals(CelestialBodyFrame.EME2000, segment0.getMetadata().getEndpoints().getFrameA().asCelestialBodyFrame());
         Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
         Assertions.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
@@ -482,7 +481,8 @@ public class AEMParserTest {
         Assertions.assertEquals(TimeSystem.UTC,  segment0.getMetadata().getTimeSystem());
         Assertions.assertEquals("FICTITIOUS",    segment0.getMetadata().getObjectName());
         Assertions.assertEquals("2020-224A",     segment0.getMetadata().getObjectID());
-        Assertions.assertEquals("EARTH",         segment0.getMetadata().getCenter().getName());
+        Assertions.assertTrue(segment0.getMetadata().getCenter().isPresent());
+        segment0.getMetadata().getCenter().ifPresent(c ->  Assertions.assertEquals("EARTH",        c.getName()));
         Assertions.assertEquals(CelestialBodyFrame.J2000, segment0.getMetadata().getEndpoints().getFrameA().asCelestialBodyFrame());
         Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
         Assertions.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
@@ -693,9 +693,7 @@ public class AEMParserTest {
         Aem actual = new ParserBuilder().buildAemParser().parseMessage(source);
 
         //verify
-        Assertions.assertEquals(
-                CelestialBodyFactory.getEarth(),
-                actual.getSegments().get(0).getMetadata().getCenter().getBody());
+        actual.getSegments().get(0).getMetadata().getCenter().ifPresent(c -> Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody()));
     }
 
     @Test

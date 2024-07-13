@@ -42,6 +42,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame.BaseEquipment;
+import org.orekit.files.ccsds.ndm.NdmTestUtils;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
@@ -103,9 +104,12 @@ public class APMParserTest {
         Assertions.assertEquals(1997,         file.getMetadata().getLaunchYear());
         Assertions.assertEquals(9,            file.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",          file.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH",      file.getMetadata().getCenter().getName());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
         Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("EARTH",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody());
+        });
         Assertions.assertEquals("UTC",        file.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -205,10 +209,13 @@ public class APMParserTest {
         Assertions.assertEquals(2004,          segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(3,             segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",           segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH",       segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("EARTH",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody());
+        });
         Assertions.assertTrue(segment.getMetadata().getComments().isEmpty());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
         Assertions.assertEquals("UTC",         segment.getMetadata().getTimeSystem().name());
 
         // Check general comments
@@ -324,9 +331,12 @@ public class APMParserTest {
         Assertions.assertEquals(1997,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(9,            segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("EARTH",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody());
+        });
         Assertions.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block: QUATERNION
@@ -401,9 +411,12 @@ public class APMParserTest {
         Assertions.assertEquals(1997,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(9,            segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("EARTH",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody());
+        });
         Assertions.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -467,9 +480,12 @@ public class APMParserTest {
         Assertions.assertEquals(1997,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(9,            segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("EARTH",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody());
+        });
         Assertions.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -539,9 +555,12 @@ public class APMParserTest {
         Assertions.assertEquals(1997,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(9,            segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("EARTH",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody());
+        });
         Assertions.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -601,7 +620,7 @@ public class APMParserTest {
         Assertions.assertEquals(new AbsoluteDate(2023, 1, 21, 11, 55, 0, TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("A000001"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("A000001"), file.getHeader().getMessageId());
 
         Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
@@ -612,9 +631,12 @@ public class APMParserTest {
         Assertions.assertEquals(2015,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(11,           segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("EARTH",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody());
+        });
         Assertions.assertEquals("TAI",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -662,7 +684,7 @@ public class APMParserTest {
         Assertions.assertEquals(new AbsoluteDate(2023, 2, 3, 12, 0, 0, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC",    file.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("A000002"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("A000002"), file.getHeader().getMessageId());
 
         Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
@@ -673,9 +695,12 @@ public class APMParserTest {
         Assertions.assertEquals(2009,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(31,           segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("MOON",       segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getMoon(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("MOON",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getMoon(), c.getBody());
+        });
         Assertions.assertEquals("TAI",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -728,7 +753,7 @@ public class APMParserTest {
         Assertions.assertEquals(new AbsoluteDate(2023, 2, 5, 12, 0, 0, TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("A000003"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("A000003"), file.getHeader().getMessageId());
 
         Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
@@ -738,9 +763,12 @@ public class APMParserTest {
         Assertions.assertEquals(2015,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(11,           segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("EARTH",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getEarth(), c.getBody());
+        });
         Assertions.assertEquals("TAI",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -827,9 +855,12 @@ public class APMParserTest {
         Assertions.assertEquals(9999,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(111,          segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("Z",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("JUPITER",    segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("JUPITER",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getJupiter(), c.getBody());
+        });
         Assertions.assertEquals("TDB",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -892,9 +923,12 @@ public class APMParserTest {
         Assertions.assertEquals(9999,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(111,          segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("Z",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("JUPITER",    segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("JUPITER",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getJupiter(), c.getBody());
+        });
         Assertions.assertEquals("TDB",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -957,9 +991,12 @@ public class APMParserTest {
         Assertions.assertEquals(9999,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(111,          segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("Z",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("JUPITER",    segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("JUPITER",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getJupiter(), c.getBody());
+        });
         Assertions.assertEquals("TDB",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
@@ -1021,9 +1058,12 @@ public class APMParserTest {
         Assertions.assertEquals(9999,         segment.getMetadata().getLaunchYear());
         Assertions.assertEquals(111,          segment.getMetadata().getLaunchNumber());
         Assertions.assertEquals("Z",          segment.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("JUPITER",    segment.getMetadata().getCenter().getName());
-        Assertions.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assertions.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenter().getBody());
+        Assertions.assertTrue(file.getMetadata().getCenter().isPresent());
+        Assertions.assertTrue(file.getMetadata().getHasCreatableBody());
+        file.getMetadata().getCenter().ifPresent(c -> {
+            Assertions.assertEquals("JUPITER",      c.getName());
+            Assertions.assertEquals(CelestialBodyFactory.getJupiter(), c.getBody());
+        });
         Assertions.assertEquals("TDB",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block

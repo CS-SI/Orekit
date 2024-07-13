@@ -403,8 +403,8 @@ public class AemMetadata extends AdmMetadata {
         // copy object
         copy.setObjectName(getObjectName());
         copy.setObjectID(getObjectID());
-        if (getCenter() != null) {
-            copy.setCenter(getCenter());
+        if (getCenter().isPresent()) {
+            copy.setCenter(getCenter().get());
         }
 
         // copy frames (we may copy null references here)

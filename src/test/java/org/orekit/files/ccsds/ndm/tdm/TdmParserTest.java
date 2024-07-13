@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.NdmTestUtils;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -1025,7 +1026,7 @@ public class TdmParserTest {
         Assertions.assertEquals(2.0, file.getHeader().getFormatVersion(), 0.0);
         Assertions.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
         Assertions.assertEquals("CS GROUP",file.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("04655f62-1ba0-4ca6-92e9-eb3411db3d44"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("04655f62-1ba0-4ca6-92e9-eb3411db3d44"), file.getHeader().getMessageId());
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("TDM example created by CS GROUP");
         headerComment.add("Testing all TDM known meta-data and data keywords");

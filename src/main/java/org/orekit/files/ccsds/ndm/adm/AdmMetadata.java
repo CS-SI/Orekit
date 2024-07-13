@@ -21,6 +21,8 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.section.Metadata;
 
+import java.util.Optional;
+
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
  * @since 10.2
@@ -34,12 +36,13 @@ public class AdmMetadata extends Metadata {
     private String objectID;
 
     /** Body at origin of reference frame. */
-    private BodyFacade center;
+    private Optional<BodyFacade> center;
 
     /** Simple constructor.
      */
     public AdmMetadata() {
         super(null);
+        this.center = Optional.empty();
     }
 
     /** {@inheritDoc} */
@@ -108,7 +111,7 @@ public class AdmMetadata extends Metadata {
     /** Get the body at origin of reference frame.
      * @return the body at origin of reference frame.
      */
-    public BodyFacade getCenter() {
+    public Optional<BodyFacade> getCenter() {
         return center;
     }
 
@@ -117,7 +120,7 @@ public class AdmMetadata extends Metadata {
      */
     public void setCenter(final BodyFacade center) {
         refuseFurtherComments();
-        this.center = center;
+        this.center = Optional.of(center);
     }
 
     /**
@@ -127,7 +130,7 @@ public class AdmMetadata extends Metadata {
      *         false otherwise
      */
     public boolean getHasCreatableBody() {
-        return center != null && center.getBody() != null;
+        return center.isPresent() && center.get().getBody() != null;
     }
 
 }

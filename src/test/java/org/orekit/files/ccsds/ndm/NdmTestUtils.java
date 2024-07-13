@@ -240,7 +240,7 @@ public class NdmTestUtils {
     public static void checkOptional(final Optional<?> original, final Optional<?> rebuilt) {
         Assertions.assertEquals(original.isPresent(), rebuilt.isPresent());
         if (original.isPresent() && rebuilt.isPresent()) {
-            Assertions.assertEquals(original.get(), rebuilt.get());
+            recurseCheck(original.get(), rebuilt.get());
         }
     }
 

@@ -37,6 +37,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.AdMethodType;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame.BaseEquipment;
+import org.orekit.files.ccsds.ndm.NdmTestUtils;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -184,11 +185,11 @@ public class AcmParserTest {
 
         // Check Header Block;
         Assertions.assertEquals(2.0, acm.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals(Optional.of("unrestricted"), acm.getHeader().getClassification());
+        NdmTestUtils.checkOptional(Optional.of("unrestricted"), acm.getHeader().getClassification());
         Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", acm.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("A7015Z4"), acm.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("A7015Z4"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("EUROBIRD-4A", acm.getMetadata().getObjectName());
@@ -258,7 +259,7 @@ public class AcmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2017, 12, 1, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("NASA", acm.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("A7015Z5"), acm.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("A7015Z5"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("SDO",         acm.getMetadata().getObjectName());
@@ -339,7 +340,7 @@ public class AcmParserTest {
        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", acm.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("A7015Z6"), acm.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("A7015Z6"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("TEST_SAT",    acm.getMetadata().getObjectName());
@@ -379,7 +380,7 @@ public class AcmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2017, 12, 30, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("NASA", acm.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("A7015Z7"), acm.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("A7015Z7"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("LRO",         acm.getMetadata().getObjectName());
@@ -451,11 +452,11 @@ public class AcmParserTest {
                                 acm.getHeader().getComments().get(0));
         Assertions.assertEquals("its purpose is only to exercise all possible entries in ACM files",
                                 acm.getHeader().getComments().get(1));
-        Assertions.assertEquals(Optional.of("free to use under Orekit license"),  acm.getHeader().getClassification());
+        NdmTestUtils.checkOptional(Optional.of("free to use under Orekit license"),  acm.getHeader().getClassification());
         Assertions.assertEquals(new AbsoluteDate(2023, 4, 8, 14, 31, 0.0, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("OREKIT", acm.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("a4830b29-a805-4d31-ab6e-06b57c843323"), acm.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("a4830b29-a805-4d31-ab6e-06b57c843323"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("comment at metadata start",    acm.getMetadata().getComments().get(0));
@@ -472,7 +473,8 @@ public class AcmParserTest {
         Assertions.assertEquals("melusine@avalon.surreal",      acm.getMetadata().getOriginatorEmail());
         Assertions.assertEquals("-1 dolmen avenue, Stonehenge", acm.getMetadata().getOriginatorAddress());
         Assertions.assertEquals("odm-7c32f8a9c126432f",         acm.getMetadata().getOdmMessageLink());
-        Assertions.assertEquals(CenterName.MOON.name(),         acm.getMetadata().getCenter().getName());
+        Assertions.assertTrue(acm.getMetadata().getCenter().isPresent());
+        acm.getMetadata().getCenter().ifPresent(c ->  Assertions.assertEquals(CenterName.MOON.name(), c.getName()));
         Assertions.assertEquals("UTC",                          acm.getMetadata().getTimeSystem().name());
         Assertions.assertEquals(t0,                             acm.getMetadata().getEpochT0()); 
         Assertions.assertEquals(17, acm.getMetadata().getAcmDataElements().size());

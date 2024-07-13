@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.ndm.NdmTestUtils;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
@@ -382,11 +383,11 @@ public class OpmParserTest {
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
         final Opm file = parser.parseMessage(source);
-        Assertions.assertEquals(Optional.of("OPM 201113719185"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("OPM 201113719185"), file.getHeader().getMessageId());
         Assertions.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
-                                             TimeScalesFactory.getUTC()),
-                            file.getMetadata().getFrameEpoch());
+        NdmTestUtils.checkOptional(Optional.of(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+                                             TimeScalesFactory.getUTC())),
+                                   file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
         Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
@@ -479,11 +480,11 @@ public class OpmParserTest {
     }
 
     private void validateOPM3XML(final Opm file) {
-        Assertions.assertEquals(Optional.of("OPM 201113719185"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("OPM 201113719185"), file.getHeader().getMessageId());
         Assertions.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
-                                             TimeScalesFactory.getUTC()),
-                            file.getMetadata().getFrameEpoch());
+        NdmTestUtils.checkOptional(Optional.of(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+                                             TimeScalesFactory.getUTC())),
+                                   file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
         Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
@@ -534,9 +535,9 @@ public class OpmParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
         final Opm file = parser.parseMessage(source);
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
-                                                 TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
-                            file.getMetadata().getFrameEpoch());
+        NdmTestUtils.checkOptional(Optional.of(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+                                                 TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false))),
+                                   file.getMetadata().getFrameEpoch());
         try {
             file.getMetadata().getLaunchYear();
             Assertions.fail("an exception should have been thrown");
@@ -643,12 +644,12 @@ public class OpmParserTest {
     }
 
     private void validate6(final Opm file) {
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
-                                             TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
-                            file.getMetadata().getFrameEpoch());
+        NdmTestUtils.checkOptional(Optional.of(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+                                             TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false))),
+                                   file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
         Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
-        Assertions.assertEquals(Optional.of("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C"), file.getHeader().getMessageId());
 
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);

@@ -38,6 +38,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.NdmTestUtils;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
@@ -266,7 +267,7 @@ public class OmmParserTest {
         final Omm file = parser.parseMessage(source);
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assertions.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals(missionReferenceDate.shiftedBy(210840), file.getMetadata().getFrameEpoch());
+        NdmTestUtils.checkOptional(Optional.of(missionReferenceDate.shiftedBy(210840)), file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(6800e3, kep.getA(), 1e-10);
 
         final SpacecraftParameters sp = file.getData().getSpacecraftParametersBlock();
@@ -480,7 +481,7 @@ public class OmmParserTest {
                         parseMessage(source);
         Assertions.assertEquals(3.0, omm.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals("NOAA/USA", omm.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of(myMessageId), omm.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of(myMessageId), omm.getHeader().getMessageId());
     }
 
     @Test

@@ -101,24 +101,14 @@ public class OemSegment extends Segment<OemMetadata, OemData>
     @Override
     public AbsoluteDate getStart() {
         // useable start time overrides start time if it is set
-        final AbsoluteDate start = getMetadata().getUseableStartTime();
-        if (start != null) {
-            return start;
-        } else {
-            return getMetadata().getStartTime();
-        }
+        return getMetadata().getUseableStartTime().orElseGet(() -> getMetadata().getStartTime());
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
         // useable stop time overrides stop time if it is set
-        final AbsoluteDate stop = getMetadata().getUseableStopTime();
-        if (stop != null) {
-            return stop;
-        } else {
-            return getMetadata().getStopTime();
-        }
+        return getMetadata().getUseableStopTime().orElseGet(() -> getMetadata().getStopTime());
     }
 
     /** {@inheritDoc} */

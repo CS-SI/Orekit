@@ -85,8 +85,8 @@ class AcmMetadataWriter extends AbstractWriter {
                              metadata.getOdmMessageLink(), null, false);
 
         // time
-        if (metadata.getCenter() != null) {
-            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, false);
+        if (metadata.getCenter().isPresent()) {
+            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().get().getName(), null, false);
         }
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),
                              metadata.getTimeSystem(), false);

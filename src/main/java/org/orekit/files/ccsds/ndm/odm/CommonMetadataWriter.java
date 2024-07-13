@@ -61,7 +61,9 @@ public class CommonMetadataWriter extends AbstractWriter {
         // frames
         generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),          null, true);
         generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),  null, true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch(), true, false);
+        if (metadata.getFrameEpoch().isPresent()) {
+            generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch().get(), true, false);
+        }
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),   metadata.getTimeSystem(), true);

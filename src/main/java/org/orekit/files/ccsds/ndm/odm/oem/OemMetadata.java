@@ -20,6 +20,8 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.time.AbsoluteDate;
 
+import java.util.Optional;
+
 /** Metadata for Orbit Ephemeris Messages.
  * @author Luc Maisonobe
  * @since 11.0
@@ -34,14 +36,14 @@ public class OemMetadata extends OdmCommonMetadata {
 
     /** Start of useable time span covered by ephemerides data, it may be
      * necessary to allow for proper interpolation. */
-    private AbsoluteDate useableStartTime;
+    private Optional<AbsoluteDate> useableStartTime;
 
     /** End of useable time span covered by ephemerides data, it may be
      * necessary to allow for proper interpolation. */
-    private AbsoluteDate useableStopTime;
+    private Optional<AbsoluteDate> useableStopTime;
 
     /** The interpolation method to be used. */
-    private InterpolationMethod interpolationMethod;
+    private Optional<InterpolationMethod> interpolationMethod;
 
     /** The interpolation degree. */
     private int interpolationDegree;
@@ -50,6 +52,9 @@ public class OemMetadata extends OdmCommonMetadata {
      * @param defaultInterpolationDegree default interpolation degree
      */
     public OemMetadata(final int defaultInterpolationDegree) {
+        this.useableStartTime = Optional.empty();
+        this.useableStopTime = Optional.empty();
+        this.interpolationMethod = Optional.empty();
         this.interpolationDegree = defaultInterpolationDegree;
     }
 
@@ -109,7 +114,7 @@ public class OemMetadata extends OdmCommonMetadata {
      * necessary to allow for proper interpolation.
      * @return the useable start time
      */
-    public AbsoluteDate getUseableStartTime() {
+    public Optional<AbsoluteDate> getUseableStartTime() {
         return useableStartTime;
     }
 
@@ -119,14 +124,14 @@ public class OemMetadata extends OdmCommonMetadata {
      */
     public void setUseableStartTime(final AbsoluteDate useableStartTime) {
         refuseFurtherComments();
-        this.useableStartTime = useableStartTime;
+        this.useableStartTime = Optional.ofNullable(useableStartTime);
     }
 
     /** Get end of useable time span covered by ephemerides data, it may be
      * necessary to allow for proper interpolation.
      * @return the useable stop time
      */
-    public AbsoluteDate getUseableStopTime() {
+    public Optional<AbsoluteDate> getUseableStopTime() {
         return useableStopTime;
     }
 
@@ -136,13 +141,13 @@ public class OemMetadata extends OdmCommonMetadata {
      */
     public void setUseableStopTime(final AbsoluteDate useableStopTime) {
         refuseFurtherComments();
-        this.useableStopTime = useableStopTime;
+        this.useableStopTime = Optional.ofNullable(useableStopTime);
     }
 
     /** Get the interpolation method to be used.
      * @return the interpolation method
      */
-    public InterpolationMethod getInterpolationMethod() {
+    public Optional<InterpolationMethod> getInterpolationMethod() {
         return interpolationMethod;
     }
 
@@ -151,7 +156,7 @@ public class OemMetadata extends OdmCommonMetadata {
      */
     public void setInterpolationMethod(final InterpolationMethod interpolationMethod) {
         refuseFurtherComments();
-        this.interpolationMethod = interpolationMethod;
+        this.interpolationMethod = Optional.of(interpolationMethod);
     }
 
     /** Get the interpolation degree.
@@ -191,16 +196,14 @@ public class OemMetadata extends OdmCommonMetadata {
         copy.setCenter(getCenter());
 
         // copy frames
-        copy.setFrameEpoch(getFrameEpoch());
+        getFrameEpoch().ifPresent(copy::setFrameEpoch);
         copy.setReferenceFrame(getReferenceFrame());
 
         // copy time system only (ignore times themselves)
         copy.setTimeSystem(getTimeSystem());
 
         // copy interpolation (degree has already been set up at construction)
-        if (getInterpolationMethod() != null) {
-            copy.setInterpolationMethod(getInterpolationMethod());
-        }
+        getInterpolationMethod().ifPresent(copy::setInterpolationMethod);
 
         return copy;
 

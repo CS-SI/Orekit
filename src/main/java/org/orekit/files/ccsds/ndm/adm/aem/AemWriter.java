@@ -321,8 +321,8 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         // objects
         generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(),     metadata.getObjectName(), null, true);
         generator.writeEntry(AdmCommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   null, true);
-        if (metadata.getCenter() != null) {
-            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, false);
+        if (metadata.getCenter().isPresent()) {
+            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().get().getName(), null, false);
         }
 
         // frames

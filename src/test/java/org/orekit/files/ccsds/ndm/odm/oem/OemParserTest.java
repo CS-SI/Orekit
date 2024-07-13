@@ -45,6 +45,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.ndm.NdmTestUtils;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.frames.FactoryManagedFrame;
@@ -93,7 +94,7 @@ public class OemParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final Oem file = parser.parseMessage(source);
-        Assertions.assertEquals(Optional.of("public, test-data"), file.getHeader().getClassification());
+        NdmTestUtils.checkOptional(Optional.of("public, test-data"), file.getHeader().getClassification());
         Assertions.assertEquals(3, file.getSegments().size());
         Assertions.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
@@ -108,11 +109,11 @@ public class OemParserTest {
                             file.getSegments().get(0).getMetadata().getStartTime());
         Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.331, TimeScalesFactory.getUTC()),
                             file.getSegments().get(0).getMetadata().getStopTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, 0.331, TimeScalesFactory.getUTC()),
+        NdmTestUtils.checkOptional(Optional.of(new AbsoluteDate(1996, 12, 18, 12, 10, 0.331, TimeScalesFactory.getUTC())),
                             file.getSegments().get(0).getMetadata().getUseableStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, 0.331, TimeScalesFactory.getUTC()),
+        NdmTestUtils.checkOptional(Optional.of(new AbsoluteDate(1996, 12, 28, 21, 23, 0.331, TimeScalesFactory.getUTC())),
                             file.getSegments().get(0).getMetadata().getUseableStopTime());
-        Assertions.assertEquals(InterpolationMethod.HERMITE, file.getSegments().get(0).getMetadata().getInterpolationMethod());
+        NdmTestUtils.checkOptional(Optional.of(InterpolationMethod.HERMITE), file.getSegments().get(0).getMetadata().getInterpolationMethod());
         Assertions.assertEquals(7, file.getSegments().get(0).getMetadata().getInterpolationDegree());
         ArrayList<String> ephemeridesDataLinesComment = new ArrayList<String>();
         ephemeridesDataLinesComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 1996NOV 04. It is");
@@ -202,9 +203,12 @@ public class OemParserTest {
         Assertions.assertEquals("EME2000", file.getSegments().get(1).getMetadata().getReferenceFrame().getName());
         List<OemSegment> blocks = file.getSegments();
         Assertions.assertEquals(2, blocks.size());
-        Assertions.assertEquals(129600.331,
-                            blocks.get(0).getMetadata().getFrameEpoch().durationFrom(missionReferenceDate),
-                            1.0e-15);
+        Assertions.assertTrue(blocks.get(0).getMetadata().getFrameEpoch().isPresent());
+        if (blocks.get(0).getMetadata().getFrameEpoch().isPresent()) {
+            Assertions.assertEquals(129600.331,
+                    blocks.get(0).getMetadata().getFrameEpoch().get().durationFrom(missionReferenceDate),
+                    1.0e-15);
+        }
         Assertions.assertEquals(129600.331,
                             blocks.get(0).getMetadata().getStartTime().durationFrom(missionReferenceDate),
                             1.0e-15);
@@ -226,7 +230,7 @@ public class OemParserTest {
         Assertions.assertEquals(new AbsoluteDate("1996-11-04T17:22:31", TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("NASA/JPL", file.getHeader().getOriginator());
-        Assertions.assertEquals(Optional.of("OEM 201113719185"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("OEM 201113719185"), file.getHeader().getMessageId());
         Assertions.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assertions.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
@@ -255,7 +259,7 @@ public class OemParserTest {
             Assertions.assertEquals(e.getSpecifier(), OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
         }
         Assertions.assertEquals("UTC", segment.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals(InterpolationMethod.HERMITE, segment.getMetadata().getInterpolationMethod());
+        NdmTestUtils.checkOptional(Optional.of(InterpolationMethod.HERMITE), segment.getMetadata().getInterpolationMethod());
         Assertions.assertEquals(2, segment.getMetadata().getInterpolationDegree());
         Assertions.assertEquals(3, segment.getInterpolationSamples());
         Assertions.assertEquals(segment.getAvailableDerivatives(), CartesianDerivativesFilter.USE_PV);
@@ -350,7 +354,7 @@ public class OemParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final Oem file = parser.parseMessage(source);
-        Assertions.assertEquals(Optional.of("OEM 201113719185"), file.getHeader().getMessageId());
+        NdmTestUtils.checkOptional(Optional.of("OEM 201113719185"), file.getHeader().getMessageId());
         Assertions.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assertions.assertEquals("2000-028A", file.getSegments().get(0).getMetadata().getObjectID());
@@ -379,7 +383,7 @@ public class OemParserTest {
             Assertions.assertEquals(e.getSpecifier(), OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
         }
         Assertions.assertEquals("UTC", segment.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals(InterpolationMethod.HERMITE, segment.getMetadata().getInterpolationMethod());
+        NdmTestUtils.checkOptional(Optional.of(InterpolationMethod.HERMITE), segment.getMetadata().getInterpolationMethod());
         Assertions.assertEquals(7, segment.getMetadata().getInterpolationDegree());
         Assertions.assertEquals(segment.getAvailableDerivatives(), CartesianDerivativesFilter.USE_PVA);
 

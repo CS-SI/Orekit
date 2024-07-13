@@ -46,6 +46,7 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.NdmTestUtils;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
@@ -102,7 +103,7 @@ public class AttitudeWriterTest {
         metadata.setStopTime(s0.getMetadata().getStop());
         metadata.setAttitudeType(s0.getMetadata().getAttitudeType());
         metadata.setIsFirst(s0.getMetadata().isFirst());
-        metadata.setCenter(s0.getMetadata().getCenter());
+        s0.getMetadata().getCenter().ifPresent(metadata::setCenter);
         metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod());
         AemWriter writer = new WriterBuilder().
                            withConventions(IERSConventions.IERS_2010).
@@ -278,7 +279,7 @@ public class AttitudeWriterTest {
         AemMetadata meta2 = segment2.getMetadata();
         Assertions.assertEquals(meta1.getObjectID(),                            meta2.getObjectID());
         Assertions.assertEquals(meta1.getObjectName(),                          meta2.getObjectName());
-        Assertions.assertEquals(meta1.getCenter().getName(),                    meta2.getCenter().getName());
+        NdmTestUtils.checkOptional(meta1.getCenter(),                           meta2.getCenter());
         Assertions.assertEquals(meta1.getTimeSystem().name(), meta2.getTimeSystem().name());
         Assertions.assertEquals(meta1.getLaunchYear(),                          meta2.getLaunchYear());
         Assertions.assertEquals(meta1.getLaunchNumber(),                        meta2.getLaunchNumber());

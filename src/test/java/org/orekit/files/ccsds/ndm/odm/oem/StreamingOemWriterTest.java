@@ -228,7 +228,6 @@ public class StreamingOemWriterTest {
         OemMetadata metadata = original.getSegments().get(0).getMetadata();
         metadata.setTimeSystem(TimeSystem.UTC);
         metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
-        metadata.setInterpolationMethod(null);
         metadata.setInterpolationDegree(-1);
 
         // action

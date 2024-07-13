@@ -28,6 +28,8 @@ import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
+import java.util.Optional;
+
 /** Common metadata for Orbit Parameter/Ephemeris/Mean Messages.
  * @author Luc Maisonobe
  * @since 11.0
@@ -46,16 +48,18 @@ public class OdmCommonMetadata extends OdmMetadata {
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
-    private String frameEpochString;
+    private Optional<String> frameEpochString;
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
-    private AbsoluteDate frameEpoch;
+    private Optional<AbsoluteDate> frameEpoch;
 
     /** Simple constructor.
      */
     public OdmCommonMetadata() {
         super(null);
+        this.frameEpochString = Optional.empty();
+        this.frameEpoch = Optional.empty();
     }
 
     /** {@inheritDoc} */
@@ -77,9 +81,7 @@ public class OdmCommonMetadata extends OdmMetadata {
      * @param context context binding
      */
     public void finalizeMetadata(final ContextBinding context) {
-        if (frameEpochString != null) {
-            frameEpoch = context.getTimeSystem().getConverter(context).parse(frameEpochString);
-        }
+        frameEpochString.ifPresent(s -> frameEpoch = Optional.of(context.getTimeSystem().getConverter(context).parse(s)));
     }
 
     /** Get the spacecraft ID for which the orbit state is provided.
@@ -189,14 +191,14 @@ public class OdmCommonMetadata extends OdmMetadata {
      */
     public void setFrameEpochString(final String frameEpochString) {
         refuseFurtherComments();
-        this.frameEpochString = frameEpochString;
+        this.frameEpochString = Optional.of(frameEpochString);
     }
 
     /** Get epoch of reference frame, if not intrinsic to the definition of the
      * reference frame.
      * @return epoch of reference frame
      */
-    public AbsoluteDate getFrameEpoch() {
+    public Optional<AbsoluteDate> getFrameEpoch() {
         return frameEpoch;
     }
 
@@ -206,7 +208,7 @@ public class OdmCommonMetadata extends OdmMetadata {
      */
     public void setFrameEpoch(final AbsoluteDate frameEpoch) {
         refuseFurtherComments();
-        this.frameEpoch = frameEpoch;
+        this.frameEpoch = Optional.of(frameEpoch);
     }
 
 }
