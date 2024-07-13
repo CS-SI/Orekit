@@ -138,6 +138,7 @@ class AbstractDragForceModelTest {
 
     @Test
     @SuppressWarnings("unchecked")
+    // This test was added to increase overall conditions coverage in the scope of issue 1453
     public void testIssue1453() {
         // GIVEN
         // Load Orekit data
@@ -206,7 +207,7 @@ class AbstractDragForceModelTest {
 
     private static class FakeGradient extends Gradient {
 
-        private double   mutableValue;
+        private final double   mutableValue;
         private double[] mutableGradient;
 
         public FakeGradient(final double value, final double... gradient) {
@@ -223,10 +224,6 @@ class AbstractDragForceModelTest {
         @Override
         public double[] getGradient() {
             return mutableGradient;
-        }
-
-        public void setMutableValue(final double mutableValue) {
-            this.mutableValue = mutableValue;
         }
 
         public void setMutableGradient(final double[] mutableGradient) {

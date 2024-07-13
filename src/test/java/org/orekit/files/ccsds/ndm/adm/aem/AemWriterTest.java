@@ -145,6 +145,7 @@ public class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem
     }
 
     @Test
+    // This test was added to increase overall conditions coverage in the scope of issue 1453
     public void testIssue1453() throws IOException {
         // GIVEN
         // Load orekit data

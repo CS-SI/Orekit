@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class EulerTest {
 
     @Test
+    // This test was added to increase overall conditions coverage in the scope of issue 1453
     public void testIssue1453() {
         // GIVEN
         final Euler euler = new Euler();
