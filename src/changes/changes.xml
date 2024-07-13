@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="12.1.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="1459">
+        Fixed JavaDoc typo in WalkerConstellationSlot.
+      </action>
+      <action dev="vincent" type="update" issue="1453">
+        Increased validation coverage on branching conditions.
+      </action>
       <action dev="dorian" type="fix" issue="1458">
         Fixed parsing of CDM in case of empty unit value.
       </action>
