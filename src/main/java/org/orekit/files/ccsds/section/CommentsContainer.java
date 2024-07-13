@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.section;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -84,9 +85,9 @@ public class CommentsContainer implements Section {
      * @param minVersion version at which key started to be allowed
      * @param maxVersion version at which key started to be forbidden
      */
-    public void checkAllowed(final double version, final Object field, final String key,
+    public void checkAllowed(final double version, final Optional<String> field, final String key,
                              final double minVersion, final double maxVersion) {
-        if (field != null && (version < minVersion || version >= maxVersion)) {
+        if (field.isPresent() && (version < minVersion || version >= maxVersion)) {
             throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
                                       key, version);
         }

@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.hipparchus.complex.Quaternion;
@@ -101,6 +102,9 @@ public class NdmTestUtils {
             return true;
         } else if (original instanceof Map) {
             checkMap((Map<?, ?>) original, (Map<?, ?>) rebuilt);
+            return true;
+        } else if (original instanceof Optional<?>) {
+            checkOptional((Optional<?>) original, (Optional<?>) rebuilt);
             return true;
         } else if (original instanceof NdmConstituent            ||
                    original instanceof Segment                   ||
@@ -233,6 +237,13 @@ public class NdmTestUtils {
         }
     }
 
+    public static void checkOptional(final Optional<?> original, final Optional<?> rebuilt) {
+        Assertions.assertEquals(original.isPresent(), rebuilt.isPresent());
+        if (original.isPresent() && rebuilt.isPresent()) {
+            Assertions.assertEquals(original.get(), rebuilt.get());
+        }
+    }
+
     public static void checkFrameFacade(final FrameFacade original, final FrameFacade rebuilt) {
         if (original.asFrame() == null) {
             Assertions.assertNull(rebuilt.asFrame());
@@ -334,7 +345,7 @@ public class NdmTestUtils {
     }
 
     public static void checkDouble(final Double original, final Double rebuilt) {
-        Assertions.assertTrue(Precision.equalsIncludingNaN(original.doubleValue(), rebuilt.doubleValue(), ULPS));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original, rebuilt, ULPS));
     }
 
 

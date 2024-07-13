@@ -59,6 +59,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 public class OcmParserTest {
 
@@ -239,7 +240,7 @@ public class OcmParserTest {
                                   buildOcmParser().
                                   parseMessage(source);
         Assertions.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
-        Assertions.assertEquals("728b0d2a-01fc-4d0e-9f0a-370c6930ea84", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
+        Assertions.assertEquals(Optional.of("728b0d2a-01fc-4d0e-9f0a-370c6930ea84"), ocm.getHeader().getMessageId());
         final TrajectoryStateHistory h = ocm.getData().getTrajectoryBlocks().get(0);
         Assertions.assertEquals("ZZRF", h.getMetadata().getTrajReferenceFrame().getName());
         List<TimeStampedPVCoordinates> l = h.getCoordinates();
@@ -267,7 +268,7 @@ public class OcmParserTest {
                                   buildOcmParser().
                                   parseMessage(source);
         Assertions.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
-        Assertions.assertEquals("b77d785c-f7a8-4a80-a9b1-a540eac19d7a", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
+        Assertions.assertEquals(Optional.of("b77d785c-f7a8-4a80-a9b1-a540eac19d7a"), ocm.getHeader().getMessageId());
         Assertions.assertNull(ocm.getData().getTrajectoryBlocks());
         Assertions.assertEquals(1, ocm.getData().getUserDefinedBlock().getComments().size());
         Assertions.assertEquals("some user data", ocm.getData().getUserDefinedBlock().getComments().get(0));
@@ -373,7 +374,7 @@ public class OcmParserTest {
         Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
-        Assertions.assertEquals("OCM 201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("OCM 201113719185"), file.getHeader().getMessageId());
 
         // Check metadata
         Assertions.assertEquals("OSPREY 5",                                           file.getMetadata().getObjectName());
@@ -537,7 +538,7 @@ public class OcmParserTest {
         Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
-        Assertions.assertEquals("OCM 201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("OCM 201113719185"), file.getHeader().getMessageId());
 
         // Check metadata
         Assertions.assertNull(file.getMetadata().getObjectName());
@@ -872,11 +873,11 @@ public class OcmParserTest {
         Assertions.assertEquals(2, file.getHeader().getComments().size());
         Assertions.assertEquals("This file is a dummy example with inconsistent data", file.getHeader().getComments().get(0));
         Assertions.assertEquals("it is used to exercise all possible keys in Key-Value Notation", file.getHeader().getComments().get(1));
-        Assertions.assertEquals("dummy-classification",                file.getHeader().getClassification());
+        Assertions.assertEquals(Optional.of("dummy-classification"),   file.getHeader().getClassification());
         Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, 31.576, TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("JPL",                                 file.getHeader().getOriginator());
-        Assertions.assertEquals("ABC-12_34",                           file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("ABC-12_34"),              file.getHeader().getMessageId());
 
         // Check metadata
         Assertions.assertEquals(1,                                                    file.getMetadata().getComments().size());

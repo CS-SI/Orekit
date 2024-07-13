@@ -47,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
@@ -1024,7 +1025,7 @@ public class TdmParserTest {
         Assertions.assertEquals(2.0, file.getHeader().getFormatVersion(), 0.0);
         Assertions.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
         Assertions.assertEquals("CS GROUP",file.getHeader().getOriginator());
-        Assertions.assertEquals("04655f62-1ba0-4ca6-92e9-eb3411db3d44", file.getHeader().getMessageId().toLowerCase());
+        Assertions.assertEquals(Optional.of("04655f62-1ba0-4ca6-92e9-eb3411db3d44"), file.getHeader().getMessageId());
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("TDM example created by CS GROUP");
         headerComment.add("Testing all TDM known meta-data and data keywords");

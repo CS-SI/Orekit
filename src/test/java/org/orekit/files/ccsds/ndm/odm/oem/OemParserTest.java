@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -92,7 +93,7 @@ public class OemParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final Oem file = parser.parseMessage(source);
-        Assertions.assertEquals("public, test-data", file.getHeader().getClassification());
+        Assertions.assertEquals(Optional.of("public, test-data"), file.getHeader().getClassification());
         Assertions.assertEquals(3, file.getSegments().size());
         Assertions.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
@@ -225,7 +226,7 @@ public class OemParserTest {
         Assertions.assertEquals(new AbsoluteDate("1996-11-04T17:22:31", TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("NASA/JPL", file.getHeader().getOriginator());
-        Assertions.assertEquals("OEM 201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("OEM 201113719185"), file.getHeader().getMessageId());
         Assertions.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assertions.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
@@ -349,7 +350,7 @@ public class OemParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final Oem file = parser.parseMessage(source);
-        Assertions.assertEquals("OEM 201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("OEM 201113719185"), file.getHeader().getMessageId());
         Assertions.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assertions.assertEquals("2000-028A", file.getSegments().get(0).getMetadata().getObjectID());

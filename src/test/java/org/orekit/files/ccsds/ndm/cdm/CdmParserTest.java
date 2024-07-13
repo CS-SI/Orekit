@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -76,7 +77,7 @@ public class CdmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 22, 31, 12,
                                                  TimeScalesFactory.getUTC()), file.getHeader().getCreationDate());
         Assertions.assertEquals("JSPOC", file.getHeader().getOriginator());
-        Assertions.assertEquals("201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("201113719185"), file.getHeader().getMessageId());
 
         // OBJECT1
         // Check Relative Metadata Block
@@ -330,7 +331,7 @@ public class CdmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 22, 31, 12,
                                                  TimeScalesFactory.getUTC()), file.getHeader().getCreationDate());
         Assertions.assertEquals("JSPOC", file.getHeader().getOriginator());
-        Assertions.assertEquals("201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("201113719185"), file.getHeader().getMessageId());
 
         // OBJECT1
         // Check Relative Metadata Block
@@ -577,7 +578,7 @@ public class CdmParserTest {
                                                  TimeScalesFactory.getUTC()), file.getHeader().getCreationDate());
         Assertions.assertEquals("SDC", file.getHeader().getOriginator());
         Assertions.assertEquals("GALAXY 15", file.getHeader().getMessageFor());
-        Assertions.assertEquals("20120912223112", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("20120912223112"), file.getHeader().getMessageId());
 
         // OBJECT1
         // Check Relative Metadata Block
@@ -788,7 +789,7 @@ public class CdmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 22, 31, 12,
                                                  TimeScalesFactory.getUTC()), file.getHeader().getCreationDate());
         Assertions.assertEquals("JSPOC", file.getHeader().getOriginator());
-        Assertions.assertEquals("201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("201113719185"), file.getHeader().getMessageId());
 
         // OBJECT1
         // Check Relative Metadata Block
@@ -994,7 +995,7 @@ public class CdmParserTest {
                                                  TimeScalesFactory.getUTC()), file.getHeader().getCreationDate());
         Assertions.assertEquals("JSPOC", file.getHeader().getOriginator());
         Assertions.assertEquals("SATELLITE A", file.getHeader().getMessageFor());
-        Assertions.assertEquals("20111371985", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("20111371985"), file.getHeader().getMessageId());
 
         // OBJECT1
         // Check Relative Metadata Block
@@ -1366,7 +1367,7 @@ public class CdmParserTest {
 
 
         // Check CLASSIFICATION is correctly read
-        Assertions.assertEquals("\"Free text - for examples see CDM pink book (CCSDS 508.0-P-1.0.2)\"", 
+        Assertions.assertEquals(Optional.of("\"Free text - for examples see CDM pink book (CCSDS 508.0-P-1.0.2)\""),
                                 file.getHeader().getClassification(),"CLASSIFICATION");
 
 
@@ -1671,7 +1672,7 @@ public class CdmParserTest {
                                                  TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("JSPOC", file.getHeader().getOriginator());
-        Assertions.assertEquals("201113719185-1", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("201113719185-1"), file.getHeader().getMessageId());
 
         // OBJECT1
         // Check Relative Metadata Block

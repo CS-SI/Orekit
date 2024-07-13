@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -68,6 +69,16 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, String value, Unit unit, boolean mandatory) throws IOException;
+
+    /** Write a single optional key/value entry.
+     * @param key   the keyword to write
+     * @param value the optional value to write
+     * @param unit output unit (may be null)
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     * @since 13.0
+     */
+    void writeEntry(String key, Optional<String> value, Unit unit, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write

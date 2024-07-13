@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Optional;
 
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.util.FastMath;
@@ -80,7 +81,7 @@ public class OmmParserTest {
                                              TimeScalesFactory.getUTC()),
                                              file.getHeader().getCreationDate());
         Assertions.assertEquals("NOAA/USA", file.getHeader().getOriginator());
-        Assertions.assertNull(file.getHeader().getMessageId());
+        Assertions.assertFalse(file.getHeader().getMessageId().isPresent());
 
         // Check Metadata Block;
 
@@ -479,7 +480,7 @@ public class OmmParserTest {
                         parseMessage(source);
         Assertions.assertEquals(3.0, omm.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals("NOAA/USA", omm.getHeader().getOriginator());
-        Assertions.assertEquals(myMessageId, omm.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of(myMessageId), omm.getHeader().getMessageId());
     }
 
     @Test

@@ -58,6 +58,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class OpmParserTest {
 
@@ -381,7 +382,7 @@ public class OpmParserTest {
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
         final Opm file = parser.parseMessage(source);
-        Assertions.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("OPM 201113719185"), file.getHeader().getMessageId());
         Assertions.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
         Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
@@ -478,7 +479,7 @@ public class OpmParserTest {
     }
 
     private void validateOPM3XML(final Opm file) {
-        Assertions.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("OPM 201113719185"), file.getHeader().getMessageId());
         Assertions.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
         Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
@@ -647,7 +648,7 @@ public class OpmParserTest {
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
         Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
-        Assertions.assertEquals("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C"), file.getHeader().getMessageId());
 
         Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);

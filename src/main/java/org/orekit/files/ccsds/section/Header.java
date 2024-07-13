@@ -18,6 +18,8 @@ package org.orekit.files.ccsds.section;
 
 import org.orekit.time.AbsoluteDate;
 
+import java.util.Optional;
+
 /**
  * Header of a CCSDS Navigation Data Message.
  * @author Bryan Cazabonne
@@ -29,7 +31,7 @@ public class Header extends CommentsContainer {
     private double formatVersion;
 
     /** Classification. */
-    private String classification;
+    private Optional<String> classification;
 
     /** Message creation date and time in UTC. */
     private AbsoluteDate creationDate;
@@ -38,7 +40,7 @@ public class Header extends CommentsContainer {
     private String originator;
 
     /** ID that uniquely identifies a message from a given originator. */
-    private String messageId;
+    private Optional<String> messageId;
 
     /** Minimum version for {@link HeaderKey#MESSAGE_ID}. */
     private final double minVersionMessageId;
@@ -54,6 +56,8 @@ public class Header extends CommentsContainer {
     public Header(final double minVersionMessageId,
                   final double minVersionClassification) {
         this.formatVersion            = Double.NaN;
+        this.classification           = Optional.empty();
+        this.messageId                = Optional.empty();
         this.minVersionMessageId      = minVersionMessageId;
         this.minVersionClassification = minVersionClassification;
     }
@@ -90,7 +94,7 @@ public class Header extends CommentsContainer {
      * Get the classification/caveats.
      * @return classification/caveats.
      */
-    public String getClassification() {
+    public Optional<String> getClassification() {
         return classification;
     }
 
@@ -100,7 +104,7 @@ public class Header extends CommentsContainer {
      */
     public void setClassification(final String classification) {
         refuseFurtherComments();
-        this.classification = classification;
+        this.classification = Optional.of(classification);
     }
 
     /**
@@ -141,7 +145,7 @@ public class Header extends CommentsContainer {
      * Get the ID that uniquely identifies a message from a given originator.
      * @return ID that uniquely identifies a message from a given originator
      */
-    public String getMessageId() {
+    public Optional<String> getMessageId() {
         return messageId;
     }
 
@@ -150,7 +154,7 @@ public class Header extends CommentsContainer {
      * @param messageId ID that uniquely identifies a message from a given originator
      */
     public void setMessageId(final String messageId) {
-        this.messageId = messageId;
+        this.messageId = Optional.of(messageId);
     }
 
 }

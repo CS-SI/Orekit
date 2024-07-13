@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -600,7 +601,7 @@ public class APMParserTest {
         Assertions.assertEquals(new AbsoluteDate(2023, 1, 21, 11, 55, 0, TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
-        Assertions.assertEquals("A000001", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("A000001"), file.getHeader().getMessageId());
 
         Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
@@ -661,7 +662,7 @@ public class APMParserTest {
         Assertions.assertEquals(new AbsoluteDate(2023, 2, 3, 12, 0, 0, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC",    file.getHeader().getOriginator());
-        Assertions.assertEquals("A000002", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("A000002"), file.getHeader().getMessageId());
 
         Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
@@ -727,7 +728,7 @@ public class APMParserTest {
         Assertions.assertEquals(new AbsoluteDate(2023, 2, 5, 12, 0, 0, TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("GSFC", file.getHeader().getOriginator());
-        Assertions.assertEquals("A000003", file.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("A000003"), file.getHeader().getMessageId());
 
         Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 

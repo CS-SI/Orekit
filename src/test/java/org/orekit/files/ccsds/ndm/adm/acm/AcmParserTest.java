@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.linear.DiagonalMatrix;
@@ -183,11 +184,11 @@ public class AcmParserTest {
 
         // Check Header Block;
         Assertions.assertEquals(2.0, acm.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals("unrestricted", acm.getHeader().getClassification());
+        Assertions.assertEquals(Optional.of("unrestricted"), acm.getHeader().getClassification());
         Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", acm.getHeader().getOriginator());
-        Assertions.assertEquals("A7015Z4", acm.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("A7015Z4"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("EUROBIRD-4A", acm.getMetadata().getObjectName());
@@ -253,11 +254,11 @@ public class AcmParserTest {
 
         // Check Header Block;
         Assertions.assertEquals(2.0, acm.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertNull(acm.getHeader().getClassification());
+        Assertions.assertFalse(acm.getHeader().getClassification().isPresent());
         Assertions.assertEquals(new AbsoluteDate(2017, 12, 1, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("NASA", acm.getHeader().getOriginator());
-        Assertions.assertEquals("A7015Z5", acm.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("A7015Z5"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("SDO",         acm.getMetadata().getObjectName());
@@ -338,7 +339,7 @@ public class AcmParserTest {
        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", acm.getHeader().getOriginator());
-        Assertions.assertEquals("A7015Z6", acm.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("A7015Z6"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("TEST_SAT",    acm.getMetadata().getObjectName());
@@ -378,7 +379,7 @@ public class AcmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2017, 12, 30, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("NASA", acm.getHeader().getOriginator());
-        Assertions.assertEquals("A7015Z7", acm.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("A7015Z7"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("LRO",         acm.getMetadata().getObjectName());
@@ -450,11 +451,11 @@ public class AcmParserTest {
                                 acm.getHeader().getComments().get(0));
         Assertions.assertEquals("its purpose is only to exercise all possible entries in ACM files",
                                 acm.getHeader().getComments().get(1));
-        Assertions.assertEquals("free to use under Orekit license",  acm.getHeader().getClassification());
+        Assertions.assertEquals(Optional.of("free to use under Orekit license"),  acm.getHeader().getClassification());
         Assertions.assertEquals(new AbsoluteDate(2023, 4, 8, 14, 31, 0.0, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("OREKIT", acm.getHeader().getOriginator());
-        Assertions.assertEquals("a4830b29-a805-4d31-ab6e-06b57c843323", acm.getHeader().getMessageId());
+        Assertions.assertEquals(Optional.of("a4830b29-a805-4d31-ab6e-06b57c843323"), acm.getHeader().getMessageId());
 
         // metadata
         Assertions.assertEquals("comment at metadata start",    acm.getMetadata().getComments().get(0));

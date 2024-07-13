@@ -22,6 +22,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
@@ -178,6 +179,16 @@ public abstract class AbstractGenerator implements Generator {
     @Override
     public void writeEntry(final String key, final int value, final boolean mandatory) throws IOException {
         writeEntry(key, Integer.toString(value), null, mandatory);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeEntry(final String key, final Optional<String> value, final Unit unit, final boolean mandatory) throws IOException {
+        if (value.isPresent()) {
+            writeEntry(key, value.get(), unit, mandatory);
+        } else {
+            complain(key, mandatory);
+        }
     }
 
     /** {@inheritDoc} */
