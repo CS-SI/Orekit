@@ -23,62 +23,71 @@ import org.orekit.errors.OrekitInternalError;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
-/** This class represents a time offset split into seconds and attoseconds.
+/** This class represents a time range split into seconds and attoseconds.
+ * <p>
+ * Instances of this class may either be interpreted as offsets from a reference
+ * date, or they may be interpreted as durations. Negative values represent
+ * dates earlier than the reference date in the first interpretation, and
+ * negative durations in the second interpretation.
+ * </p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  * @see FieldAbsoluteDate
  * @since 13.1
  */
-public class SplitOffset implements Serializable {
+public class SplitTime implements Serializable {
 
-    /** Split offset representing 0. */
-    public static final SplitOffset ZERO = new SplitOffset(0L, 0L);
+    /** Split time representing 0. */
+    public static final SplitTime ZERO = new SplitTime(0L, 0L);
 
-    /** Split offset representing 1 attosecond. */
-    public static final SplitOffset ATTOSECOND = new SplitOffset(0L, 1L);
+    /** Split time representing 1 attosecond. */
+    public static final SplitTime ATTOSECOND = new SplitTime(0L, 1L);
 
-    /** Split offset representing 1 femtosecond. */
-    public static final SplitOffset FEMTOSECOND = new SplitOffset(0L, 1000L);
+    /** Split time representing 1 femtosecond. */
+    public static final SplitTime FEMTOSECOND = new SplitTime(0L, 1000L);
 
-    /** Split offset representing 1 picosecond. */
-    public static final SplitOffset PICOSECOND = new SplitOffset(0L, 1000000L);
+    /** Split time representing 1 picosecond. */
+    public static final SplitTime PICOSECOND = new SplitTime(0L, 1000000L);
 
-    /** Split offset representing 1 nanosecond. */
-    public static final SplitOffset NANOSECOND = new SplitOffset(0L, 1000000000L);
+    /** Split time representing 1 nanosecond. */
+    public static final SplitTime NANOSECOND = new SplitTime(0L, 1000000000L);
 
-    /** Split offset representing 1 microsecond. */
-    public static final SplitOffset MICROSECOND = new SplitOffset(0L, 1000000000000L);
+    /** Split time representing 1 microsecond. */
+    public static final SplitTime MICROSECOND = new SplitTime(0L, 1000000000000L);
 
-    /** Split offset representing 1 millisecond. */
-    public static final SplitOffset MILLISECOND = new SplitOffset(0L, 1000000000000000L);
+    /** Split time representing 1 millisecond. */
+    public static final SplitTime MILLISECOND = new SplitTime(0L, 1000000000000000L);
 
-    /** Split offset representing 1 second. */
-    public static final SplitOffset SECOND = new SplitOffset(1L, 0L);
+    /** Split time representing 1 second. */
+    public static final SplitTime SECOND = new SplitTime(1L, 0L);
 
-    /** Split offset representing 1 minute. */
-    public static final SplitOffset MINUTE = new SplitOffset(60L, 0L);
+    /** Split time representing 1 minute. */
+    public static final SplitTime MINUTE = new SplitTime(60L, 0L);
 
-    /** Split offset representing 1 hour. */
-    public static final SplitOffset HOUR = new SplitOffset(3600L, 0L);
+    /** Split time representing 1 hour. */
+    public static final SplitTime HOUR = new SplitTime(3600L, 0L);
 
-    /** Split offset representing 1 day. */
-    public static final SplitOffset DAY = new SplitOffset(86400L, 0L);
+    /** Split time representing 1 day. */
+    public static final SplitTime DAY = new SplitTime(86400L, 0L);
+
+    /** Split time representing 1 day that includes an additional leap second. */
+    public static final SplitTime DAY_WITH_POSITIVE_LEAP = new SplitTime(86401L, 0L);
 
     // CHECKSTYLE: stop ConstantName
-    /** Split offset representing a NaN. */
-    public static final SplitOffset NaN = new SplitOffset(Double.NaN);
+    /** Split time representing a NaN. */
+    public static final SplitTime NaN = new SplitTime(Double.NaN);
     // CHECKSTYLE: resume ConstantName
 
-    /** Split offset representing netgative infinity. */
-    public static final SplitOffset NEGATIVE_INFINITY = new SplitOffset(Double.NEGATIVE_INFINITY);
+    /** Split time representing negative infinity. */
+    public static final SplitTime NEGATIVE_INFINITY = new SplitTime(Double.NEGATIVE_INFINITY);
 
-    /** Split offset representing netgative infinity. */
-    public static final SplitOffset POSITIVE_INFINITY = new SplitOffset(Double.POSITIVE_INFINITY);
+    /** Split time representing positive infinity. */
+    public static final SplitTime POSITIVE_INFINITY = new SplitTime(Double.POSITIVE_INFINITY);
 
-    /** Indicator for NaN offset. */
+    /** Indicator for NaN time. */
     private static final long NAN_INDICATOR      = -1L;
 
-    /** Indicator for infinite offset. */
+    /** Indicator for infinite time. */
     private static final long INFINITY_INDICATOR = -2L;
 
     /** Milliseconds in one second. */
@@ -106,20 +115,20 @@ public class SplitOffset implements Serializable {
     private final long attoSeconds;
 
     /**
-     * Build an offset by adding several offsets.
-     * @param offsets offsets to add
+     * Build a time by adding several times.
+     * @param times times to add
      */
-    public SplitOffset(final SplitOffset...offsets) {
-        SplitOffset sum = SplitOffset.ZERO;
-        for (final SplitOffset offset : offsets) {
-            sum = SplitOffset.add(sum, offset);
+    public SplitTime(final SplitTime...times) {
+        SplitTime sum = SplitTime.ZERO;
+        for (final SplitTime time : times) {
+            sum = SplitTime.add(sum, time);
         }
         this.seconds     = sum.getSeconds();
         this.attoSeconds = sum.getAttoSeconds();
     }
 
     /**
-     * Build an offset from its components.
+     * Build a time from its components.
      * <p>
      * The components will be normalized so that {@link #getAttoSeconds()}
      * returns a value between {@code 0L} and {1000000000000000000L}
@@ -127,7 +136,7 @@ public class SplitOffset implements Serializable {
      * @param seconds seconds part
      * @param attoSeconds attoseconds part
      */
-    public SplitOffset(final long seconds, final long attoSeconds) {
+    public SplitTime(final long seconds, final long attoSeconds) {
         long normalizedSeconds;
         long normalizedAttoSeconds;
         try {
@@ -153,20 +162,20 @@ public class SplitOffset implements Serializable {
     }
 
     /**
-     * Build an offset from a value in seconds.
+     * Build a time from a value in seconds.
      *
-     * @param offset offset
+     * @param time time
      */
-    public SplitOffset(final double offset) {
-        if (Double.isNaN(offset)) {
+    public SplitTime(final double time) {
+        if (Double.isNaN(time)) {
             seconds     = 0L;
             attoSeconds = NAN_INDICATOR;
-        } else if (offset < Long.MIN_VALUE || offset > Long.MAX_VALUE) {
-            seconds     = offset < 0 ? Long.MIN_VALUE : Long.MAX_VALUE;
+        } else if (time < Long.MIN_VALUE || time > Long.MAX_VALUE) {
+            seconds     = time < 0 ? Long.MIN_VALUE : Long.MAX_VALUE;
             attoSeconds = INFINITY_INDICATOR;
         } else {
-            final double tiSeconds  = FastMath.rint(offset);
-            final double subSeconds = offset - tiSeconds;
+            final double tiSeconds  = FastMath.rint(time);
+            final double subSeconds = time - tiSeconds;
             if (subSeconds < 0L) {
                 seconds     = (long) tiSeconds - 1L;
                 attoSeconds = FastMath.round(subSeconds * ATTOS_IN_SECOND) + ATTOS_IN_SECOND;
@@ -178,62 +187,62 @@ public class SplitOffset implements Serializable {
     }
 
     /**
-     * Build an offset from a value defined in some time unit.
+     * Build a time from a value defined in some time unit.
      *
-     * @param offset offset
-     * @param unit   time unit in which {@code offset} is expressed
+     * @param time time
+     * @param unit   time unit in which {@code time} is expressed
      */
-    public SplitOffset(final long offset, final TimeUnit unit) {
+    public SplitTime(final long time, final TimeUnit unit) {
         switch (unit) {
             case DAYS: {
                 final long limit = (Long.MAX_VALUE - DAY.seconds / 2) / DAY.seconds;
-                if (offset < -limit) {
+                if (time < -limit) {
                     seconds     = Long.MIN_VALUE;
                     attoSeconds = INFINITY_INDICATOR;
-                } else if (offset > limit) {
+                } else if (time > limit) {
                     seconds     = Long.MAX_VALUE;
                     attoSeconds = INFINITY_INDICATOR;
                 } else {
-                    seconds = offset * DAY.seconds;
+                    seconds = time * DAY.seconds;
                     attoSeconds = 0L;
                 }
                 break;
             }
             case HOURS: {
                 final long limit = (Long.MAX_VALUE - HOUR.seconds / 2) / HOUR.seconds;
-                if (offset < -limit) {
+                if (time < -limit) {
                     seconds     = Long.MIN_VALUE;
                     attoSeconds = INFINITY_INDICATOR;
-                } else if (offset > limit) {
+                } else if (time > limit) {
                     seconds     = Long.MAX_VALUE;
                     attoSeconds = INFINITY_INDICATOR;
                 } else {
-                    seconds     = offset * HOUR.seconds;
+                    seconds     = time * HOUR.seconds;
                     attoSeconds = 0L;
                 }
                 break;
             }
             case MINUTES: {
                 final long limit = (Long.MAX_VALUE - MINUTE.seconds / 2) / MINUTE.seconds;
-                if (offset < -limit) {
+                if (time < -limit) {
                     seconds     = Long.MIN_VALUE;
                     attoSeconds = INFINITY_INDICATOR;
-                } else if (offset > limit) {
+                } else if (time > limit) {
                     seconds     = Long.MAX_VALUE;
                     attoSeconds = INFINITY_INDICATOR;
                 } else {
-                    seconds     = offset * MINUTE.seconds;
+                    seconds     = time * MINUTE.seconds;
                     attoSeconds = 0L;
                 }
                 break;
             }
             case SECONDS:
-                seconds     = offset;
+                seconds     = time;
                 attoSeconds = 0L;
                 break;
             case MILLISECONDS: {
-                final long s = offset / MILLIS_IN_SECOND;
-                final long r = (offset % MILLIS_IN_SECOND) * MILLISECOND.attoSeconds;
+                final long s = time / MILLIS_IN_SECOND;
+                final long r = (time % MILLIS_IN_SECOND) * MILLISECOND.attoSeconds;
                 if (r < 0L) {
                     seconds     = s - 1L;
                     attoSeconds = ATTOS_IN_SECOND + r;
@@ -244,8 +253,8 @@ public class SplitOffset implements Serializable {
                 break;
             }
             case MICROSECONDS: {
-                final long s = offset / MICROS_IN_SECOND;
-                final long r = (offset % MICROS_IN_SECOND) * MICROSECOND.attoSeconds;
+                final long s = time / MICROS_IN_SECOND;
+                final long r = (time % MICROS_IN_SECOND) * MICROSECOND.attoSeconds;
                 if (r < 0L) {
                     seconds     = s - 1L;
                     attoSeconds = ATTOS_IN_SECOND + r;
@@ -256,8 +265,8 @@ public class SplitOffset implements Serializable {
                 break;
             }
             case NANOSECONDS: {
-                final long s = offset / NANOS_IN_SECOND;
-                final long r = (offset % NANOS_IN_SECOND) * NANOSECOND.attoSeconds;
+                final long s = time / NANOS_IN_SECOND;
+                final long r = (time % NANOS_IN_SECOND) * NANOSECOND.attoSeconds;
                 if (r < 0L) {
                     seconds     = s - 1L;
                     attoSeconds = ATTOS_IN_SECOND + r;
@@ -272,15 +281,15 @@ public class SplitOffset implements Serializable {
         }
     }
 
-    /** check if the offset is zero.
-     * @return true if the offset iz zero
+    /** check if the time is zero.
+     * @return true if the time is zero
      */
     public boolean isZero() {
         return seconds == 0L && attoSeconds == 0L;
     }
 
-    /** Check if offset is finite (i.e. neither {@link #isNaN() NaN} nor {@link #isInfinite() infinite)}.
-     * @return true if offset is finite
+    /** Check if time is finite (i.e. neither {@link #isNaN() NaN} nor {@link #isInfinite() infinite)}.
+     * @return true if time is finite
      * @see #isNaN()
      * @see #isInfinite()
      * @see #isNegativeInfinity()
@@ -290,8 +299,8 @@ public class SplitOffset implements Serializable {
         return attoSeconds >= 0L;
     }
 
-    /** Check if offset is NaN.
-     * @return true if offset is NaN
+    /** Check if time is NaN.
+     * @return true if time is NaN
      * @see #isFinite()
      * @see #isInfinite()
      * @see #isNegativeInfinity()
@@ -301,8 +310,8 @@ public class SplitOffset implements Serializable {
         return attoSeconds == NAN_INDICATOR;
     }
 
-    /** Check if offset is infinity.
-     * @return true if offset is infinity
+    /** Check if time is infinity.
+     * @return true if time is infinity
      * @see #isFinite()
      * @see #isNaN()
      * @see #isNegativeInfinity()
@@ -312,8 +321,8 @@ public class SplitOffset implements Serializable {
         return attoSeconds == INFINITY_INDICATOR;
     }
 
-    /** Check if offset is positive infinity.
-     * @return true if offset is positive infinity
+    /** Check if time is positive infinity.
+     * @return true if time is positive infinity
      * @see #isFinite()
      * @see #isNaN()
      * @see #isInfinite()
@@ -323,8 +332,8 @@ public class SplitOffset implements Serializable {
         return isInfinite() && seconds > 0L;
     }
 
-    /** Check if offset is negative infinity.
-     * @return true if offset is negative infinity
+    /** Check if time is negative infinity.
+     * @return true if time is negative infinity
      * @see #isFinite()
      * @see #isNaN()
      * @see #isInfinite()
@@ -334,64 +343,64 @@ public class SplitOffset implements Serializable {
         return isInfinite() && seconds < 0L;
     }
 
-    /** Build an offset by adding two offsets.
-     * @param o1 first offset
-     * @param o2 second offset
-     * @return o1+o2
+    /** Build a time by adding two times.
+     * @param t1 first time
+     * @param t2 second time
+     * @return t1+t2
      */
-    public static SplitOffset add(final SplitOffset o1, final SplitOffset o2) {
-        if (o1.attoSeconds < 0 || o2.attoSeconds < 0) {
+    public static SplitTime add(final SplitTime t1, final SplitTime t2) {
+        if (t1.attoSeconds < 0 || t2.attoSeconds < 0) {
             // gather all special cases in one big check to avoid rare multiple tests
-            if (o1.isNaN() ||
-                o2.isNaN() ||
-                o1.isPositiveInfinity() && o2.isNegativeInfinity() ||
-                o1.isNegativeInfinity() && o2.isPositiveInfinity()) {
+            if (t1.isNaN() ||
+                t2.isNaN() ||
+                t1.isPositiveInfinity() && t2.isNegativeInfinity() ||
+                t1.isNegativeInfinity() && t2.isPositiveInfinity()) {
                 return NaN;
-            } else if (o1.isInfinite()) {
-                // o2 is either a finite offset or the same infinity as o1
-                return o1;
+            } else if (t1.isInfinite()) {
+                // t2 is either a finite time or the same infinity as t1
+                return t1;
             } else {
-                // o1 is either a finite offset or the same infinity as o2
-                return o2;
+                // t1 is either a finite time or the same infinity as t2
+                return t2;
             }
         } else {
-            // regular addition between two finite offsets
-            return new SplitOffset(o1.seconds + o2.seconds, o1.attoSeconds + o2.attoSeconds);
+            // regular addition between two finite times
+            return new SplitTime(t1.seconds + t2.seconds, t1.attoSeconds + t2.attoSeconds);
         }
     }
 
-    /** Build an offset by subtracting one offset from another one.
-     * @param o1 first offset
-     * @param o2 second offset
-     * @return o1-o2
+    /** Build a time by subtracting one time from another one.
+     * @param t1 first time
+     * @param t2 second time
+     * @return t1-t2
      */
-    public static SplitOffset subtract(final SplitOffset o1, final SplitOffset o2) {
-        if (o1.attoSeconds < 0 || o2.attoSeconds < 0) {
+    public static SplitTime subtract(final SplitTime t1, final SplitTime t2) {
+        if (t1.attoSeconds < 0 || t2.attoSeconds < 0) {
             // gather all special cases in one big check to avoid rare multiple tests
-            if (o1.isNaN() ||
-                o2.isNaN() ||
-                o1.isPositiveInfinity() && o2.isPositiveInfinity() ||
-                o1.isNegativeInfinity() && o2.isNegativeInfinity()) {
+            if (t1.isNaN() ||
+                t2.isNaN() ||
+                t1.isPositiveInfinity() && t2.isPositiveInfinity() ||
+                t1.isNegativeInfinity() && t2.isNegativeInfinity()) {
                 return NaN;
-            } else if (o1.isInfinite()) {
-                // o2 is either a finite offset or the infinity opposite to o1
-                return o1;
+            } else if (t1.isInfinite()) {
+                // t2 is either a finite time or the infinity opposite to t1
+                return t1;
             } else {
-                // o1 is either a finite offset or the infinity opposite to o2
-                return o2.isPositiveInfinity() ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
+                // t1 is either a finite time or the infinity opposite to t2
+                return t2.isPositiveInfinity() ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
             }
         } else {
-            // regular subtraction between two finite offsets
-            return new SplitOffset(o1.seconds - o2.seconds, o1.attoSeconds - o2.attoSeconds);
+            // regular subtraction between two finite times
+            return new SplitTime(t1.seconds - t2.seconds, t1.attoSeconds - t2.attoSeconds);
         }
     }
 
-    /** Get the offset in some time unit.
+    /** Get the time in some unit.
      * @param unit time unit
-     * @return offset in this time unit, rounded to closest long,
-     * returns arbitrarily {@link Long#MAX_VALUE} for {@link #isNaN() NaN offsets}
+     * @return time in this unit, rounded to the closest long,
+     * returns arbitrarily {@link Long#MAX_VALUE} for {@link #isNaN() NaN times}
      */
-    public long getRoundedOffset(final TimeUnit unit) {
+    public long getRoundedTime(final TimeUnit unit) {
 
         // handle special cases
         if (attoSeconds < 0) {
@@ -423,31 +432,31 @@ public class SplitOffset implements Serializable {
         }
     }
 
-    /** Get the normalized seconds part of the offset.
-     * @return normalized seconds part of the offset
+    /** Get the normalized seconds part of the time.
+     * @return normalized seconds part of the time (may be negative)
      */
     public long getSeconds() {
         return seconds;
     }
 
-    /** Get the normalized attoseconds part of the offset.
+    /** Get the normalized attoseconds part of the time.
      * <p>
      * The normalized attoseconds is always between {@code 0L} inclusive and
-     * {@code 1000000000000000000L} exclusive for finite offsets. It is negative
-     * for {@link #isNaN() NaN} or {@link #isInfinite() infinite} offsets.
+     * {@code 1000000000000000000L} exclusive for <em>finite</em> ranges. It is negative
+     * for {@link #isNaN() NaN} or {@link #isInfinite() infinite} times.
      * </p>
-     * @return normalized attoseconds part of the offset
+     * @return normalized attoseconds part of the time
      */
     public long getAttoSeconds() {
         return attoSeconds;
     }
 
-    /** Get the offset collapsed into a single double.
+    /** Get the time collapsed into a single double.
      * <p>
      * Beware that lots of accuracy is lost when combining {@link #getSeconds()} and {@link #getAttoSeconds()}
      * into a single double.
      * </p>
-     * @return offset as a single double
+     * @return time as a single double
      */
     public double toDouble() {
         if (isFinite()) {
@@ -473,12 +482,12 @@ public class SplitOffset implements Serializable {
      * Not that in order to be consistent with {@code Double#compareTo(Double)},
      * NaN is considered equal to itself and greater the positive infinity.
      * </p>
-     * @param other other offset to compare the instance to
-     * @return a negative integer, zero, or a positive integer if applying this offset
+     * @param other other time to compare the instance to
+     * @return a negative integer, zero, or a positive integer if applying this time
      * to reference date would result in a date being before, simultaneous, or after
-     * the date obtained by applying the other offset to the same reference date.
+     * the date obtained by applying the other time to the same reference date.
      */
-    public int compareTo(final SplitOffset other) {
+    public int compareTo(final SplitTime other) {
         if (isFinite()) {
             if (other.isFinite()) {
                 return seconds == other.seconds ?

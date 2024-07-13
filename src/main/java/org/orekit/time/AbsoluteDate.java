@@ -74,7 +74,7 @@ import org.orekit.utils.Constants;
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double)},
  *   {@link #parseCCSDSUnsegmentedTimeCode(byte, byte, byte[], AbsoluteDate)},
  *   {@link #parseCCSDSDaySegmentedTimeCode(byte, byte[], DateComponents)},
- *   {@link #durationFrom(AbsoluteDate)}, {@link #compareTo(SplitOffset)}, {@link #equals(Object)}
+ *   {@link #durationFrom(AbsoluteDate)}, {@link #compareTo(SplitTime)}, {@link #equals(Object)}
  *   and {@link #hashCode()}.</p>
  *   </li>
  * </ul>
@@ -102,8 +102,8 @@ import org.orekit.utils.Constants;
  * @see ChronologicalComparator
  */
 public class AbsoluteDate
-    extends SplitOffset
-    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<SplitOffset>, Serializable {
+    extends SplitTime
+    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<SplitTime>, Serializable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
      * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes
@@ -304,11 +304,11 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final DateComponents date, final TimeComponents time,
                         final TimeScale timeScale) {
-        super(new SplitOffset(60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
+        super(new SplitTime(60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
                               time.getMinute() - time.getMinutesFromUTC() - 720L),
-                              0L),
-              new SplitOffset(time.getSecond()),
-              new SplitOffset(timeScale.offsetToTAI(date, time)));
+                            0L),
+              new SplitTime(time.getSecond()),
+              new SplitTime(timeScale.offsetToTAI(date, time)));
     }
 
     /** Build an instance from a location in a {@link TimeScale time scale}.
@@ -433,7 +433,7 @@ public class AbsoluteDate
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-        super(since, new SplitOffset(elapsedDuration));
+        super(since, new SplitTime(elapsedDuration));
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -454,7 +454,7 @@ public class AbsoluteDate
      * @since 12.1
      */
     public AbsoluteDate(final AbsoluteDate since, final long elapsedDuration, final TimeUnit timeUnit) {
-        super(since, new SplitOffset(elapsedDuration, timeUnit));
+        super(since, new SplitTime(elapsedDuration, timeUnit));
     }
 
     /** Build an instance from an apparent clock offset with respect to another
@@ -491,7 +491,7 @@ public class AbsoluteDate
      * @since 9.0
      */
     AbsoluteDate(final long epoch, final double offset) {
-        super(new SplitOffset(epoch, 0L), new SplitOffset(offset));
+        super(new SplitTime(epoch, 0L), new SplitTime(offset));
     }
 
     /** Extract time components from a number of milliseconds within the day.
@@ -883,7 +883,7 @@ public class AbsoluteDate
      * @see #AbsoluteDate(AbsoluteDate, double)
      */
     public double durationFrom(final AbsoluteDate instant) {
-        return SplitOffset.subtract(this, instant).toDouble();
+        return SplitTime.subtract(this, instant).toDouble();
     }
 
     /** Compute the physically elapsed duration between two instants.
@@ -903,7 +903,7 @@ public class AbsoluteDate
      * @since 12.1
      */
     public long durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
-        return SplitOffset.subtract(this, instant).getRoundedOffset(timeUnit);
+        return SplitTime.subtract(this, instant).getRoundedTime(timeUnit);
     }
 
     /** Compute the apparent <em>clock</em> offset between two instant <em>in the
@@ -930,8 +930,8 @@ public class AbsoluteDate
      * @see #AbsoluteDate(AbsoluteDate, double, TimeScale)
      */
     public double offsetFrom(final AbsoluteDate instant, final TimeScale timeScale) {
-        final SplitOffset duration = new SplitOffset(SplitOffset.subtract(this, instant),
-                                                     new SplitOffset(timeScale.offsetFromTAI(this) -
+        final SplitTime duration = new SplitTime(SplitTime.subtract(this, instant),
+                                                 new SplitTime(timeScale.offsetFromTAI(this) -
                                                                      timeScale.offsetFromTAI(instant)));
         return duration.getSeconds() + ((double) duration.getAttoSeconds()) / ATTOS_IN_SECOND;
     }
@@ -1010,7 +1010,7 @@ public class AbsoluteDate
             }
         }
 
-        final SplitOffset sum = SplitOffset.add(this, new SplitOffset(timeScale.offsetFromTAI(this)));
+        final SplitTime sum = SplitTime.add(this, new SplitTime(timeScale.offsetFromTAI(this)));
 
         // split date and time
         final long offset2000A = sum.getSeconds() + 43200L;

@@ -1501,9 +1501,9 @@ public class AbsoluteDateTest {
                                                  FastMath.scalb(6629298651489277.0, -55),
                                                  TimeScalesFactory.getTT());
             AbsoluteDate after = date.shiftedBy(Precision.EPSILON);
-            Field secondsField = SplitOffset.class.getDeclaredField("seconds");
+            Field secondsField = SplitTime.class.getDeclaredField("seconds");
             secondsField.setAccessible(true);
-            Field attosecondsField = SplitOffset.class.getDeclaredField("attoSeconds");
+            Field attosecondsField = SplitTime.class.getDeclaredField("attoSeconds");
             attosecondsField.setAccessible(true);
             Assertions.assertEquals(624098367L, secondsField.getLong(date));
             Assertions.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), 1.0e-18 * attosecondsField.getLong(date), 1.0e-18);
@@ -1521,9 +1521,9 @@ public class AbsoluteDateTest {
             double dt = FastMath.scalb(6596520010750484.0, -39);
             AbsoluteDate shifted = reference.shiftedBy(dt);
             AbsoluteDate after   = shifted.shiftedBy(Precision.EPSILON);
-            Field secondsField = SplitOffset.class.getDeclaredField("seconds");
+            Field secondsField = SplitTime.class.getDeclaredField("seconds");
             secondsField.setAccessible(true);
-            Field attosecondsField = SplitOffset.class.getDeclaredField("attoSeconds");
+            Field attosecondsField = SplitTime.class.getDeclaredField("attoSeconds");
             attosecondsField.setAccessible(true);
             Assertions.assertEquals(624110398L, secondsField.getLong(shifted));
             Assertions.assertEquals((1.0 - 1.6922e-13) * 1.0e18, (double) attosecondsField.getLong(shifted), 1.0e-15);
