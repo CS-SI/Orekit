@@ -20,7 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="12.1.2" date="TBD" description="TBD">
+    <release version="12.1.2" date="13/07/2024"
+             description="Version 12.1.2 is a patch release of Orekit.
+             It fixes multiple issues related to the parsing of CCSDS CDM, the generation of
+             IntelsatElevenElements, the initialization of the IntervalEventTrigger, and the
+             parsing of IGS related files.
+             Version 12.1.2 also include multiple JavaDoc fixes.">
       <action dev="bryan" type="fix" issue="1459">
         Fixed JavaDoc typo in WalkerConstellationSlot.
       </action>
