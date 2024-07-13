@@ -128,7 +128,7 @@ import org.orekit.utils.TimeSpanMap.Transition;
  */
 @Deprecated
 public class TimeSpanDragForce extends AbstractDragForceModel {
-    // TODO: move to tests
+    // TODO move to tests
 
     /** Prefix for dates before in the parameter drivers' name. */
     public static final String DATE_BEFORE = " - Before ";
