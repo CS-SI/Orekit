@@ -441,8 +441,10 @@ public class SplitTime implements Serializable {
 
     /** Get the normalized attoseconds part of the time.
      * <p>
-     * The normalized attoseconds is always between {@code 0L} inclusive and
-     * {@code 1000000000000000000L} exclusive for <em>finite</em> ranges. It is negative
+     * The normalized attoseconds is always between {@code 0L} and
+     * {@code 1000000000000000000L} for <em>finite</em> ranges. Note that it
+     * may reach {@code 1000000000000000000L} if for example the time is less
+     * than 1 attosecond <em>before</em> a whole second. It is negative
      * for {@link #isNaN() NaN} or {@link #isInfinite() infinite} times.
      * </p>
      * @return normalized attoseconds part of the time

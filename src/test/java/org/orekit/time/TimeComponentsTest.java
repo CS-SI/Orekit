@@ -215,7 +215,7 @@ public class TimeComponentsTest {
         MatcherAssert.assertThat(TimeComponents.fromSeconds(0, 0, 0, 60).getSecond(),
                 CoreMatchers.is(0.0));
         MatcherAssert.assertThat(TimeComponents.fromSeconds(0, zeroUlp, 0, 60).getSecond(),
-                CoreMatchers.is(zeroUlp));
+                CoreMatchers.is(0.0));
         MatcherAssert.assertThat(TimeComponents.fromSeconds(86399, one, 0, 60).getSecond(),
                 CoreMatchers.is(sixty));
         MatcherAssert.assertThat(TimeComponents.fromSeconds(86399, one, 1, 61).getSecond(),
@@ -278,7 +278,7 @@ public class TimeComponentsTest {
 
         // action + verify
         check(new TimeComponents(0.0), 0, 0, 0);
-        check(new TimeComponents(zeroUlp), 0, 0, zeroUlp);
+        check(new TimeComponents(zeroUlp), 0, 0, 0);
         check(new TimeComponents(86399.5), 23, 59, 59.5);
         check(new TimeComponents(FastMath.nextDown(86400.0)), 23, 59, 60 - dayUlp);
         check(new TimeComponents(86400), 23, 59, 60);
@@ -291,7 +291,7 @@ public class TimeComponentsTest {
         } catch (OrekitIllegalArgumentException e) {
             MatcherAssert.assertThat(e.getSpecifier(),
                     CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
-            MatcherAssert.assertThat(e.getParts()[0], CoreMatchers.is(86400.0));
+            MatcherAssert.assertThat(e.getParts()[0], CoreMatchers.is(86401.0));
         }
         try {
             new TimeComponents(-zeroUlp);
@@ -299,7 +299,7 @@ public class TimeComponentsTest {
         } catch (OrekitIllegalArgumentException e) {
             MatcherAssert.assertThat(e.getSpecifier(),
                     CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
-            MatcherAssert.assertThat(e.getParts()[0], CoreMatchers.is(-zeroUlp));
+            MatcherAssert.assertThat(e.getParts()[0], CoreMatchers.is(0.0));
         }
     }
 
@@ -314,7 +314,7 @@ public class TimeComponentsTest {
 
         // action + verify
         check(new TimeComponents(0, 0.0), 0, 0, 0);
-        check(new TimeComponents(0, zeroUlp), 0, 0, zeroUlp);
+        check(new TimeComponents(0, zeroUlp), 0, 0, 0);
         check(new TimeComponents(86399, 0.5), 23, 59, 59.5);
         check(new TimeComponents(86399, one), 23, 59, sixty);
         check(new TimeComponents(86400, 0.0), 23, 59, 60);

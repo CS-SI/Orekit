@@ -52,7 +52,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     // CHECKSTYLE: resume ConstantName
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20160331L;
+    private static final long serialVersionUID = 20240712L;
 
     /** Formatting symbols used in {@link #toString()}. */
     private static final DecimalFormatSymbols US_SYMBOLS =
@@ -61,14 +61,30 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Basic and extends formats for local time, with optional timezone. */
     private static final Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|([-+]\\d\\d(?::?\\d\\d)?))?$");
 
+    /** Number of seconds in one hour. */
+    private static final int HOUR = 3600;
+
+    /** Number of seconds in one minute. */
+    private static final int MINUTE = 60;
+
+    /** Constant for 23 hours. */
+    private static final int TWENTY_THREE = 23;
+
+    /** Constant for 59 minutes. */
+    private static final int FIFTY_NINE = 59;
+
+    /** Constant for 23:59. */
+    private static final SplitTime TWENTY_THREE_FIFTY_NINE =
+        new SplitTime(TWENTY_THREE * HOUR + FIFTY_NINE * MINUTE, 0L);
+
     /** Hour number. */
     private final int hour;
 
     /** Minute number. */
     private final int minute;
 
-    /** Second number. */
-    private final double second;
+    /** Split second number. */
+    private final SplitTime splitSecond;
 
     /** Offset between the specified date and UTC.
      * <p>
@@ -90,7 +106,23 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      */
     public TimeComponents(final int hour, final int minute, final double second)
         throws IllegalArgumentException {
-        this(hour, minute, second, 0);
+        this(hour, minute, new SplitTime(second));
+    }
+
+    /** Build a time from its clock elements.
+     * <p>Note that seconds between 60.0 (inclusive) and 61.0 (exclusive) are allowed
+     * in this method, since they do occur during leap seconds introduction
+     * in the {@link UTCScale UTC} time scale.</p>
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param splitSecond second number from 0.0 to 61.0 (excluded)
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range)
+     * @since 13.0
+     */
+    public TimeComponents(final int hour, final int minute, final SplitTime splitSecond)
+        throws IllegalArgumentException {
+        this(hour, minute, splitSecond, 0);
     }
 
     /** Build a time from its clock elements.
@@ -109,18 +141,37 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     public TimeComponents(final int hour, final int minute, final double second,
                           final int minutesFromUTC)
         throws IllegalArgumentException {
+        this(hour, minute, new SplitTime(second), minutesFromUTC);
+    }
+
+    /** Build a time from its clock elements.
+     * <p>Note that seconds between 60.0 (inclusive) and 61.0 (exclusive) are allowed
+     * in this method, since they do occur during leap seconds introduction
+     * in the {@link UTCScale UTC} time scale.</p>
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param splitSecond second number from 0.0 to 61.0 (excluded)
+     * @param minutesFromUTC offset between the specified date and UTC, as an
+     * integral number of minutes, as per ISO-8601 standard
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range)
+     * @since 13.0
+     */
+    public TimeComponents(final int hour, final int minute, final SplitTime splitSecond,
+                          final int minutesFromUTC)
+        throws IllegalArgumentException {
 
         // range check
         if (hour < 0 || hour > 23 ||
             minute < 0 || minute > 59 ||
-            second < 0 || second >= 61.0) {
+            splitSecond.getSeconds() < 0L || splitSecond.getSeconds() >= 61L) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_HMS_TIME,
-                                                     hour, minute, second);
+                                                     hour, minute, splitSecond.toDouble());
         }
 
         this.hour           = hour;
         this.minute         = minute;
-        this.second         = second;
+        this.splitSecond    = splitSecond;
         this.minutesFromUTC = minutesFromUTC;
 
     }
@@ -145,7 +196,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      */
     public TimeComponents(final double secondInDay)
             throws OrekitIllegalArgumentException {
-        this(0, secondInDay);
+        this(new SplitTime(secondInDay));
     }
 
     /**
@@ -171,12 +222,58 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      */
     public TimeComponents(final int secondInDayA, final double secondInDayB)
             throws OrekitIllegalArgumentException {
-        // if the total is at least 86400 then assume there is a leap second
-        this(
-                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? secondInDayA : secondInDayA - 1,
-                secondInDayB,
-                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 0 : 1,
-                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 60 : 61);
+         // if the total is at least 86400 then assume there is a leap second
+        this((Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? secondInDayA : secondInDayA - 1,
+             secondInDayB,
+             (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 0 : 1,
+             (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 60 : 61);
+    }
+
+    /**
+     * Build a time from the second number within the day.
+     *
+     * <p>If the {@code secondInDay} is less than {@code 60.0} then {@link #getSecond()}
+     * will be less than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
+     * may produce an invalid value of {@link #getSecond()} during a negative leap second,
+     * through there has never been one. For more control over the number of seconds in
+     * the final minute use {@link #fromSeconds(int, double, double, int)}.
+     *
+     * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
+     * 0}).
+     *
+     * @param splitSecondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
+     *                    1} (excluded)
+     * @see #fromSeconds(int, double, double, int)
+     * @see #TimeComponents(int, double)
+     * @since 13.0
+     */
+    public TimeComponents(final SplitTime splitSecondInDay) {
+        if (splitSecondInDay.compareTo(SplitTime.ZERO) < 0) {
+            // negative time
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
+                                                     splitSecondInDay.toDouble(),
+                                                     0, SplitTime.DAY_WITH_POSITIVE_LEAP.getSeconds());
+        } else if (splitSecondInDay.compareTo(SplitTime.DAY) >= 0) {
+            // if the total is at least 86400 then assume there is a leap second
+            if (splitSecondInDay.compareTo(SplitTime.DAY_WITH_POSITIVE_LEAP) >= 0) {
+                // more than one leap second is too much
+                throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
+                                                         splitSecondInDay.toDouble(),
+                                                         0, SplitTime.DAY_WITH_POSITIVE_LEAP.getSeconds());
+            } else {
+                hour        = TWENTY_THREE;
+                minute      = FIFTY_NINE;
+                splitSecond = SplitTime.subtract(splitSecondInDay, TWENTY_THREE_FIFTY_NINE);
+            }
+        } else {
+            // regular time within day
+            hour        = (int) splitSecondInDay.getSeconds() / HOUR;
+            minute      = ((int) splitSecondInDay.getSeconds() % HOUR) / MINUTE;
+            splitSecond = SplitTime.subtract(splitSecondInDay, new SplitTime(hour * HOUR + minute * MINUTE, 0L));
+        }
+
+        minutesFromUTC = 0;
+
     }
 
     /**
@@ -192,26 +289,22 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      *
      * <pre>
      *     {@code 0 <= secondInDayA + secondInDayB < 86400}
-     *     {@code 0 <= (secondInDayA + secondInDayB) % 60 + leap < minuteDuration}
+     *     {@code 0 <= (secondInDayA + secondInDayB) % 60 + leap <= minuteDuration}
      *     {@code 0 <= leap <= minuteDuration - 60                        if minuteDuration >= 60}
      *     {@code 0 >= leap >= minuteDuration - 60                        if minuteDuration <  60}
      * </pre>
      *
      * <p>If the seconds of minute ({@link #getSecond()}) computed from {@code
-     * secondInDayA + secondInDayB + leap} is greater than or equal to {@code
-     * minuteDuration} then the second of minute will be set to {@code
-     * FastMath.nextDown(minuteDuration)}. This prevents rounding to an invalid seconds of
-     * minute number when the input values have greater precision than a {@code double}.
+     * secondInDayA + secondInDayB + leap} is greater than or equal to {@code 60 + leap}
+     * then the second of minute will be set to {@code FastMath.nextDown(60 + leap)}. This
+     * prevents rounding to an invalid seconds of minute number when the input values have
+     * greater precision than a {@code double}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
      *
      * <p>If {@code secondsInDayB} or {@code leap} is NaN then the hour and minute will
      * be determined from {@code secondInDayA} and the second of minute will be NaN.
-     *
-     * <p>This constructor is private to avoid confusion with the other constructors that
-     * would be caused by overloading. Use {@link #fromSeconds(int, double, double,
-     * int)}.
      *
      * @param secondInDayA   first part of the second number.
      * @param secondInDayB   last part of the second number.
@@ -221,15 +314,14 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      *                       second of minute.
      * @param minuteDuration number of seconds in the current minute, normally {@code 60}.
      * @throws OrekitIllegalArgumentException if the inequalities above do not hold.
-     * @see #fromSeconds(int, double, double, int)
      * @since 10.2
      */
     private TimeComponents(final int secondInDayA,
-                           final double secondInDayB,
-                           final double leap,
-                           final int minuteDuration) throws OrekitIllegalArgumentException {
+                                             final double secondInDayB,
+                                             final double leap,
+                                             final int minuteDuration) {
 
-        // split the numbers as a whole number of seconds
+       // split the numbers as a whole number of seconds
         // and a fractional part between 0.0 (included) and 1.0 (excluded)
         final int carry         = (int) FastMath.floor(secondInDayB);
         int wholeSeconds        = secondInDayA + carry;
@@ -237,19 +329,14 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
         // range check
         if (wholeSeconds < 0 || wholeSeconds >= Constants.JULIAN_DAY) {
-            throw new OrekitIllegalArgumentException(
-                    OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
-                    // this can produce some strange messages due to rounding
-                    secondInDayA + secondInDayB,
-                    0,
-                    Constants.JULIAN_DAY);
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
+                                                     // this can produce some strange messages due to rounding
+                                                     secondInDayA + secondInDayB, 0, Constants.JULIAN_DAY);
         }
         final int maxExtraSeconds = minuteDuration - 60;
-        if (leap * maxExtraSeconds < 0 ||
-                FastMath.abs(leap) > FastMath.abs(maxExtraSeconds)) {
-            throw new OrekitIllegalArgumentException(
-                    OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
-                    leap, 0, maxExtraSeconds);
+        if (leap * maxExtraSeconds < 0 || FastMath.abs(leap) > FastMath.abs(maxExtraSeconds)) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
+                                                     leap, 0, maxExtraSeconds);
         }
 
         // extract the time components
@@ -269,10 +356,11 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                     naiveSecond, 0, minuteDuration);
         }
         if (naiveSecond < minuteDuration || Double.isNaN(naiveSecond)) {
-            second = naiveSecond;
+            splitSecond = new SplitTime(naiveSecond);
         } else {
-            second = FastMath.nextDown((double) minuteDuration);
+            splitSecond = new SplitTime(FastMath.nextDown((double) minuteDuration));
         }
+
         minutesFromUTC = 0;
 
     }
@@ -391,7 +479,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * &lt; 61 only occurs during a leap second.
      */
     public double getSecond() {
-        return second;
+        return splitSecond.toDouble();
     }
 
     /** Get the offset between the specified date and UTC.
@@ -411,7 +499,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 7.2
      */
     public double getSecondsInLocalDay() {
-        return second + 60 * minute + 3600 * hour;
+        return splitSecond.toDouble() + 60 * minute + 3600 * hour;
     }
 
     /** Get the second number within the UTC day, applying the {@link #getMinutesFromUTC() offset from UTC}.
@@ -421,7 +509,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 7.2
      */
     public double getSecondsInUTCDay() {
-        return second + 60 * (minute - minutesFromUTC) + 3600 * hour;
+        return splitSecond.toDouble() + 60 * (minute - minutesFromUTC) + 3600 * hour;
     }
 
     /**
@@ -433,7 +521,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @return string without UTC offset.
      */
     String toStringWithoutUtcOffset(final DecimalFormat secondsFormat) {
-        return String.format("%02d:%02d:%s", hour, minute, secondsFormat.format(second));
+        return String.format("%02d:%02d:%s", hour, minute, secondsFormat.format(splitSecond.toDouble()));
     }
 
     /**
@@ -489,7 +577,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
             return otherTime != null &&
                    hour           == otherTime.hour   &&
                    minute         == otherTime.minute &&
-                   second         == otherTime.second &&
+                   splitSecond.compareTo(otherTime.splitSecond) == 0 &&
                    minutesFromUTC == otherTime.minutesFromUTC;
         } catch (ClassCastException cce) {
             return false;
@@ -498,8 +586,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /** {@inheritDoc} */
     public int hashCode() {
-        final long bits = Double.doubleToLongBits(second);
-        return ((hour << 16) ^ ((minute - minutesFromUTC) << 8)) ^ (int) (bits ^ (bits >>> 32));
+        return ((hour << 16) ^ ((minute - minutesFromUTC) << 8)) ^ splitSecond.hashCode();
     }
 
 }

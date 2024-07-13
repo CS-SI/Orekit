@@ -108,10 +108,14 @@ public class SplitTimeTest {
 
     @Test
     public void testSmallNegativeDoubleContructor() {
-        final SplitTime so = new SplitTime(-1.0e-17);
-        Assertions.assertEquals(-1L, so.getSeconds());
-        Assertions.assertEquals(999999999999999990L, so.getAttoSeconds());
-        Assertions.assertTrue(so.isFinite());
+        final SplitTime so1 = new SplitTime(-1.0e-17);
+        Assertions.assertEquals(-1L, so1.getSeconds());
+        Assertions.assertEquals(999999999999999990L, so1.getAttoSeconds());
+        Assertions.assertTrue(so1.isFinite());
+        final SplitTime so2 = new SplitTime(FastMath.nextDown(0.0));
+        Assertions.assertEquals(-1L, so2.getSeconds());
+        Assertions.assertEquals(1000000000000000000L, so2.getAttoSeconds());
+        Assertions.assertTrue(so2.isFinite());
     }
 
     @Test
