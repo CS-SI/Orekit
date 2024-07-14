@@ -34,6 +34,7 @@ import org.orekit.files.rinex.section.RinexComment;
 import org.orekit.files.rinex.section.RinexLabels;
 import org.orekit.gnss.ObservationTimeScale;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
@@ -341,7 +342,7 @@ public class RinexObservationWriter implements AutoCloseable {
                         outputField(SIX_DIGITS_INTEGER, (int) FastMath.round(sfc.getCorrection()), 6);
                         outputField(SIX_DIGITS_INTEGER, sfc.getTypesObsScaled().size(), 12);
                         for (int i = 0; i < sfc.getTypesObsScaled().size(); ++i) {
-                            outputField(sfc.getTypesObsScaled().get(i).name(), 18 + 6 * i, false);
+                            outputField(sfc.getTypesObsScaled().get(i).getName(), 18 + 6 * i, false);
                         }
                         finishHeaderLine(RinexLabels.OBS_SCALE_FACTOR);
                     }
@@ -379,7 +380,7 @@ public class RinexObservationWriter implements AutoCloseable {
                     outputField("", 6, true);
                     next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
                 }
-                outputField(observationType.name(), next, false);
+                outputField(observationType.getName(), next, false);
             }
             finishHeaderLine(header.getFormatVersion() < 3.0 ?
                              RinexLabels.NB_TYPES_OF_OBSERV :
@@ -461,7 +462,7 @@ public class RinexObservationWriter implements AutoCloseable {
                                     next = column + 4;
                                 }
                                 outputField("", next - 3, true);
-                                outputField(observationType.name(), next, true);
+                                outputField(observationType.getName(), next, true);
                             }
                         }
                         finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
@@ -473,7 +474,7 @@ public class RinexObservationWriter implements AutoCloseable {
         // SYS / PHASE SHIFT
         for (final PhaseShiftCorrection psc : header.getPhaseShiftCorrections()) {
             outputField(psc.getSatelliteSystem().getKey(), 1);
-            outputField(psc.getTypeObs().name(), 5, false);
+            outputField(psc.getTypeObs().getName(), 5, false);
             outputField(EIGHT_FIVE_DIGITS_FLOAT, psc.getCorrection(), 14);
             if (!psc.getSatsCorrected().isEmpty()) {
                 outputField(TWO_DIGITS_INTEGER, psc.getSatsCorrected().size(), 18);
@@ -519,28 +520,28 @@ public class RinexObservationWriter implements AutoCloseable {
             if (Double.isNaN(header.getC1cCodePhaseBias())) {
                 outputField("", 13, true);
             } else {
-                outputField(ObservationType.C1C.name(), 4, false);
+                outputField(PredefinedObservationType.C1C.getName(), 4, false);
                 outputField("", 5, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC1cCodePhaseBias(), 13);
             }
             if (Double.isNaN(header.getC1pCodePhaseBias())) {
                 outputField("", 26, true);
             } else {
-                outputField(ObservationType.C1P.name(), 17, false);
+                outputField(PredefinedObservationType.C1P.getName(), 17, false);
                 outputField("", 18, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC1pCodePhaseBias(), 26);
             }
             if (Double.isNaN(header.getC2cCodePhaseBias())) {
                 outputField("", 39, true);
             } else {
-                outputField(ObservationType.C2C.name(), 30, false);
+                outputField(PredefinedObservationType.C2C.getName(), 30, false);
                 outputField("", 31, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC2cCodePhaseBias(), 39);
             }
             if (Double.isNaN(header.getC2pCodePhaseBias())) {
                 outputField("", 52, true);
             } else {
-                outputField(ObservationType.C2P.name(), 43, false);
+                outputField(PredefinedObservationType.C2P.getName(), 43, false);
                 outputField("", 44, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC2pCodePhaseBias(), 52);
             }

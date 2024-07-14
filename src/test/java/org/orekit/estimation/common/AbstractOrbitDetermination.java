@@ -161,7 +161,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
@@ -2159,7 +2158,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                           weights.getRangeBaseWeight(), satellite);
                             if (stationData.getIonosphericModel() != null) {
                                 final RangeIonosphericDelayModifier ionoModifier = new RangeIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                     od.getObservationType().getFrequency(system).getFrequency());
+                                                                                                                     od.getObservationType().getSignal(system).getFrequency());
                                           range.addModifier(ionoModifier);
                             }
                             if (satAntennaRangeModifier != null) {
@@ -2192,7 +2191,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                                       weights.getRangeRateBaseWeight(), false, satellite);
                             if (stationData.getIonosphericModel() != null) {
                                 final RangeRateIonosphericDelayModifier ionoModifier = new RangeRateIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                             od.getObservationType().getFrequency(system).getFrequency(),
+                                                                                                                             od.getObservationType().getSignal(system).getFrequency(),
                                                                                                                              false);
                                 rangeRate.addModifier(ionoModifier);
                             }

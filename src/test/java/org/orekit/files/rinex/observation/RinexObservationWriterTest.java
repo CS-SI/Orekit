@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -30,6 +31,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -38,9 +41,11 @@ import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.section.RinexComment;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScales;
 
 public class RinexObservationWriterTest {
 
@@ -49,9 +54,12 @@ public class RinexObservationWriterTest {
         Utils.setDataRoot("regular-data");
     }
 
+    @DefaultDataContext
     @Test
     public void testWriteHeaderTwice() throws IOException {
-        final RinexObservation robs = load("rinex/bbbb0000.00o");
+        final RinexObservation robs = load("rinex/bbbb0000.00o",
+                                           PredefinedObservationType::valueOf,
+                                           DataContext.getDefault().getTimeScales());
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
             writer.setReceiverClockModel(robs.extractClockModel(2));
@@ -65,9 +73,12 @@ public class RinexObservationWriterTest {
         }
     }
 
+    @DefaultDataContext
     @Test
     public void testNoWriteHeader() throws IOException {
-        final RinexObservation robs = load("rinex/aiub0000.00o");
+        final RinexObservation robs = load("rinex/aiub0000.00o",
+                                           PredefinedObservationType::valueOf,
+                                           DataContext.getDefault().getTimeScales());
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
             writer.setReceiverClockModel(robs.extractClockModel(2));
@@ -79,68 +90,96 @@ public class RinexObservationWriterTest {
         }
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripRinex2A() throws IOException {
         doTestRoundTrip("rinex/aiub0000.00o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripRinex2B() throws IOException {
         doTestRoundTrip("rinex/cccc0000.07o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripRinex3A() throws IOException {
         doTestRoundTrip("rinex/bbbb0000.00o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripRinex3B() throws IOException {
         doTestRoundTrip("rinex/dddd0000.01o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripDcbs() throws IOException {
         doTestRoundTrip("rinex/dcbs.00o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripPcvs() throws IOException {
         doTestRoundTrip("rinex/pcvs.00o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripScaleFactor() throws IOException {
         doTestRoundTrip("rinex/bbbb0000.00o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripObsScaleFactor() throws IOException {
         doTestRoundTrip("rinex/ice12720-scaled.07o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testRoundTripLeapSecond() throws IOException {
         doTestRoundTrip("rinex/jnu10110.17o", 0.0);
     }
 
+    @DefaultDataContext
     @Test
     public void testContinuationPhaseShift() throws IOException {
         doTestRoundTrip("rinex/continuation-phase-shift.23o", 0.0);
     }
 
-    private RinexObservation load(final String name) {
+    @DefaultDataContext
+    @Test
+    public void testCustomSystem() throws IOException {
+        doTestRoundTrip("rinex/custom-system.01o", 0.0,
+                        CustomType::new,
+                        DataContext.getDefault().getTimeScales());
+    }
+
+    private RinexObservation load(final String name,
+                                  final Function<? super String, ? extends ObservationType> typeBuilder,
+                                  final TimeScales timeScales) {
         final DataSource dataSource = new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        return new RinexObservationParser().parse(dataSource);
+        return new RinexObservationParser(typeBuilder, timeScales).parse(dataSource);
      }
 
+    @DefaultDataContext
     private void doTestRoundTrip(final String resourceName, double expectedDt) throws IOException {
+        doTestRoundTrip(resourceName, expectedDt,
+                        PredefinedObservationType::valueOf, DataContext.getDefault().getTimeScales());
+     }
 
-        final RinexObservation robs = load(resourceName);
+    private void doTestRoundTrip(final String resourceName, double expectedDt,
+                                 final Function<? super String, ? extends ObservationType> typeBuilder,
+                                 final TimeScales timeScales) throws IOException {
+
+        final RinexObservation robs = load(resourceName, typeBuilder, timeScales);
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
             writer.setReceiverClockModel(robs.extractClockModel(2));
-            RinexObservation patched = load(resourceName);
+            RinexObservation patched = load(resourceName, typeBuilder, timeScales);
             patched.getHeader().setClockOffsetApplied(robs.getHeader().getClockOffsetApplied());
             if (FastMath.abs(expectedDt) > 1.0e-15) {
                 writer.setReceiverClockModel(new QuadraticClockModel(robs.getHeader().getTFirstObs(),
@@ -152,7 +191,7 @@ public class RinexObservationWriterTest {
         // reparse the written file
         final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
-        final RinexObservation rebuilt = new RinexObservationParser().parse(source);
+        final RinexObservation rebuilt = new RinexObservationParser(typeBuilder, timeScales).parse(source);
 
         checkRinexFile(robs, rebuilt, expectedDt);
 

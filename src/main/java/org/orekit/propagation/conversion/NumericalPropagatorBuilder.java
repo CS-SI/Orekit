@@ -104,25 +104,8 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final AttitudeProvider attitudeProvider) {
         super(referenceOrbit, positionAngleType, positionScale, true, attitudeProvider);
         this.builder     = builder;
-        this.forceModels = new ArrayList<ForceModel>();
+        this.forceModels = new ArrayList<>();
         this.mass        = Propagator.DEFAULT_MASS;
-    }
-
-    /** Create a copy of a NumericalPropagatorBuilder object.
-     * @return Copied version of the NumericalPropagatorBuilder
-     */
-    public NumericalPropagatorBuilder copy() {
-        final NumericalPropagatorBuilder copyBuilder =
-                        new NumericalPropagatorBuilder(createInitialOrbit(),
-                                                       builder,
-                                                       getPositionAngleType(),
-                                                       getPositionScale(),
-                                                       getAttitudeProvider());
-        copyBuilder.setMass(mass);
-        for (ForceModel model : forceModels) {
-            copyBuilder.addForceModel(model);
-        }
-        return copyBuilder;
     }
 
     /** Get the integrator builder.

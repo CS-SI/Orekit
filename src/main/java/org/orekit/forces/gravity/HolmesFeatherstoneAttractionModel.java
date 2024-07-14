@@ -1217,7 +1217,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         // Hessian of the non-central part of the gravity field
         final RealMatrix hBody     = new Array2DRowRealMatrix(gh.getHessian(), false);
         final RealMatrix rot       = new Array2DRowRealMatrix(toBodyFrame.getRotation().getMatrix());
-        final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
+        final RealMatrix hInertial = rot.transposeMultiply(hBody).multiply(rot);
 
         // distribute all partial derivatives in a compact acceleration vector
         final double[] derivatives = new double[freeParameters + 1];
@@ -1293,7 +1293,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         // Hessian of the non-central part of the gravity field
         final RealMatrix hBody     = new Array2DRowRealMatrix(gh.getHessian(), false);
         final RealMatrix rot       = new Array2DRowRealMatrix(toBodyFrame.getRotation().getMatrix());
-        final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
+        final RealMatrix hInertial = rot.transposeMultiply(hBody).multiply(rot);
 
         // distribute all partial derivatives in a compact acceleration vector
         final double[] derivatives = new double[freeParameters];

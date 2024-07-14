@@ -1,0 +1,31 @@
+     3.03           OBSERVATION DATA    M                   RINEX VERSION / TYPE
+edited                                  20191216 135342 UTC PGM / RUN BY / DATE 
+MANUALLY EDITED RINEX FILE ONLY FOR TEST PURPOSES           COMMENT             
+XYZ9                                                        MARKER NAME         
+9999                                                        MARKER NUMBER       
+SPACEBORNE                                                  MARKER TYPE         
+NOBODY              OREKIT                                  OBSERVER / AGENCY   
+9876543             MY_TYPE             0.0.1               REC # / TYPE / VERS 
+17                  MY_ANTENNA      ABC                     ANT # / TYPE        
+        0.0083        0.0000        0.0000                  ANTENNA: DELTA H/E/N
+        1.1111        2.2222        3.3333                  ANTENNA: DELTA X/Y/Z
+E C1C   0.1111        0.2222        0.3333                  ANTENNA: PHASECENTER
+        9.9999        8.8888        7.7777                  ANTENNA: B.SIGHT XYZ
+        0.1010                                              ANTENNA: ZERODIR AZI
+        6.6666        5.5555        4.4444                  ANTENNA: ZERODIR XYZ
+        0.1455       -0.3421        0.0024                  CENTER OF MASS: XYZ 
+K    2 X1C Y1C                                              SYS / # / OBS TYPES
+    15.000                                                  INTERVAL
+  2018     1    29     0     0    0.0000000     GPS         TIME OF FIRST OBS   
+  2018     1    29    23    59   45.0000000     GPS         TIME OF LAST OBS    
+    87                                                      # OF SATELLITES     
+ C1C    0.000 C2C    0.000                                  GLONASS COD/PHS/BIS 
+DBHZ                                                        SIGNAL STRENGTH UNIT
+ 25 R01  1 R02 -4 R03  5 R04  6 R05  1 R06 -4 R07  5 R08  6 GLONASS SLOT / FRQ #
+    R09 -2 R10 -7 R11  0 R12 -1 R13 -2 R14 -7 R15  0 R16 -1 GLONASS SLOT / FRQ #
+    R17  4 R18 -3 R19  3 R20  2 R21  4 R22 -3 R23  3 R24  2 GLONASS SLOT / FRQ #
+    R26 -5                                                  GLONASS SLOT / FRQ #
+                                                            END OF HEADER       
+> 2018 01 29 00 00  0.0000000  0 36
+K30  20422534.056 8 107321166.49408
+K05  21717714.712 8 114127358.99508

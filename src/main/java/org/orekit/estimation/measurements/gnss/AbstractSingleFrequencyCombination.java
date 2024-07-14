@@ -82,7 +82,7 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
         for (final ObservationData phase : phases) {
             for (final ObservationData pseudoRange : pseudoRanges) {
                 // Single-frequency combination is possible only if data frequencies are the same
-                if (phase.getObservationType().getFrequency(system) == pseudoRange.getObservationType().getFrequency(system) &&
+                if (phase.getObservationType().getSignal(system) == pseudoRange.getObservationType().getSignal(system) &&
                     phase.getObservationType().getSignalCode()      == pseudoRange.getObservationType().getSignalCode()) {
                     combined.add(combine(phase, pseudoRange));
                 }
@@ -108,8 +108,8 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
         final ObservationType obsType2 = pseudoRange.getObservationType();
 
         // Frequencies
-        final GnssSignal freq1 = obsType1.getFrequency(system);
-        final GnssSignal freq2 = obsType2.getFrequency(system);
+        final GnssSignal freq1 = obsType1.getSignal(system);
+        final GnssSignal freq2 = obsType2.getSignal(system);
         // Check if the combination of measurements if performed for two different frequencies
         if (freq1 != freq2) {
             throw new OrekitException(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS,

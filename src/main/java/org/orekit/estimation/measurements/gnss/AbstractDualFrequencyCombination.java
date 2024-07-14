@@ -71,8 +71,8 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         final ObservationType obsType2 = od2.getObservationType();
 
         // Frequencies
-        final GnssSignal signal1 = obsType1.getFrequency(system);
-        final GnssSignal signal2 = obsType2.getFrequency(system);
+        final GnssSignal signal1 = obsType1.getSignal(system);
+        final GnssSignal signal2 = obsType2.getSignal(system);
         // Check if the combination of measurements if performed for two different frequencies
         if (signal1 == signal2) {
             throw new OrekitException(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS,
@@ -188,7 +188,7 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         final ObservationType obsType1 = data1.getObservationType();
         final ObservationType obsType2 = data2.getObservationType();
         // Dual-frequency combination is possible only if observation code is the same and data frequencies are different
-        return obsType1.getFrequency(system) != obsType2.getFrequency(system) &&
+        return obsType1.getSignal(system) != obsType2.getSignal(system) &&
                obsType1.getSignalCode() == obsType2.getSignalCode();
     }
 

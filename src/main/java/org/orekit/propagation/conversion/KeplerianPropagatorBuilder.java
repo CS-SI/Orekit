@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
@@ -29,6 +27,8 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.List;
 
 /** Builder for Keplerian propagator.
  * @author Pascal Parraud
@@ -81,13 +81,6 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
         super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public KeplerianPropagatorBuilder copy() {
-        return new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngleType(),
-                                              getPositionScale(), getAttitudeProvider());
     }
 
     /** {@inheritDoc} */

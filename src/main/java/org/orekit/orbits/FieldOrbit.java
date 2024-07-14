@@ -64,6 +64,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
+ * @see Orbit
  * @param <T> type of the field elements
  */
 public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
@@ -279,11 +280,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public abstract T getEquinoctialEx();
 
-    /** Get the first component of the equinoctial eccentricity vector.
+    /** Get the first component of the equinoctial eccentricity vector derivative.
      * <p>
      * If the orbit was created without derivatives, the value returned is null.
      * </p>
-     * @return first component of the equinoctial eccentricity vector
+     * @return first component of the equinoctial eccentricity vector derivative
      */
     public abstract T getEquinoctialExDot();
 
@@ -292,11 +293,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public abstract T getEquinoctialEy();
 
-    /** Get the second component of the equinoctial eccentricity vector.
+    /** Get the second component of the equinoctial eccentricity vector derivative.
      * <p>
      * If the orbit was created without derivatives, the value returned is null.
      * </p>
-     * @return second component of the equinoctial eccentricity vector
+     * @return second component of the equinoctial eccentricity vector derivative
      */
     public abstract T getEquinoctialEyDot();
 

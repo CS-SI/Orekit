@@ -17,13 +17,12 @@
 
 package org.orekit.propagation.conversion;
 
-import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
+import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -44,6 +43,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 /**
  * Unit tests for {@link EphemerisPropagatorBuilder}.
@@ -127,27 +127,28 @@ public class EphemerisPropagatorBuilderTest {
     }
 
     @Test
-    @DisplayName("Test copy method")
-    void testCopyMethod() {
+    void testClone() {
 
         // Given
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(
                 new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
                 new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
-                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
         final List<SpacecraftState> states = new ArrayList<>();
-        states.add(new SpacecraftState(orbit));
-        states.add(new SpacecraftState(orbit));
+        double end = Constants.JULIAN_DAY;
+        for (double dt = 0; dt <= end; dt += 3600.0) {
+            AbsoluteDate shiftedEpoch = orbit.getDate().shiftedBy(dt);
+            states.add(new SpacecraftState(orbit.shiftedBy(dt), Utils.defaultLaw().getAttitude(orbit, shiftedEpoch, orbit.getFrame())));
+        }
 
-        final Frame                             frame             = FramesFactory.getGCRF();
-        final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(frame);
-        final AttitudeProvider                  attitudeProvider  = mock(AttitudeProvider.class);
+        final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(orbit.getFrame());
+        final AttitudeProvider                  attitudeProvider  =  Utils.defaultLaw();
 
         final EphemerisPropagatorBuilder builder =
                 new EphemerisPropagatorBuilder(states, stateInterpolator, attitudeProvider);
 
         // When
-        final EphemerisPropagatorBuilder copyBuilder = builder.copy();
+        final EphemerisPropagatorBuilder copyBuilder = (EphemerisPropagatorBuilder) builder.clone();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);

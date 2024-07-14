@@ -887,3 +887,6 @@ WALKER_INCONSISTENT_PLANES = number of planes {0} is inconsistent with number of
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
 INFINITE_NRLMSISE00_DENSITY = Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+
+# Propagator builder cannot be cloned
+PROPAGATOR_BUILDER_NOT_CLONEABLE = Propagator builder cannot be cloned

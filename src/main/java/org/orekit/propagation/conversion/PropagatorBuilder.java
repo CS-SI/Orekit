@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -29,16 +27,13 @@ import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
 
+import java.util.List;
+
 /** This interface is the top-level abstraction to build propagators for conversion.
  * @author Pascal Parraud
  * @since 6.0
  */
-public interface PropagatorBuilder {
-
-    /** Create a new instance identical to this one.
-     * @return new instance identical to this one
-     */
-    PropagatorBuilder copy();
+public interface PropagatorBuilder extends Cloneable {
 
     /** Build a propagator.
      * @param normalizedParameters normalized values for the selected parameters

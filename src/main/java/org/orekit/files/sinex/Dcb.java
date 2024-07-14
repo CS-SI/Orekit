@@ -19,9 +19,11 @@ package org.orekit.files.sinex;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.function.Function;
 
 import org.hipparchus.util.Pair;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
@@ -40,25 +42,43 @@ import org.orekit.utils.TimeSpanMap;
 public class Dcb {
 
     /** Ensemble of observation code pairs available for the satellite. */
-    private HashSet<Pair<ObservationType, ObservationType>> observationSets;
+    private final HashSet<Pair<ObservationType, ObservationType>> observationSets;
 
     /**
      * Ensemble of DCBCode object, identifiable by observation code pairs,
      * each containing the corresponding TimeSpanMap of biases (DCB).
      */
-    private HashMap<Pair<ObservationType, ObservationType>, DcbCode> dcbCodeMap;
+    private final HashMap<Pair<ObservationType, ObservationType>, DcbCode> dcbCodeMap;
 
-    /** Simple constructor. */
+    /** Mapper from string to observation type.
+     * @since 13.0
+     */
+    private final Function<? super String, ? extends ObservationType> typeBuilder;
+
+    /** Simple constructor.
+     * <p>
+     * This constructor just recognizes {@link PredefinedObservationType}.
+     * </p>
+     */
     public Dcb() {
+        this(PredefinedObservationType::valueOf);
+    }
+
+    /** Simple constructor.
+     * @param typeBuilder mapper from string to observation type
+     * @since 13.0
+     */
+    public Dcb(final Function<? super String, ? extends ObservationType> typeBuilder) {
         this.observationSets = new HashSet<>();
         this.dcbCodeMap      = new HashMap<>();
+        this.typeBuilder     = typeBuilder;
     }
 
     // Class to store the TimeSpanMap per DCB Observation Code set
     private static class DcbCode {
 
         /** TimeSpanMap containing the DCB bias values. */
-        private TimeSpanMap<Double> dcbMap;
+        private final TimeSpanMap<Double> dcbMap;
 
         /**
          * Simple constructor.
@@ -96,7 +116,8 @@ public class Dcb {
                            final double biasValue) {
 
         // Setting a pair of observation type.
-        final Pair<ObservationType, ObservationType> observationPair = new Pair<>(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2));
+        final Pair<ObservationType, ObservationType> observationPair =
+            new Pair<>(typeBuilder.apply(obs1), typeBuilder.apply(obs2));
 
         // If not present add a new DCBCode to the map, identified by the Observation Pair.
         // Then add the bias value and validity period.
@@ -117,7 +138,7 @@ public class Dcb {
      * @return the value of the DCB in S.I. units
      */
     public double getDcb(final String obs1, final String obs2, final AbsoluteDate date) {
-        return getDcb(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2), date);
+        return getDcb(typeBuilder.apply(obs1), typeBuilder.apply(obs2), date);
     }
 
     /**
@@ -150,7 +171,7 @@ public class Dcb {
      * @return minimum valid date for the observation pair
      */
     public AbsoluteDate getMinimumValidDateForObservationPair(final String obs1, final String obs2) {
-        return getMinimumValidDateForObservationPair(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2));
+        return getMinimumValidDateForObservationPair(typeBuilder.apply(obs1), typeBuilder.apply(obs2));
     }
 
     /**
@@ -172,7 +193,7 @@ public class Dcb {
      * @return maximum valid date for the observation pair
      */
     public AbsoluteDate getMaximumValidDateForObservationPair(final String obs1, final String obs2) {
-        return getMaximumValidDateForObservationPair(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2));
+        return getMaximumValidDateForObservationPair(typeBuilder.apply(obs1), typeBuilder.apply(obs2));
     }
 
     /**

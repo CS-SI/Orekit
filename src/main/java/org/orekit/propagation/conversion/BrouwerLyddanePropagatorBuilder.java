@@ -239,24 +239,6 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public BrouwerLyddanePropagatorBuilder copy() {
-
-        // Find M2 value
-        double m2 = 0.0;
-        for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
-            if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
-                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF, and
-                // setPeriod method should not be called on this driver (to have several values estimated)
-                m2 = driver.getValue();
-            }
-        }
-
-        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
-                                                   getPositionScale(), getAttitudeProvider(), m2);
-    }
-
-    /** {@inheritDoc} */
     public BrouwerLyddanePropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
 
@@ -290,4 +272,22 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
+    /**
+     * Get the value of the M2 parameter.
+     * <p>
+     *  M2 represents the combination of all unmodeled secular along-track effects
+     *  (e.g. drag). It is usually fitted during an orbit determination.
+     * </p>
+     * @return the value of the M2 parameter
+     * @since 12.2
+     */
+    public double getM2Value() {
+        double m2 = 0.0;
+        for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
+            if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
+                m2 = driver.getValue();
+            }
+        }
+        return m2;
+    }
 }

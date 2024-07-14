@@ -16,7 +16,7 @@
  */
 package org.orekit.orbits;
 
-/** Container for one satellite slot in a {@link WalkerConstellation Wlaker constellation}.
+/** Container for one satellite slot in a {@link WalkerConstellation Walker constellation}.
  * <p>
  * The {@link #getSatellite()} satellite index for regular satellites is an integer,
  * but it is allowed to have non-integer indices to create slots for in-orbit spare

@@ -85,10 +85,11 @@ public class LazyLoadedGravityFields implements GravityFields {
     /**
      * Add the default readers for gravity fields.
      *
-     * <p> The default readers support ICGEM, SHM, EGM and GRGS formats with the
+     * <p> The default readers support ICGEM, SHM, EGM, GRGS and SHA formats with the
      * default names {@link GravityFieldFactory#ICGEM_FILENAME}, {@link
      * GravityFieldFactory#SHM_FILENAME}, {@link GravityFieldFactory#EGM_FILENAME}, {@link
-     * GravityFieldFactory#GRGS_FILENAME} and don't allow missing coefficients.
+     * GravityFieldFactory#GRGS_FILENAME}, {@link GravityFieldFactory#SHA_FILENAME}
+     * and don't allow missing coefficients.
      *
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #clearPotentialCoefficientsReaders()
@@ -99,6 +100,7 @@ public class LazyLoadedGravityFields implements GravityFields {
             readers.add(new SHMFormatReader(GravityFieldFactory.SHM_FILENAME, false, timeScale));
             readers.add(new EGMFormatReader(GravityFieldFactory.EGM_FILENAME, false));
             readers.add(new GRGSFormatReader(GravityFieldFactory.GRGS_FILENAME, false, timeScale));
+            readers.add(new SHAFormatReader(GravityFieldFactory.SHA_FILENAME, false));
         }
     }
 

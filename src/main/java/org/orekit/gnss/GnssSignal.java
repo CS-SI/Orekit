@@ -38,4 +38,9 @@ public interface GnssSignal extends RadioWave {
      */
     String getName();
 
+    /** Get the satellite system for which this frequency is defined.
+     * @return satellite system for which this frequency is defined
+     */
+    SatelliteSystem getSatelliteSystem();
+
 }

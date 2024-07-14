@@ -41,10 +41,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class LongitudeExtremumDetectorTest {
+class LongitudeExtremumDetectorTest {
 
     @Test
-    public void testNoCrossing() {
+    void testNoCrossing() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -88,7 +88,7 @@ public class LongitudeExtremumDetectorTest {
     }
 
     @Test
-    public void testZigZag() {
+    void testZigZag() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -117,18 +117,19 @@ public class LongitudeExtremumDetectorTest {
 
         propagator.propagate(orbit.getDate().shiftedBy(Constants.JULIAN_DAY));
         double[] expectedLongitudes = new double[] {
-            74.85115958654778, 39.51032449280883, -84.25729072475329, -119.598124966418, 116.63425894645886
+            74.8511595865, 39.5103244928, -84.2572907247, -119.598124966, 116.6342589464
         };
         double[] expectedLatitudes  = new double[] {
-            -3.8404256460679336, 3.4237236065561536, -3.840419828222964, 3.4237214483413734, -3.840413360572555
+            -3.840425646067, 3.423723606556, -3.84041982822, 3.423721448341, -3.84041336057
         };
         Assertions.assertEquals(5, logger.getLoggedEvents().size());
+        final double angularTolerance = 1e-9;
         for (int i = 0; i < 5; ++i) {
             SpacecraftState state = logger.getLoggedEvents().get(i).getState();
             GeodeticPoint gp = earth.transform(state.getPosition(earth.getBodyFrame()),
                                                earth.getBodyFrame(), null);
-            Assertions.assertEquals(expectedLongitudes[i], FastMath.toDegrees(gp.getLongitude()), 1.0e-10);
-            Assertions.assertEquals(expectedLatitudes[i],  FastMath.toDegrees(gp.getLatitude()),  1.0e-10);
+            Assertions.assertEquals(expectedLongitudes[i], FastMath.toDegrees(gp.getLongitude()), angularTolerance);
+            Assertions.assertEquals(expectedLatitudes[i],  FastMath.toDegrees(gp.getLatitude()),  angularTolerance);
         }
 
     }

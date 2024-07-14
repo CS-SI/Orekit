@@ -888,3 +888,5 @@ WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
 INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
 
+# Propagator builder cannot be cloned
+PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
