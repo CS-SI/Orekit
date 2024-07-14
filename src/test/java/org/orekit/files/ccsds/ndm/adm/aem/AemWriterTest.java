@@ -16,12 +16,26 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
+import org.orekit.files.ccsds.utils.generation.XmlGenerator;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.Unit;
+
+import java.io.IOException;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 public class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem> {
 
@@ -130,4 +144,61 @@ public class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem
         doTest("/ccsds/adm/aem/AEMExample17.txt");
     }
 
+    @Test
+    // This test was added to increase overall conditions coverage in the scope of issue 1453
+    public void testIssue1453() throws IOException {
+        // GIVEN
+        // Load orekit data
+        Utils.setDataRoot("regular-data");
+
+        // Create writer
+        final AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null);
+
+        // Create mock xml generator
+        final XmlGenerator mockXmlGenerator = mock(XmlGenerator.class);
+
+        // Create mock epoch
+        final AbsoluteDate mockAbsoluteDate = mock(AbsoluteDate.class);
+
+        // Create fake data
+        final String[] data = new String[] { "1", "2", "3", "4", "5", "6", "7", "8"};
+
+        // WHEN & THEN
+        // Write quaternion method
+        writer.writeQuaternion(mockXmlGenerator, 1, true, mockAbsoluteDate, data);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.QC.name(), data[0], Unit.ONE, false);
+        reset(mockXmlGenerator);
+
+        writer.writeQuaternion(mockXmlGenerator, 1, false, mockAbsoluteDate, data);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.QC.name(), data[3], Unit.ONE, false);
+        reset(mockXmlGenerator);
+
+        // Write quaternion derivatives method
+        writer.writeQuaternionDerivative(mockXmlGenerator, 1, true, mockAbsoluteDate, data);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.QC.name(), data[0], Unit.ONE, true);
+        verify(mockXmlGenerator).enterSection(AttitudeEntryKey.quaternionRate.name());
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.QC_DOT.name(), data[4], Units.ONE_PER_S, true);
+        reset(mockXmlGenerator);
+
+        writer.writeQuaternionDerivative(mockXmlGenerator, 1, false, mockAbsoluteDate, data);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.QC.name(), data[3], Unit.ONE, true);
+        verify(mockXmlGenerator).enterSection(AttitudeEntryKey.quaternionRate.name());
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.QC_DOT.name(), data[7], Units.ONE_PER_S, true);
+        reset(mockXmlGenerator);
+
+        // Write quaternion euler rates method
+        writer.writeQuaternionEulerRates(mockXmlGenerator, true, RotationOrder.XYZ, mockAbsoluteDate, data);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.QC.name(), data[0], Unit.ONE, true);
+        reset(mockXmlGenerator);
+
+        writer.writeQuaternionEulerRates(mockXmlGenerator, false, RotationOrder.XYZ, mockAbsoluteDate, data);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.QC.name(), data[3], Unit.ONE, true);
+        reset(mockXmlGenerator);
+
+        // Write euler angle method
+        writer.writeEulerAngle(mockXmlGenerator, 2, RotationOrder.XYZ, mockAbsoluteDate, data);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.ANGLE_1.name(), data[0], Unit.DEGREE, true);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.ANGLE_2.name(), data[1], Unit.DEGREE, true);
+        verify(mockXmlGenerator).writeEntry(AttitudeEntryKey.ANGLE_3.name(), data[2], Unit.DEGREE, true);
+    }
 }
