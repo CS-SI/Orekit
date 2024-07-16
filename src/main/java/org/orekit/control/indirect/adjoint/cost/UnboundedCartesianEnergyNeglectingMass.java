@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.control.indirect;
+package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 
 /**
  * Class for unbounded energy cost with Cartesian coordinates neglecting the mass consumption.
- * Under this assumption, the mass is constant and there is not need to consider the corresponding adjoint variable.
+ * Under this assumption, the mass is constant and there is no need to consider the corresponding adjoint variable.
  * @author Romain Serra
  * @see AbstractUnboundedCartesianEnergy
  * @since 12.2
@@ -37,7 +37,7 @@ public class UnboundedCartesianEnergyNeglectingMass extends AbstractUnboundedCar
 
     /** {@inheritDoc} */
     @Override
-    public double getMassFlowRate() {
+    public double getMassFlowRateFactor() {
         return 0;
     }
 
@@ -51,5 +51,15 @@ public class UnboundedCartesianEnergyNeglectingMass extends AbstractUnboundedCar
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] adjointVariables, final T mass) {
         return new FieldVector3D<>(adjointVariables[3].divide(mass), adjointVariables[4].divide(mass), adjointVariables[5].divide(mass));
+    }
+
+    @Override
+    public void updateAdjointDerivatives(final double[] adjointVariables, final double[] adjointDerivatives) {
+        // nothing to do
+    }
+
+    @Override
+    public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(final T[] adjointVariables, final T[] adjointDerivatives) {
+        // nothing to do
     }
 }

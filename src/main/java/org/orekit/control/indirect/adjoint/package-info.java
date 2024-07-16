@@ -16,8 +16,10 @@
  */
 /**
  *
- * This package provides routines to simulate the adjoint dynamics as in the Pontryagin Maximum Principle, as used
- * in indirect control.
+ * This package provides routines to model the adjoint dynamics as in the Pontryagin Maximum Principle, as used
+ * in indirect control. There is one adjoint variable for each dependent variable in the equations of motion (a.k.a. the state variables),
+ * so in orbital mechanics that is typically the position-velocity vector (or its equivalent e.g. orbital elements) and mass.
+ * The adjoint vector is the solution to a differential system coupled with the state vector.
  *
  * @author Romain Serra
  * @since 12.2

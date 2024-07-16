@@ -282,6 +282,9 @@ public enum OrekitMessages implements Localizable {
     /** EVENT_DATE_TOO_CLOSE. */
     EVENT_DATE_TOO_CLOSE("target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added"),
 
+    /** WRONG_COORDINATES_FOR_ADJOINT_EQUATION. */
+    WRONG_COORDINATES_FOR_ADJOINT_EQUATION("trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates"),
+
     /** UNABLE_TO_READ_JPL_HEADER. */
     UNABLE_TO_READ_JPL_HEADER("unable to read header record from JPL ephemerides binary file {0}"),
 

@@ -1,4 +1,4 @@
-package org.orekit.control.indirect;
+package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -9,25 +9,40 @@ import org.orekit.propagation.events.FieldEventDetector;
 
 import java.util.stream.Stream;
 
-public abstract class AbstractUnboundedCartesianEnergyCost implements CartesianCost {
+public class TestCost implements CartesianCost {
+
+    @Override
+    public double getMassFlowRateFactor() {
+        return 10.;
+    }
 
     @Override
     public Vector3D getThrustVector(double[] adjointVariables, double mass) {
-        return null;
+        return new Vector3D(1, 2, 3);
     }
 
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(T[] adjointVariables, T mass) {
-        return null;
+        return new FieldVector3D<>(mass.getField(), new Vector3D(1, 2, 3));
+    }
+
+    @Override
+    public void updateAdjointDerivatives(double[] adjointVariables, double[] adjointDerivatives) {
+
+    }
+
+    @Override
+    public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(T[] adjointVariables, T[] adjointDerivatives) {
+
     }
 
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.empty();
+        return null;
     }
 
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
-        return Stream.empty();
+        return null;
     }
 }

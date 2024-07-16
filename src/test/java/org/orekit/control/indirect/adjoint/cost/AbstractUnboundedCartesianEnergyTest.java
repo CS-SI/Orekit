@@ -1,4 +1,4 @@
-package org.orekit.control.indirect;
+package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.Field;
 import org.junit.jupiter.api.Assertions;

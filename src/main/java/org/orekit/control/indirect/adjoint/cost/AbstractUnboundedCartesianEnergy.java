@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.control.indirect;
+package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 /**
  * Abstract class for unbounded energy cost with Cartesian coordinates.
- * The energy cost is the halved Euclidean norm of the thrust vector.
+ * The energy cost is the integral over time of the halved Euclidean norm of the thrust vector.
  * @author Romain Serra
  * @see CartesianCost
  * @since 12.2

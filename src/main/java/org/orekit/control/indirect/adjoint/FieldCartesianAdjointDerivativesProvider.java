@@ -14,32 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.control.indirect;
+package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.MathArrays;
-import org.orekit.control.indirect.adjoint.CartesianAdjointEquationTerm;
+import org.orekit.control.indirect.adjoint.cost.CartesianCost;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 
 /**
  * Class defining the Field version of the adjoint dynamics for Cartesian coordinates, as defined in the Pontryagin Maximum Principle.
  * @author Romain Serra
- * @see AdditionalDerivativesProvider
- * @see org.orekit.propagation.numerical.NumericalPropagator
+ * @see FieldAdditionalDerivativesProvider
+ * @see org.orekit.propagation.numerical.FieldNumericalPropagator
+ * @see CartesianAdjointDerivativesProvider
  * @since 12.2
  */
-public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalDerivativesProvider<T> {
-
-    /** Name of the additional variables. */
-    private final String name;
-
-    /** Cost function. */
-    private final CartesianCost cost;
+public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldElement<T>> extends AbstractCartesianAdjointDerivativesProvider implements FieldAdditionalDerivativesProvider<T> {
 
     /** Contributing terms to the adjoint equation. */
     private final CartesianAdjointEquationTerm[] adjointEquationTerms;
@@ -52,29 +50,17 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
      */
     public FieldCartesianAdjointDerivativesProvider(final String name, final CartesianCost cost,
                                                     final CartesianAdjointEquationTerm... adjointEquationTerms) {
-        this.name = name;
-        this.cost = cost;
+        super(name, cost);
         this.adjointEquationTerms = adjointEquationTerms;
     }
 
-    /**
-     * Getter for cost.
-     * @return cost
-     */
-    public CartesianCost getCost() {
-        return cost;
-    }
-
     /** {@inheritDoc} */
     @Override
-    public String getName() {
-        return name;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getDimension() {
-        return cost.getAdjointDimension();
+    public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+        FieldAdditionalDerivativesProvider.super.init(initialState, target);
+        if (initialState.isOrbitDefined() && initialState.getOrbit().getType() != OrbitType.CARTESIAN) {
+            throw new OrekitException(OrekitMessages.WRONG_COORDINATES_FOR_ADJOINT_EQUATION);
+        }
     }
 
     /** {@inheritDoc} */
@@ -93,16 +79,16 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
 
         // mass flow rate and control acceleration
         final T[] mainDerivativesIncrements = MathArrays.buildArray(mass.getField(), 7);
-        final FieldVector3D<T> thrustVector = cost.getThrustVector(adjointVariables, mass);
+        final FieldVector3D<T> thrustVector = getCost().getThrustVector(adjointVariables, mass);
         mainDerivativesIncrements[3] = thrustVector.getX().divide(mass);
         mainDerivativesIncrements[4] = thrustVector.getY().divide(mass);
         mainDerivativesIncrements[5] = thrustVector.getZ().divide(mass);
-        mainDerivativesIncrements[6] = mass.newInstance(-cost.getMassFlowRate());
+        mainDerivativesIncrements[6] = mass.newInstance(-getCost().getMassFlowRateFactor());
 
         // Cartesian position adjoint
-        additionalDerivatives[3] = additionalDerivatives[0].negate();
-        additionalDerivatives[4] = additionalDerivatives[1].negate();
-        additionalDerivatives[5] = additionalDerivatives[2].negate();
+        additionalDerivatives[3] = adjointVariables[0].negate();
+        additionalDerivatives[4] = adjointVariables[1].negate();
+        additionalDerivatives[5] = adjointVariables[2].negate();
 
         // Cartesian velocity adjoint
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
@@ -113,7 +99,7 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         }
 
         // other
-        cost.updateAdjointDerivatives(adjointVariables, additionalDerivatives);
+        getCost().updateAdjointDerivatives(adjointVariables, additionalDerivatives);
 
         return new FieldCombinedDerivatives<>(additionalDerivatives, mainDerivativesIncrements);
     }

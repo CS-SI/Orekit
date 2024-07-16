@@ -21,7 +21,7 @@ import org.hipparchus.CalculusFieldElement;
 /**
  * Interface to define terms in the adjoint equations for Cartesian coordinates.
  * @author Romain Serra
- * @see org.orekit.control.indirect.CartesianAdjointDerivativesProvider
+ * @see CartesianAdjointDerivativesProvider
  * @since 12.2
  */
 public interface CartesianAdjointEquationTerm {

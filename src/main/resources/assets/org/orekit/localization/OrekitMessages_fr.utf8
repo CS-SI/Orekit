@@ -247,6 +247,9 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = état initial non spécifié
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
 EVENT_DATE_TOO_CLOSE = la date cible de l''évènement doit être antérieure à {1} de {3,number,0.0##############E0} secondes ou postérieure à {2} de {3,number,0.0##############E0} secondes, cependant la date cible {0} est {4,number,0.0##############E0} secondes avant {1} et {5,number,0.0##############E0} après {2} donc elle ne peut pas être ajoutée
 
+# trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
+WRONG_COORDINATES_FOR_ADJOINT_EQUATION = tentative de propagation de variables adjointes cartésiennes alors que les équations du mouvement son intégrées avec des coordonnées non cartésiennes
+
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = impossible de lire l''en-tête du fichier d''éphémérides du JPL {0}
 

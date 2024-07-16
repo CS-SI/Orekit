@@ -16,13 +16,11 @@
  */
 /**
  *
- * This package provides routines to perform so-called indirect optimal control within the frame of orbital mechanics.
- * Indirect means that optimality conditions are obtained first, before attempting to solve them, usually numerically by way of some discretization.
- * A common theorem to derive such conditions for optimality is the Pontryagin's Maximum Principle and its variants. It introduces so-called adjoint variables which are closely linked to the optimal solution.
- * This is in contrast with direct methods, which consist in performing discretization first, before resorting to finite-dimension, local optimization techniques.
+ * This package provides routines to model the control cost in adjoint equations as in the Pontryagin Maximum Principle.
+ * The cost function (to be minimized) appears in the Hamiltonian and the maximization of the latter provides a relationship between adjoint variables and the optimal control law.
  *
  * @author Romain Serra
  * @since 12.2
  *
  */
-package org.orekit.control.indirect;
+package org.orekit.control.indirect.adjoint.cost;
