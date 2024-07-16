@@ -30,18 +30,50 @@ import org.orekit.propagation.events.EventDetectorsProvider;
  */
 public interface CartesianCost extends EventDetectorsProvider {
 
-    int getAdjointDimension();
+    /** Getter for adjoint vector dimension. Default is 7 (six for Cartesian coordinates and one for mass).
+     * @return adjoint dimension
+     */
+    default int getAdjointDimension() {
+        return 7;
+    }
 
+    /** Getter for mass flow rate.
+     * @return mass flow rate
+     */
     double getMassFlowRate();
 
-    Vector3D getThrustVector(final double[] adjointVariables, final double mass);
+    /**
+     * Computes the thrust vector in propagation frame from the adjoint variables and the mass.
+     * @param adjointVariables adjoint vector
+     * @param mass mass
+     * @return thrust vector
+     */
+    Vector3D getThrustVector(double[] adjointVariables, double mass);
 
-    <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] adjointVariables, final T mass);
+    /**
+     * Computes the thrust vector in propagation frame from the adjoint variables and the mass.
+     * @param adjointVariables adjoint vector
+     * @param mass mass
+     * @param <T> field type
+     * @return thrust vector
+     */
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(T[] adjointVariables, T mass);
 
+    /**
+     * Update the adjoint derivatives if necessary.
+     * @param adjointVariables adjoint vector
+     * @param adjointDerivatives derivatives to update
+     */
     default void updateAdjointDerivatives(final double[] adjointVariables, final double[] adjointDerivatives) {
         // nothing by default
     }
 
+    /**
+     * Update the adjoint derivatives if necessary.
+     * @param <T> field type
+     * @param adjointVariables adjoint vector
+     * @param adjointDerivatives derivatives to update
+     */
     default <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(final T[] adjointVariables, final T[] adjointDerivatives) {
         // nothing by default
     }

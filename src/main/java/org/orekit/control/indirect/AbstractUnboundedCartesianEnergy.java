@@ -14,38 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.control.indirect.adjoint;
+package org.orekit.control.indirect;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+
+import java.util.stream.Stream;
 
 /**
- * Class defining the Keplerian contributions in the adjoint equations for Cartesian coordinates.
+ * Abstract class for unbounded energy cost with Cartesian coordinates.
+ * The energy cost is the halved Euclidean norm of the thrust vector.
  * @author Romain Serra
- * @see CartesianAdjointEquationTerm
+ * @see CartesianCost
  * @since 12.2
  */
-public class CartesianAdjointKeplerianTerm implements CartesianAdjointEquationTerm {
+public abstract class AbstractUnboundedCartesianEnergy implements CartesianCost {
 
-    /** Central body gravitational constant. */
-    private final double mu;
-
-    /**
-     * Constructor.
-     * @param mu central body gravitational parameter.
-     */
-    public CartesianAdjointKeplerianTerm(final double mu) {
-        this.mu = mu;
+    /** {@inheritDoc} */
+    @Override
+    public Stream<EventDetector> getEventDetectors() {
+        return Stream.empty();
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getVelocityAdjointContribution(final double[] stateVariables, final double[] adjointVariables) {
-        return new double[0];
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(final T[] stateVariables, final T[] adjointVariables) {
-        return null;
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.orekit.control.indirect.adjoint;
 
+import org.hipparchus.CalculusFieldElement;
+
 /**
  * Interface to define terms in the adjoint equations for Cartesian coordinates.
  * @author Romain Serra
@@ -24,6 +26,21 @@ package org.orekit.control.indirect.adjoint;
  */
 public interface CartesianAdjointEquationTerm {
 
-    double[] getVelocityAdjointContribution(final double[] stateVariables, final double[] adjointVariables);
+    /**
+     * Computes the contribution to the rates of the velocity adjoint variables.
+     * @param stateVariables state variables
+     * @param adjointVariables adjoint variables
+     * @return contribution to the velocity adjoing derivative vector
+     */
+    double[] getVelocityAdjointContribution(double[] stateVariables, double[] adjointVariables);
+
+    /**
+     * Computes the contribution to the rates of the velocity adjoint variables.
+     * @param stateVariables state variables
+     * @param adjointVariables adjoint variables
+     * @param <T> field type
+     * @return contribution to the velocity adjoing derivative vector
+     */
+    <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(T[] stateVariables, T[] adjointVariables);
 
 }

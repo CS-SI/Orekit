@@ -16,21 +16,24 @@
  */
 package org.orekit.control.indirect;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.MathArrays;
 import org.orekit.control.indirect.adjoint.CartesianAdjointEquationTerm;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
-import org.orekit.propagation.integration.CombinedDerivatives;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
+import org.orekit.propagation.integration.FieldCombinedDerivatives;
+import org.orekit.utils.FieldPVCoordinates;
 
 /**
- * Class defining the adjoint dynamics for Cartesian coordinates, as defined in the Pontryagin Maximum Principle.
+ * Class defining the Field version of the adjoint dynamics for Cartesian coordinates, as defined in the Pontryagin Maximum Principle.
  * @author Romain Serra
  * @see AdditionalDerivativesProvider
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @since 12.2
  */
-public class CartesianAdjointDerivativesProvider implements AdditionalDerivativesProvider {
+public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalDerivativesProvider<T> {
 
     /** Name of the additional variables. */
     private final String name;
@@ -47,8 +50,8 @@ public class CartesianAdjointDerivativesProvider implements AdditionalDerivative
      * @param cost cost function
      * @param adjointEquationTerms terms contributing to the adjoint equations
      */
-    public CartesianAdjointDerivativesProvider(final String name, final CartesianCost cost,
-                                               final CartesianAdjointEquationTerm... adjointEquationTerms) {
+    public FieldCartesianAdjointDerivativesProvider(final String name, final CartesianCost cost,
+                                                    final CartesianAdjointEquationTerm... adjointEquationTerms) {
         this.name = name;
         this.cost = cost;
         this.adjointEquationTerms = adjointEquationTerms;
@@ -76,42 +79,42 @@ public class CartesianAdjointDerivativesProvider implements AdditionalDerivative
 
     /** {@inheritDoc} */
     @Override
-    public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
+    public FieldCombinedDerivatives<T> combinedDerivatives(final FieldSpacecraftState<T> state) {
         // pre-computations
-        final double[] adjointVariables = state.getAdditionalState(getName());
+        final T mass = state.getMass();
+        final T[] adjointVariables = state.getAdditionalState(getName());
         final int adjointDimension = getDimension();
-        final double[] additionalDerivatives = new double[adjointDimension];
-        final double[] cartesianVariablesAndMass = new double[7];
-        final PVCoordinates pvCoordinates = state.getPVCoordinates();
+        final T[] additionalDerivatives = MathArrays.buildArray(mass.getField(), adjointDimension);
+        final T[] cartesianVariablesAndMass = MathArrays.buildArray(mass.getField(), 7);
+        final FieldPVCoordinates<T> pvCoordinates = state.getPVCoordinates();
         System.arraycopy(pvCoordinates.getPosition().toArray(), 0, cartesianVariablesAndMass, 0, 3);
         System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, cartesianVariablesAndMass, 3, 3);
-        final double mass = state.getMass();
         cartesianVariablesAndMass[6] = mass;
 
         // mass flow rate and control acceleration
-        final double[] mainDerivativesIncrements = new double[7];
-        final Vector3D thrustVector = cost.getThrustVector(adjointVariables, mass);
-        mainDerivativesIncrements[3] = thrustVector.getX() / mass;
-        mainDerivativesIncrements[4] = thrustVector.getY() / mass;
-        mainDerivativesIncrements[5] = thrustVector.getZ() / mass;
-        mainDerivativesIncrements[6] = -cost.getMassFlowRate();
+        final T[] mainDerivativesIncrements = MathArrays.buildArray(mass.getField(), 7);
+        final FieldVector3D<T> thrustVector = cost.getThrustVector(adjointVariables, mass);
+        mainDerivativesIncrements[3] = thrustVector.getX().divide(mass);
+        mainDerivativesIncrements[4] = thrustVector.getY().divide(mass);
+        mainDerivativesIncrements[5] = thrustVector.getZ().divide(mass);
+        mainDerivativesIncrements[6] = mass.newInstance(-cost.getMassFlowRate());
 
         // Cartesian position adjoint
-        additionalDerivatives[3] = -additionalDerivatives[0];
-        additionalDerivatives[4] = -additionalDerivatives[1];
-        additionalDerivatives[5] = -additionalDerivatives[2];
+        additionalDerivatives[3] = additionalDerivatives[0].negate();
+        additionalDerivatives[4] = additionalDerivatives[1].negate();
+        additionalDerivatives[5] = additionalDerivatives[2].negate();
 
         // Cartesian velocity adjoint
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
-            final double[] contribution = equationTerm.getVelocityAdjointContribution(cartesianVariablesAndMass, adjointVariables);
-            additionalDerivatives[0] += contribution[0];
-            additionalDerivatives[1] += contribution[1];
-            additionalDerivatives[2] += contribution[2];
+            final T[] contribution = equationTerm.getVelocityAdjointContribution(cartesianVariablesAndMass, adjointVariables);
+            additionalDerivatives[0] = additionalDerivatives[0].add(contribution[0]);
+            additionalDerivatives[1] = additionalDerivatives[1].add(contribution[1]);
+            additionalDerivatives[2] = additionalDerivatives[2].add(contribution[2]);
         }
 
         // other
         cost.updateAdjointDerivatives(adjointVariables, additionalDerivatives);
 
-        return new CombinedDerivatives(additionalDerivatives, mainDerivativesIncrements);
+        return new FieldCombinedDerivatives<>(additionalDerivatives, mainDerivativesIncrements);
     }
 }
