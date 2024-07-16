@@ -89,6 +89,44 @@ class AbstractIntegratedPropagatorTest {
         Assertions.assertEquals(0., ephemeris.getMinDate().durationFrom(minDate), 0.);
         Assertions.assertEquals(0., ephemeris.getMaxDate().durationFrom(maxDate), 0.);
     }
+    
+    /** Test issue 1461.
+     * <p>Test for the new generic method AbstractIntegratedPropagator.reset(SpacecraftState, PropagationType)
+     */
+    @Test
+    public void testIssue1461() {
+        // GIVEN
+        // GEO orbit
+        final Orbit startOrbit = new EquinoctialOrbit(42165765.0, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE,
+                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                                      Constants.IERS2010_EARTH_MU);
+
+        // Init numerical propagator
+        final SpacecraftState state = new SpacecraftState(startOrbit);
+        final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(300.));
+        propagator.setInitialState(state);
+
+        // WHEN
+        propagator.resetInitialState(state, PropagationType.OSCULATING);
+        final SpacecraftState oscState = propagator.getInitialState();
+        
+        propagator.resetInitialState(state, PropagationType.MEAN);
+        final SpacecraftState meanState = propagator.getInitialState();
+
+        // THEN
+        
+        // Check that all three states are identical
+        final double dpOsc = oscState.getPosition().distance1(state.getPosition());
+        final double dvOsc = oscState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity());
+        
+        final double dpMean = meanState.getPosition().distance1(state.getPosition());
+        final double dvMean = meanState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity());
+        
+        Assertions.assertEquals(0., dpOsc, 0.);
+        Assertions.assertEquals(0., dvOsc, 0.);
+        Assertions.assertEquals(0., dpMean, 0.);
+        Assertions.assertEquals(0., dvMean, 0.);
+    }
 
     private static class TestAbstractIntegratedPropagator extends AbstractIntegratedPropagator {
 
