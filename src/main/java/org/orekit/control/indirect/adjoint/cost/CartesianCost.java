@@ -23,8 +23,9 @@ import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.propagation.events.EventDetectorsProvider;
 
 /**
- * Interface to definite cost function in indirect control using Cartesian coordinates.
+ * Interface to definite cost function in the frame of Pontryagin's Maximum Principle using Cartesian coordinates.
  * It provides the link between the optimal control and the adjoint variables. This relationship is obtained by maximizing the Hamiltonian.
+ * The choice of control vector impacts on it.
  * Both standard (double type) and (Calculus)Field versions are to be implemented by inheritors.
  * @author Romain Serra
  * @see CartesianAdjointDerivativesProvider
@@ -39,7 +40,8 @@ public interface CartesianCost extends EventDetectorsProvider {
         return 7;
     }
 
-    /** Getter for mass flow rate factor. It is multiplied by the thrust magnitude to obtain the mass time derivative.
+    /** Getter for mass flow rate factor. It is negated and multiplied by the thrust force magnitude to obtain the mass time derivative.
+     * The fact that it is a constant means that the exhaust speed is assumed to be independent of time.
      * @return mass flow rate factor
      */
     double getMassFlowRateFactor();
@@ -63,17 +65,21 @@ public interface CartesianCost extends EventDetectorsProvider {
 
     /**
      * Update the adjoint derivatives if necessary.
-     * @param adjointVariables adjoint vector
+     *
+     * @param adjointVariables   adjoint vector
+     * @param mass               mass
      * @param adjointDerivatives derivatives to update
      */
-    void updateAdjointDerivatives(double[] adjointVariables, double[] adjointDerivatives);
+    void updateAdjointDerivatives(double[] adjointVariables, double mass, double[] adjointDerivatives);
 
     /**
      * Update the adjoint derivatives if necessary.
-     * @param <T> field type
-     * @param adjointVariables adjoint vector
+     *
+     * @param <T>                field type
+     * @param adjointVariables   adjoint vector
+     * @param mass               mass
      * @param adjointDerivatives derivatives to update
      */
-    <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(T[] adjointVariables, T[] adjointDerivatives);
+    <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives);
 
 }

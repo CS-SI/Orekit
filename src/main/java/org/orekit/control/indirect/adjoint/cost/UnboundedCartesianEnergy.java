@@ -21,54 +21,52 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 
 /**
- * Class for unbounded energy cost with Cartesian coordinates neglecting the mass consumption.
- * Under this assumption, the mass is constant and there is no need to consider the corresponding adjoint variable.
+ * Class for unbounded energy cost with Cartesian coordinates.
  * Here, the control vector is chosen as the acceleration given by thrusting, expressed in the propagation frame.
- * This leads to the optimal thrust force being equal to the adjoint velocity vector times the mass.
+ * This leads to the optimal thrust being in the same direction than the adjoint velocity.
  * @author Romain Serra
- * @see AbstractUnboundedCartesianEnergy
+ * @see UnboundedCartesianEnergyNeglectingMass
  * @since 12.2
  */
-public class UnboundedCartesianEnergyNeglectingMass extends AbstractUnboundedCartesianEnergy {
+public class UnboundedCartesianEnergy extends AbstractUnboundedCartesianEnergy {
 
     /**
      * Constructor.
+     * @param massFlowRateFactor mass flow rate factor (must be non-negative)
      */
-    public UnboundedCartesianEnergyNeglectingMass() {
-        super(0.);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getAdjointDimension() {
-        return 6;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getMassFlowRateFactor() {
-        return 0;
+    public UnboundedCartesianEnergy(final double massFlowRateFactor) {
+        super(massFlowRateFactor);
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector(final double[] adjointVariables, final double mass) {
-        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(mass);
+        final double norm = getAdjointVelocityNorm(adjointVariables);
+        final double factor = mass * (1. - getMassFlowRateFactor() * adjointVariables[6] / norm);
+        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(factor);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] adjointVariables, final T mass) {
-        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(mass);
+        final T norm = getAdjointVelocityNorm(adjointVariables);
+        final T factor = mass.multiply(adjointVariables[6].multiply(-getMassFlowRateFactor()).divide(norm).add(1));
+        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(factor);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void updateAdjointDerivatives(final double[] adjointVariables, final double mass, final double[] adjointDerivatives) {
-        // nothing to do
+        final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
+        final double factor = getMassFlowRateFactor() * adjointVariables[6];
+        adjointDerivatives[6] = factor * (mass * factor - adjointVelocityNorm);
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
-        // nothing to do
+        final T adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
+        final T factor = adjointVariables[6].multiply(getMassFlowRateFactor());
+        adjointDerivatives[6] = factor.multiply(mass.multiply(factor).subtract(adjointVelocityNorm));
     }
 }
