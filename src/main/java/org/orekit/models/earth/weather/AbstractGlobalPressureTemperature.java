@@ -129,7 +129,7 @@ public class AbstractGlobalPressureTemperature
 
     /** {@inheritDoc} */
     @Override
-    public PressureTemperatureHumidity getWeatherParamerers(final GeodeticPoint location, final AbsoluteDate date) {
+    public PressureTemperatureHumidity getWeatherParameters(final GeodeticPoint location, final AbsoluteDate date) {
 
         // set up interpolation parameters
         final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
@@ -215,7 +215,7 @@ public class AbstractGlobalPressureTemperature
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(final FieldGeodeticPoint<T> location,
+    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParameters(final FieldGeodeticPoint<T> location,
                                                                                                         final FieldAbsoluteDate<T> date) {
 
         // set up interpolation parameters
