@@ -281,7 +281,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
      * @param receiverPosition fixed position of receiver at {@code signalArrivalDate}
      * @param frame inertial frame in which both {@code adjustableEmitterPV} and
-     * {@code receiver receiverPosition} are defined
+     * {@code receiverPosition} are defined
      * @param signalArrivalDate date at which the signal arrives to receiver
      * @return <em>positive</em> delay between signal emission and signal reception dates
      * @since 13.0
@@ -338,7 +338,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * @param adjustableReceiverPV position/velocity of receiver that may be adjusted
      * @param approxReceptionDate approximate reception date
      * @param frame inertial frame in which both {@code emitterPosition} and
-     * {@code receiver adjustableReceiverPV} are defined
+     * {@code adjustableReceiverPV} are defined
      * @return <em>positive</em> delay between signal emission and signal reception dates
      * @since 13.0
      */
@@ -393,7 +393,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * in the same frame as {@code adjustableEmitterPV}
      * @param signalArrivalDate date at which the signal arrives to receiver
      * @return <em>positive</em> delay between signal emission and signal reception dates
-     * @param frame inertial frame in which receiver is defined
+     * @param frame inertial frame in which both {@code adjustableEmitterPV} and
+     * {@code receiverPosition} are defined
      * @param <T> the type of the components
      * @since 13.0
      */
@@ -452,7 +453,10 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * @param emissionDate emission date
      * @param adjustableReceiverPV position/velocity of emitter that may be adjusted
      * @param approxReceptionDate approximate reception date
+     * @param frame inertial frame in which both {@code emitterPosition} and
+     * {@code adjustableReceiverPV} are defined
      * @param <T> the type of the components
+     * @return <em>positive</em> delay between signal emission and signal reception dates
      * @since 13.0
      */
     public static <T extends CalculusFieldElement<T>> T signalTimeOfFlightAdjustableReceiver(final FieldVector3D<T> emitterPosition,
@@ -470,7 +474,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * @param emissionDate emission date
      * @param adjustableReceiver provider for adjusting receiver position
      * @param approxReceptionDate approximate reception date
-     * @param frame inertial frame
+     * @param frame inertial frame in which emitter is defined
      * @param <T> the type of the components
      * @return <em>positive</em> delay between signal emission and signal reception dates
      * @since 13.0
