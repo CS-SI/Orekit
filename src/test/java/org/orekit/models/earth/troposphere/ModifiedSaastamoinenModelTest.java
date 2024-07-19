@@ -338,7 +338,7 @@ public class ModifiedSaastamoinenModelTest {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
                 double actualValue = model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                      location,
-                                                     pth0Provider.getWeatherParamerers(location, date),
+                                                     pth0Provider.getWeatherParameters(location, date),
                                                      null, date).getDelay();
                 Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation) + " precision not met");
@@ -381,7 +381,7 @@ public class ModifiedSaastamoinenModelTest {
                 FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
                 T actualValue = model.pathDelay(new FieldTrackingCoordinates<>(zero, elevation, zero),
                                                 location,
-                                                pth0Provider.getWeatherParamerers(location, date),
+                                                pth0Provider.getWeatherParameters(location, date),
                                                 null, date).getDelay();
                 Assertions.assertEquals(expectedValue, actualValue.getReal(), epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation.getReal()) + " precision not met");

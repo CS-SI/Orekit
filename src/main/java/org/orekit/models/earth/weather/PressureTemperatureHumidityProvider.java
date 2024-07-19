@@ -33,7 +33,7 @@ public interface PressureTemperatureHumidityProvider {
      * @param date date at which parameters are requested
      * @return weather parameters
      */
-    PressureTemperatureHumidity getWeatherParamerers(GeodeticPoint location, AbsoluteDate date);
+    PressureTemperatureHumidity getWeatherParameters(GeodeticPoint location, AbsoluteDate date);
 
     /** Provide weather parameters.
      * @param <T> type of the field elements
@@ -41,7 +41,7 @@ public interface PressureTemperatureHumidityProvider {
      * @param date date at which parameters are requested
      * @return weather parameters
      */
-    <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(FieldGeodeticPoint<T> location,
+    <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParameters(FieldGeodeticPoint<T> location,
                                                                                                  FieldAbsoluteDate<T> date);
 
 }
