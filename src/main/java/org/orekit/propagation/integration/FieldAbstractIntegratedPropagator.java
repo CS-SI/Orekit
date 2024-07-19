@@ -450,6 +450,20 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
+    /** Reset initial state with a given propagation type.
+     *
+     * <p> By default this method returns the same as method resetInitialState(FieldSpacecraftState)
+     * <p> Its purpose is mostly to be derived in FieldDSSTPropagator
+     *
+     * @param state new initial state to consider
+     * @param statePropagationType propagation type of the new state
+     * @since 12.2
+     */
+    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType statePropagationType) {
+        // Default behavior, do not take propagation type into account
+        resetInitialState(state);
+    }
+
     /** Propagation with or without event detection.
      * @param tEnd target date to which orbit should be propagated
      * @return state at end of propagation
@@ -500,7 +514,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             finalState = updateAdditionalStatesAndDerivatives(finalState, mathFinalState);
 
             if (resetAtEnd) {
-                resetInitialState(finalState);
+                resetInitialState(finalState, propagationType);
                 setStartDate(finalState.getDate());
             }
 
