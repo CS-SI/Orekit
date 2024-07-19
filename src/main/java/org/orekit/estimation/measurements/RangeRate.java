@@ -96,8 +96,8 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedPVCoordinates(approxUplinkDate,
                                                                                                              Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
-            final double tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(),
-                                                   transitPV.getDate(), common.getState().getFrame());
+            final double tauU = signalTimeOfFlightAdjustableEmitter(stationApproxUplink, transitPV.getPosition(),
+                                                                    transitPV.getDate(), common.getState().getFrame());
 
             final TimeStampedPVCoordinates stationUplink =
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDate) - tauU);
@@ -163,8 +163,8 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxUplinkDateDS,
                                                                                                                     zero, zero, zero));
 
-            final Gradient tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate(),
-                                                     state.getFrame());
+            final Gradient tauU = signalTimeOfFlightAdjustableEmitter(stationApproxUplink, transitPV.getPosition(), transitPV.getDate(),
+                                                                      state.getFrame());
 
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));

@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1468">
+            Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
+            added signalTimeOfFlightAdjustableReceiver.
+        </action>
         <action dev="serrof" type="update" issue="1241">
             Use Field date in Sun's position for atmosphere when applicable.
         </action>

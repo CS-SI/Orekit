@@ -124,8 +124,8 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
         // Downlink delay
         final double deltaT = arrivalDate.durationFrom(states[0]);
         final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final double tauD = signalTimeOfFlight(remotePV, arrivalDate, pvaDownlink.getPosition(),
-                                               arrivalDate, states[0].getFrame());
+        final double tauD = signalTimeOfFlightAdjustableEmitter(remotePV, arrivalDate, pvaDownlink.getPosition(),
+                                                                arrivalDate, states[0].getFrame());
 
         // Remote satellite at signal emission
         final AbsoluteDate        emissionDate      = arrivalDate.shiftedBy(-tauD);
@@ -181,9 +181,9 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
         // Downlink delay
         final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());
         final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final Gradient tauD = signalTimeOfFlight(remotePV, arrivalDate,
-                                                 pvaDownlink.getPosition(), arrivalDate,
-                                                 states[0].getFrame());
+        final Gradient tauD = signalTimeOfFlightAdjustableEmitter(remotePV, arrivalDate,
+                                                                  pvaDownlink.getPosition(), arrivalDate,
+                                                                  states[0].getFrame());
 
         // Remote satellite at signal emission
         final FieldAbsoluteDate<Gradient>        emissionDate      = arrivalDate.shiftedBy(tauD.negate());
