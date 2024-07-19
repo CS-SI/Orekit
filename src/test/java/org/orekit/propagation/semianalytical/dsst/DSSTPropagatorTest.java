@@ -1229,8 +1229,6 @@ public class DSSTPropagatorTest {
         // Using a J2-only perturbed force model, the SMA of the mean / averaged orbit should remained constant during propagation
         propagator.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
         propagator.setAttitudeProvider(attitude);
-
-        System.out.println("Initial OSC SMA : " + initialOrbit.getDate() + " / " + initialOrbit.getA() / 1000.  + " km");
         
         // Initial mean SMA
         final double initialMeanSma =  DSSTPropagator.computeMeanState(initialState,

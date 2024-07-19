@@ -446,10 +446,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Reset initial state with a given propagation type.
+     *
      * <p> By default this method returns the same as {@link #resetInitialState(SpacecraftState)}
      * <p> Its purpose is mostly to be derived in DSSTPropagator
+     *
      * @param state new initial state to consider
      * @param statePropagationType propagation type of the new state
+     * @since 12.2
      */
     public void resetInitialState(final SpacecraftState state, final PropagationType statePropagationType) {
         // Default behavior, do not take propagation type into account

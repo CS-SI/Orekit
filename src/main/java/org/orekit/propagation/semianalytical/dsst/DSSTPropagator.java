@@ -294,10 +294,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         super.setStartDate(state.getDate());
     }
 
-    /** Reset initial state with a given propagation type.
+    /** {@inheritDoc}.
+     *
      * <p>Change parameter {@link #initialIsOsculating()} accordingly
-     * @param state new initial state to consider
-     * @param statePropagationType propagation type of the new state
+     * @since 12.2
      */
     @Override
     public void resetInitialState(final SpacecraftState state, final PropagationType statePropagationType) {
