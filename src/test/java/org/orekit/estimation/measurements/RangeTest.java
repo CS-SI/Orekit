@@ -21,10 +21,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,14 +41,18 @@ import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class RangeTest {
@@ -176,6 +185,85 @@ class RangeTest {
         double refErrorsMax    = 6.9e-9;
         this.genericTestEstimatedParameterDerivatives(isModifier, printResults,
                                                       refErrorsMedian, refErrorsMean, refErrorsMax);
+
+    }
+
+    @Test
+    public void testSignalTimeOfFlight() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create perfect range measurements
+        final Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator1,
+                                                               new TwoWayRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+
+        final Propagator propagator2 = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            // parameter corresponding to station position offset
+            final GroundStation stationParameter = ((Range) measurement).getStation();
+
+            final AbsoluteDate datemeas  = measurement.getDate();
+            SpacecraftState state      = propagator2.propagate(datemeas);
+
+            // adjust emitter, double version
+            final TimeStampedPVCoordinates staPV = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).
+                                                   transformPVCoordinates(new TimeStampedPVCoordinates(datemeas, PVCoordinates.ZERO));
+            final double    downDelayE = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(state.getPVCoordinates(),
+                                                                                                 staPV.getPosition(),
+                                                                                                 datemeas, state.getFrame());
+            final Vector3D satPosE = propagator2.propagate(datemeas.shiftedBy(-downDelayE)).getPosition();
+            Assertions.assertEquals(Vector3D.distance(satPosE, staPV.getPosition()), downDelayE * Constants.SPEED_OF_LIGHT, 2.0e-7);
+
+            // adjust emitter, field version
+            final Field<Binary64> field = Binary64Field.getInstance();
+            final FieldAbsoluteDate<Binary64> datemeasF = new FieldAbsoluteDate<>(field, datemeas);
+            final FieldSpacecraftState<Binary64> stateF = new FieldSpacecraftState<>(field, state);
+            final TimeStampedFieldPVCoordinates<Binary64> staPVF = new TimeStampedFieldPVCoordinates<>(field, staPV);
+            final Binary64    downDelayEF = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(stateF.getPVCoordinates(),
+                                                                                                    staPVF.getPosition(),
+                                                                                                    datemeasF, state.getFrame());
+            final FieldVector3D<Binary64> satPosEF =
+                new FieldVector3D<>(field, propagator2.propagate(datemeas.shiftedBy(-downDelayEF.getReal())).getPosition());
+            Assertions.assertEquals(FieldVector3D.distance(satPosEF, staPVF.getPosition()).getReal(),
+                                    downDelayEF.multiply(Constants.SPEED_OF_LIGHT).getReal(),
+                                    2.0e-7);
+
+            // adjust receiver, double version
+            final double    downDelayR = AbstractMeasurement.signalTimeOfFlightAdjustableReceiver(state.getPVCoordinates().getPosition(),
+                                                                                                  state.getDate(),
+                                                                                                  staPV,
+                                                                                                  datemeas, state.getFrame());
+            final Vector3D staPosR = stationParameter.
+                                     getOffsetToInertial(state.getFrame(), state.getDate().shiftedBy(downDelayR), false).
+                                     transformPosition(Vector3D.ZERO);
+            Assertions.assertEquals(Vector3D.distance(state.getPVCoordinates().getPosition(), staPosR),
+                                    downDelayR * Constants.SPEED_OF_LIGHT, 2.0e-7);
+
+            // adjust receiver, field version
+            final Binary64    downDelayRF = AbstractMeasurement.signalTimeOfFlightAdjustableReceiver(stateF.getPVCoordinates().getPosition(),
+                                                                                                     stateF.getDate(),
+                                                                                                     staPVF,
+                                                                                                     datemeasF, state.getFrame());
+            final FieldVector3D<Binary64> staPosRF = new FieldVector3D<>(field,
+                                                                         stationParameter.
+                                                                             getOffsetToInertial(state.getFrame(),
+                                                                                                 state.getDate().shiftedBy(downDelayRF.getReal()),
+                                                                                                 false).
+                                                                             transformPosition(Vector3D.ZERO));
+            Assertions.assertEquals(FieldVector3D.distance(stateF.getPVCoordinates().getPosition(), staPosRF).getReal(),
+                                    downDelayRF.multiply(Constants.SPEED_OF_LIGHT).getReal(),
+                                    2.0e-7);
+
+        }
 
     }
 
