@@ -22,14 +22,13 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.LOF;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.CartesianDerivativesFilter;
 
 /** This class is the representation of a covariance matrix at a given date.
  * <p>
@@ -630,7 +629,7 @@ public class StateCovariance implements TimeStamped {
                                                         final PositionAngleType covAngleType) {
 
         // Get the transform from the covariance frame to the output frame
-        final Transform inToOut = frameIn.getTransformTo(frameOut, orbit.getDate());
+        final KinematicTransform inToOut = frameIn.getKinematicTransformTo(frameOut, orbit.getDate());
 
         // Matrix to perform the covariance transformation
         final RealMatrix j = getJacobian(inToOut);
@@ -686,13 +685,8 @@ public class StateCovariance implements TimeStamped {
      * @param transform input transformation
      * @return the matrix to perform the covariance frame transformation
      */
-    private static RealMatrix getJacobian(final Transform transform) {
-        // Get the Jacobian of the transform
-        final double[][] jacobian = new double[STATE_DIMENSION][STATE_DIMENSION];
-        transform.getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
-        // Return
-        return new Array2DRowRealMatrix(jacobian, false);
-
+    private static RealMatrix getJacobian(final KinematicTransform transform) {
+        return MatrixUtils.createRealMatrix(transform.getPVJacobian());
     }
 
     /**
