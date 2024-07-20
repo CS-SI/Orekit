@@ -19,6 +19,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -143,12 +144,12 @@ class CartesianAdjointDerivativesProviderTest {
     private static class TestAdjointTerm implements CartesianAdjointEquationTerm {
 
         @Override
-        public double[] getVelocityAdjointContribution(double[] stateVariables, double[] adjointVariables) {
+        public double[] getVelocityAdjointContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables) {
             return new double[] { 1., 10., 100. };
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(T[] stateVariables, T[] adjointVariables) {
+        public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables) {
             return null;
         }
     }

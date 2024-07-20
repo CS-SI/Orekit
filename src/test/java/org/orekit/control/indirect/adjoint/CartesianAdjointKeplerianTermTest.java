@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
 class CartesianAdjointKeplerianTermTest {
@@ -26,7 +28,8 @@ class CartesianAdjointKeplerianTermTest {
             adjoint[i] = i;
         }
         // WHEN
-        final double[] contribution = keplerianTerm.getVelocityAdjointContribution(state, adjoint);
+        final double[] contribution = keplerianTerm.getVelocityAdjointContribution(Mockito.mock(AbsoluteDate.class),
+                state, adjoint);
         // THEN
         final NewtonianAttraction newtonianAttraction = new NewtonianAttraction(keplerianTerm.getMu());
         final int dimension = 3;
@@ -59,8 +62,9 @@ class CartesianAdjointKeplerianTermTest {
             fieldState[i] = field.getZero().newInstance(-i+1);
             fieldAdjoint[i] = field.getZero().newInstance(i);
         }
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = keplerianTerm.getVelocityAdjointContribution(fieldState, fieldAdjoint);
+        final Binary64[] fieldContribution = keplerianTerm.getVelocityAdjointContribution(fieldDate, fieldState, fieldAdjoint);
         // THEN
         final double[] state = new double[fieldState.length];
         for (int i = 0; i < fieldState.length; i++) {
@@ -70,7 +74,7 @@ class CartesianAdjointKeplerianTermTest {
         for (int i = 0; i < fieldAdjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final double[] contribution = keplerianTerm.getVelocityAdjointContribution(state, adjoint);
+        final double[] contribution = keplerianTerm.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state, adjoint);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i]);
         }
