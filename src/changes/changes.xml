@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1469">
+        Add adjoint dynamics from J2 term.
+      </action>
       <action dev="serrof" type="add" issue="1457">
         Add indirect control package with Cartesian adjoint dynamics for Keplerian motion.
       </action>
