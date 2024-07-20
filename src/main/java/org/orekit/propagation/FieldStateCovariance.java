@@ -25,7 +25,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOF;
 import org.orekit.orbits.FieldOrbit;
@@ -34,7 +34,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
-import org.orekit.utils.CartesianDerivativesFilter;
 
 /**
  * This class is the representation of a covariance matrix at a given date.
@@ -491,8 +490,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
         // Builds the matrix to perform covariance transformation
         final FieldMatrix<T> jacobianFromLofInToLofOut =
-                getJacobian(date.getField(),
-                            LOF.transformFromLOFInToLOFOut(lofIn, lofOut, date, orbit.getPVCoordinates()));
+                getJacobian(LOF.transformFromLOFInToLOFOut(lofIn, lofOut, date, orbit.getPVCoordinates()));
 
         // Get the Cartesian covariance matrix converted to frameOut
         final FieldMatrix<T> cartesianCovarianceOut =
@@ -550,7 +548,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Builds the matrix to perform covariance transformation
             final FieldMatrix<T> jacobianFromFrameInToLofOut =
-                    getJacobian(date.getField(), lofOut.transformFromInertial(date, orbit.getPVCoordinates(frameIn)));
+                    getJacobian(lofOut.transformFromInertial(date, orbit.getPVCoordinates(frameIn)));
 
             // Get the Cartesian covariance matrix converted to frameOut
             final FieldMatrix<T> cartesianCovarianceOut =
@@ -612,8 +610,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Builds the matrix to perform covariance transformation
             final FieldMatrix<T> jacobianFromLofInToFrameOut =
-                    getJacobian(date.getField(),
-                                lofIn.transformFromInertial(date, orbit.getPVCoordinates(frameOut)).getInverse());
+                    getJacobian(lofIn.transformFromInertial(date, orbit.getPVCoordinates(frameOut)).getInverse());
 
             // Transform covariance
             final FieldMatrix<T> transformedCovariance =
@@ -631,8 +628,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Builds the matrix to perform covariance transformation
             final FieldMatrix<T> jacobianFromLofInToOrbitFrame =
-                    getJacobian(date.getField(),
-                                lofIn.transformFromInertial(date, orbit.getPVCoordinates()).getInverse());
+                    getJacobian(lofIn.transformFromInertial(date, orbit.getPVCoordinates()).getInverse());
 
             // Get the Cartesian covariance matrix converted to orbit inertial frame
             final FieldMatrix<T> cartesianCovarianceInOrbitFrame = jacobianFromLofInToOrbitFrame.multiply(
@@ -685,10 +681,10 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
                                                          final PositionAngleType covAngleType) {
 
         // Get the transform from the covariance frame to the output frame
-        final FieldTransform<T> inToOut = frameIn.getTransformTo(frameOut, orbit.getDate());
+        final FieldKinematicTransform<T> inToOut = frameIn.getKinematicTransformTo(frameOut, orbit.getDate());
 
         // Matrix to perform the covariance transformation
-        final FieldMatrix<T> j = getJacobian(date.getField(), inToOut);
+        final FieldMatrix<T> j = getJacobian(inToOut);
 
         // Input frame pseudo-inertial
         if (frameIn.isPseudoInertial()) {
@@ -739,18 +735,12 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
     /**
      * Builds the matrix to perform covariance frame transformation.
      *
-     * @param field to which the elements belong
      * @param transform input transformation
      *
      * @return the matrix to perform the covariance frame transformation
      */
-    private FieldMatrix<T> getJacobian(final Field<T> field, final FieldTransform<T> transform) {
-        // Get the Jacobian of the transform
-        final T[][] jacobian = MathArrays.buildArray(field, STATE_DIMENSION, STATE_DIMENSION);
-        transform.getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
-        // Return
-        return new Array2DRowFieldMatrix<>(jacobian, false);
-
+    private FieldMatrix<T> getJacobian(final FieldKinematicTransform<T> transform) {
+        return MatrixUtils.createFieldMatrix(transform.getPVJacobian());
     }
 
     /**
