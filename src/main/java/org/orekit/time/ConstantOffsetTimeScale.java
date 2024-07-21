@@ -25,39 +25,45 @@ import org.hipparchus.CalculusFieldElement;
 public class ConstantOffsetTimeScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Name of the time scale. */
     private final String name;
 
     /** Offset from TAI. */
-    private final double offset;
+    private final SplitTime offset;
+
+    /** Negated offset from TAI.
+     * @since 13.0
+     */
+    private final SplitTime negatedOffset;
 
     /** Simple constructor.
      * @param name name of the time scale
      * @param offset offset from TAI
      */
-    protected ConstantOffsetTimeScale(final String name, final double offset) {
-        this.name   = name;
-        this.offset = offset;
+    protected ConstantOffsetTimeScale(final String name, final SplitTime offset) {
+        this.name          = name;
+        this.offset        = offset;
+        this.negatedOffset = offset.negate();
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
+    public SplitTime offsetFromTAI(final AbsoluteDate date) {
         return offset;
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().newInstance(offset);
+        return date.getField().getZero().newInstance(offset.toDouble());
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return -offset;
+    public SplitTime offsetToTAI(final DateComponents date, final TimeComponents time) {
+        return negatedOffset;
     }
 
     /** {@inheritDoc} */

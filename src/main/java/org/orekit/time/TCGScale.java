@@ -29,7 +29,7 @@ import org.hipparchus.CalculusFieldElement;
 public class TCGScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+    private static final long serialVersionUID = 20240720L;
 
     /** LG rate. */
     private static final double LG_RATE = 6.969290134e-10;
@@ -46,7 +46,7 @@ public class TCGScale implements TimeScale {
     private final AbsoluteDate referenceDate;
 
     /** Offset between TT and TAI scales. */
-    private final double ttOffset;
+    private final SplitTime ttOffset;
 
     /**
      * Package private constructor for the factory.
@@ -55,20 +55,20 @@ public class TCGScale implements TimeScale {
      * @param tai TAI time scale.
      */
     TCGScale(final TimeScale tt, final TimeScale tai) {
-        referenceDate = new AbsoluteDate(1977, 01, 01, tai);
+        referenceDate = new AbsoluteDate(1977, 1, 1, tai);
         ttOffset = tt.offsetFromTAI(referenceDate);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return ttOffset + LG_RATE * date.durationFrom(referenceDate);
+    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+        return SplitTime.add(ttOffset, new SplitTime(LG_RATE * date.durationFrom(referenceDate)));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.durationFrom(referenceDate).multiply(LG_RATE).add(ttOffset);
+        return date.durationFrom(referenceDate).multiply(LG_RATE).add(ttOffset.toDouble());
     }
 
     /** {@inheritDoc} */

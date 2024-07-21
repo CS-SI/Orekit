@@ -25,7 +25,7 @@ import org.hipparchus.CalculusFieldElement;
 public class ClockTimeScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Name of the time scale. */
     private final String name;
@@ -51,8 +51,9 @@ public class ClockTimeScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return reference.offsetFromTAI(date) + clockModel.getOffset(date).getOffset();
+    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+        return SplitTime.add(reference.offsetFromTAI(date),
+                             new SplitTime(clockModel.getOffset(date).getOffset()));
     }
 
     /** {@inheritDoc} */

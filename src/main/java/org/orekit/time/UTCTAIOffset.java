@@ -19,7 +19,6 @@ package org.orekit.time;
 import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.utils.Constants;
 
 /** Offset between {@link UTCScale UTC} and  {@link TAIScale TAI} time scales.
  * <p>The {@link UTCScale UTC} and  {@link TAIScale TAI} time scales are two
@@ -38,7 +37,7 @@ import org.orekit.utils.Constants;
 public class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4742190573136348054L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Leap date. */
     private final AbsoluteDate leapDate;
@@ -59,10 +58,10 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
     private final double leap;
 
     /** Offset at validity start in seconds (TAI minus UTC). */
-    private final double offset;
+    private final SplitTime offset;
 
-    /** Offset slope in seconds per UTC second (TAI minus UTC / dUTC). */
-    private final double slopeUTC;
+    /** Offset slope in attoseconds per UTC second (TAI minus UTC / dUTC). */
+    private final long slopeUTC;
 
     /** Offset slope in seconds per TAI second (TAI minus UTC / dTAI). */
     private final double slopeTAI;
@@ -73,12 +72,12 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
      * @param leap value of the leap at offset validity start (in seconds)
      * @param offset offset in seconds (TAI minus UTC)
      * @param mjdRef reference date for the slope multiplication as Modified Julian Day
-     * @param slope offset slope in seconds per UTC second (TAI minus UTC / dUTC)
+     * @param slope offset slope in attoseconds per UTC second (TAI minus UTC / dUTC)
      * @param reference date for slope computations.
      */
     UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
-                 final double leap, final double offset,
-                 final int mjdRef, final double slope, final AbsoluteDate reference) {
+                 final double leap, final SplitTime offset,
+                 final int mjdRef, final long slope, final AbsoluteDate reference) {
         this.leapDate      = leapDate;
         this.leapDateMJD   = leapDateMJD;
         this.validityStart = leapDate.shiftedBy(leap);
@@ -87,7 +86,7 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
         this.leap          = leap;
         this.offset        = offset;
         this.slopeUTC      = slope;
-        this.slopeTAI      = slope / (1 + slope);
+        this.slopeTAI      = slope / (1.0e18 + slope);
     }
 
     /** Get the date of the start of the leap.
@@ -126,7 +125,7 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
      * @param date date at which the offset is requested
      * @return TAI - UTC offset in seconds.
      */
-    public double getOffset(final AbsoluteDate date) {
+    public SplitTime getOffset(final AbsoluteDate date) {
         if (slopeTAI == 0) {
             // we use an if statement here so the offset computation returns
             // a finite value when date is AbsoluteDate.FUTURE_INFINITY
@@ -134,7 +133,7 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
             // infinite duration and a zero slope would induce a NaN offset
             return offset;
         } else {
-            return offset + date.durationFrom(reference) * slopeTAI;
+            return SplitTime.add(offset, new SplitTime(date.durationFrom(reference) * slopeTAI));
         }
     }
 
@@ -150,9 +149,9 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
             // a finite value when date is FieldAbsoluteDate.getFutureInfinity(field)
             // without this if statement, the multiplication between an
             // infinite duration and a zero slope would induce a NaN offset
-            return date.getField().getZero().newInstance(offset);
+            return date.getField().getZero().newInstance(offset.toDouble());
         } else {
-            return date.durationFrom(reference).multiply(slopeTAI).add(offset);
+            return date.durationFrom(reference).multiply(slopeTAI).add(offset.toDouble());
         }
     }
 
@@ -161,10 +160,17 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
      * @param time time components (in UTC) at which the offset is requested
      * @return TAI - UTC offset in seconds.
      */
-    public double getOffset(final DateComponents date, final TimeComponents time) {
-        final int    days     = date.getMJD() - mjdRef;
-        final double fraction = time.getSecondsInUTCDay();
-        return offset + days * (slopeUTC * Constants.JULIAN_DAY) + fraction * slopeUTC;
+    public SplitTime getOffset(final DateComponents date, final TimeComponents time) {
+        if (slopeUTC == 0) {
+            return offset;
+        } else {
+            final long deltaSeconds     = (date.getMJD() - mjdRef) * SplitTime.DAY.getSeconds() +
+                                          time.getSplitSecond().getSeconds();
+            final long deltaAttoSeconds = time.getSplitSecond().getAttoSeconds();
+            final long drift = slopeUTC * deltaSeconds +
+                               (slopeUTC * deltaAttoSeconds) / 1000000000000000000L;
+            return SplitTime.add(offset, new SplitTime(0L,  drift));
+        }
     }
 
 }

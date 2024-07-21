@@ -19,6 +19,7 @@ package org.orekit.time;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -27,7 +28,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.utils.Constants;
 
 /** Coordinated Universal Time.
  * <p>UTC is related to TAI using step adjustments from time to time
@@ -49,7 +49,7 @@ import org.orekit.utils.Constants;
 public class UTCScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20230302L;
+    private static final long serialVersionUID = 20240720L;
 
     /** International Atomic Scale. */
     private final TimeScale tai;
@@ -91,19 +91,23 @@ public class UTCScale implements TimeScale {
             //        Sept. 1 - 1966  Jan.  1     3.840 130 0s +        ""
             //  1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
             //  1968  Feb.  1 - 1972  Jan.  1     4.213 170 0s +        ""
-            offsetModels.add( 0, new OffsetModel(new DateComponents(1961,  1, 1), 37300, 1.4228180, 0.0012960));
-            offsetModels.add( 1, new OffsetModel(new DateComponents(1961,  8, 1), 37300, 1.3728180, 0.0012960));
-            offsetModels.add( 2, new OffsetModel(new DateComponents(1962,  1, 1), 37665, 1.8458580, 0.0011232));
-            offsetModels.add( 3, new OffsetModel(new DateComponents(1963, 11, 1), 37665, 1.9458580, 0.0011232));
-            offsetModels.add( 4, new OffsetModel(new DateComponents(1964,  1, 1), 38761, 3.2401300, 0.0012960));
-            offsetModels.add( 5, new OffsetModel(new DateComponents(1964,  4, 1), 38761, 3.3401300, 0.0012960));
-            offsetModels.add( 6, new OffsetModel(new DateComponents(1964,  9, 1), 38761, 3.4401300, 0.0012960));
-            offsetModels.add( 7, new OffsetModel(new DateComponents(1965,  1, 1), 38761, 3.5401300, 0.0012960));
-            offsetModels.add( 8, new OffsetModel(new DateComponents(1965,  3, 1), 38761, 3.6401300, 0.0012960));
-            offsetModels.add( 9, new OffsetModel(new DateComponents(1965,  7, 1), 38761, 3.7401300, 0.0012960));
-            offsetModels.add(10, new OffsetModel(new DateComponents(1965,  9, 1), 38761, 3.8401300, 0.0012960));
-            offsetModels.add(11, new OffsetModel(new DateComponents(1966,  1, 1), 39126, 4.3131700, 0.0025920));
-            offsetModels.add(12, new OffsetModel(new DateComponents(1968,  2, 1), 39126, 4.2131700, 0.0025920));
+            // the slopes in second per day correspond in fact to values in scaled nanoseconds per seconds:
+            //  0.0012960 s/d → 15 ns/s → 15000000000 as/s
+            //  0.0011232 s/d → 13 ns/s → 13000000000 as/s
+            //  0.0025920 s/d → 30 ns/s → 30000000000 as/s
+            offsetModels.add( 0, new OffsetModel(new DateComponents(1961,  1, 1), 37300, 1.4228180, 15000000000L));
+            offsetModels.add( 1, new OffsetModel(new DateComponents(1961,  8, 1), 37300, 1.3728180, 15000000000L));
+            offsetModels.add( 2, new OffsetModel(new DateComponents(1962,  1, 1), 37665, 1.8458580, 13000000000L));
+            offsetModels.add( 3, new OffsetModel(new DateComponents(1963, 11, 1), 37665, 1.9458580, 13000000000L));
+            offsetModels.add( 4, new OffsetModel(new DateComponents(1964,  1, 1), 38761, 3.2401300, 15000000000L));
+            offsetModels.add( 5, new OffsetModel(new DateComponents(1964,  4, 1), 38761, 3.3401300, 15000000000L));
+            offsetModels.add( 6, new OffsetModel(new DateComponents(1964,  9, 1), 38761, 3.4401300, 15000000000L));
+            offsetModels.add( 7, new OffsetModel(new DateComponents(1965,  1, 1), 38761, 3.5401300, 15000000000L));
+            offsetModels.add( 8, new OffsetModel(new DateComponents(1965,  3, 1), 38761, 3.6401300, 15000000000L));
+            offsetModels.add( 9, new OffsetModel(new DateComponents(1965,  7, 1), 38761, 3.7401300, 15000000000L));
+            offsetModels.add(10, new OffsetModel(new DateComponents(1965,  9, 1), 38761, 3.8401300, 15000000000L));
+            offsetModels.add(11, new OffsetModel(new DateComponents(1966,  1, 1), 39126, 4.3131700, 30000000000L));
+            offsetModels.add(12, new OffsetModel(new DateComponents(1968,  2, 1), 39126, 4.2131700, 30000000000L));
         }
 
         // create cache
@@ -117,25 +121,24 @@ public class UTCScale implements TimeScale {
             final OffsetModel    o      = offsetModels.get(i);
             final DateComponents date   = o.getStart();
             final int            mjdRef = o.getMJDRef();
-            final double         offset = o.getOffset();
-            final double         slope  = o.getSlope();
+            final SplitTime      offset = new SplitTime(o.getOffset());
+            final long           slope  = o.getSlope();
 
             // start of the leap
-            final double previousOffset    = (previous == null) ? 0.0 : previous.getOffset(date, TimeComponents.H00);
+            final SplitTime previousOffset = (previous == null) ?
+                                             SplitTime.ZERO :
+                                             previous.getOffset(date, TimeComponents.H00);
             final AbsoluteDate leapStart   = new AbsoluteDate(date, tai).shiftedBy(previousOffset);
 
             // end of the leap
-            final double startOffset       = offset + slope * (date.getMJD() - mjdRef);
+            final SplitTime startOffset    = SplitTime.add(offset, new SplitTime(slope * (date.getMJD() - mjdRef)));
             final AbsoluteDate leapEnd     = new AbsoluteDate(date, tai).shiftedBy(startOffset);
 
             // leap computed at leap start and in UTC scale
-            final double normalizedSlope   = slope / Constants.JULIAN_DAY;
-            final double leap              = leapEnd.durationFrom(leapStart) / (1 + normalizedSlope);
+            final double leap              = leapEnd.durationFrom(leapStart) / (1 + slope);
 
-            final AbsoluteDate reference = AbsoluteDate.createMJDDate(mjdRef, 0, tai)
-                    .shiftedBy(offset);
-            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef,
-                    normalizedSlope, reference);
+            final AbsoluteDate reference = AbsoluteDate.createMJDDate(mjdRef, 0, tai).shiftedBy(offset);
+            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, slope, reference);
             this.offsets[i] = previous;
 
         }
@@ -159,21 +162,19 @@ public class UTCScale implements TimeScale {
      */
     public List<UTCTAIOffset> getUTCTAIOffsets() {
         final List<UTCTAIOffset> offsetList = new ArrayList<>(offsets.length);
-        for (int i = 0; i < offsets.length; ++i) {
-            offsetList.add(offsets[i]);
-        }
+        Collections.addAll(offsetList, offsets);
         return offsetList;
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
+    public SplitTime offsetFromTAI(final AbsoluteDate date) {
         final int offsetIndex = findOffsetIndex(date);
         if (offsetIndex < 0) {
             // the date is before the first known leap
-            return 0;
+            return SplitTime.ZERO;
         } else {
-            return -offsets[offsetIndex].getOffset(date);
+            return offsets[offsetIndex].getOffset(date).negate();
         }
     }
 
@@ -191,8 +192,8 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetToTAI(final DateComponents date,
-                              final TimeComponents time) {
+    public SplitTime offsetToTAI(final DateComponents date,
+                                 final TimeComponents time) {
 
         // take offset from local time into account, but ignoring seconds,
         // so when we parse an hour like 23:59:60.5 during leap seconds introduction,
@@ -205,7 +206,7 @@ public class UTCScale implements TimeScale {
         final UTCTAIOffset offset = findOffset(mjd);
         if (offset == null) {
             // the date is before the first known leap
-            return 0;
+            return SplitTime.ZERO;
         } else {
             return offset.getOffset(date, time);
         }

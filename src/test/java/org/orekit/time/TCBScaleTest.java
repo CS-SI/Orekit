@@ -55,9 +55,9 @@ public class TCBScaleTest {
         TimeScale scale = TimeScalesFactory.getTCB();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            double dt1 = scale.offsetFromTAI(date);
+            double dt1 = scale.offsetFromTAI(date).toDouble();
             DateTimeComponents components = date.getComponents(scale);
-            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime()).toDouble();
             Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
@@ -66,7 +66,7 @@ public class TCBScaleTest {
     public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTCB();
-        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);

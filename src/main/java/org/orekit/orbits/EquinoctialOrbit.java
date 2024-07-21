@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.SplitTime;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -1156,7 +1157,13 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20231217L;
+        private static final long serialVersionUID = 20240721L;
+
+        /** Seconds. */
+        private final long seconds;
+
+        /** Attoseconds. */
+        private final long attoseconds;
 
         /** Double values. */
         private final double[] d;
@@ -1172,19 +1179,16 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
          */
         private DTO(final EquinoctialOrbit orbit) {
 
-            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
-            positionAngleType = orbit.cachedPositionAngleType;
+            this.positionAngleType = orbit.cachedPositionAngleType;
 
             // decompose date
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
-            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
+            this.seconds     = orbit.getDate().getSeconds();
+            this.attoseconds = orbit.getDate().getAttoSeconds();
 
             if (orbit.hasDerivatives()) {
                 // we have derivatives
                 this.d = new double[] {
-                    epoch, offset, orbit.getMu(),
+                    orbit.getMu(),
                     orbit.a, orbit.ex, orbit.ey,
                     orbit.hx, orbit.hy, orbit.cachedL,
                     orbit.aDot, orbit.exDot, orbit.eyDot,
@@ -1193,7 +1197,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             } else {
                 // we don't have derivatives
                 this.d = new double[] {
-                    epoch, offset, orbit.getMu(),
+                    orbit.getMu(),
                     orbit.a, orbit.ex, orbit.ey,
                     orbit.hx, orbit.hy, orbit.cachedL
                 };
@@ -1207,20 +1211,21 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
          * @return replacement {@link EquinoctialOrbit}
          */
         private Object readResolve() {
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             if (d.length >= 15) {
                 // we have derivatives
-                return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
-                                            d[ 9], d[10], d[11], d[12], d[13], d[14],
+                return new EquinoctialOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                            d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
                                             positionAngleType,
-                                            frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                            d[2]);
+                                            frame,
+                                            new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                            d[0]);
             } else {
                 // we don't have derivatives
-                return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8], positionAngleType,
-                                            frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                            d[2]);
+                return new EquinoctialOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                            positionAngleType,
+                                            frame,
+                                            new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                            d[0]);
             }
         }
 

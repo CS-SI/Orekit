@@ -36,7 +36,7 @@ public interface TimeScale extends Serializable {
      * time scale</em> to get a location in <em>instance time scale</em>
      * @see #offsetToTAI(DateComponents, TimeComponents)
      */
-    double offsetFromTAI(AbsoluteDate date);
+    SplitTime offsetFromTAI(AbsoluteDate date);
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.
      * @param date conversion date
@@ -55,11 +55,11 @@ public interface TimeScale extends Serializable {
      * to get a location in <em>{@link TAIScale} time scale</em>
      * @see #offsetFromTAI(AbsoluteDate)
      */
-    default double offsetToTAI(final DateComponents date, final TimeComponents time) {
+    default SplitTime offsetToTAI(final DateComponents date, final TimeComponents time) {
         final AbsoluteDate reference = new AbsoluteDate(date, time, new TAIScale());
-        double offset = 0;
+        SplitTime offset = SplitTime.ZERO;
         for (int i = 0; i < 8; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
+            offset = offsetFromTAI(reference.shiftedBy(offset)).negate();
         }
         return offset;
     }

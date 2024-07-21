@@ -35,7 +35,7 @@ import org.orekit.utils.Constants;
 public class TDBScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Constant term for g angle. */
     private static final double G0 = 357.53;
@@ -68,10 +68,11 @@ public class TDBScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
+    public SplitTime offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(j2000Epoch) / Constants.JULIAN_DAY;
         final double g = FastMath.toRadians(G0 + G1 * dtDays);
-        return tt.offsetFromTAI(date) + (SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g));
+        return SplitTime.add(tt.offsetFromTAI(date),
+                             new SplitTime(SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g)));
     }
 
     /** {@inheritDoc} */

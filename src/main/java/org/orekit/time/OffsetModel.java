@@ -26,7 +26,7 @@ import java.io.Serializable;
 public class OffsetModel implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20230302L;
+    private static final long serialVersionUID = 20240721L;
 
     /** Date of the offset start. */
     private final DateComponents start;
@@ -37,8 +37,8 @@ public class OffsetModel implements Serializable {
     /** Offset at reference date in seconds (TAI minus UTC). */
     private final double offset;
 
-    /** Offset slope in seconds per UTC day (TAI minus UTC / dUTC). */
-    private final double slope;
+    /** Offset slope in attoseconds per second (TAI minus UTC / dUTC). */
+    private final long slope;
 
     /** Constructor for a linear offset model.
      * <p>
@@ -47,10 +47,10 @@ public class OffsetModel implements Serializable {
      * @param start date of the offset start
      * @param mjdRef reference date of the linear model as a modified julian day
      * @param offset offset at reference date in seconds (TAI minus UTC)
-     * @param slope offset slope in seconds per UTC day (TAI minus UTC / dUTC)
+     * @param slope offset slope in attoseconds per second (TAI minus UTC / dUTC)
      */
     public OffsetModel(final DateComponents start,
-                       final int mjdRef, final double offset, final double slope) {
+                       final int mjdRef, final double offset, final long slope) {
         this.start  = start;
         this.mjdRef = mjdRef;
         this.offset = offset;
@@ -65,7 +65,7 @@ public class OffsetModel implements Serializable {
      * @param offset offset at reference date in seconds (TAI minus UTC)
      */
     public OffsetModel(final DateComponents start, final int offset) {
-        this(start, 41317, offset, 0.0);
+        this(start, 41317, offset, 0L);
     }
 
     /** Get the date of the offset start.
@@ -90,9 +90,9 @@ public class OffsetModel implements Serializable {
     }
 
     /** Offset slope in seconds per UTC day (TAI minus UTC / dUTC).
-     * @return offset slope in seconds per UTC day (TAI minus UTC / dUTC)
+     * @return offset slope in attoseconds per UTC day (TAI minus UTC / dUTC)
      */
-    public double getSlope() {
+    public long getSlope() {
         return slope;
     }
 

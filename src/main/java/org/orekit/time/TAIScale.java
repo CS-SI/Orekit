@@ -25,12 +25,12 @@ package org.orekit.time;
 public class TAIScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Package private constructor for the factory.
      */
     TAIScale() {
-        super("TAI", 0);
+        super("TAI", SplitTime.ZERO);
     }
 
 }

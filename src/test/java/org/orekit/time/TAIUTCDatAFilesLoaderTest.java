@@ -146,7 +146,7 @@ public class TAIUTCDatAFilesLoaderTest {
     private void checkOffset(int year, int month, int day, double offset) {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        Assertions.assertEquals(offset, utc.offsetFromTAI(date).toDouble(), 1.0e-10);
     }
 
     private void checkException(String name, OrekitMessages message) {

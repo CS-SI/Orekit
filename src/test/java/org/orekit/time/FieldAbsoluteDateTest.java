@@ -750,14 +750,14 @@ public class FieldAbsoluteDateTest {
 
     private <T extends CalculusFieldElement<T>> void doTestFraction(final Field<T> field) {
         FieldAbsoluteDate<T> d =
-            new FieldAbsoluteDate<>(field, new DateComponents(2000, 01, 01), new TimeComponents(11, 59, 27.816),
+            new FieldAbsoluteDate<>(field, new DateComponents(2000, 1, 1), new TimeComponents(11, 59, 27.816),
                              TimeScalesFactory.getTAI());
         Assertions.assertEquals(0, d.durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), 1.0e-10);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestScalesOffset(final Field<T> field) {
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2006, 02, 24),
-                                                            new TimeComponents(15, 38, 00),
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2006, 2, 24),
+                                                            new TimeComponents(15, 38, 0),
                                                             utc);
         Assertions.assertEquals(33,
                             date.timeScalesOffset(TimeScalesFactory.getTAI(), utc).getReal(),
@@ -765,22 +765,22 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestUTC(final Field<T> field) {
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2002, 01, 01),
-                                                            new TimeComponents(00, 00, 01),
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2002, 1, 1),
+                                                            new TimeComponents(0, 0, 1),
                                                             utc);
         Assertions.assertEquals("2002-01-01T00:00:01.000Z", date.toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTest1970(final Field<T> field) {
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new Date(0l), utc);
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new Date(0L), utc);
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", date.toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTest1970Instant(final Field<T> field) {
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, utc).toString());
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0L), utc).toString());
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, (UTCScale) utc).toString());
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), (UTCScale) utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0L), (UTCScale) utc).toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInstantAccuracy(final Field<T> field) {
@@ -819,19 +819,19 @@ public class FieldAbsoluteDateTest {
         // 13 seconds offset between GPS time and UTC in 2005
         long noLeapGap = ((9347 * 24 + 16) * 60 + 31) * 60 + 17;
         long realGap   = (long) date1.durationFrom(dateRef).getReal();
-        Assertions.assertEquals(13l, realGap - noLeapGap);
+        Assertions.assertEquals(13L, realGap - noLeapGap);
 
         // 14 seconds offset between GPS time and UTC in 2006
         noLeapGap = ((9712 * 24 + 16) * 60 + 31) * 60 + 17;
         realGap   = (long) date2.durationFrom(dateRef).getReal();
-        Assertions.assertEquals(14l, realGap - noLeapGap);
+        Assertions.assertEquals(14L, realGap - noLeapGap);
 
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGpsDate(final Field<T> field) {
         FieldAbsoluteDate<T> date = FieldAbsoluteDate.createGPSDate(1387, field.getZero().add(318677000.0));
         FieldAbsoluteDate<T> ref  = new FieldAbsoluteDate<>(field, new DateComponents(2006, 8, 9),
-                                                            new TimeComponents(16, 31, 03),
+                                                            new TimeComponents(16, 31, 3),
                                                             utc);
         Assertions.assertEquals(0, date.durationFrom(ref).getReal(), 1.0e-15);
     }
@@ -1076,7 +1076,7 @@ public class FieldAbsoluteDateTest {
     private <T extends CalculusFieldElement<T>> void doTestCCSDSUnsegmentedWithExtendedPreamble(final Field<T> field) {
 
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, "2095-03-03T22:02:45.789012345678901", utc);
-        int leap = (int) FastMath.rint(utc.offsetFromTAI(reference.toAbsoluteDate()));
+        int leap = (int) FastMath.rint(utc.offsetFromTAI(reference.toAbsoluteDate()).toDouble());
         double lsb = FastMath.pow(2.0, -48);
 
         byte extendedPreamble = (byte) -0x80;
@@ -1200,20 +1200,20 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestExpandedConstructors(final Field<T> field) {
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, new DateComponents(2002, 05, 28),
+        Assertions.assertEquals(new FieldAbsoluteDate<>(field, new DateComponents(2002, 5, 28),
                                                     new TimeComponents(15, 30, 0),
                                                     TimeScalesFactory.getUTC()),
-                     new FieldAbsoluteDate<>(field, 2002, 05, 28, 15, 30, 0, TimeScalesFactory.getUTC()));
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, new DateComponents(2002, 05, 28), TimeComponents.H00,
+                     new FieldAbsoluteDate<>(field, 2002, 5, 28, 15, 30, 0, TimeScalesFactory.getUTC()));
+        Assertions.assertEquals(new FieldAbsoluteDate<>(field, new DateComponents(2002, 5, 28), TimeComponents.H00,
                                                     TimeScalesFactory.getUTC()),
-                     new FieldAbsoluteDate<>(field, 2002, 05, 28, TimeScalesFactory.getUTC()));
+                     new FieldAbsoluteDate<>(field, 2002, 5, 28, TimeScalesFactory.getUTC()));
         try {
-            new FieldAbsoluteDate<>(field, 2002, 05, 28, 25, 30, 0, TimeScalesFactory.getUTC());
+            new FieldAbsoluteDate<>(field, 2002, 5, 28, 25, 30, 0, TimeScalesFactory.getUTC());
         } catch (OrekitIllegalArgumentException oiae) {
             Assertions.assertEquals(OrekitMessages.NON_EXISTENT_HMS_TIME, oiae.getSpecifier());
             Assertions.assertEquals(25, ((Integer) oiae.getParts()[0]).intValue());
             Assertions.assertEquals(30, ((Integer) oiae.getParts()[1]).intValue());
-            Assertions.assertEquals( 0, ((Double) oiae.getParts()[2]).doubleValue(), 1.0e-15);
+            Assertions.assertEquals( 0, ((Double) oiae.getParts()[2]), 1.0e-15);
         }
     }
 
@@ -1270,7 +1270,7 @@ public class FieldAbsoluteDateTest {
     private <T extends CalculusFieldElement<T>> void doTestAccuracyIssue348(final Field<T> field)
         {
         FieldAbsoluteDate<T> tF = new FieldAbsoluteDate<>(field,
-                                                          new DateComponents(1970, 01, 01),
+                                                          new DateComponents(1970, 1, 1),
                                                           new TimeComponents(3, 25, 45.6789),
                                                           TimeScalesFactory.getUTC());
         AbsoluteDate tA = tF.toAbsoluteDate();
@@ -1321,7 +1321,7 @@ public class FieldAbsoluteDateTest {
                             1.0e-15);
 
         //Milliseconds - April 1, 2006, in UTC
-        long msOffset = 1143849600000l;
+        long msOffset = 1143849600000L;
         final FieldAbsoluteDate<T> ad = new FieldAbsoluteDate<>(epoch, msOffset / 1000, TimeScalesFactory.getUTC());
         Assertions.assertEquals("2006-04-01T00:00:00.000", ad.toString(utc));
     }
@@ -1666,7 +1666,7 @@ public class FieldAbsoluteDateTest {
 
     public <T extends CalculusFieldElement<T>> void doTestToStringWithoutUtcOffset(final Field<T> field) {
         // setup
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field,2009, 1, 1, utc);
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,2009, 1, 1, utc);
         double one = FastMath.nextDown(1.0);
         double zeroUlp = FastMath.nextUp(0.0);
         double oneUlp = FastMath.ulp(1.0);
@@ -1759,7 +1759,7 @@ public class FieldAbsoluteDateTest {
 
         public TestDates(Field<T> field) {
             presentDate = new AbsoluteDate(new DateComponents(2000, 1, 1),
-                                                new TimeComponents(12, 00, 00),
+                                                new TimeComponents(12, 0, 0),
                                                 TimeScalesFactory.getUTC());
             present    = new AnyFieldTimeStamped<>(field, presentDate);
             presentToo = new AnyFieldTimeStamped<>(field, presentDate.shiftedBy(0));

@@ -51,7 +51,7 @@ public class UTCScaleTest {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(2020, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        Assertions.assertEquals("2020-12-31T23:59:59.000Z", d1.toString());
+        Assertions.assertEquals("2020-12-31T23:59:59Z", d1.toString());
     }
 
     @Test
@@ -88,10 +88,10 @@ public class UTCScaleTest {
         AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                           new TimeComponents(23, 59, 59),
                                           utc);
-        Assertions.assertEquals("1983-06-30T23:58:59.000", d.shiftedBy(-60).toString(utc));
+        Assertions.assertEquals("1983-06-30T23:58:59", d.shiftedBy(-60).toString(utc));
         Assertions.assertEquals(60, utc.minuteDuration(d.shiftedBy(-60)));
         Assertions.assertFalse(utc.insideLeap(d.shiftedBy(-60)));
-        Assertions.assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
+        Assertions.assertEquals("1983-06-30T23:59:59", d.toString(utc));
         Assertions.assertEquals(61, utc.minuteDuration(d));
         Assertions.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
@@ -195,9 +195,9 @@ public class UTCScaleTest {
         TimeScale scale = TimeScalesFactory.getGPS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            double dt1 = scale.offsetFromTAI(date);
+            double dt1 = scale.offsetFromTAI(date).toDouble();
             DateTimeComponents components = date.getComponents(scale);
-            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime()).toDouble();
             Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
@@ -247,7 +247,7 @@ public class UTCScaleTest {
 
     private void checkOffset(int year, int month, int day, double offset) {
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        Assertions.assertEquals(offset, utc.offsetFromTAI(date).toDouble(), 1.0e-10);
     }
 
     @Test
@@ -339,7 +339,7 @@ public class UTCScaleTest {
         for (int i = 0; i < 10000; ++i) {
             AbsoluteDate randomDate = reference.shiftedBy(random.nextDouble() * testRange);
             datesList.add(randomDate);
-            offsetsList.add(utc.offsetFromTAI(randomDate));
+            offsetsList.add(utc.offsetFromTAI(randomDate).toDouble());
         }
 
         // check the offsets in multi-threaded mode
@@ -348,7 +348,7 @@ public class UTCScaleTest {
         for (int i = 0; i < datesList.size(); ++i) {
             final AbsoluteDate date = datesList.get(i);
             final double offset = offsetsList.get(i);
-            executorService.execute(() -> Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-12));
+            executorService.execute(() -> Assertions.assertEquals(offset, utc.offsetFromTAI(date).toDouble(), 1.0e-12));
         }
 
         try {
@@ -372,7 +372,7 @@ public class UTCScaleTest {
         TimeScale scale = TimeScalesFactory.getUTC();
         // time before first leap second
         DateComponents dateComponents = new DateComponents(1950, 1, 1);
-        double actual = scale.offsetToTAI(dateComponents, TimeComponents.H00);
+        double actual = scale.offsetToTAI(dateComponents, TimeComponents.H00).toDouble();
         Assertions.assertEquals(0.0, actual, 1.0e-10);
     }
 
@@ -395,11 +395,11 @@ public class UTCScaleTest {
     public void testInfinityRegularDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
         Assertions.assertEquals(-37.0,
-                            scale.offsetFromTAI(AbsoluteDate.FUTURE_INFINITY),
-                            1.0e-15);
+                                scale.offsetFromTAI(AbsoluteDate.FUTURE_INFINITY).toDouble(),
+                                1.0e-15);
         Assertions.assertEquals(0.0,
-                            scale.offsetFromTAI(AbsoluteDate.PAST_INFINITY),
-                            1.0e-15);
+                                scale.offsetFromTAI(AbsoluteDate.PAST_INFINITY).toDouble(),
+                                1.0e-15);
     }
 
     // TODO: re-enable this test before finishing atto-seconds-date branch
@@ -423,8 +423,7 @@ public class UTCScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(utc);
 
-        Assertions.assertTrue(bos.size() > 1700);
-        Assertions.assertTrue(bos.size() < 1800);
+        Assertions.assertEquals(1887, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

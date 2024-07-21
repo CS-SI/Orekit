@@ -34,7 +34,7 @@ public class TCGScaleTest {
         final double dtTT = 1e6;
         final AbsoluteDate t1 = AbsoluteDate.J2000_EPOCH;
         final AbsoluteDate t2 = t1.shiftedBy(dtTT);
-        final double dtTCG = dtTT + scale.offsetFromTAI(t2) - scale.offsetFromTAI(t1);
+        final double dtTCG = dtTT + SplitTime.subtract(scale.offsetFromTAI(t2), scale.offsetFromTAI(t1)).toDouble();
         Assertions.assertEquals(1 - 6.969290134e-10, dtTT / dtTCG, 1.0e-15);
     }
 
@@ -43,9 +43,9 @@ public class TCGScaleTest {
         TimeScale scale = TimeScalesFactory.getTCG();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            double dt1 = scale.offsetFromTAI(date);
+            double dt1 = scale.offsetFromTAI(date).toDouble();
             DateTimeComponents components = date.getComponents(scale);
-            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime()).toDouble();
             Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
@@ -54,7 +54,7 @@ public class TCGScaleTest {
     public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTCG();
-        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
@@ -66,25 +66,25 @@ public class TCGScaleTest {
 
     @Test
     public void testReference() {
-        DateComponents  referenceDate = new DateComponents(1977, 01, 01);
-        TimeComponents  thirtyTwo     = new TimeComponents(0, 0, 32.184);
-        AbsoluteDate ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTT());
-        AbsoluteDate tcgRef        = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTCG());
-        AbsoluteDate taiRef        = new AbsoluteDate(referenceDate, TimeComponents.H00, TimeScalesFactory.getTAI());
-        AbsoluteDate utcRef        = new AbsoluteDate(new DateComponents(1976, 12, 31),
-                                                      new TimeComponents(23, 59, 45),
-                                                      TimeScalesFactory.getUTC());
-        Assertions.assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-15);
-        Assertions.assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-15);
-        Assertions.assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
+        DateComponents referenceDate = new DateComponents(1977, 1, 1);
+        TimeComponents thirtyTwo     = new TimeComponents(0, 0, new SplitTime(32L, 184000000000000000L));
+        AbsoluteDate   ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTT());
+        AbsoluteDate   tcgRef        = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTCG());
+        AbsoluteDate   taiRef        = new AbsoluteDate(referenceDate, TimeComponents.H00, TimeScalesFactory.getTAI());
+        AbsoluteDate   utcRef        = new AbsoluteDate(new DateComponents(1976, 12, 31),
+                                                        new TimeComponents(23, 59, 45),
+                                                        TimeScalesFactory.getUTC());
+        Assertions.assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-20);
+        Assertions.assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-20);
+        Assertions.assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-20);
     }
 
     @Test
     public void testSofa() {
         TimeScale tt  = TimeScalesFactory.getTT();
         AbsoluteDate date = new AbsoluteDate(2006, 1, 15, 21, 25, 10.5000096, tt);
-        double delta = TimeScalesFactory.getTCG().offsetFromTAI(date) - tt.offsetFromTAI(date);
-        Assertions.assertEquals(Constants.JULIAN_DAY * (0.8924900312508587113 -  0.892482639), delta, 5.0e-10);
+        SplitTime delta = SplitTime.subtract(TimeScalesFactory.getTCG().offsetFromTAI(date), tt.offsetFromTAI(date));
+        Assertions.assertEquals(Constants.JULIAN_DAY * (0.8924900312508587113 -  0.892482639), delta.toDouble(), 5.0e-10);
     }
 
     @Test

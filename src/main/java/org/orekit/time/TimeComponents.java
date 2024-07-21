@@ -17,7 +17,6 @@
 package org.orekit.time;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -39,17 +38,66 @@ import org.orekit.utils.Constants;
 public class TimeComponents implements Serializable, Comparable<TimeComponents> {
 
     /** Constant for commonly used hour 00:00:00. */
-    public static final TimeComponents H00   = new TimeComponents(0, 0, 0);
+    public static final TimeComponents H00   = new TimeComponents(0, 0, SplitTime.ZERO);
 
     /** Constant for commonly used hour 12:00:00. */
-    public static final TimeComponents H12 = new TimeComponents(12, 0, 0);
+    public static final TimeComponents H12 = new TimeComponents(12, 0, SplitTime.ZERO);
 
     // CHECKSTYLE: stop ConstantName
     /** Constant for NaN time.
      * @since 13.0
      */
-    public static final TimeComponents NaN   = new TimeComponents(0, 0, Double.NaN);
+    public static final TimeComponents NaN   = new TimeComponents(0, 0, SplitTime.NaN);
     // CHECKSTYLE: resume ConstantName
+
+    /** Wrapping limits for rounding to next minute.
+     * @since 13.0
+     */
+    private static final SplitTime[] WRAPPING = new SplitTime[] {
+        new SplitTime(59L, 500000000000000000L), // round to second
+        new SplitTime(59L, 950000000000000000L), // round to 10⁻¹ second
+        new SplitTime(59L, 995000000000000000L), // round to 10⁻² second
+        new SplitTime(59L, 999500000000000000L), // round to 10⁻³ second
+        new SplitTime(59L, 999950000000000000L), // round to 10⁻⁴ second
+        new SplitTime(59L, 999995000000000000L), // round to 10⁻⁵ second
+        new SplitTime(59L, 999999500000000000L), // round to 10⁻⁶ second
+        new SplitTime(59L, 999999950000000000L), // round to 10⁻⁷ second
+        new SplitTime(59L, 999999995000000000L), // round to 10⁻⁸ second
+        new SplitTime(59L, 999999999500000000L), // round to 10⁻⁹ second
+        new SplitTime(59L, 999999999950000000L), // round to 10⁻¹⁰ second
+        new SplitTime(59L, 999999999995000000L), // round to 10⁻¹¹ second
+        new SplitTime(59L, 999999999999500000L), // round to 10⁻¹² second
+        new SplitTime(59L, 999999999999950000L), // round to 10⁻¹³ second
+        new SplitTime(59L, 999999999999995000L), // round to 10⁻¹⁴ second
+        new SplitTime(59L, 999999999999999500L), // round to 10⁻¹⁵ second
+        new SplitTime(59L, 999999999999999950L), // round to 10⁻¹⁶ second
+        new SplitTime(59L, 999999999999999995L)  // round to 10⁻¹⁷ second
+    };
+
+    /** Offset values for rounding attoseconds.
+     * @since 13.0
+     */
+    private static final long[] ROUNDING = new long[] {
+        500000000000000000L, // round to second
+         50000000000000000L, // round to 10⁻¹ second
+          5000000000000000L, // round to 10⁻² second
+           500000000000000L, // round to 10⁻³ second
+            50000000000000L, // round to 10⁻⁴ second
+             5000000000000L, // round to 10⁻⁵ second
+              500000000000L, // round to 10⁻⁶ second
+               50000000000L, // round to 10⁻⁷ second
+                5000000000L, // round to 10⁻⁸ second
+                 500000000L, // round to 10⁻⁹ second
+                  50000000L, // round to 10⁻¹⁰ second
+                   5000000L, // round to 10⁻¹¹ second
+                    500000L, // round to 10⁻¹² second
+                     50000L, // round to 10⁻¹³ second
+                      5000L, // round to 10⁻¹⁴ second
+                       500L, // round to 10⁻¹⁵ second
+                        50L, // round to 10⁻¹⁶ second
+                         5L, // round to 10⁻¹⁷ second
+                         0L, // round to 10⁻¹⁸ second
+    };
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240712L;
@@ -105,7 +153,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * are given (parameters out of range)
      */
     public TimeComponents(final int hour, final int minute, final double second)
-        throws IllegalArgumentException {
+        throws
+        IllegalArgumentException {
         this(hour, minute, new SplitTime(second));
     }
 
@@ -138,9 +187,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * are given (parameters out of range)
      * @since 7.2
      */
-    public TimeComponents(final int hour, final int minute, final double second,
-                          final int minutesFromUTC)
-        throws IllegalArgumentException {
+    public TimeComponents(final int hour, final int minute, final double second, final int minutesFromUTC)
+        throws
+        IllegalArgumentException {
         this(hour, minute, new SplitTime(second), minutesFromUTC);
     }
 
@@ -180,10 +229,11 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * Build a time from the second number within the day.
      *
      * <p>If the {@code secondInDay} is less than {@code 60.0} then {@link #getSecond()}
-     * will be less than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
-     * may produce an invalid value of {@link #getSecond()} during a negative leap second,
+     * and {@link #getSplitSecond()} will be less than {@code 60.0}, otherwise they will be
+     * less than {@code 61.0}. This constructor may produce an invalid value of
+     * {@link #getSecond()} and {@link #getSplitSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #fromSeconds(int, double, double, int)}.
+     * the final minute use {@link #TimeComponents(SplitTime, double, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
@@ -191,7 +241,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @param secondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
      *                    1} (excluded)
      * @throws OrekitIllegalArgumentException if seconds number is out of range
-     * @see #fromSeconds(int, double, double, int)
+     * @see #TimeComponents(SplitTime, double, int)
      * @see #TimeComponents(int, double)
      */
     public TimeComponents(final double secondInDay)
@@ -210,7 +260,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
      * may produce an invalid value of {@link #getSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #fromSeconds(int, double, double, int)}.
+     * the final minute use {@link #TimeComponents(SplitTime, double, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC()} will
      * return 0).
@@ -218,13 +268,12 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @param secondInDayA first part of the second number
      * @param secondInDayB last part of the second number
      * @throws OrekitIllegalArgumentException if seconds number is out of range
-     * @see #fromSeconds(int, double, double, int)
+     * @see #TimeComponents(SplitTime, double, int)
      */
     public TimeComponents(final int secondInDayA, final double secondInDayB)
             throws OrekitIllegalArgumentException {
          // if the total is at least 86400 then assume there is a leap second
-        this((Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? secondInDayA : secondInDayA - 1,
-             secondInDayB,
+        this(SplitTime.add(new SplitTime(secondInDayA), new SplitTime(secondInDayB)),
              (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 0 : 1,
              (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 60 : 61);
     }
@@ -236,14 +285,14 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * will be less than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
      * may produce an invalid value of {@link #getSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #fromSeconds(int, double, double, int)}.
+     * the final minute use {@link #TimeComponents(SplitTime, double, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
      *
      * @param splitSecondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
      *                    1} (excluded)
-     * @see #fromSeconds(int, double, double, int)
+     * @see #TimeComponents(SplitTime, double, int)
      * @see #TimeComponents(int, double)
      * @since 13.0
      */
@@ -279,23 +328,22 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /**
      * Build a time from the second number within the day.
      *
-     * <p>The seconds past midnight is the sum {@code secondInDayA + secondInDayB +
-     * leap}. The two parameters are used for increased accuracy. Only the first part of
-     * the sum ({@code secondInDayA + secondInDayB}) is used to compute the hours and
-     * minutes. The third parameter ({@code leap}) is added directly to the second value
-     * ({@link #getSecond()}) to implement leap seconds. These three quantities must
-     * satisfy the following constraints. This first guarantees the hour and minute are
-     * valid, the second guarantees the second is valid.
+     * <p>The seconds past midnight is the sum {@code secondInDay + leap}. Only the part
+     * {@code secondInDay} is used to compute the hours and minutes. The second parameter
+     * ({@code leap}) is added directly to the second value ({@link #getSecond()}) to
+     * implement leap seconds. These two quantities must satisfy the following constraints.
+     * This first guarantees the hour and minute are valid, the second guarantees the second
+     * is valid.
      *
      * <pre>
-     *     {@code 0 <= secondInDayA + secondInDayB < 86400}
-     *     {@code 0 <= (secondInDayA + secondInDayB) % 60 + leap <= minuteDuration}
-     *     {@code 0 <= leap <= minuteDuration - 60                        if minuteDuration >= 60}
-     *     {@code 0 >= leap >= minuteDuration - 60                        if minuteDuration <  60}
+     *     {@code 0 <= secondInDay < 86400}
+     *     {@code 0 <= secondInDay % 60 + leap <= minuteDuration}
+     *     {@code 0 <= leap <= minuteDuration - 60 if minuteDuration >= 60}
+     *     {@code 0 >= leap >= minuteDuration - 60 if minuteDuration <  60}
      * </pre>
      *
      * <p>If the seconds of minute ({@link #getSecond()}) computed from {@code
-     * secondInDayA + secondInDayB + leap} is greater than or equal to {@code 60 + leap}
+     * secondInDay + leap} is greater than or equal to {@code 60 + leap}
      * then the second of minute will be set to {@code FastMath.nextDown(60 + leap)}. This
      * prevents rounding to an invalid seconds of minute number when the input values have
      * greater precision than a {@code double}.
@@ -303,11 +351,10 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
      *
-     * <p>If {@code secondsInDayB} or {@code leap} is NaN then the hour and minute will
-     * be determined from {@code secondInDayA} and the second of minute will be NaN.
+     * <p>If {@code secondsInDay} or {@code leap} is NaN then the hour and minute will
+     * be set arbitrarily and the second of minute will be NaN.
      *
-     * @param secondInDayA   first part of the second number.
-     * @param secondInDayB   last part of the second number.
+     * @param secondInDay    part of the second number.
      * @param leap           magnitude of the leap second if this point in time is during
      *                       a leap second, otherwise {@code 0.0}. This value is not used
      *                       to compute hours and minutes, but it is added to the computed
@@ -316,22 +363,23 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @throws OrekitIllegalArgumentException if the inequalities above do not hold.
      * @since 10.2
      */
-    private TimeComponents(final int secondInDayA,
-                                             final double secondInDayB,
-                                             final double leap,
-                                             final int minuteDuration) {
+    public TimeComponents(final SplitTime secondInDay, final double leap, final int minuteDuration) {
 
-       // split the numbers as a whole number of seconds
-        // and a fractional part between 0.0 (included) and 1.0 (excluded)
-        final int carry         = (int) FastMath.floor(secondInDayB);
-        int wholeSeconds        = secondInDayA + carry;
-        final double fractional = secondInDayB - carry;
+        minutesFromUTC = 0;
+
+        if (secondInDay.isNaN()) {
+            // special handling for NaN
+            hour        = 0;
+            minute      = 0;
+            splitSecond = secondInDay;
+            return;
+        }
 
         // range check
-        if (wholeSeconds < 0 || wholeSeconds >= Constants.JULIAN_DAY) {
+        if (secondInDay.compareTo(SplitTime.ZERO) < 0 || secondInDay.compareTo(SplitTime.DAY) >= 0) {
             throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
                                                      // this can produce some strange messages due to rounding
-                                                     secondInDayA + secondInDayB, 0, Constants.JULIAN_DAY);
+                                                     secondInDay.toDouble(), 0, Constants.JULIAN_DAY);
         }
         final int maxExtraSeconds = minuteDuration - 60;
         if (leap * maxExtraSeconds < 0 || FastMath.abs(leap) > FastMath.abs(maxExtraSeconds)) {
@@ -340,77 +388,29 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         }
 
         // extract the time components
+        int wholeSeconds = (int) secondInDay.getSeconds();
         hour           = wholeSeconds / 3600;
         wholeSeconds  -= 3600 * hour;
         minute         = wholeSeconds / 60;
         wholeSeconds  -= 60 * minute;
         // at this point ((minuteDuration - wholeSeconds) - leap) - fractional > 0
-        // or else one of the preconditions was violated. Even if there is not violation,
+        // or else one of the preconditions was violated. Even if there is no violation,
         // naiveSecond may round to minuteDuration, creating an invalid time.
-        // In that case round down to preserve a valid time at the cost of up to 1 ULP of error.
+        // In that case round down to preserve a valid time at the cost of up to 1as of error.
         // See #676 and #681.
-        final double naiveSecond = wholeSeconds + (leap + fractional);
-        if (naiveSecond < 0) {
+        final SplitTime naiveSecond = SplitTime.add(new SplitTime(wholeSeconds, secondInDay.getAttoSeconds()),
+                                                    new SplitTime(leap));
+        if (naiveSecond.compareTo(SplitTime.ZERO) < 0) {
             throw new OrekitIllegalArgumentException(
                     OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
                     naiveSecond, 0, minuteDuration);
         }
-        if (naiveSecond < minuteDuration || Double.isNaN(naiveSecond)) {
-            splitSecond = new SplitTime(naiveSecond);
+        if (naiveSecond.getSeconds() < minuteDuration) {
+            splitSecond = naiveSecond;
         } else {
-            splitSecond = new SplitTime(FastMath.nextDown((double) minuteDuration));
+            splitSecond = new SplitTime(minuteDuration - 1, 999999999999999999L);
         }
 
-        minutesFromUTC = 0;
-
-    }
-
-    /**
-     * Build a time from the second number within the day.
-     *
-     * <p>The seconds past midnight is the sum {@code secondInDayA + secondInDayB +
-     * leap}. The two parameters are used for increased accuracy. Only the first part of
-     * the sum ({@code secondInDayA + secondInDayB}) is used to compute the hours and
-     * minutes. The third parameter ({@code leap}) is added directly to the second value
-     * ({@link #getSecond()}) to implement leap seconds. These three quantities must
-     * satisfy the following constraints. This first guarantees the hour and minute are
-     * valid, the second guarantees the second is valid.
-     *
-     * <pre>
-     *     {@code 0 <= secondInDayA + secondInDayB < 86400}
-     *     {@code 0 <= (secondInDayA + secondInDayB) % 60 + leap <= minuteDuration}
-     *     {@code 0 <= leap <= minuteDuration - 60                        if minuteDuration >= 60}
-     *     {@code 0 >= leap >= minuteDuration - 60                        if minuteDuration <  60}
-     * </pre>
-     *
-     * <p>If the seconds of minute ({@link #getSecond()}) computed from {@code
-     * secondInDayA + secondInDayB + leap} is greater than or equal to {@code 60 + leap}
-     * then the second of minute will be set to {@code FastMath.nextDown(60 + leap)}. This
-     * prevents rounding to an invalid seconds of minute number when the input values have
-     * greater precision than a {@code double}.
-     *
-     * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
-     * 0}).
-     *
-     * <p>If {@code secondsInDayB} or {@code leap} is NaN then the hour and minute will
-     * be determined from {@code secondInDayA} and the second of minute will be NaN.
-     *
-     * @param secondInDayA   first part of the second number.
-     * @param secondInDayB   last part of the second number.
-     * @param leap           magnitude of the leap second if this point in time is during
-     *                       a leap second, otherwise {@code 0.0}. This value is not used
-     *                       to compute hours and minutes, but it is added to the computed
-     *                       second of minute.
-     * @param minuteDuration number of seconds in the current minute, normally {@code 60}.
-     * @return new time components for the specified time.
-     * @throws OrekitIllegalArgumentException if the inequalities above do not hold.
-     * @since 10.2
-     */
-    public static TimeComponents fromSeconds(final int secondInDayA,
-                                             final double secondInDayB,
-                                             final double leap,
-                                             final int minuteDuration) {
-        return new TimeComponents(secondInDayA, secondInDayB, leap, minuteDuration);
     }
 
     /** Parse a string in ISO-8601 format to build a time.
@@ -482,6 +482,14 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         return splitSecond.toDouble();
     }
 
+    /** Get the seconds number.
+     * @return second second number from 0.0 to 61.0 (excluded). Note that 60 &le; second
+     * &lt; 61 only occurs during a leap second.
+     */
+    public SplitTime getSplitSecond() {
+        return splitSecond;
+    }
+
     /** Get the offset between the specified date and UTC.
      * <p>
      * The offset is always an integral number of minutes, as per ISO-8601 standard.
@@ -495,21 +503,91 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /** Get the second number within the local day, <em>without</em> applying the {@link #getMinutesFromUTC() offset from UTC}.
      * @return second number from 0.0 to Constants.JULIAN_DAY
+     * @see #getSplitSecondsInLocalDay()
      * @see #getSecondsInUTCDay()
      * @since 7.2
      */
     public double getSecondsInLocalDay() {
-        return splitSecond.toDouble() + 60 * minute + 3600 * hour;
+        return getSplitSecondsInLocalDay().toDouble();
+    }
+
+    /** Get the second number within the local day, <em>without</em> applying the {@link #getMinutesFromUTC() offset from UTC}.
+     * @return second number from 0.0 to Constants.JULIAN_DAY
+     * @see #getSecondsInLocalDay()
+     * @see #getSplitSecondsInUTCDay()
+     * @since 13.0
+     */
+    public SplitTime getSplitSecondsInLocalDay() {
+        return SplitTime.add(new SplitTime(60 * minute + 3600 * hour, 0L), splitSecond);
     }
 
     /** Get the second number within the UTC day, applying the {@link #getMinutesFromUTC() offset from UTC}.
      * @return second number from {@link #getMinutesFromUTC() -getMinutesFromUTC()}
      * to Constants.JULIAN_DAY {@link #getMinutesFromUTC() + getMinutesFromUTC()}
+     * @see #getSplitSecondsInUTCDay()
      * @see #getSecondsInLocalDay()
      * @since 7.2
      */
     public double getSecondsInUTCDay() {
-        return splitSecond.toDouble() + 60 * (minute - minutesFromUTC) + 3600 * hour;
+        return getSplitSecondsInUTCDay().toDouble();
+    }
+
+    /** Get the second number within the UTC day, applying the {@link #getMinutesFromUTC() offset from UTC}.
+     * @return second number from {@link #getMinutesFromUTC() -getMinutesFromUTC()}
+     * to Constants.JULIAN_DAY {@link #getMinutesFromUTC() + getMinutesFromUTC()}
+     * @see #getSecondsInUTCDay()
+     * @see #getSplitSecondsInLocalDay()
+     * @since 13.0
+     */
+    public SplitTime getSplitSecondsInUTCDay() {
+        return SplitTime.add(new SplitTime(60 * (minute - minutesFromUTC) + 3600 * hour, 0L), splitSecond);
+    }
+
+    /**
+     * Round this time to the given precision if needed to prevent rounding up to an
+     * invalid seconds number. This is useful, for example, when writing custom date-time
+     * formatting methods so one does not, e.g., end up with "60.0" seconds during a
+     * normal minute when the value of seconds is {@code 59.999}. This method will instead
+     * round up the minute, hour, day, month, and year as needed.
+     *
+     * @param minuteDuration 59, 60, 61, or 62 seconds depending on the date being close
+     *                       to a leap second introduction and the magnitude of the leap
+     *                       second.
+     * @param fractionDigits the number of decimal digits after the decimal point in the
+     *                       seconds number that will be printed. This date-time is
+     *                       rounded to {@code fractionDigits} after the decimal point if
+     *                       necessary to prevent rounding up to {@code minuteDuration}.
+     *                       {@code fractionDigits} must be greater than or equal to
+     *                       {@code 0}.
+     * @return the instance itself if no rounding was needed, or a time within
+     * {@code 0.5 * 10**-fractionDigits} seconds of this, and with a seconds number that
+     * will not round up to {@code minuteDuration} when rounded to {@code fractionDigits}
+     * after the decimal point
+     * @since 13.0
+     */
+    public TimeComponents wrapIfNeeded(final int minuteDuration, final int fractionDigits) {
+        SplitTime second = getSplitSecond();
+
+        // adjust limit according to current minute duration
+        SplitTime limit = SplitTime.add(WRAPPING[FastMath.min(fractionDigits, WRAPPING.length - 1)],
+                                        new SplitTime(minuteDuration - 60, 0L));
+
+        if (second.compareTo(limit) >= 0) {
+            // we should wrap around to the next minute
+            int wrappedMinute = minute;
+            int wrappedHour   = hour;
+            second = SplitTime.ZERO;
+            ++wrappedMinute;
+            if (wrappedMinute > 59) {
+                wrappedMinute = 0;
+                ++wrappedHour;
+                if (wrappedHour > 23) {
+                    wrappedHour = 0;
+                }
+            }
+            return new TimeComponents(wrappedHour, wrappedMinute, second);
+        }
+        return this;
     }
 
     /**
@@ -517,11 +595,42 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * from {@link DateTimeComponents#toString(int, int)}. Access from outside of rounding
      * methods would result in invalid times, see #590, #591.
      *
-     * @param secondsFormat for the seconds.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must
+     *                       be greater than or equal to {@code 0}.
      * @return string without UTC offset.
+     * @since 13.0
      */
-    String toStringWithoutUtcOffset(final DecimalFormat secondsFormat) {
-        return String.format("%02d:%02d:%s", hour, minute, secondsFormat.format(splitSecond.toDouble()));
+    String toStringWithoutUtcOffset(final int minuteDuration, final int fractionDigits) {
+
+        if (splitSecond.isFinite()) {
+            // general case for regular times
+            final long      rounding = ROUNDING[FastMath.min(fractionDigits, ROUNDING.length - 1)];
+            final TimeComponents rounded  = new TimeComponents(hour, minute,
+                                                               new SplitTime(splitSecond.getSeconds(),
+                                                                             splitSecond.getAttoSeconds() + rounding));
+            final StringBuilder builder = new StringBuilder();
+            builder.append(String.format("%02d:%02d:%02d",
+                                         rounded.hour, rounded.minute, rounded.splitSecond.getSeconds()));
+            if (fractionDigits > 0) {
+                builder.append('.');
+                builder.append(String.
+                               format("%018d", rounded.splitSecond.getAttoSeconds()).
+                               substring(0, fractionDigits));
+            }
+            return builder.toString();
+        } else if (splitSecond.isNaN()) {
+            // special handling for NaN
+            return String.format("%02d:%02d:NaN", hour, minute);
+        } else if (splitSecond.isNegativeInfinity()) {
+            // special handling for -∞
+            return String.format("%02d:%02d:-∞", hour, minute);
+        } else {
+            // special handling for +∞
+            return String.format("%02d:%02d:+∞", hour, minute);
+        }
+
     }
 
     /**
@@ -534,9 +643,17 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     public String toStringWithoutUtcOffset() {
         // create formats here as they are not thread safe
         // Format for seconds to prevent rounding up to an invalid time. See #591
-        final DecimalFormat secondsFormat =
-                new DecimalFormat("00.000###########", US_SYMBOLS);
-        return toStringWithoutUtcOffset(secondsFormat);
+        final String formatted = toStringWithoutUtcOffset(60, 18);
+        int last = formatted.length() - 1;
+        while (formatted.charAt(last) == '0') {
+            // we want to remove final zeros
+            --last;
+        }
+        if (formatted.charAt(last) == '.') {
+            // also remove decimal separator if whole second
+            --last;
+        }
+        return formatted.substring(0, last + 1);
     }
 
     /**
@@ -567,7 +684,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /** {@inheritDoc} */
     public int compareTo(final TimeComponents other) {
-        return Double.compare(getSecondsInUTCDay(), other.getSecondsInUTCDay());
+        return getSplitSecondsInUTCDay().compareTo(other.getSplitSecondsInUTCDay());
     }
 
     /** {@inheritDoc} */

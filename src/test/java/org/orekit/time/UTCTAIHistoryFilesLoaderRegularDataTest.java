@@ -25,7 +25,9 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
 
     @Test
     public void testRegular() {
-        Assertions.assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
+        Assertions.assertEquals(-32.0,
+                                TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH).toDouble(),
+                                10e-8);
     }
 
     @Test

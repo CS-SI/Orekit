@@ -482,6 +482,20 @@ public class SplitTimeTest {
     }
 
     @Test
+    public void testNegate() {
+        for (long s = -1000L; s < 1000L; s += 10L) {
+            for (long a = -1000L; a < 1000L; a += 10L) {
+                final SplitTime st = new SplitTime(s, a);
+                Assertions.assertTrue(SplitTime.add(st, st.negate()).isZero());
+            }
+        }
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.negate().isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.negate().isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.NaN.negate().isNaN());
+        Assertions.assertTrue(SplitTime.ZERO.negate().isZero());
+    }
+
+    @Test
     public void testCompareFinite() {
         Assertions.assertTrue(SplitTime.ZERO.compareTo(new SplitTime(0L, 0L)) == 0);
         Assertions.assertTrue(new SplitTime(1L, 1L).compareTo(new SplitTime(1L, 1L)) == 0);
@@ -512,6 +526,36 @@ public class SplitTimeTest {
         Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.compareTo(SplitTime.POSITIVE_INFINITY) <  0);
         Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.compareTo(SplitTime.NEGATIVE_INFINITY) == 0);
 
+    }
+
+    @Test
+    public void testEquals() {
+        SplitTime[] st = new SplitTime[] {
+          new SplitTime(200L, 300L), new SplitTime(200L, 199L), new SplitTime(199L, 300L),
+          SplitTime.POSITIVE_INFINITY, SplitTime.NEGATIVE_INFINITY,
+          SplitTime.NaN, SplitTime.DAY, SplitTime.ZERO, SplitTime.ATTOSECOND
+        };
+        for (int i = 0; i < st.length; i++) {
+            for (int j = 0; j < st.length; j++) {
+                if (i == j) {
+                    Assertions.assertEquals(st[i], st[j]);
+                } else {
+
+                    Assertions.assertNotEquals(st[i], st[j]);
+                }
+            }
+        }
+        final SplitTime splitTime = new SplitTime(200L, 300L);
+        Assertions.assertEquals(st[0],  splitTime);
+        Assertions.assertNotSame(st[0], splitTime);
+        Assertions.assertEquals(0,      st[0].compareTo(splitTime));
+        Assertions.assertEquals(484,         st[0].hashCode());
+        Assertions.assertEquals(484,         splitTime.hashCode());
+        Assertions.assertEquals(254,         SplitTime.NaN.hashCode());
+        Assertions.assertEquals(-2130771969, splitTime.NEGATIVE_INFINITY.hashCode());
+        Assertions.assertEquals(-2147418369, splitTime.POSITIVE_INFINITY.hashCode());
+        Assertions.assertEquals(0,           splitTime.ZERO.hashCode());
+        Assertions.assertEquals(1,           splitTime.ATTOSECOND.hashCode());
     }
 
     @Test

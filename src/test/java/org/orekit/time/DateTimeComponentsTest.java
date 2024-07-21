@@ -74,7 +74,7 @@ public class DateTimeComponentsTest {
     public void testString() {
         final DateTimeComponents date =
             new DateTimeComponents(DateComponents.J2000_EPOCH, TimeComponents.H12);
-        Assertions.assertEquals("2000-01-01T12:00:00.000+00:00", date.toString());
+        Assertions.assertEquals("2000-01-01T12:00:00+00:00", date.toString());
     }
 
     @Test
@@ -87,9 +87,9 @@ public class DateTimeComponentsTest {
 
     @Test
     public void testParse() {
-        String s = "2000-01-02T03:04:05.000";
+        String s = "2000-01-02T03:04:05";
         Assertions.assertEquals(s, DateTimeComponents.parseDateTime(s).toStringWithoutUtcOffset());
-        s = "2000-01-02T03:04:05.000+00:00";
+        s = "2000-01-02T03:04:05+00:00";
         Assertions.assertEquals(s, DateTimeComponents.parseDateTime(s).toString());
     }
 

@@ -33,9 +33,9 @@ public class TAIScaleTest {
         Assertions.assertEquals("TAI", scale.toString());
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            Assertions.assertEquals(0, scale.offsetFromTAI(date), 0);
+            Assertions.assertEquals(0, scale.offsetFromTAI(date).toDouble(), 0);
             DateTimeComponents components = date.getComponents(scale);
-            Assertions.assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
+            Assertions.assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()).toDouble(), 0);
         }
     }
 
@@ -73,7 +73,7 @@ public class TAIScaleTest {
     public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTAI();
-        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);

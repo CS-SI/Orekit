@@ -33,6 +33,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.Constants;
 
 /** Loader for UTC-TAI extracted from tai-utc.dat file from USNO.
  * <p>
@@ -112,7 +113,7 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
         private static final String STORED_REAL_FIELD     = BLANKS + STORAGE_START + REAL_REGEXP + STORAGE_END;
 
         /** Data lines pattern. */
-        private Pattern dataPattern;
+        private final Pattern dataPattern;
 
         /** Simple constructor.
          */
@@ -195,7 +196,7 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
 
                         final double offset = Double.parseDouble(matcher.group(5));
                         final double mjdRef = Double.parseDouble(matcher.group(6));
-                        final double slope  = Double.parseDouble(matcher.group(7));
+                        final long   slope  = FastMath.round(Double.parseDouble(matcher.group(7)) * 1.0e18 / Constants.JULIAN_DAY);
                         offsets.add(new OffsetModel(dc1, (int) FastMath.rint(mjdRef), offset, slope));
 
                     }

@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @see FieldAbsoluteDate
  * @since 13.1
  */
-public class SplitTime implements Serializable {
+public class SplitTime implements Comparable<SplitTime>, Serializable {
 
     /** Split time representing 0. */
     public static final SplitTime ZERO = new SplitTime(0L, 0L);
@@ -84,11 +84,14 @@ public class SplitTime implements Serializable {
     /** Split time representing positive infinity. */
     public static final SplitTime POSITIVE_INFINITY = new SplitTime(Double.POSITIVE_INFINITY);
 
-    /** Indicator for NaN time. */
-    private static final long NAN_INDICATOR      = -1L;
+    /** Indicator for NaN time (bits pattern arbitrarily selected to avoid hashcode collisions). */
+    private static final long NAN_INDICATOR      = -(0XFFL);
 
-    /** Indicator for infinite time. */
-    private static final long INFINITY_INDICATOR = -2L;
+    /** Indicator for positive infinite time(bits pattern arbitrarily selected to avoid hashcode collisions). */
+    private static final long POSITIVE_INFINITY_INDICATOR = -(0XFF00L);
+
+    /** Indicator for negative infinite time(bits pattern arbitrarily selected to avoid hashcode collisions). */
+    private static final long NEGATIVE_INFINITY_INDICATOR = -(0XFF0000L);
 
     /** Milliseconds in one second. */
     private static final long MILLIS_IN_SECOND = 1000L;
@@ -151,8 +154,13 @@ public class SplitTime implements Serializable {
             }
         } catch (MathRuntimeException mre) {
             // there was an overflow
-            normalizedSeconds     = seconds < 0L ? Long.MIN_VALUE : Long.MAX_VALUE;
-            normalizedAttoSeconds = INFINITY_INDICATOR;
+            if (seconds < 0L) {
+                normalizedSeconds     = Long.MIN_VALUE;
+                normalizedAttoSeconds = NEGATIVE_INFINITY_INDICATOR;
+            } else {
+                normalizedSeconds     = Long.MAX_VALUE;
+                normalizedAttoSeconds = POSITIVE_INFINITY_INDICATOR;
+            }
         }
 
         // store normalized values
@@ -171,8 +179,13 @@ public class SplitTime implements Serializable {
             seconds     = 0L;
             attoSeconds = NAN_INDICATOR;
         } else if (time < Long.MIN_VALUE || time > Long.MAX_VALUE) {
-            seconds     = time < 0 ? Long.MIN_VALUE : Long.MAX_VALUE;
-            attoSeconds = INFINITY_INDICATOR;
+            if (time < 0L) {
+                seconds     = Long.MIN_VALUE;
+                attoSeconds = NEGATIVE_INFINITY_INDICATOR;
+            } else {
+                seconds     = Long.MAX_VALUE;
+                attoSeconds = POSITIVE_INFINITY_INDICATOR;
+            }
         } else {
             final double tiSeconds  = FastMath.rint(time);
             final double subSeconds = time - tiSeconds;
@@ -198,10 +211,10 @@ public class SplitTime implements Serializable {
                 final long limit = (Long.MAX_VALUE - DAY.seconds / 2) / DAY.seconds;
                 if (time < -limit) {
                     seconds     = Long.MIN_VALUE;
-                    attoSeconds = INFINITY_INDICATOR;
+                    attoSeconds = NEGATIVE_INFINITY_INDICATOR;
                 } else if (time > limit) {
                     seconds     = Long.MAX_VALUE;
-                    attoSeconds = INFINITY_INDICATOR;
+                    attoSeconds = POSITIVE_INFINITY_INDICATOR;
                 } else {
                     seconds = time * DAY.seconds;
                     attoSeconds = 0L;
@@ -212,10 +225,10 @@ public class SplitTime implements Serializable {
                 final long limit = (Long.MAX_VALUE - HOUR.seconds / 2) / HOUR.seconds;
                 if (time < -limit) {
                     seconds     = Long.MIN_VALUE;
-                    attoSeconds = INFINITY_INDICATOR;
+                    attoSeconds = NEGATIVE_INFINITY_INDICATOR;
                 } else if (time > limit) {
                     seconds     = Long.MAX_VALUE;
-                    attoSeconds = INFINITY_INDICATOR;
+                    attoSeconds = POSITIVE_INFINITY_INDICATOR;
                 } else {
                     seconds     = time * HOUR.seconds;
                     attoSeconds = 0L;
@@ -226,10 +239,10 @@ public class SplitTime implements Serializable {
                 final long limit = (Long.MAX_VALUE - MINUTE.seconds / 2) / MINUTE.seconds;
                 if (time < -limit) {
                     seconds     = Long.MIN_VALUE;
-                    attoSeconds = INFINITY_INDICATOR;
+                    attoSeconds = NEGATIVE_INFINITY_INDICATOR;
                 } else if (time > limit) {
                     seconds     = Long.MAX_VALUE;
-                    attoSeconds = INFINITY_INDICATOR;
+                    attoSeconds = POSITIVE_INFINITY_INDICATOR;
                 } else {
                     seconds     = time * MINUTE.seconds;
                     attoSeconds = 0L;
@@ -318,7 +331,7 @@ public class SplitTime implements Serializable {
      * @see #isPositiveInfinity()
      */
     public boolean isInfinite() {
-        return attoSeconds == INFINITY_INDICATOR;
+        return isPositiveInfinity() || isNegativeInfinity();
     }
 
     /** Check if time is positive infinity.
@@ -329,7 +342,7 @@ public class SplitTime implements Serializable {
      * @see #isNegativeInfinity()
      */
     public boolean isPositiveInfinity() {
-        return isInfinite() && seconds > 0L;
+        return attoSeconds == POSITIVE_INFINITY_INDICATOR;
     }
 
     /** Check if time is negative infinity.
@@ -340,7 +353,7 @@ public class SplitTime implements Serializable {
      * @see #isPositiveInfinity()
      */
     public boolean isNegativeInfinity() {
-        return isInfinite() && seconds < 0L;
+        return attoSeconds == NEGATIVE_INFINITY_INDICATOR;
     }
 
     /** Build a time by adding two times.
@@ -392,6 +405,20 @@ public class SplitTime implements Serializable {
         } else {
             // regular subtraction between two finite times
             return new SplitTime(t1.seconds - t2.seconds, t1.attoSeconds - t2.attoSeconds);
+        }
+    }
+
+    /** Negate the instance.
+     * @return new instance corresponding to opposite time
+     */
+    public SplitTime negate() {
+        // handle special cases
+        if (attoSeconds < 0) {
+            // gather all special cases in one big check to avoid rare multiple tests
+            return isNaN() ? this : (seconds < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY);
+        } else {
+            // the negative number of attoseconds will be normalized back to positive by the constructor
+            return new SplitTime(-seconds, -attoSeconds);
         }
     }
 
@@ -512,6 +539,25 @@ public class SplitTime implements Serializable {
                 return Long.compare(seconds, other.seconds);
             }
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SplitTime)) {
+            return false;
+        }
+        final SplitTime splitTime = (SplitTime) o;
+        return seconds == splitTime.seconds && attoSeconds == splitTime.attoSeconds;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        return Long.hashCode(seconds) ^ Long.hashCode(attoSeconds);
     }
 
 }

@@ -33,10 +33,13 @@ import org.hipparchus.CalculusFieldElement;
 public class GLONASSScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20160331L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Constant offset with respect to UTC (3 hours). */
-    private static final double OFFSET = 10800;
+    private static final SplitTime OFFSET = new SplitTime(SplitTime.HOUR, SplitTime.HOUR, SplitTime.HOUR);
+
+    /** Constant negative offset with respect to UTC (-3 hours). */
+    private static final SplitTime NEGATIVE_OFFSET = OFFSET.negate();
 
     /** UTC time scale. */
     private final UTCScale utc;
@@ -50,22 +53,23 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return OFFSET + utc.offsetFromTAI(date);
+    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+        return SplitTime.add(OFFSET, utc.offsetFromTAI(date));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return utc.offsetFromTAI(date).add(OFFSET);
+        return utc.offsetFromTAI(date).add(OFFSET.toDouble());
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
+    public SplitTime offsetToTAI(final DateComponents date, final TimeComponents time) {
         final DateTimeComponents utcComponents =
-                        new DateTimeComponents(new DateTimeComponents(date, time), -OFFSET);
-        return utc.offsetToTAI(utcComponents.getDate(), utcComponents.getTime()) - OFFSET;
+                        new DateTimeComponents(new DateTimeComponents(date, time), NEGATIVE_OFFSET);
+        return SplitTime.add(utc.offsetToTAI(utcComponents.getDate(), utcComponents.getTime()),
+                             NEGATIVE_OFFSET);
     }
 
     /** {@inheritDoc} */

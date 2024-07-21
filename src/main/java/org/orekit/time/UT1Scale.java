@@ -31,7 +31,7 @@ import org.orekit.frames.EOPHistory;
 public class UT1Scale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+    private static final long serialVersionUID = 20240720L;
 
     /** UTC scale. */
     private final UTCScale utc;
@@ -65,10 +65,10 @@ public class UT1Scale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        final double dtu1        = eopHistory == null ? 0 : eopHistory.getUT1MinusUTC(date);
-        final double utcMinusTai = utc.offsetFromTAI(date);
-        return utcMinusTai + dtu1;
+    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+        final double    dtu1        = eopHistory == null ? 0 : eopHistory.getUT1MinusUTC(date);
+        final SplitTime utcMinusTai = utc.offsetFromTAI(date);
+        return SplitTime.add(utcMinusTai, new SplitTime(dtu1));
     }
 
     /** {@inheritDoc} */

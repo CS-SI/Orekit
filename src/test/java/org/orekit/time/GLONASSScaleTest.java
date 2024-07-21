@@ -55,7 +55,7 @@ public class GLONASSScaleTest {
         Assertions.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
 
         AbsoluteDate d3 = new AbsoluteDate(new DateComponents(2006, 1, 1),
-                                           new TimeComponents(02, 59, 59),
+                                           new TimeComponents(2, 59, 59),
                                            glonass);
         Assertions.assertEquals(new AbsoluteDate(new DateComponents(2005, 12, 31),
                                              new TimeComponents(23, 59, 59),
@@ -73,13 +73,13 @@ public class GLONASSScaleTest {
 
     @Test
     public void testDuringLeap() {
-        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                           new TimeComponents(23, 59, 59),
                                           TimeScalesFactory.getUTC());
-        Assertions.assertEquals("1983-07-01T02:58:59.000", d.shiftedBy(-60).toString(glonass));
+        Assertions.assertEquals("1983-07-01T02:58:59", d.shiftedBy(-60).toString(glonass));
         Assertions.assertEquals(60, glonass.minuteDuration(d.shiftedBy(-60)));
         Assertions.assertFalse(glonass.insideLeap(d.shiftedBy(-60)));
-        Assertions.assertEquals("1983-07-01T02:59:59.000", d.toString(glonass));
+        Assertions.assertEquals("1983-07-01T02:59:59", d.toString(glonass));
         Assertions.assertEquals(61, glonass.minuteDuration(d));
         Assertions.assertFalse(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
@@ -120,9 +120,9 @@ public class GLONASSScaleTest {
     public void testSymmetry() {
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            double dt1 = glonass.offsetFromTAI(date);
+            double dt1 = glonass.offsetFromTAI(date).toDouble();
             DateTimeComponents components = date.getComponents(glonass);
-            double dt2 = glonass.offsetToTAI(components.getDate(), components.getTime());
+            double dt2 = glonass.offsetToTAI(components.getDate(), components.getTime()).toDouble();
             Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }

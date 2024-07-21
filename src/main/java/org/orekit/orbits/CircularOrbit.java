@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.SplitTime;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -1428,7 +1429,13 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20231217L;
+        private static final long serialVersionUID = 20240721L;
+
+        /** Seconds. */
+        private final long seconds;
+
+        /** Attoseconds. */
+        private final long attoseconds;
 
         /** Double values. */
         private final double[] d;
@@ -1444,21 +1451,18 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
          */
         private DTO(final CircularOrbit orbit) {
 
-            final AbsoluteDate date = orbit.getDate();
             positionAngleType = orbit.getCachedPositionAngleType();
 
             // decompose date
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            final double epoch  = FastMath.floor(date.durationFrom(j2000Epoch));
-            final double offset = date.durationFrom(j2000Epoch.shiftedBy(epoch));
+            this.seconds     = orbit.getDate().getSeconds();
+            this.attoseconds = orbit.getDate().getAttoSeconds();
 
             if (orbit.serializePV) {
                 final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
                 if (orbit.hasDerivatives()) {
                     this.d = new double[] {
-                        // date + mu + orbit + derivatives + Cartesian : 24 parameters
-                        epoch, offset, orbit.getMu(),
+                        // mu + orbit + derivatives + Cartesian : 22 parameters
+                        orbit.getMu(),
                         orbit.a, orbit.ex, orbit.ey,
                         orbit.i, orbit.raan, orbit.cachedAlpha,
                         orbit.aDot, orbit.exDot, orbit.eyDot,
@@ -1469,8 +1473,8 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                     };
                 } else {
                     this.d = new double[] {
-                        // date + mu + orbit + Cartesian : 18 parameters
-                        epoch, offset, orbit.getMu(),
+                        // mu + orbit + Cartesian : 16 parameters
+                        orbit.getMu(),
                         orbit.a, orbit.ex, orbit.ey,
                         orbit.i, orbit.raan, orbit.cachedAlpha,
                         pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
@@ -1480,18 +1484,18 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                 }
             } else {
                 if (orbit.hasDerivatives()) {
-                    // date + mu + orbit + derivatives: 15 parameters
+                    // mu + orbit + derivatives: 13 parameters
                     this.d = new double[] {
-                        epoch, offset, orbit.getMu(),
+                        orbit.getMu(),
                         orbit.a, orbit.ex, orbit.ey,
                         orbit.i, orbit.raan, orbit.cachedAlpha,
                         orbit.aDot, orbit.exDot, orbit.eyDot,
                         orbit.iDot, orbit.raanDot, orbit.cachedAlphaDot
                     };
                 } else {
-                    // date + mu + orbit: 9 parameters
+                    // mu + orbit: 7 parameters
                     this.d = new double[] {
-                        epoch, offset, orbit.getMu(),
+                        orbit.getMu(),
                         orbit.a, orbit.ex, orbit.ey,
                         orbit.i, orbit.raan, orbit.cachedAlpha
                     };
@@ -1506,37 +1510,36 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
          * @return replacement {@link CircularOrbit}
          */
         private Object readResolve() {
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             switch (d.length) {
-                case 24 : // date + mu + orbit + derivatives + Cartesian
-                    return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
-                                             d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                                                          new Vector3D(d[15], d[16], d[17]),
-                                                                          new Vector3D(d[18], d[19], d[20]),
-                                                                          new Vector3D(d[21], d[22], d[23])),
+                case 22 : // mu + orbit + derivatives + Cartesian
+                    return new CircularOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                             d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
+                                             new TimeStampedPVCoordinates(new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                                                          new Vector3D(d[13], d[14], d[15]),
+                                                                          new Vector3D(d[16], d[17], d[18]),
+                                                                          new Vector3D(d[19], d[20], d[21])),
                                              positionAngleType, frame,
-                                             d[2]);
-                case 18 : // date + mu + orbit + Cartesian
-                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8],
+                                             d[0]);
+                case 16 : // mu + orbit + Cartesian
+                    return new CircularOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
                                              Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-                                             new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                                                          new Vector3D(d[ 9], d[10], d[11]),
-                                                                          new Vector3D(d[12], d[13], d[14]),
-                                                                          new Vector3D(d[15], d[16], d[17])),
+                                             new TimeStampedPVCoordinates(new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                                                          new Vector3D(d[ 7], d[ 8], d[ 9]),
+                                                                          new Vector3D(d[10], d[11], d[12]),
+                                                                          new Vector3D(d[13], d[14], d[15])),
                                              positionAngleType, frame,
-                                             d[2]);
-                case 15 : // date + mu + orbit + derivatives
-                    return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
-                                             d[ 9], d[10], d[11], d[12], d[13], d[14],
+                                             d[0]);
+                case 13 : // mu + orbit + derivatives
+                    return new CircularOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                             d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
                                              positionAngleType, positionAngleType,
-                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                             d[2]);
-                default : // date + mu + orbit
-                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], positionAngleType, positionAngleType,
-                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                             d[2]);
+                                             frame, new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                             d[0]);
+                default : // mu + orbit
+                    return new CircularOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                             positionAngleType, positionAngleType,
+                                             frame, new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                             d[0]);
 
             }
         }

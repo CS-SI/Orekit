@@ -25,12 +25,12 @@ package org.orekit.time;
 public class BDTScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Package private constructor for the factory.
      */
     BDTScale() {
-        super("BDT", -33);
+        super("BDT", new SplitTime(-33L, 0L));
     }
 
 }
