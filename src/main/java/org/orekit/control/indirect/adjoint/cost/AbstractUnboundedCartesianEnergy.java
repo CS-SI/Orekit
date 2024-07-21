@@ -25,12 +25,21 @@ import java.util.stream.Stream;
 
 /**
  * Abstract class for unbounded energy cost with Cartesian coordinates.
- * The energy cost is the integral over time of the halved Euclidean norm of the thrust vector.
+ * Unbounded qualifies the control vector, whose norm is not constrained. Under such assumption, there is no expected discontinuities in the adjoint dynamics.
  * @author Romain Serra
- * @see CartesianCost
+ * @see AbstractCartesianEnergy
  * @since 12.2
  */
-public abstract class AbstractUnboundedCartesianEnergy implements CartesianCost {
+public abstract class AbstractUnboundedCartesianEnergy extends AbstractCartesianEnergy {
+
+    /**
+     * Constructor.
+     *
+     * @param massFlowRateFactor mass flow rate factor
+     */
+    protected AbstractUnboundedCartesianEnergy(final double massFlowRateFactor) {
+        super(massFlowRateFactor);
+    }
 
     /** {@inheritDoc} */
     @Override

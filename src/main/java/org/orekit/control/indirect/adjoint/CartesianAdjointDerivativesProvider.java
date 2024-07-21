@@ -101,7 +101,7 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         }
 
         // other
-        getCost().updateAdjointDerivatives(adjointVariables, additionalDerivatives);
+        getCost().updateAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
 
         return new CombinedDerivatives(additionalDerivatives, mainDerivativesIncrements);
     }

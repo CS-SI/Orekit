@@ -117,9 +117,9 @@ public class CartesianAdjointJ2Term implements CartesianAdjointEquationTerm {
         final double[] gradientAccelerationX = acceleration.getX().getGradient();
         final double[] gradientAccelerationY = acceleration.getY().getGradient();
         final double[] gradientAccelerationZ = acceleration.getZ().getGradient();
-        contribution[0] = gradientAccelerationX[0] * pvx + gradientAccelerationY[0] * pvy + gradientAccelerationZ[0] * pvz;
-        contribution[1] = gradientAccelerationX[1] * pvx + gradientAccelerationY[1] * pvy + gradientAccelerationZ[1] * pvz;
-        contribution[2] = gradientAccelerationX[2] * pvx + gradientAccelerationY[2] * pvy + gradientAccelerationZ[2] * pvz;
+        contribution[0] = -(gradientAccelerationX[0] * pvx + gradientAccelerationY[0] * pvy + gradientAccelerationZ[0] * pvz);
+        contribution[1] = -(gradientAccelerationX[1] * pvx + gradientAccelerationY[1] * pvy + gradientAccelerationZ[1] * pvz);
+        contribution[2] = -(gradientAccelerationX[2] * pvx + gradientAccelerationY[2] * pvy + gradientAccelerationZ[2] * pvz);
         return contribution;
     }
 
@@ -151,6 +151,9 @@ public class CartesianAdjointJ2Term implements CartesianAdjointEquationTerm {
         contribution[0] = gradientAccelerationX[0].multiply(pvx).add(gradientAccelerationY[0].multiply(pvy)).add(gradientAccelerationZ[0].multiply(pvz));
         contribution[1] = gradientAccelerationX[1].multiply(pvx).add(gradientAccelerationY[1].multiply(pvy)).add(gradientAccelerationZ[1].multiply(pvz));
         contribution[2] = gradientAccelerationX[2].multiply(pvx).add(gradientAccelerationY[2].multiply(pvy)).add(gradientAccelerationZ[2].multiply(pvz));
+        contribution[0] = contribution[0].negate();
+        contribution[1] = contribution[1].negate();
+        contribution[2] = contribution[2].negate();
         return contribution;
     }
 }

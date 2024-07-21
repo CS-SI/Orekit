@@ -100,7 +100,7 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         }
 
         // other
-        getCost().updateAdjointDerivatives(adjointVariables, additionalDerivatives);
+        getCost().updateAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
 
         return new FieldCombinedDerivatives<>(additionalDerivatives, mainDerivativesIncrements);
     }
