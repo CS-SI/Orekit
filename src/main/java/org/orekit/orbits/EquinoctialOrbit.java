@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;

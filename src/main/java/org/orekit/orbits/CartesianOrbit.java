@@ -24,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.SplitTime;

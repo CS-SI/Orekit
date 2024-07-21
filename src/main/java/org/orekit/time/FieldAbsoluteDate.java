@@ -426,7 +426,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
 
         if (newOffset.getReal() >= 1.0) {
             // newOffset is in [1.0, 2.0]
-            this.epoch = since.getSeconds()+ deltaEpoch + 1L;
+            this.epoch = since.getSeconds() + deltaEpoch + 1L;
             this.offset = newOffset.subtract(1.0);
         } else if (newOffset.getReal() < 0) {
             this.epoch = since.getSeconds() + deltaEpoch - 1L;

@@ -85,13 +85,13 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     public static final SplitTime POSITIVE_INFINITY = new SplitTime(Double.POSITIVE_INFINITY);
 
     /** Indicator for NaN time (bits pattern arbitrarily selected to avoid hashcode collisions). */
-    private static final long NAN_INDICATOR      = -(0XFFL);
+    private static final long NAN_INDICATOR      = -0XFFL;
 
     /** Indicator for positive infinite time(bits pattern arbitrarily selected to avoid hashcode collisions). */
-    private static final long POSITIVE_INFINITY_INDICATOR = -(0XFF00L);
+    private static final long POSITIVE_INFINITY_INDICATOR = -0XFF00L;
 
     /** Indicator for negative infinite time(bits pattern arbitrarily selected to avoid hashcode collisions). */
-    private static final long NEGATIVE_INFINITY_INDICATOR = -(0XFF0000L);
+    private static final long NEGATIVE_INFINITY_INDICATOR = -0XFF0000L;
 
     /** Milliseconds in one second. */
     private static final long MILLIS_IN_SECOND = 1000L;

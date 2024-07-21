@@ -77,6 +77,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Offset values for rounding attoseconds.
      * @since 13.0
      */
+    // CHECKSTYLE: stop Indentation check */
     private static final long[] ROUNDING = new long[] {
         500000000000000000L, // round to second
          50000000000000000L, // round to 10⁻¹ second
@@ -98,6 +99,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                          5L, // round to 10⁻¹⁷ second
                          0L, // round to 10⁻¹⁸ second
     };
+    // CHECKSTYLE: resume Indentation check */
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240712L;
@@ -569,8 +571,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         SplitTime second = getSplitSecond();
 
         // adjust limit according to current minute duration
-        SplitTime limit = SplitTime.add(WRAPPING[FastMath.min(fractionDigits, WRAPPING.length - 1)],
-                                        new SplitTime(minuteDuration - 60, 0L));
+        final SplitTime limit = SplitTime.add(WRAPPING[FastMath.min(fractionDigits, WRAPPING.length - 1)],
+                                              new SplitTime(minuteDuration - 60, 0L));
 
         if (second.compareTo(limit) >= 0) {
             // we should wrap around to the next minute
@@ -591,18 +593,17 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     }
 
     /**
-     * Package private method that allows specification of seconds format. Allows access
-     * from {@link DateTimeComponents#toString(int, int)}. Access from outside of rounding
-     * methods would result in invalid times, see #590, #591.
+     * Package private method that allows specification of seconds format. Allows access from
+     * {@link DateTimeComponents#toString(int, int)}. Access from outside of rounding methods would result in invalid
+     * times, see #590, #591.
      *
-     * @param fractionDigits the number of digits to include after the decimal point in
-     *                       the string representation of the seconds. The date and time
-     *                       is first rounded as necessary. {@code fractionDigits} must
-     *                       be greater than or equal to {@code 0}.
+     * @param fractionDigits the number of digits to include after the decimal point in the string representation of the
+     *                       seconds. The date and time is first rounded as necessary. {@code fractionDigits} must be
+     *                       greater than or equal to {@code 0}.
      * @return string without UTC offset.
      * @since 13.0
      */
-    String toStringWithoutUtcOffset(final int minuteDuration, final int fractionDigits) {
+    String toStringWithoutUtcOffset(final int fractionDigits) {
 
         if (splitSecond.isFinite()) {
             // general case for regular times
@@ -643,7 +644,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     public String toStringWithoutUtcOffset() {
         // create formats here as they are not thread safe
         // Format for seconds to prevent rounding up to an invalid time. See #591
-        final String formatted = toStringWithoutUtcOffset(60, 18);
+        final String formatted = toStringWithoutUtcOffset(18);
         int last = formatted.length() - 1;
         while (formatted.charAt(last) == '0') {
             // we want to remove final zeros

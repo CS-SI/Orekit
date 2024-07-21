@@ -410,7 +410,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
                                            final int fractionDigits) {
         final DateTimeComponents rounded = roundIfNeeded(minuteDuration, fractionDigits);
         return rounded.getDate().toString() + 'T' +
-               rounded.getTime().toStringWithoutUtcOffset(minuteDuration, fractionDigits);
+               rounded.getTime().toStringWithoutUtcOffset(fractionDigits);
     }
 
     /**
