@@ -159,7 +159,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final double tauD = signalTimeOfFlight(pva, stationDownlink.getPosition(), downlinkDate, state.getFrame());
+        final double tauD = signalTimeOfFlightAdjustableEmitter(pva, stationDownlink.getPosition(), downlinkDate, state.getFrame());
 
         // Transit state & Transit state (re)computed with gradients
         final double          delta        = downlinkDate.durationFrom(state.getDate());
@@ -210,8 +210,8 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final Gradient tauD = signalTimeOfFlight(pva, stationDownlink.getPosition(),
-                                                 downlinkDate, state.getFrame());
+        final Gradient tauD = signalTimeOfFlightAdjustableEmitter(pva, stationDownlink.getPosition(),
+                                                                  downlinkDate, state.getFrame());
 
         // Transit state & Transit state (re)computed with gradients
         final Gradient        delta        = downlinkDate.durationFrom(state.getDate());

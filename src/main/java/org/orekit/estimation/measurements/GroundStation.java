@@ -288,7 +288,7 @@ public class GroundStation {
      * @since 12.1
      */
     public PressureTemperatureHumidity getPressureTemperatureHumidity(final AbsoluteDate date) {
-        return pthProvider.getWeatherParamerers(getOffsetGeodeticPoint(date), date);
+        return pthProvider.getWeatherParameters(getOffsetGeodeticPoint(date), date);
     }
 
     /** Get the weather parameters.
@@ -298,7 +298,7 @@ public class GroundStation {
      * @since 12.1
      */
     public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getPressureTemperatureHumidity(final FieldAbsoluteDate<T> date) {
-        return pthProvider.getWeatherParamerers(getOffsetGeodeticPoint(date), date);
+        return pthProvider.getWeatherParameters(getOffsetGeodeticPoint(date), date);
     }
 
     /** Get the displacement models.

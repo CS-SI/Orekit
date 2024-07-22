@@ -192,7 +192,7 @@ public class MendesPavlisModel implements TroposphericModel, TroposphereMappingF
      */
     public double[] computeZenithDelay(final GeodeticPoint point, final AbsoluteDate date) {
 
-        final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
+        final PressureTemperatureHumidity pth = pthProvider.getWeatherParameters(point, date);
         final double fsite   = getSiteFunctionValue(point);
 
         // Array for zenith delay
@@ -225,7 +225,7 @@ public class MendesPavlisModel implements TroposphericModel, TroposphereMappingF
     public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point,
                                                                       final FieldAbsoluteDate<T> date) {
 
-        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
+        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParameters(point, date);
 
         final T fsite   = getSiteFunctionValue(point);
 
@@ -265,7 +265,7 @@ public class MendesPavlisModel implements TroposphericModel, TroposphereMappingF
                                    final AbsoluteDate date) {
         final double sinE = FastMath.sin(trackingCoordinates.getElevation());
 
-        final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
+        final PressureTemperatureHumidity pth = pthProvider.getWeatherParameters(point, date);
         final double T2degree = pth.getTemperature() - 273.15;
 
         // Mapping function coefficients
@@ -314,7 +314,7 @@ public class MendesPavlisModel implements TroposphericModel, TroposphereMappingF
 
         final T sinE = FastMath.sin(trackingCoordinates.getElevation());
 
-        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
+        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParameters(point, date);
         final T T2degree = pth.getTemperature().subtract(273.15);
 
         // Mapping function coefficients

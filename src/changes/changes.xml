@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1468">
+            Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
+            added signalTimeOfFlightAdjustableReceiver.
+        </action>
         <action dev="serrof" type="update" issue="1241">
             Use Field date in Sun's position for atmosphere when applicable.
         </action>
@@ -58,6 +62,18 @@
       </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1466">
+        Add unbounded energy cost for Cartesian adjoint dynamics.
+      </action>
+      <action dev="serrof" type="add" issue="1470">
+        Create Jacobian of (Field)KinematicTransform and use it in (Field)StateCovariance.
+      </action>
+      <action dev="serrof" type="add" issue="1469">
+        Add adjoint dynamics from J2 term.
+      </action>
+      <action dev="serrof" type="add" issue="1457">
+        Add indirect control package with Cartesian adjoint dynamics for Keplerian motion.
+      </action>
       <action dev="bryan" type="update" issue="1378">
         PropagatorBuilder are now Cloneable.
       </action>

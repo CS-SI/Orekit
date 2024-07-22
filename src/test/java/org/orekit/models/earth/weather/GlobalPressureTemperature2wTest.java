@@ -67,7 +67,7 @@ public class GlobalPressureTemperature2wTest {
 
         final GeodeticPoint                 location = new GeodeticPoint(latitude, longitude, height);
         final ViennaACoefficients           a        = model.getA(location, date);
-        final PressureTemperatureHumidity   pth      = model.getWeatherParamerers(location, date);
+        final PressureTemperatureHumidity   pth      = model.getWeatherParameters(location, date);
         final AzimuthalGradientCoefficients gradient = model.getGradientCoefficients(location, date);
 
         Assertions.assertEquals(0.0012658,      a.getAh(),                   1.0e-7);
@@ -108,7 +108,7 @@ public class GlobalPressureTemperature2wTest {
 
         final FieldGeodeticPoint<T>                 location = new FieldGeodeticPoint<>(latitude, longitude, height);
         final FieldViennaACoefficients<T>           a        = model.getA(location, date);
-        final FieldPressureTemperatureHumidity<T>   pth      = model.getWeatherParamerers(location, date);
+        final FieldPressureTemperatureHumidity<T>   pth      = model.getWeatherParameters(location, date);
         final FieldAzimuthalGradientCoefficients<T> gradient = model.getGradientCoefficients(location, date);
 
         Assertions.assertEquals(0.0012658,      a.getAh().getReal(),                   1.1e-7);
@@ -148,10 +148,10 @@ public class GlobalPressureTemperature2wTest {
         // Test longitude = 181° and longitude = -179°
         GeodeticPoint               location1 = new GeodeticPoint(latitude, FastMath.toRadians(181.0), height);
         ViennaACoefficients         a1        = model.getA(location1, date);
-        PressureTemperatureHumidity pth1      = model.getWeatherParamerers(location1, date);
+        PressureTemperatureHumidity pth1      = model.getWeatherParameters(location1, date);
         GeodeticPoint               location2 = new GeodeticPoint(latitude, FastMath.toRadians(-179.0), height);
         ViennaACoefficients         a2        = model.getA(location2, date);
-        PressureTemperatureHumidity pth2      = model.getWeatherParamerers(location2, date);
+        PressureTemperatureHumidity pth2      = model.getWeatherParameters(location2, date);
 
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
@@ -162,10 +162,10 @@ public class GlobalPressureTemperature2wTest {
         // Test longitude = 180° and longitude = -180°
         location1 = new GeodeticPoint(latitude, FastMath.toRadians(180.0), height);
         a1        = model.getA(location1, date);
-        pth1      = model.getWeatherParamerers(location1, date);
+        pth1      = model.getWeatherParameters(location1, date);
         location2 = new GeodeticPoint(latitude, FastMath.toRadians(-180.0), height);
         a2        = model.getA(location2, date);
-        pth2      = model.getWeatherParamerers(location2, date);
+        pth2      = model.getWeatherParameters(location2, date);
 
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
@@ -176,10 +176,10 @@ public class GlobalPressureTemperature2wTest {
         // Test longitude = 0° and longitude = 360°
         location1 = new GeodeticPoint(latitude, FastMath.toRadians(0.0), height);
         a1        = model.getA(location1, date);
-        pth1      = model.getWeatherParamerers(location1, date);
+        pth1      = model.getWeatherParameters(location1, date);
         location2 = new GeodeticPoint(latitude, FastMath.toRadians(360.0), height);
         a2        = model.getA(location2, date);
-        pth2      = model.getWeatherParamerers(location2, date);
+        pth2      = model.getWeatherParameters(location2, date);
 
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);

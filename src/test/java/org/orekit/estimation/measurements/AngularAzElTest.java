@@ -35,7 +35,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 class AngularAzElTest {
 
@@ -136,8 +135,8 @@ class AngularAzElTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP,
-                                                                                  datemeas, state.getFrame());
+            final double       meanDelay = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(state.getPVCoordinates(), stationP,
+                                                                                                   datemeas, state.getFrame());
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -239,8 +238,8 @@ class AngularAzElTest {
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP,
-                                                                                     datemeas, stateini.getFrame());
+            final double          meanDelay = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(stateini.getPVCoordinates(), stationP,
+                                                                                                      datemeas, stateini.getFrame());
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
