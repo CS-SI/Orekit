@@ -91,15 +91,16 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         additionalDerivatives[5] = adjointVariables[2].negate();
 
         // Cartesian velocity adjoint
+        final FieldAbsoluteDate<T> date = state.getDate();
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
-            final T[] contribution = equationTerm.getVelocityAdjointContribution(cartesianVariablesAndMass, adjointVariables);
+            final T[] contribution = equationTerm.getVelocityAdjointContribution(date, cartesianVariablesAndMass, adjointVariables);
             additionalDerivatives[0] = additionalDerivatives[0].add(contribution[0]);
             additionalDerivatives[1] = additionalDerivatives[1].add(contribution[1]);
             additionalDerivatives[2] = additionalDerivatives[2].add(contribution[2]);
         }
 
         // other
-        getCost().updateAdjointDerivatives(adjointVariables, additionalDerivatives);
+        getCost().updateAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
 
         return new FieldCombinedDerivatives<>(additionalDerivatives, mainDerivativesIncrements);
     }

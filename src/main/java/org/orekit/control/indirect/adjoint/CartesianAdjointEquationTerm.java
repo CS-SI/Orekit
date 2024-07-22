@@ -17,6 +17,8 @@
 package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Interface to define terms in the adjoint equations for Cartesian coordinates.
@@ -28,19 +30,23 @@ public interface CartesianAdjointEquationTerm {
 
     /**
      * Computes the contribution to the rates of the velocity adjoint variables.
-     * @param stateVariables state variables
+     *
+     * @param date date
+     * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
      * @return contribution to the velocity adjoing derivative vector
      */
-    double[] getVelocityAdjointContribution(double[] stateVariables, double[] adjointVariables);
+    double[] getVelocityAdjointContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables);
 
     /**
      * Computes the contribution to the rates of the velocity adjoint variables.
-     * @param stateVariables state variables
+     *
+     * @param <T>              field type
+     * @param date             date
+     * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
-     * @param <T> field type
      * @return contribution to the velocity adjoing derivative vector
      */
-    <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(T[] stateVariables, T[] adjointVariables);
+    <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables);
 
 }

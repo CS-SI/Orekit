@@ -22,6 +22,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.Arrays;
+
 /**
  * A transform that only includes translation and rotation as well as their respective rates.
  * It is kinematic in the sense that it cannot transform an acceleration vector.
@@ -101,6 +103,61 @@ public interface KinematicTransform extends StaticTransform {
         final Vector3D crossP       = Vector3D.crossProduct(getRotationRate(), transformedP);
         final Vector3D transformedV = getRotation().applyTo(pv.getVelocity().add(getVelocity())).subtract(crossP);
         return new TimeStampedPVCoordinates(pv.getDate(), transformedP, transformedV);
+    }
+
+    /** Compute the Jacobian of the {@link #transformOnlyPV(PVCoordinates)} (PVCoordinates)}
+     * method of the transform.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of Cartesian coordinate i
+     * of the transformed {@link PVCoordinates} with respect to Cartesian coordinate j
+     * of the input {@link PVCoordinates} in method {@link #transformOnlyPV(PVCoordinates)}.
+     * </p>
+     * <p>
+     * This definition implies that if we define position-velocity coordinates
+     * <pre>
+     * PV₁ = transform.transformPVCoordinates(PV₀), then
+     * </pre>
+     * <p> their differentials dPV₁ and dPV₀ will obey the following relation
+     * where J is the matrix computed by this method:
+     * <pre>
+     * dPV₁ = J &times; dPV₀
+     * </pre>
+     *
+     * @return Jacobian matrix
+     */
+    default double[][] getPVJacobian() {
+        final double[][] jacobian = new double[6][6];
+
+        // elementary matrix for rotation
+        final double[][] mData = getRotation().getMatrix();
+
+        // dP1/dP0
+        System.arraycopy(mData[0], 0, jacobian[0], 0, 3);
+        System.arraycopy(mData[1], 0, jacobian[1], 0, 3);
+        System.arraycopy(mData[2], 0, jacobian[2], 0, 3);
+
+        // dP1/dV0
+        Arrays.fill(jacobian[0], 3, 6, 0.0);
+        Arrays.fill(jacobian[1], 3, 6, 0.0);
+        Arrays.fill(jacobian[2], 3, 6, 0.0);
+
+        // dV1/dP0
+        final Vector3D o = getRotationRate();
+        final double ox = o.getX();
+        final double oy = o.getY();
+        final double oz = o.getZ();
+        for (int i = 0; i < 3; ++i) {
+            jacobian[3][i] = -(oy * mData[2][i] - oz * mData[1][i]);
+            jacobian[4][i] = -(oz * mData[0][i] - ox * mData[2][i]);
+            jacobian[5][i] = -(ox * mData[1][i] - oy * mData[0][i]);
+        }
+
+        // dV1/dV0
+        System.arraycopy(mData[0], 0, jacobian[3], 3, 3);
+        System.arraycopy(mData[1], 0, jacobian[4], 3, 3);
+        System.arraycopy(mData[2], 0, jacobian[5], 3, 3);
+
+        return jacobian;
     }
 
     /** Get the first time derivative of the translation.

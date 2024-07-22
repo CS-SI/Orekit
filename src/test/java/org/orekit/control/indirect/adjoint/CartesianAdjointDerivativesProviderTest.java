@@ -1,3 +1,19 @@
+/* Copyright 2022-2024 Romain Serra
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
@@ -19,6 +35,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -143,12 +160,12 @@ class CartesianAdjointDerivativesProviderTest {
     private static class TestAdjointTerm implements CartesianAdjointEquationTerm {
 
         @Override
-        public double[] getVelocityAdjointContribution(double[] stateVariables, double[] adjointVariables) {
+        public double[] getVelocityAdjointContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables) {
             return new double[] { 1., 10., 100. };
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(T[] stateVariables, T[] adjointVariables) {
+        public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables) {
             return null;
         }
     }

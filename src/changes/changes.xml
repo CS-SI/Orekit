@@ -62,6 +62,15 @@
       </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1466">
+        Add unbounded energy cost for Cartesian adjoint dynamics.
+      </action>
+      <action dev="serrof" type="add" issue="1470">
+        Create Jacobian of (Field)KinematicTransform and use it in (Field)StateCovariance.
+      </action>
+      <action dev="serrof" type="add" issue="1469">
+        Add adjoint dynamics from J2 term.
+      </action>
       <action dev="serrof" type="add" issue="1457">
         Add indirect control package with Cartesian adjoint dynamics for Keplerian motion.
       </action>

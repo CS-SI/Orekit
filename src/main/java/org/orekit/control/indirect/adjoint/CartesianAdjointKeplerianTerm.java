@@ -19,6 +19,8 @@ package org.orekit.control.indirect.adjoint;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Class defining the Keplerian contributions in the adjoint equations for Cartesian coordinates.
@@ -53,7 +55,7 @@ public class CartesianAdjointKeplerianTerm implements CartesianAdjointEquationTe
 
     /** {@inheritDoc} */
     @Override
-    public double[] getVelocityAdjointContribution(final double[] stateVariables, final double[] adjointVariables) {
+    public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables, final double[] adjointVariables) {
         final double[] contribution = new double[3];
         final double x = stateVariables[0];
         final double y = stateVariables[1];
@@ -78,7 +80,7 @@ public class CartesianAdjointKeplerianTerm implements CartesianAdjointEquationTe
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(final T[] stateVariables, final T[] adjointVariables) {
+    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(final FieldAbsoluteDate<T> date, final T[] stateVariables, final T[] adjointVariables) {
         final T[] contribution = MathArrays.buildArray(adjointVariables[0].getField(), 3);
         final T x = stateVariables[0];
         final T y = stateVariables[1];
