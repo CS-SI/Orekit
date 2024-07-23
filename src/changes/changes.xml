@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1473">
+        Protected AmbiguityCache against concurrent modifications.
+      </action>
       <action dev="serrof" type="add" issue="1466">
         Add unbounded energy cost for Cartesian adjoint dynamics.
       </action>
