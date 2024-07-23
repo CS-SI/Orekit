@@ -276,7 +276,7 @@ public class OmmParserTest {
         CartesianCovariance covariance = file.getData().getCovarianceBlock();
         Assertions.assertEquals(null, covariance.getReferenceFrame().asFrame());
         Assertions.assertEquals(null, covariance.getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(LOFType.TNW, covariance.getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        Assertions.assertEquals(LOFType.TNW_INERTIAL, covariance.getReferenceFrame().asOrbitRelativeFrame().getLofType());
 
         UserDefined ud = file.getData().getUserDefinedBlock();
         HashMap<String, String> userDefinedParameters = new HashMap<String, String>();

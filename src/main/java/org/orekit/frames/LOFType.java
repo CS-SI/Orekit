@@ -74,7 +74,7 @@ public enum LOFType implements LOF {
         /** {@inheritDoc} */
         @Override
         public OrbitRelativeFrame toOrbitRelativeFrame() {
-            return OrbitRelativeFrame.TNW;
+            return OrbitRelativeFrame.TNW_ROTATING;
         }
 
     },
@@ -156,7 +156,7 @@ public enum LOFType implements LOF {
         /** {@inheritDoc} */
         @Override
         public OrbitRelativeFrame toOrbitRelativeFrame() {
-            return OrbitRelativeFrame.QSW;
+            return OrbitRelativeFrame.RSW_ROTATING;
         }
 
     },
@@ -342,7 +342,7 @@ public enum LOFType implements LOF {
         /** {@inheritDoc} */
         @Override
         public OrbitRelativeFrame toOrbitRelativeFrame() {
-            return OrbitRelativeFrame.LVLH;
+            return OrbitRelativeFrame.LVLH_ROTATING;
         }
 
     },
@@ -431,7 +431,7 @@ public enum LOFType implements LOF {
         /** {@inheritDoc} */
         @Override
         public OrbitRelativeFrame toOrbitRelativeFrame() {
-            return OrbitRelativeFrame.LVLH;
+            return OrbitRelativeFrame.LVLH_ROTATING;
         }
 
     },

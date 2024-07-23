@@ -42,6 +42,9 @@
       <action dev="rafa" type="add" issue="1368">
         Added a parser for gravity models in SHA format.
       </action>
+      <action dev="vincent" type="fix" issue="1099">
+        Fixed OrbitRelativeFrame definition of ambiguous local orbital frames (CCSDS).
+      </action>
     </release>
     <release version="12.1.2" date="13/07/2024"
              description="Version 12.1.2 is a patch release of Orekit.
