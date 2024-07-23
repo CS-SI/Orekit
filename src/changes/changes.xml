@@ -39,6 +39,9 @@
       <action dev="bryan" type="update" issue="1390">
         J2-squared model can now implement their own short period model.
       </action>
+      <action dev="vincent" type="add" issue="1387">
+        Added getter for switches in AttitudesSequence.
+      </action>
       <action dev="rafa" type="add" issue="1368">
         Added a parser for gravity models in SHA format.
       </action>

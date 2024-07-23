@@ -333,8 +333,17 @@ public class AttitudesSequence implements AttitudeProvider {
         return activated.get(date.toAbsoluteDate()).getAttitudeRotation(pvProv, date, frame);
     }
 
+    /**
+     * Gets a deep copy of the switches stored in this instance.
+     *
+     * @return deep copy of the switches stored in this instance
+     */
+    public List<Switch> getSwitches() {
+        return new ArrayList<>(switches);
+    }
+
     /** Switch specification. */
-    private class Switch implements EventDetector, EventHandler {
+    public class Switch implements EventDetector, EventHandler {
 
         /** Event. */
         private final EventDetector event;
@@ -363,23 +372,23 @@ public class AttitudesSequence implements AttitudeProvider {
         /** Propagation direction. */
         private boolean forward;
 
-        /** Simple constructor.
+        /**
+         * Simple constructor.
+         *
          * @param event event
          * @param switchOnIncrease if true, switch is triggered on increasing event
-         * @param switchOnDecrease if true, switch is triggered on decreasing event
-         * otherwise switch is triggered on decreasing event
+         * @param switchOnDecrease if true, switch is triggered on decreasing event otherwise switch is triggered on
+         * decreasing event
          * @param past attitude provider applicable for times in the switch event occurrence past
          * @param future attitude provider applicable for times in the switch event occurrence future
          * @param transitionTime duration of the transition between the past and future attitude laws
-         * @param transitionFilter order at which the transition law time derivatives
-         * should match past and future attitude laws
+         * @param transitionFilter order at which the transition law time derivatives should match past and future attitude
+         * laws
          * @param switchHandler handler to call for notifying when switch occurs (may be null)
          */
-        Switch(final EventDetector event,
-               final boolean switchOnIncrease, final boolean switchOnDecrease,
-               final AttitudeProvider past, final AttitudeProvider future,
-               final double transitionTime, final AngularDerivativesFilter transitionFilter,
-               final SwitchHandler switchHandler) {
+        private Switch(final EventDetector event, final boolean switchOnIncrease, final boolean switchOnDecrease,
+                       final AttitudeProvider past, final AttitudeProvider future, final double transitionTime,
+                       final AngularDerivativesFilter transitionFilter, final SwitchHandler switchHandler) {
             this.event            = event;
             this.switchOnIncrease = switchOnIncrease;
             this.switchOnDecrease = switchOnDecrease;

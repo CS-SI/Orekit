@@ -36,7 +36,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -80,6 +79,9 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AttitudesSequenceTest {
 
@@ -650,7 +652,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.resetActiveProvider(attitudeProvider);
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final PVCoordinatesProvider mockPvCoordinatesProvider = Mockito.mock(PVCoordinatesProvider.class);
+        final PVCoordinatesProvider mockPvCoordinatesProvider = mock(PVCoordinatesProvider.class);
         // WHEN
         final Rotation actualRotation = attitudesSequence.getAttitudeRotation(mockPvCoordinatesProvider, date, frame);
         // THEN
@@ -669,14 +671,42 @@ public class AttitudesSequenceTest {
         attitudesSequence.resetActiveProvider(attitudeProvider);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
-        final FieldPVCoordinatesProvider<Gradient> pvCoordinatesProvider = Mockito.mock(FieldPVCoordinatesProvider.class);
-        final Frame mockFrame = Mockito.mock(Frame.class);
+        final FieldPVCoordinatesProvider<Gradient> pvCoordinatesProvider = mock(FieldPVCoordinatesProvider.class);
+        final Frame mockFrame = mock(Frame.class);
         // WHEN
         final FieldRotation<Gradient> actualRotation = attitudesSequence.getAttitudeRotation(pvCoordinatesProvider, fieldDate, mockFrame);
         // THEN
         final FieldAttitude<Gradient> attitude = attitudesSequence.getAttitude(pvCoordinatesProvider, fieldDate, mockFrame);
         final FieldRotation<Gradient> expectedRotation = attitude.getRotation();
         Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+    }
+
+    /** Issue 1387. */
+    @Test
+    public void testGetSwitches() {
+        // GIVEN
+        final double                   transitionTime             = 1;
+        final AttitudeProvider         mockPastAttitudeProvider   = mock(AttitudeProvider.class);
+        final AttitudeProvider         mockFutureAttitudeProvider = mock(AttitudeProvider.class);
+        final boolean                  switchOnIncrease           = true;
+        final boolean                  switchOnDecrease           = true;
+        final AngularDerivativesFilter filter                     = AngularDerivativesFilter.USE_R;
+        final EventDetector            mockSwitchEvent            = mock(EventDetector.class);
+        when(mockSwitchEvent.getThreshold()).thenReturn(transitionTime - 0.5);
+
+        // Create attitudes sequence
+        final AttitudesSequence attitudesSequence = new AttitudesSequence();
+        attitudesSequence.addSwitchingCondition(mockPastAttitudeProvider, mockFutureAttitudeProvider, mockSwitchEvent,
+                                                switchOnIncrease, switchOnDecrease, transitionTime, filter, null);
+
+
+        // WHEN
+        final List<AttitudesSequence.Switch> switches1 = attitudesSequence.getSwitches();
+        final List<AttitudesSequence.Switch> switches2 = attitudesSequence.getSwitches();
+
+        // THEN
+        Assertions.assertEquals(1, switches1.size());
+        Assertions.assertNotSame(switches1, switches2);
     }
 
     private static class TestAttitudeProvider implements AttitudeProvider {
