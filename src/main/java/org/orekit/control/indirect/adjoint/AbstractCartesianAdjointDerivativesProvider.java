@@ -20,7 +20,7 @@ import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 
 /**
- * Abstract class defining commong things for Cartesian adjoint dynamics between standard and Field versions.
+ * Abstract class defining common things for Cartesian adjoint dynamics between standard and Field versions.
  * @author Romain Serra
  * @see AdditionalDerivativesProvider
  * @see org.orekit.propagation.numerical.NumericalPropagator
@@ -36,11 +36,10 @@ public class AbstractCartesianAdjointDerivativesProvider {
 
     /**
      * Constructor.
-     * @param name name of variables
      * @param cost cost function
      */
-    public AbstractCartesianAdjointDerivativesProvider(final String name, final CartesianCost cost) {
-        this.name = name;
+    public AbstractCartesianAdjointDerivativesProvider(final CartesianCost cost) {
+        this.name = cost.getAdjointName();
         this.cost = cost;
     }
 

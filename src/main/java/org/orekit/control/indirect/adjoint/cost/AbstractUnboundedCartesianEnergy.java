@@ -34,11 +34,12 @@ public abstract class AbstractUnboundedCartesianEnergy extends AbstractCartesian
 
     /**
      * Constructor.
-     *
+     * @param name name
      * @param massFlowRateFactor mass flow rate factor
      */
-    protected AbstractUnboundedCartesianEnergy(final double massFlowRateFactor) {
-        super(massFlowRateFactor);
+    protected AbstractUnboundedCartesianEnergy(final String name,
+                                               final double massFlowRateFactor) {
+        super(name, massFlowRateFactor);
     }
 
     /** {@inheritDoc} */

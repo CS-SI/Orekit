@@ -45,13 +45,12 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
 
     /**
      * Constructor.
-     * @param name name of variables
      * @param cost cost function
      * @param adjointEquationTerms terms contributing to the adjoint equations. If none, then the propagator should have no forces, not even a Newtonian attraction.
      */
-    public CartesianAdjointDerivativesProvider(final String name, final CartesianCost cost,
+    public CartesianAdjointDerivativesProvider(final CartesianCost cost,
                                                final CartesianAdjointEquationTerm... adjointEquationTerms) {
-        super(name, cost);
+        super(cost);
         this.adjointEquationTerms = adjointEquationTerms;
     }
 

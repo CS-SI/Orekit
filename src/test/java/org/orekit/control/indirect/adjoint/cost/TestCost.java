@@ -28,6 +28,11 @@ import java.util.stream.Stream;
 public class TestCost implements CartesianCost {
 
     @Override
+    public String getAdjointName() {
+        return "";
+    }
+
+    @Override
     public double getMassFlowRateFactor() {
         return 10.;
     }
