@@ -82,6 +82,9 @@
       <action dev="bryan" type="update" issue="1442">
         Updated release guide according to new sonatype token generation process.
       </action>
+      <action dev="laura" type="add" issue="1413">
+        Added method getMJD and getJD in AbsoluteDate.
+      </action>
     </release>
     <release version="12.1.1" date="25/06/2024"
              description="Version 12.1.1 is a patch release of Orekit.
