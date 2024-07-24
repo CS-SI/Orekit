@@ -1767,4 +1767,41 @@ public class FieldAbsoluteDateTest {
         }
     }
 
+    @Test
+    public void doTestGetJulianDatesWithBinar64() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestGetJulianDates(field);
+    }
+
+    public <T extends CalculusFieldElement<T>> void doTestGetJulianDates(Field<T> field) {
+        // GIVEN a reference date
+        final T one = field.getOne();
+        final TimeScale utc = TimeScalesFactory.getUTC();
+
+        FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2024, 7, 4, 13, 0, 0, utc);
+        FieldAbsoluteDate<T> referenceFromJDMethod =
+                FieldAbsoluteDate.createJDDate(2460496, one.multiply(0.0416667 * Constants.JULIAN_DAY), utc);
+        FieldAbsoluteDate<T> referenceFromMJDMethod =
+                FieldAbsoluteDate.createMJDDate(60495, one.multiply(0.54166670 * Constants.JULIAN_DAY), utc);
+
+        // WHEN converting it to Julian Date or Modified Julian Date
+        double mjdDateDefaultData = reference.getMJD();
+        double jdDateDefaultData  = reference.getJD();
+        double mjdDate = reference.getMJD(utc);
+        double jdDate  = reference.getJD(utc);
+
+        // THEN
+        // source : Time/Date Converter - HEASARC - NASA
+        Assertions.assertEquals(2460496.0416667, jdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(60495.54166670, mjdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(jdDate, jdDateDefaultData);
+        Assertions.assertEquals(mjdDate, mjdDateDefaultData);
+
+        // Assert that static method are correct when creating date from JD or MJD
+        Assertions.assertTrue(reference.isCloseTo(referenceFromJDMethod, 1e-2));
+        Assertions.assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
+    }
 }
