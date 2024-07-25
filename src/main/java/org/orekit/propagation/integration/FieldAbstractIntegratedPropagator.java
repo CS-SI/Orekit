@@ -456,10 +456,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * <p> Its purpose is mostly to be derived in FieldDSSTPropagator
      *
      * @param state new initial state to consider
-     * @param statePropagationType propagation type of the new state
+     * @param stateType type of the new state (mean or osculating)
      * @since 12.1.3
      */
-    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType statePropagationType) {
+    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
         // Default behavior, do not take propagation type into account
         resetInitialState(state);
     }

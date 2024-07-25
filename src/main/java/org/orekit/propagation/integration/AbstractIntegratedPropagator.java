@@ -451,10 +451,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * <p> Its purpose is mostly to be derived in DSSTPropagator
      *
      * @param state new initial state to consider
-     * @param statePropagationType propagation type of the new state
+     * @param stateType type of the new state (mean or osculating)
      * @since 12.1.3
      */
-    public void resetInitialState(final SpacecraftState state, final PropagationType statePropagationType) {
+    public void resetInitialState(final SpacecraftState state, final PropagationType stateType) {
         // Default behavior, do not take propagation type into account
         resetInitialState(state);
     }

@@ -300,12 +300,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @since 12.1.3
      */
     @Override
-    public void resetInitialState(final SpacecraftState state, final PropagationType statePropagationType) {
+    public void resetInitialState(final SpacecraftState state, final PropagationType stateType) {
         // Reset initial state
         resetInitialState(state);
 
         // Change state of initial osculating, if needed
-        initialIsOsculating = statePropagationType == PropagationType.OSCULATING;
+        initialIsOsculating = stateType == PropagationType.OSCULATING;
     }
 
     /** Set the selected short periodic coefficients that must be stored as additional states.
