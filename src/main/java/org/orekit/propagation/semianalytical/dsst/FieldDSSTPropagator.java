@@ -329,7 +329,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc}.
      *
      * <p>Change parameter {@link #initialIsOsculating()} accordingly
-     * @since 12.2
+     * @since 12.1.3
      */
     @Override
     public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType statePropagationType) {

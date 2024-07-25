@@ -457,7 +457,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      *
      * @param state new initial state to consider
      * @param statePropagationType propagation type of the new state
-     * @since 12.2
+     * @since 12.1.3
      */
     public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType statePropagationType) {
         // Default behavior, do not take propagation type into account

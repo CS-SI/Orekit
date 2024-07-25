@@ -452,7 +452,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      *
      * @param state new initial state to consider
      * @param statePropagationType propagation type of the new state
-     * @since 12.2
+     * @since 12.1.3
      */
     public void resetInitialState(final SpacecraftState state, final PropagationType statePropagationType) {
         // Default behavior, do not take propagation type into account

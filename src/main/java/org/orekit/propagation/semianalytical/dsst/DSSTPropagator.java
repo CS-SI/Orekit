@@ -297,7 +297,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** {@inheritDoc}.
      *
      * <p>Change parameter {@link #initialIsOsculating()} accordingly
-     * @since 12.2
+     * @since 12.1.3
      */
     @Override
     public void resetInitialState(final SpacecraftState state, final PropagationType statePropagationType) {
