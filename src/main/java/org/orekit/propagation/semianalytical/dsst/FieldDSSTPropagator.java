@@ -16,6 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.FieldODEIntegrator;
@@ -57,14 +65,6 @@ import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using the DSST theory.
@@ -309,17 +309,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     public void setInitialState(final FieldSpacecraftState<T> initialState,
                                 final PropagationType stateType) {
-        switch (stateType) {
-            case MEAN:
-                initialIsOsculating = false;
-                break;
-            case OSCULATING:
-                initialIsOsculating = true;
-                break;
-            default:
-                throw new OrekitInternalError(null);
-        }
-        resetInitialState(initialState);
+        resetInitialState(initialState, stateType);
     }
 
     /** Reset the initial state.
@@ -334,6 +324,20 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             setMu(state.getMu());
         }
         super.setStartDate(state.getDate());
+    }
+
+    /** {@inheritDoc}.
+     *
+     * <p>Change parameter {@link #initialIsOsculating()} accordingly
+     * @since 12.1.3
+     */
+    @Override
+    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
+        // Reset initial state
+        resetInitialState(state);
+
+        // Change state of initial osculating, if needed
+        initialIsOsculating = stateType == PropagationType.OSCULATING;
     }
 
     /** Set the selected short periodic coefficients that must be stored as additional states.
