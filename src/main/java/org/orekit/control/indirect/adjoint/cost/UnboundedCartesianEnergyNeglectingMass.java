@@ -33,9 +33,10 @@ public class UnboundedCartesianEnergyNeglectingMass extends AbstractUnboundedCar
 
     /**
      * Constructor.
+     * @param name name
      */
-    public UnboundedCartesianEnergyNeglectingMass() {
-        super(0.);
+    public UnboundedCartesianEnergyNeglectingMass(final String name) {
+        super(name, 0.);
     }
 
     /** {@inheritDoc} */

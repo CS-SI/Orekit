@@ -33,6 +33,11 @@ import org.orekit.propagation.events.EventDetectorsProvider;
  */
 public interface CartesianCost extends EventDetectorsProvider {
 
+    /** Getter for adjoint vector name.
+     * @return adjoint vector name
+     */
+    String getAdjointName();
+
     /** Getter for adjoint vector dimension. Default is 7 (six for Cartesian coordinates and one for mass).
      * @return adjoint dimension
      */

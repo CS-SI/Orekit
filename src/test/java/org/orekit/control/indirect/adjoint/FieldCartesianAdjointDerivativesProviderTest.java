@@ -45,8 +45,8 @@ class FieldCartesianAdjointDerivativesProviderTest {
         // GIVEN
         final String name = "name";
         final double mu = Constants.EGM96_EARTH_MU;
-        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(name,
-                new UnboundedCartesianEnergyNeglectingMass(), new CartesianAdjointKeplerianTerm(mu));
+        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(
+                new UnboundedCartesianEnergyNeglectingMass(name), new CartesianAdjointKeplerianTerm(mu));
         final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
         Mockito.when(mockedState.isOrbitDefined()).thenReturn(true);
         final FieldOrbit mockedOrbit = Mockito.mock(FieldOrbit.class);
@@ -62,8 +62,8 @@ class FieldCartesianAdjointDerivativesProviderTest {
         final String name = "name";
         final double mu = Constants.EGM96_EARTH_MU;
         final Binary64Field field = Binary64Field.getInstance();
-        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(name,
-                new UnboundedCartesianEnergyNeglectingMass(), new CartesianAdjointKeplerianTerm(mu));
+        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(
+                new UnboundedCartesianEnergyNeglectingMass(name), new CartesianAdjointKeplerianTerm(mu));
         final ClassicalRungeKuttaFieldIntegrator<Binary64> integrator = new ClassicalRungeKuttaFieldIntegrator<>(field,
                 Binary64.ONE.multiply(100.));
         final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(field, integrator);
@@ -90,7 +90,7 @@ class FieldCartesianAdjointDerivativesProviderTest {
     void testCombinedDerivatives() {
         // GIVEN
         final CartesianCost cost = new TestCost();
-        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>("",
+        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(
                 cost);
         final FieldSpacecraftState<Binary64> state = getState(derivativesProvider.getName());
         // WHEN

@@ -44,13 +44,12 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
 
     /**
      * Constructor.
-     * @param name name of variables
      * @param cost cost function
      * @param adjointEquationTerms terms contributing to the adjoint equations
      */
-    public FieldCartesianAdjointDerivativesProvider(final String name, final CartesianCost cost,
+    public FieldCartesianAdjointDerivativesProvider(final CartesianCost cost,
                                                     final CartesianAdjointEquationTerm... adjointEquationTerms) {
-        super(name, cost);
+        super(cost);
         this.adjointEquationTerms = adjointEquationTerms;
     }
 
