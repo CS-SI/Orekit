@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1475">
+        Added getOneLetterCode and getTwoLettersCode to TimeSystem.
+      </action>
       <action dev="luc" type="fix" issue="1473">
         Protected AmbiguityCache against concurrent modifications.
       </action>

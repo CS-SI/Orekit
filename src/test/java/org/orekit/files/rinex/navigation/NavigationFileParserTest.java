@@ -1575,7 +1575,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(TimeSystem.BEIDOU,   list.get( 2).getDefinedTimeSystem());
         Assertions.assertEquals(TimeSystem.GPS,      list.get( 2).getReferenceTimeSystem());
         Assertions.assertEquals(TimeSystem.BEIDOU,   list.get( 3).getDefinedTimeSystem());
+        Assertions.assertEquals("BDT",               list.get( 3).getDefinedTimeSystem().getKey());
+        Assertions.assertEquals("BD",                list.get( 3).getDefinedTimeSystem().getTwoLettersCode());
+        Assertions.assertEquals("C",                 list.get( 3).getDefinedTimeSystem().getOneLetterCode());
         Assertions.assertEquals(TimeSystem.UTC,      list.get( 3).getReferenceTimeSystem());
+        Assertions.assertEquals("UTC",               list.get( 3).getReferenceTimeSystem().getKey());
+        Assertions.assertEquals("UT",                list.get( 3).getReferenceTimeSystem().getTwoLettersCode());
+        Assertions.assertNull(                       list.get( 3).getReferenceTimeSystem().getOneLetterCode());
         Assertions.assertEquals(UtcId.NTSC,          list.get( 3).getUtcId());
         Assertions.assertEquals(TimeSystem.GALILEO,  list.get( 4).getDefinedTimeSystem());
         Assertions.assertEquals(TimeSystem.GPS,      list.get( 4).getReferenceTimeSystem());
