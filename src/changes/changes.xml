@@ -30,9 +30,6 @@
       <action dev="maxime" type="fix" issue="1467">
         Fixed checkstyle error in SolarRadiationPressure.
       </action>
-      <action dev="serrof" type="add" issue="1466">
-        Add unbounded energy cost for Cartesian adjoint dynamics.
-      </action>
       <action dev="maxime" type="fix" issue="1461">
         Fixed update of initial state's prop type after a propagation in DSST.
       </action>
