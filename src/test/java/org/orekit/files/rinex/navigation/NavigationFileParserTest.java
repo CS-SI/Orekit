@@ -106,7 +106,7 @@ public class NavigationFileParserTest {
     }
 
     @Test
-    public void testGpsRinex301() throws URISyntaxException, IOException {
+    public void testGpsRinex301() throws IOException {
 
         // Parse file
         final String ex = "/gnss/navigation/Example_GPS_Rinex301.n";
