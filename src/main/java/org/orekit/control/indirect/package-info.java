@@ -25,14 +25,10 @@
  * <br>
  * Some references:
  * <ul>
- * <br>
- * - CERF, Max. Optimization Techniques II: Discrete and Functional Optimization. In : Optimization Techniques II. EDP Sciences, 2023.
- * <br>
- * - TRÉLAT, Emmanuel. Optimal control and applications to aerospace: some results and challenges. Journal of Optimization Theory and Applications, 2012, vol. 154, p. 713-758.
- * <br>
- * - COLASURDO, Guido and CASALINO, Lorenzo. Indirect methods for the optimization of spacecraft trajectories. Modeling and Optimization in Space Engineering, 2013, p. 141-158.
- * <br>
- * - MAREC, Jean-Pierre. Optimal space trajectories. Elsevier, 2012.
+ * <li> CERF, Max. Optimization Techniques II: Discrete and Functional Optimization. In : Optimization Techniques II. EDP Sciences, 2023.
+ * <li> TRÉLAT, Emmanuel. Optimal control and applications to aerospace: some results and challenges. Journal of Optimization Theory and Applications, 2012, vol. 154, p. 713-758.
+ * <li> COLASURDO, Guido and CASALINO, Lorenzo. Indirect methods for the optimization of spacecraft trajectories. Modeling and Optimization in Space Engineering, 2013, p. 141-158.
+ * <li> MAREC, Jean-Pierre. Optimal space trajectories. Elsevier, 2012.
  * </ul>
  *
  * @author Romain Serra
