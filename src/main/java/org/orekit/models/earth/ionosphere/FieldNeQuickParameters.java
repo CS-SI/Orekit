@@ -480,6 +480,7 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         final T[] cf2 = MathArrays.buildArray(azr.getField(), 76);
         int index = 0;
         for (int i = 0; i < cf2.length; i++) {
+            // CHECKSTYLE: stop Indentation check
             cf2[i] = omazr01.multiply(flattenF2[index     ]).add(azr01.multiply(flattenF2[index +  1])).
                  add(omazr01.multiply(flattenF2[index +  2]).add(azr01.multiply(flattenF2[index +  3])).multiply(scT[ 0])).
                  add(omazr01.multiply(flattenF2[index +  4]).add(azr01.multiply(flattenF2[index +  5])).multiply(scT[ 1])).
@@ -493,7 +494,8 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
                  add(omazr01.multiply(flattenF2[index + 20]).add(azr01.multiply(flattenF2[index + 21])).multiply(scT[ 9])).
                  add(omazr01.multiply(flattenF2[index + 22]).add(azr01.multiply(flattenF2[index + 23])).multiply(scT[10])).
                  add(omazr01.multiply(flattenF2[index + 24]).add(azr01.multiply(flattenF2[index + 25])).multiply(scT[11]));
-        index += 26;
+            index += 26;
+            // CHECKSTYLE: resume Indentation check
         }
         return cf2;
     }
