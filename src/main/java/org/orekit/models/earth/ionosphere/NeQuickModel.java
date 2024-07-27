@@ -87,11 +87,11 @@ public class NeQuickModel implements IonosphericModel {
     /** Month used for loading CCIR coefficients. */
     private int month;
 
-    /** F2 coefficients used by the F2 layer. */
-    private double[][][] f2;
+    /** F2 coefficients used by the F2 layer (flatten array for cache efficiency). */
+    private double[] flattenF2;
 
-    /** Fm3 coefficients used by the F2 layer. */
-    private double[][][] fm3;
+    /** Fm3 coefficients used by the F2 layer(flatten array for cache efficiency). */
+    private double[] flattenFm3;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -118,9 +118,9 @@ public class NeQuickModel implements IonosphericModel {
     public NeQuickModel(final double[] alpha,
                         final TimeScale utc) {
         // F2 layer values
-        this.month = 0;
-        this.f2    = null;
-        this.fm3   = null;
+        this.month      = 0;
+        this.flattenF2  = null;
+        this.flattenFm3 = null;
         // Read modip grid
         final MODIPLoader parser = new MODIPLoader();
         parser.loadMODIPGrid();
@@ -309,7 +309,7 @@ public class NeQuickModel implements IonosphericModel {
         // Compute electron density
         double density = 0.0;
         for (int i = 0; i < heightS.length; i++) {
-            final NeQuickParameters parameters = new NeQuickParameters(dateTime, f2, fm3,
+            final NeQuickParameters parameters = new NeQuickParameters(dateTime, flattenF2, flattenFm3,
                                                                        latitudeS[i], longitudeS[i],
                                                                        alpha, stModip);
             density += electronDensity(heightS[i], parameters);
@@ -327,8 +327,8 @@ public class NeQuickModel implements IonosphericModel {
      * @return result of the integration
      */
     private <T extends CalculusFieldElement<T>> T stecIntegration(final Field<T> field,
-                                                              final FieldSegment<T> seg,
-                                                              final DateTimeComponents dateTime) {
+                                                                  final FieldSegment<T> seg,
+                                                                  final DateTimeComponents dateTime) {
         // Integration points
         final T[] heightS    = seg.getHeights();
         final T[] latitudeS  = seg.getLatitudes();
@@ -337,7 +337,7 @@ public class NeQuickModel implements IonosphericModel {
         // Compute electron density
         T density = field.getZero();
         for (int i = 0; i < heightS.length; i++) {
-            final FieldNeQuickParameters<T> parameters = new FieldNeQuickParameters<>(field, dateTime, f2, fm3,
+            final FieldNeQuickParameters<T> parameters = new FieldNeQuickParameters<>(dateTime, flattenF2, flattenFm3,
                                                                                       latitudeS[i], longitudeS[i],
                                                                                       alpha, stModip);
             density = density.add(electronDensity(field, heightS[i], parameters));
@@ -609,7 +609,7 @@ public class NeQuickModel implements IonosphericModel {
         final int currentMonth = date.getMonth();
 
         // Check if date have changed or if f2 and fm3 arrays are null
-        if (currentMonth != month || f2 == null || fm3 == null) {
+        if (currentMonth != month || flattenF2 == null || flattenFm3 == null) {
             this.month = currentMonth;
 
             // Read file
@@ -617,9 +617,30 @@ public class NeQuickModel implements IonosphericModel {
             loader.loadCCIRCoefficients(date);
 
             // Update arrays
-            this.f2 = loader.getF2();
-            this.fm3 = loader.getFm3();
+            this.flattenF2  = flatten(loader.getF2());
+            this.flattenFm3 = flatten(loader.getFm3());
         }
+    }
+
+    /** Flatten a 3-dimensions array.
+     * <p>
+     * This method convert 3-dimensions arrays into 1-dimension arrays
+     * optimized to avoid cache misses when looping over all elements.
+     * </p>
+     * @param original original array a[i][j][k]
+     * @return flatten array, for embedded loops on j (outer), k (intermediate), i (inner)
+     */
+    private double[] flatten(final double[][][] original) {
+        final double[] flatten = new double[original.length * original[0].length * original[0][0].length];
+        int index = 0;
+        for (int j = 0; j < original[0].length; j++) {
+            for (int k = 0; k < original[0][0].length; k++) {
+                for (final double[][] doubles : original) {
+                    flatten[index++] = doubles[j][k];
+                }
+            }
+        }
+        return flatten;
     }
 
     /**
@@ -746,7 +767,7 @@ public class NeQuickModel implements IonosphericModel {
                     line = line.trim();
 
                     // Read grid data
-                    if (line.length() > 0) {
+                    if (!line.isEmpty()) {
                         final String[] modip_line = SEPARATOR.split(line);
                         for (int column = 0; column < modip_line.length; column++) {
                             array[lineNumber - 1][column] = Double.parseDouble(modip_line[column]);
@@ -891,9 +912,9 @@ public class NeQuickModel implements IonosphericModel {
                     line = line.trim();
 
                     // Read grid data
-                    if (line.length() > 0) {
+                    if (!line.isEmpty()) {
                         final String[] ccir_line = SEPARATOR.split(line);
-                        for (int i = 0; i < ccir_line.length; i++) {
+                        for (final String field : ccir_line) {
 
                             if (index < NUMBER_F2_COEFFICIENTS) {
                                 // Parse F2 coefficients
@@ -905,7 +926,7 @@ public class NeQuickModel implements IonosphericModel {
                                     currentColumnF2 = 0;
                                     currentRowF2++;
                                 }
-                                f2Temp[currentRowF2][currentColumnF2][currentDepthF2++] = Double.parseDouble(ccir_line[i]);
+                                f2Temp[currentRowF2][currentColumnF2][currentDepthF2++] = Double.parseDouble(field);
                                 index++;
                             } else {
                                 // Parse Fm3 coefficients
@@ -917,7 +938,7 @@ public class NeQuickModel implements IonosphericModel {
                                     currentColumnFm3 = 0;
                                     currentRowFm3++;
                                 }
-                                fm3Temp[currentRowFm3][currentColumnFm3][currentDepthFm3++] = Double.parseDouble(ccir_line[i]);
+                                fm3Temp[currentRowFm3][currentColumnFm3][currentDepthFm3++] = Double.parseDouble(field);
                                 index++;
                             }
 
@@ -1368,7 +1389,7 @@ public class NeQuickModel implements IonosphericModel {
             this.deltaN = (s2 - s1) / n;
 
             // Segments
-            final double[] s = getSegments(n, s1, s2);
+            final double[] s = getSegments(n, s1);
 
             // Useful parameters
             final double rp = ray.getRadius();
@@ -1404,10 +1425,9 @@ public class NeQuickModel implements IonosphericModel {
          * Computes the distance of a point from the ray-perigee.
          * @param n number of points used for the integration
          * @param s1 lower boundary
-         * @param s2 upper boundary
          * @return the distance of a point from the ray-perigee in km
          */
-        private double[] getSegments(final int n, final double s1, final double s2) {
+        private double[] getSegments(final int n, final double s1) {
             // Eq. 196
             final double g = 0.5773502691896 * deltaN;
             // Eq. 197
@@ -1487,7 +1507,7 @@ public class NeQuickModel implements IonosphericModel {
             this.deltaN = s2.subtract(s1).divide(n);
 
             // Segments
-            final T[] s = getSegments(field, n, s1, s2);
+            final T[] s = getSegments(field, n, s1);
 
             // Useful parameters
             final T rp = ray.getRadius();
@@ -1524,10 +1544,9 @@ public class NeQuickModel implements IonosphericModel {
          * @param field field of the elements
          * @param n number of points used for the integration
          * @param s1 lower boundary
-         * @param s2 upper boundary
          * @return the distance of a point from the ray-perigee in km
          */
-        private T[] getSegments(final Field<T> field, final int n, final T s1, final T s2) {
+        private T[] getSegments(final Field<T> field, final int n, final T s1) {
             // Eq. 196
             final T g = deltaN.multiply(0.5773502691896);
             // Eq. 197
