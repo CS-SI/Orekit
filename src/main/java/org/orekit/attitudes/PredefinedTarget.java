@@ -60,10 +60,10 @@ public enum PredefinedTarget implements TargetProvider
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                           final OneAxisEllipsoid earth,
-                           final TimeStampedFieldPVCoordinates<T> pv,
-                           final Frame frame) {
+            getTargetDirection(final ExtendedPVCoordinatesProvider sun,
+                               final OneAxisEllipsoid earth,
+                               final TimeStampedFieldPVCoordinates<T> pv,
+                               final Frame frame) {
             return new FieldPVCoordinates<>(pv, sun.getPVCoordinates(pv.getDate(), frame)).
                    toUnivariateDerivative2Vector().
                    normalize();
@@ -86,10 +86,10 @@ public enum PredefinedTarget implements TargetProvider
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                           final OneAxisEllipsoid earth,
-                           final TimeStampedFieldPVCoordinates<T> pv,
-                           final Frame frame) {
+            getTargetDirection(final ExtendedPVCoordinatesProvider sun,
+                               final OneAxisEllipsoid earth,
+                               final TimeStampedFieldPVCoordinates<T> pv,
+                               final Frame frame) {
             return pv.toUnivariateDerivative2Vector().negate().normalize();
         }
 
@@ -112,10 +112,10 @@ public enum PredefinedTarget implements TargetProvider
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                           final OneAxisEllipsoid earth,
-                           final TimeStampedFieldPVCoordinates<T> pv,
-                           final Frame frame) {
+            getTargetDirection(final ExtendedPVCoordinatesProvider sun,
+                               final OneAxisEllipsoid earth,
+                               final TimeStampedFieldPVCoordinates<T> pv,
+                               final Frame frame) {
             final FieldTransform<FieldUnivariateDerivative2<T>> inert2Earth = inert2Earth(earth, pv.getDate(), frame);
             final FieldGeodeticPoint<FieldUnivariateDerivative2<T>> gp = toGeodeticPoint(earth, pv, inert2Earth);
             return inert2Earth.getInverse().transformVector(gp.getNadir());
@@ -140,10 +140,10 @@ public enum PredefinedTarget implements TargetProvider
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                           final OneAxisEllipsoid earth,
-                           final TimeStampedFieldPVCoordinates<T> pv,
-                           final Frame frame) {
+            getTargetDirection(final ExtendedPVCoordinatesProvider sun,
+                               final OneAxisEllipsoid earth,
+                               final TimeStampedFieldPVCoordinates<T> pv,
+                               final Frame frame) {
             final FieldTransform<FieldUnivariateDerivative2<T>> inert2Earth = inert2Earth(earth, pv.getDate(), frame);
             final FieldGeodeticPoint<FieldUnivariateDerivative2<T>> gp = toGeodeticPoint(earth, pv, inert2Earth);
             return inert2Earth.getInverse().transformVector(gp.getNorth());
@@ -168,10 +168,10 @@ public enum PredefinedTarget implements TargetProvider
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                           final OneAxisEllipsoid earth,
-                           final TimeStampedFieldPVCoordinates<T> pv,
-                           final Frame frame) {
+            getTargetDirection(final ExtendedPVCoordinatesProvider sun,
+                               final OneAxisEllipsoid earth,
+                               final TimeStampedFieldPVCoordinates<T> pv,
+                               final Frame frame) {
             final FieldTransform<FieldUnivariateDerivative2<T>> inert2Earth = inert2Earth(earth, pv.getDate(), frame);
             final FieldGeodeticPoint<FieldUnivariateDerivative2<T>> gp = toGeodeticPoint(earth, pv, inert2Earth);
             return inert2Earth.getInverse().transformVector(gp.getEast());
@@ -194,10 +194,10 @@ public enum PredefinedTarget implements TargetProvider
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                           final OneAxisEllipsoid earth,
-                           final TimeStampedFieldPVCoordinates<T> pv,
-                           final Frame frame) {
+            getTargetDirection(final ExtendedPVCoordinatesProvider sun,
+                               final OneAxisEllipsoid earth,
+                               final TimeStampedFieldPVCoordinates<T> pv,
+                               final Frame frame) {
             return pv.toUnivariateDerivative2PV().getVelocity().normalize();
         }
 
@@ -218,10 +218,10 @@ public enum PredefinedTarget implements TargetProvider
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                           final OneAxisEllipsoid earth,
-                           final TimeStampedFieldPVCoordinates<T> pv,
-                           final Frame frame) {
+            getTargetDirection(final ExtendedPVCoordinatesProvider sun,
+                               final OneAxisEllipsoid earth,
+                               final TimeStampedFieldPVCoordinates<T> pv,
+                               final Frame frame) {
             return pv.toUnivariateDerivative2PV().getMomentum().normalize();
         }
 
@@ -263,7 +263,7 @@ public enum PredefinedTarget implements TargetProvider
      * @return geodetic point with derivatives
      */
     private static <T extends CalculusFieldElement<T>> FieldTransform<FieldUnivariateDerivative2<T>>
-    inert2Earth(final OneAxisEllipsoid earth, final FieldAbsoluteDate<T> date, final Frame frame) {
+        inert2Earth(final OneAxisEllipsoid earth, final FieldAbsoluteDate<T> date, final Frame frame) {
         final Field<T> field = date.getField();
         final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> dateU2 =
             new FieldAbsoluteDate<>(FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field),
@@ -280,9 +280,9 @@ public enum PredefinedTarget implements TargetProvider
      * @return geodetic point with derivatives
      */
     private static <T extends CalculusFieldElement<T>> FieldGeodeticPoint<FieldUnivariateDerivative2<T>>
-    toGeodeticPoint(final OneAxisEllipsoid earth,
-                    final TimeStampedFieldPVCoordinates<T> pv,
-                    final FieldTransform<FieldUnivariateDerivative2<T>> inert2Earth) {
+        toGeodeticPoint(final OneAxisEllipsoid earth,
+                        final TimeStampedFieldPVCoordinates<T> pv,
+                        final FieldTransform<FieldUnivariateDerivative2<T>> inert2Earth) {
         return earth.transform(inert2Earth.transformPosition(pv.toUnivariateDerivative2Vector()),
                                earth.getBodyFrame(), inert2Earth.getFieldDate());
     }

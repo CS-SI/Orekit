@@ -150,6 +150,7 @@ public class AlignedAndConstrained implements AttitudeProvider
         private final FieldVector3D<FieldUnivariateDerivative2<T>> secondarySat;
 
         /** Simple constructor.
+         * @param field field to which the elements belong
          * @param primarySat satellite vector for primary target
          * @param secondarySat satellite vector for primary target
          */

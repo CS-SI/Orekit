@@ -50,7 +50,7 @@ public class GroundPointTarget implements TargetProvider
     private final transient Map<Field<? extends CalculusFieldElement<?>>, FieldPVCoordinates<?>>
         cachedLocations;
 
-    /** Simple constructor
+    /** Simple constructor.
      * @param location location of the target in Earth frame
      */
     public GroundPointTarget(final Vector3D location)
