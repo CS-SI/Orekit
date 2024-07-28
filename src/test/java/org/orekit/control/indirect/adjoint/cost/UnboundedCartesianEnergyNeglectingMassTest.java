@@ -29,7 +29,7 @@ class UnboundedCartesianEnergyNeglectingMassTest {
     @Test
     void testGetMassFlowRateFactor() {
         // GIVEN
-        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass();
+        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass("");
         // WHEN
         final double actualFlowRate = energyNeglectingMass.getMassFlowRateFactor();
         // THEN
@@ -39,7 +39,7 @@ class UnboundedCartesianEnergyNeglectingMassTest {
     @Test
     void testGetAdjointDimension() {
         // GIVEN
-        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass();
+        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass("");
         // WHEN
         final int actualDimension = energyNeglectingMass.getAdjointDimension();
         // THEN
@@ -49,7 +49,7 @@ class UnboundedCartesianEnergyNeglectingMassTest {
     @Test
     void testGetThrustVector() {
         // GIVEN
-        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass();
+        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass("");
         final Binary64[] adjoint = MathArrays.buildArray(Binary64Field.getInstance(), 6);
         adjoint[3] = Binary64.ONE;
         // WHEN

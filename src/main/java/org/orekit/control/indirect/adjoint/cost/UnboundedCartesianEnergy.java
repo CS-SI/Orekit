@@ -23,7 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 /**
  * Class for unbounded energy cost with Cartesian coordinates.
  * Here, the control vector is chosen as the acceleration given by thrusting, expressed in the propagation frame.
- * This leads to the optimal thrust being in the same direction than the adjoint velocity.
+ * This leads to the optimal thrust being in the same direction as the adjoint velocity.
  * @author Romain Serra
  * @see UnboundedCartesianEnergyNeglectingMass
  * @since 12.2
@@ -32,10 +32,12 @@ public class UnboundedCartesianEnergy extends AbstractUnboundedCartesianEnergy {
 
     /**
      * Constructor.
-     * @param massFlowRateFactor mass flow rate factor (must be non-negative)
+     * @param name name
+     * @param massFlowRateFactor mass flow rate factor
      */
-    public UnboundedCartesianEnergy(final double massFlowRateFactor) {
-        super(massFlowRateFactor);
+    public UnboundedCartesianEnergy(final String name,
+                                    final double massFlowRateFactor) {
+        super(name, massFlowRateFactor);
     }
 
     /** {@inheritDoc} */

@@ -30,15 +30,29 @@ import org.hipparchus.util.FastMath;
  */
 public abstract class AbstractCartesianEnergy implements CartesianCost {
 
-    /** Mass flow rate factor. */
+    /** Name of adjoint vector. */
+    private final String name;
+
+    /** Mass flow rate factor (always positive). */
     private final double massFlowRateFactor;
 
     /**
      * Constructor.
+     * @param name name
      * @param massFlowRateFactor mass flow rate factor
      */
-    protected AbstractCartesianEnergy(final double massFlowRateFactor) {
-        this.massFlowRateFactor = massFlowRateFactor;
+    protected AbstractCartesianEnergy(final String name, final double massFlowRateFactor) {
+        this.name = name;
+        this.massFlowRateFactor = FastMath.abs(massFlowRateFactor);
+    }
+
+    /**
+     * Getter for adjoint vector name.
+     * @return name
+     */
+    @Override
+    public String getAdjointName() {
+        return name;
     }
 
     /** {@inheritDoc} */

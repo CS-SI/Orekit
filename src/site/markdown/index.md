@@ -196,6 +196,7 @@
         * central body related attitude (nadir pointing, center pointing, target pointing, yaw compensation, yaw-steering),
         * orbit referenced attitudes (LOF aligned, offset on all axes),
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
+        * attitude aligned with one target and constrained by another target
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
         * torque-free for general (non-symmetrical) body

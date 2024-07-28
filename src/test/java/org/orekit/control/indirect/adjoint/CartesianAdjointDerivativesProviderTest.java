@@ -46,8 +46,8 @@ class CartesianAdjointDerivativesProviderTest {
         // GIVEN
         final String name = "name";
         final double mu = Constants.EGM96_EARTH_MU;
-        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(name,
-                new UnboundedCartesianEnergyNeglectingMass(), new CartesianAdjointKeplerianTerm(mu));
+        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(
+                new UnboundedCartesianEnergyNeglectingMass(name), new CartesianAdjointKeplerianTerm(mu));
         final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
         Mockito.when(mockedState.isOrbitDefined()).thenReturn(true);
         final Orbit mockedOrbit = Mockito.mock(Orbit.class);
@@ -65,8 +65,8 @@ class CartesianAdjointDerivativesProviderTest {
         // GIVEN
         final String name = "name";
         final double mu = Constants.EGM96_EARTH_MU;
-        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(name,
-                new UnboundedCartesianEnergyNeglectingMass(), new CartesianAdjointKeplerianTerm(mu));
+        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(
+                new UnboundedCartesianEnergyNeglectingMass(name), new CartesianAdjointKeplerianTerm(mu));
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100.));
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(7e6, 1e3, 0), new Vector3D(10., 7e3, -200)),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, mu);
@@ -87,22 +87,10 @@ class CartesianAdjointDerivativesProviderTest {
     }
 
     @Test
-    void testGetName() {
-        // GIVEN
-        final String expectedName = "1";
-        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(expectedName,
-                Mockito.mock(CartesianCost.class));
-        // WHEN
-        final String actualName = derivativesProvider.getName();
-        // THEN
-        Assertions.assertEquals(expectedName, actualName);
-    }
-
-    @Test
     void testGetCost() {
         // GIVEN
         final CartesianCost expectedCost = Mockito.mock(CartesianCost.class);
-        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider("", expectedCost);
+        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(expectedCost);
         // WHEN
         final CartesianCost actualCost = derivativesProvider.getCost();
         // THEN
@@ -113,8 +101,7 @@ class CartesianAdjointDerivativesProviderTest {
     void testCombinedDerivatives() {
         // GIVEN
         final CartesianCost cost = new TestCost();
-        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider("",
-                cost);
+        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(cost);
         final SpacecraftState state = getState(derivativesProvider.getName());
         // WHEN
         final CombinedDerivatives combinedDerivatives = derivativesProvider.combinedDerivatives(state);
@@ -135,8 +122,7 @@ class CartesianAdjointDerivativesProviderTest {
         // GIVEN
         final CartesianCost cost = new TestCost();
         final CartesianAdjointEquationTerm equationTerm = new TestAdjointTerm();
-        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider("",
-                cost, equationTerm);
+        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(cost, equationTerm);
         final SpacecraftState state = getState(derivativesProvider.getName());
         // WHEN
         final CombinedDerivatives combinedDerivatives = derivativesProvider.combinedDerivatives(state);
