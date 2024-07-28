@@ -74,10 +74,10 @@ public class GroundPointTarget implements TargetProvider
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-    getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                       final OneAxisEllipsoid earth,
-                       final TimeStampedFieldPVCoordinates<T> pv,
-                       final Frame frame) {
+        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
+                           final OneAxisEllipsoid earth,
+                           final TimeStampedFieldPVCoordinates<T> pv,
+                           final Frame frame) {
         final Field<T> field = pv.getDate().getField();
 
         // get the target location for specified field
