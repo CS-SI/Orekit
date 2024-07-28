@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1478">
+        Added AlignedAndConstrained attitude mode.
+      </action>
       <action dev="luc" type="fix" issue="1475">
         Added getOneLetterCode and getTwoLettersCode to TimeSystem.
       </action>
