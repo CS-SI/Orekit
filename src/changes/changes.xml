@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1481">
+        Add non-orbit build in (Field)IntegratorBuilder.
+      </action>
       <action dev="luc" type="fix" issue="1478">
         Added AlignedAndConstrained attitude mode.
       </action>

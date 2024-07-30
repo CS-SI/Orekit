@@ -19,9 +19,12 @@ package org.orekit.propagation.conversion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**
  * This interface is the top-level abstraction to build first order integrators for propagators conversion.
@@ -56,4 +59,18 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
      */
     AbstractFieldIntegrator<T> buildIntegrator(FieldOrbit<T> orbit,
                                                OrbitType orbitType);
+
+    /**
+     * Build a first order integrator. Non-orbit version.
+     *
+     * @param fieldAbsolutePVCoordinates absolute position-velocity
+     *
+     * @return a first order integrator ready to use
+     */
+    default AbstractFieldIntegrator<T> buildIntegrator(final FieldAbsolutePVCoordinates<T> fieldAbsolutePVCoordinates) {
+        final TimeStampedFieldPVCoordinates<T> fieldPVCoordinates = fieldAbsolutePVCoordinates.getPVCoordinates();
+        final FieldCartesianOrbit<T> fieldOrbit = new FieldCartesianOrbit<>(fieldPVCoordinates, fieldAbsolutePVCoordinates.getFrame(),
+                fieldAbsolutePVCoordinates.getDate().getField().getOne());
+        return buildIntegrator(fieldOrbit, OrbitType.CARTESIAN);
+    }
 }
