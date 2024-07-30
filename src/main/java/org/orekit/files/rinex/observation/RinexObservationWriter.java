@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIOException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
@@ -282,7 +283,7 @@ public class RinexObservationWriter implements AutoCloseable {
 
         // OBSERVER / AGENCY
         outputField(header.getObserverName(), 20, true);
-        outputField(header.getAgencyName(),   40, true);
+        outputField(header.getAgencyName(),   60, true);
         finishHeaderLine(RinexLabels.OBSERVER_AGENCY);
 
         // REC # / TYPE / VERS
@@ -883,6 +884,9 @@ public class RinexObservationWriter implements AutoCloseable {
      */
     private void outputField(final String field, final int next, final boolean leftJustified) throws IOException {
         final int padding = next - (field == null ? 0 : field.length()) - column;
+        if (padding < 0) {
+            throw new OrekitException(OrekitMessages.FIELD_TOO_LONG, field, next - column);
+        }
         if (leftJustified && field != null) {
             output.append(field);
         }
