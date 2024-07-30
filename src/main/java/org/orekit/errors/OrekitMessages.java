@@ -17,11 +17,8 @@
 package org.orekit.errors;
 
 import org.hipparchus.exception.Localizable;
-import org.hipparchus.exception.UTF8Control;
 
 import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 /**
  * Enumeration for localized messages formats.
@@ -957,23 +954,7 @@ public enum OrekitMessages implements Localizable {
 
     /** {@inheritDoc} */
     public String getLocalizedString(final Locale locale) {
-        try {
-            final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale, new UTF8Control());
-            if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
-                final String translated = bundle.getString(name());
-                if (!(translated.isEmpty() || translated.toLowerCase().contains("missing translation"))) {
-                    // the value of the resource is the translated format
-                    return translated;
-                }
-            }
-
-        } catch (MissingResourceException mre) {
-            // do nothing here
-        }
-
-        // either the locale is not supported or the resource is not translated or
-        // it is unknown: don't translate and fall back to using the source format
-        return sourceFormat;
-
+        return getLocalizedString(RESOURCE_BASE_NAME, name(), locale);
     }
+
 }
