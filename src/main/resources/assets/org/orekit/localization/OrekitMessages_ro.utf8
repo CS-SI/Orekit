@@ -887,3 +887,6 @@ WALKER_INCONSISTENT_PLANES = numărul de planuri {0} este neconsecvent cu număr
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
 INFINITE_NRLMSISE00_DENSITY = valori infinite au fost detectate în timpul calculului densității atmosferice pentru modelul NRLMSISE00
+
+# field "{0}" is too long, maximum length is {1} characters
+FIELD_TOO_LONG = <MISSING TRANSLATION>
