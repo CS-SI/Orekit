@@ -76,7 +76,9 @@ public class RinexObservationWriterTest {
     @DefaultDataContext
     @Test
     public void testTooLongAgency() throws IOException {
-        final RinexObservation robs = load("rinex/bbbb0000.00o");
+        final RinexObservation robs = load("rinex/bbbb0000.00o",
+                                           PredefinedObservationType::valueOf,
+                                           DataContext.getDefault().getTimeScales());
         robs.getHeader().setAgencyName("much too long agency name exceeding 40 characters");
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
@@ -91,6 +93,7 @@ public class RinexObservationWriterTest {
         }
     }
 
+    @DefaultDataContext
     @Test
     public void testNoWriteHeader() throws IOException {
         final RinexObservation robs = load("rinex/aiub0000.00o",
