@@ -17,10 +17,8 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 
 /**
@@ -43,9 +41,6 @@ public abstract class AbstractFieldIntegratorBuilder<T extends CalculusFieldElem
     public AbstractFieldIntegratorBuilder() {
         // nothing to do
     }
-
-    /** {@inheritDoc} */
-    public abstract AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType);
 
     /** {@inheritDoc} */
     public AbstractFieldIntegrator<T> buildIntegrator(final FieldOrbit<T> orbit, final OrbitType orbitType) {
