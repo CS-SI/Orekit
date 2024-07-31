@@ -95,19 +95,19 @@ public class UTCScale implements TimeScale {
             //  0.0012960 s/d → 15 ns/s → 15000000000 as/s
             //  0.0011232 s/d → 13 ns/s → 13000000000 as/s
             //  0.0025920 s/d → 30 ns/s → 30000000000 as/s
-            offsetModels.add( 0, new OffsetModel(new DateComponents(1961,  1, 1), 37300, 1.4228180, 15000000000L));
-            offsetModels.add( 1, new OffsetModel(new DateComponents(1961,  8, 1), 37300, 1.3728180, 15000000000L));
-            offsetModels.add( 2, new OffsetModel(new DateComponents(1962,  1, 1), 37665, 1.8458580, 13000000000L));
-            offsetModels.add( 3, new OffsetModel(new DateComponents(1963, 11, 1), 37665, 1.9458580, 13000000000L));
-            offsetModels.add( 4, new OffsetModel(new DateComponents(1964,  1, 1), 38761, 3.2401300, 15000000000L));
-            offsetModels.add( 5, new OffsetModel(new DateComponents(1964,  4, 1), 38761, 3.3401300, 15000000000L));
-            offsetModels.add( 6, new OffsetModel(new DateComponents(1964,  9, 1), 38761, 3.4401300, 15000000000L));
-            offsetModels.add( 7, new OffsetModel(new DateComponents(1965,  1, 1), 38761, 3.5401300, 15000000000L));
-            offsetModels.add( 8, new OffsetModel(new DateComponents(1965,  3, 1), 38761, 3.6401300, 15000000000L));
-            offsetModels.add( 9, new OffsetModel(new DateComponents(1965,  7, 1), 38761, 3.7401300, 15000000000L));
-            offsetModels.add(10, new OffsetModel(new DateComponents(1965,  9, 1), 38761, 3.8401300, 15000000000L));
-            offsetModels.add(11, new OffsetModel(new DateComponents(1966,  1, 1), 39126, 4.3131700, 30000000000L));
-            offsetModels.add(12, new OffsetModel(new DateComponents(1968,  2, 1), 39126, 4.2131700, 30000000000L));
+            offsetModels.add( 0, new OffsetModel(new DateComponents(1961,  1, 1), 37300, SplitTime.parse("1.4228180"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add( 1, new OffsetModel(new DateComponents(1961,  8, 1), 37300, SplitTime.parse("1.3728180"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add( 2, new OffsetModel(new DateComponents(1962,  1, 1), 37665, SplitTime.parse("1.8458580"), SplitTime.parse("0.0011232").getAttoSeconds()));
+            offsetModels.add( 3, new OffsetModel(new DateComponents(1963, 11, 1), 37665, SplitTime.parse("1.9458580"), SplitTime.parse("0.0011232").getAttoSeconds()));
+            offsetModels.add( 4, new OffsetModel(new DateComponents(1964,  1, 1), 38761, SplitTime.parse("3.2401300"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add( 5, new OffsetModel(new DateComponents(1964,  4, 1), 38761, SplitTime.parse("3.3401300"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add( 6, new OffsetModel(new DateComponents(1964,  9, 1), 38761, SplitTime.parse("3.4401300"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add( 7, new OffsetModel(new DateComponents(1965,  1, 1), 38761, SplitTime.parse("3.5401300"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add( 8, new OffsetModel(new DateComponents(1965,  3, 1), 38761, SplitTime.parse("3.6401300"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add( 9, new OffsetModel(new DateComponents(1965,  7, 1), 38761, SplitTime.parse("3.7401300"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add(10, new OffsetModel(new DateComponents(1965,  9, 1), 38761, SplitTime.parse("3.8401300"), SplitTime.parse("0.001296").getAttoSeconds()));
+            offsetModels.add(11, new OffsetModel(new DateComponents(1966,  1, 1), 39126, SplitTime.parse("4.3131700"), SplitTime.parse("0.002592").getAttoSeconds()));
+            offsetModels.add(12, new OffsetModel(new DateComponents(1968,  2, 1), 39126, SplitTime.parse("4.2131700"), SplitTime.parse("0.002592").getAttoSeconds()));
         }
 
         // create cache
@@ -121,7 +121,7 @@ public class UTCScale implements TimeScale {
             final OffsetModel    o      = offsetModels.get(i);
             final DateComponents date   = o.getStart();
             final int            mjdRef = o.getMJDRef();
-            final SplitTime      offset = new SplitTime(o.getOffset());
+            final SplitTime      offset = o.getOffset();
             final long           slope  = o.getSlope();
 
             // start of the leap

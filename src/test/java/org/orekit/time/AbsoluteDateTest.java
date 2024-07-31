@@ -1013,8 +1013,8 @@ public class AbsoluteDateTest {
         Assertions.assertEquals(  23,        t.getComponents(utc).getTime().getHour());
         Assertions.assertEquals(  59,        t.getComponents(utc).getTime().getMinute());
         Assertions.assertEquals(  59.999999, t.getComponents(utc).getTime().getSecond(), 1.0e-6);
-        Assertions.assertEquals("2015-06-30T23:59:59.999999", t.toString(utc));
-        Assertions.assertEquals("2015-07-01T02:59:59.999999", t.toString(TimeScalesFactory.getGLONASS()));
+        Assertions.assertEquals("2015-06-30T23:59:59.999999", t.toStringWithoutUtcOffset(utc, 6));
+        Assertions.assertEquals("2015-07-01T02:59:59.999999", t.toStringWithoutUtcOffset(TimeScalesFactory.getGLONASS(), 6));
     }
 
     @Test

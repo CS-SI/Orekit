@@ -933,7 +933,10 @@ public enum OrekitMessages implements Localizable {
     INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model"),
 
     /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
-    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned");
+    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned"),
+
+    /** CANNOT_PARSE_DATA. */
+    CANNOT_PARSE_DATA("cannot parse data {0}");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

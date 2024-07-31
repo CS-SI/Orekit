@@ -18,7 +18,9 @@ package org.orekit.time;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
@@ -107,6 +109,33 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
 
     /** Attoseconds in one half-second. */
     private static final long ATTOS_IN_HALF_SECOND = 500000000000000000L;
+
+    /** Number of digits after separator for attoseconds. */
+    private static final int DIGITS_ATTOS = 18;
+
+    /** Multiplers for parsing partial strings. */
+    // CHECKSTYLE: stop Indentation check
+    private static final long[] MULTIPLIERS = new long[] {
+                         1L,
+                        10L,
+                       100L,
+                      1000L,
+                     10000L,
+                    100000L,
+                   1000000L,
+                  10000000L,
+                 100000000L,
+                1000000000L,
+               10000000000L,
+              100000000000L,
+             1000000000000L,
+            10000000000000L,
+           100000000000000L,
+          1000000000000000L,
+         10000000000000000L,
+        100000000000000000L
+    };
+    // CHECKSTYLE: resume Indentation check
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240711L;
@@ -504,6 +533,83 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             // special values
             return isNaN() ? Double.NaN : FastMath.copySign(Double.POSITIVE_INFINITY, seconds);
         }
+    }
+
+    /** Parse a string to produce an accurate split time.
+     * <p>
+     * This method is more accurate than parsing the string as a double and then
+     * calling {@link SplitTime#SplitTime(double)} because it reads the sub-second
+     * part in decimal, hence avoiding problems like for example 0.1 not being an
+     * exact IEEE754 number.
+     * </p>
+     * @param s string to parse
+     * @return parsed split time
+     */
+    public static SplitTime parse(final String s) {
+
+        // handle sign
+        final long sign;
+        final int firstDigit;
+        if (s.charAt(0) == '-') {
+            sign       = -1;
+            firstDigit = 1;
+        } else if (s.charAt(0) == '+') {
+            sign       = 1;
+            firstDigit = 1;
+        } else {
+            sign       = 1;
+            firstDigit = 0;
+        }
+
+        // gather all digits, keeping track of separator position
+        final StringBuilder allDigits = new StringBuilder();
+        int  separatorPosition = s.length() - firstDigit;
+        for (int index = firstDigit; index < s.length(); ++index) {
+            if (Character.isDigit(s.charAt(index))) {
+                allDigits.append(s.charAt(index));
+            } else if (s.charAt(index) == '.') {
+                separatorPosition = index - firstDigit;
+            } else if (s.charAt(index) == 'e' || s.charAt(index) == 'E') {
+                separatorPosition += Integer.parseInt(s.substring(index + 1));
+                break;
+            }
+        }
+
+        if (allDigits.toString().isEmpty()) {
+            throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA, s);
+        }
+
+        // parse the whole number of seconds
+        final int startSec = 0;
+        final int endSec   = FastMath.min(separatorPosition, allDigits.length());
+        long seconds = endSec <= startSec ?
+                       0L :
+                       MULTIPLIERS[separatorPosition - endSec] *
+                       Long.parseLong(allDigits.substring(startSec, endSec));
+
+        // parse attoseconds
+        final int startAttos = FastMath.max(0, separatorPosition);
+        final int endAttos   = FastMath.min(DIGITS_ATTOS + separatorPosition, allDigits.length());
+        long attoseconds = endAttos <= startAttos ?
+                           0L :
+                           MULTIPLIERS[FastMath.max(0, DIGITS_ATTOS - (endAttos - separatorPosition))] *
+                           Long.parseLong(allDigits.substring(startAttos, endAttos));
+
+        if (separatorPosition + DIGITS_ATTOS < allDigits.length()) {
+            // there are decimals left
+            if (separatorPosition + DIGITS_ATTOS >= 0 &&
+                allDigits.charAt(separatorPosition + DIGITS_ATTOS) >= '5') {
+                // round up
+                attoseconds++;
+                if (attoseconds > ATTOS_IN_SECOND) {
+                    attoseconds -= ATTOS_IN_SECOND;
+                    seconds++;
+                }
+            }
+        }
+
+        return new SplitTime(sign * seconds, sign * attoseconds);
+
     }
 
     /** Compare the instance with another one.

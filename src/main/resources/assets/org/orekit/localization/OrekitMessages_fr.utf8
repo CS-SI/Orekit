@@ -893,3 +893,6 @@ INFINITE_NRLMSISE00_DENSITY = Valeur infinie lors du calcul de la densité atmos
 
 # Propagator builder cannot be cloned
 PROPAGATOR_BUILDER_NOT_CLONEABLE = Le constructor de propagateur ne peut pas être cloné
+
+# cannot parse data {0}
+CANNOT_PARSE_DATA = impossible d''analyser la donnée {0}

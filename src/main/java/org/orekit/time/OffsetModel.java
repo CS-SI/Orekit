@@ -35,7 +35,7 @@ public class OffsetModel implements Serializable {
     private final int mjdRef;
 
     /** Offset at reference date in seconds (TAI minus UTC). */
-    private final double offset;
+    private final SplitTime offset;
 
     /** Offset slope in attoseconds per second (TAI minus UTC / dUTC). */
     private final long slope;
@@ -50,7 +50,7 @@ public class OffsetModel implements Serializable {
      * @param slope offset slope in attoseconds per second (TAI minus UTC / dUTC)
      */
     public OffsetModel(final DateComponents start,
-                       final int mjdRef, final double offset, final long slope) {
+                       final int mjdRef, final SplitTime offset, final long slope) {
         this.start  = start;
         this.mjdRef = mjdRef;
         this.offset = offset;
@@ -65,7 +65,7 @@ public class OffsetModel implements Serializable {
      * @param offset offset at reference date in seconds (TAI minus UTC)
      */
     public OffsetModel(final DateComponents start, final int offset) {
-        this(start, 41317, offset, 0L);
+        this(start, 41317, new SplitTime(offset, 0L), 0L);
     }
 
     /** Get the date of the offset start.
@@ -85,7 +85,7 @@ public class OffsetModel implements Serializable {
     /** Offset at reference date in seconds (TAI minus UTC).
      * @return offset at reference date in seconds (TAI minus UTC)
      */
-    public double getOffset() {
+    public SplitTime getOffset() {
         return offset;
     }
 

@@ -19,6 +19,8 @@ package org.orekit.time;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 import java.util.concurrent.TimeUnit;
 
@@ -575,12 +577,116 @@ public class SplitTimeTest {
         checkMultiple(86401, SplitTime.SECOND,      SplitTime.DAY_WITH_POSITIVE_LEAP);
     }
 
+    @Test
+    public void testParse() {
+
+        checkComponents(SplitTime.parse("0"), 0L, 0L);
+        checkComponents(SplitTime.parse("1"), 1L, 0L);
+        checkComponents(SplitTime.parse("-1"), -1L, 0L);
+        checkComponents(SplitTime.parse("0.5"), 0L, 500000000000000000L);
+        checkComponents(SplitTime.parse("-0.5"), -1L, 500000000000000000L);
+        checkComponents(SplitTime.parse("17.42357e+02"), 1742L, 357000000000000000L);
+
+        // these are the offsets for linear UTC/TAI models before 1972
+        checkComponents(SplitTime.parse("1.4228180"), 1L, 422818000000000000L);
+        checkComponents(SplitTime.parse("1.3728180"), 1L, 372818000000000000L);
+        checkComponents(SplitTime.parse("1.8458580"), 1L, 845858000000000000L);
+        checkComponents(SplitTime.parse("1.9458580"), 1L, 945858000000000000L);
+        checkComponents(SplitTime.parse("3.2401300"), 3L, 240130000000000000L);
+        checkComponents(SplitTime.parse("3.3401300"), 3L, 340130000000000000L);
+        checkComponents(SplitTime.parse("3.4401300"), 3L, 440130000000000000L);
+        checkComponents(SplitTime.parse("3.5401300"), 3L, 540130000000000000L);
+        checkComponents(SplitTime.parse("3.6401300"), 3L, 640130000000000000L);
+        checkComponents(SplitTime.parse("3.7401300"), 3L, 740130000000000000L);
+        checkComponents(SplitTime.parse("3.8401300"), 3L, 840130000000000000L);
+        checkComponents(SplitTime.parse("4.3131700"), 4L, 313170000000000000L);
+        checkComponents(SplitTime.parse("4.2131700"), 4L, 213170000000000000L);
+
+        // these are the drifts for linear UTC/TAI models before 1972
+        checkComponents(SplitTime.parse("0.001296"), 0L, 1296000000000000L);
+        checkComponents(SplitTime.parse("0.0011232"), 0L, 1123200000000000L);
+        checkComponents(SplitTime.parse("0.002592"), 0L, 2592000000000000L);
+
+        // cases with exponents
+        checkComponents(SplitTime.parse("0.001234e-05"), 0L, 12340000000L);
+        checkComponents(SplitTime.parse("-0.001234E+05"), -124L, 600000000000000000L);
+        checkComponents(SplitTime.parse("-0.001234E-05"), -1L, 999999987660000000L);
+        checkComponents(SplitTime.parse("0.001e-15"), 0L, 1L);
+        checkComponents(SplitTime.parse("-0.001e-15"), -1L, 999999999999999999L);
+
+        // various resolutions
+        checkComponents(SplitTime.parse("0.001234e-16"),                   0L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e-15"),                   0L,                  1L);
+        checkComponents(SplitTime.parse("0.001234e-14"),                   0L,                 12L);
+        checkComponents(SplitTime.parse("0.001234e-13"),                   0L,                123L);
+        checkComponents(SplitTime.parse("0.001234e-12"),                   0L,               1234L);
+        checkComponents(SplitTime.parse("0.001234e-11"),                   0L,              12340L);
+        checkComponents(SplitTime.parse("0.001234e-10"),                   0L,             123400L);
+        checkComponents(SplitTime.parse("0.001234e-09"),                   0L,            1234000L);
+        checkComponents(SplitTime.parse("0.001234e-08"),                   0L,           12340000L);
+        checkComponents(SplitTime.parse("0.001234e-07"),                   0L,          123400000L);
+        checkComponents(SplitTime.parse("0.001234e-06"),                   0L,         1234000000L);
+        checkComponents(SplitTime.parse("0.001234e-05"),                   0L,        12340000000L);
+        checkComponents(SplitTime.parse("0.001234e-04"),                   0L,       123400000000L);
+        checkComponents(SplitTime.parse("0.001234e-03"),                   0L,      1234000000000L);
+        checkComponents(SplitTime.parse("0.001234e-02"),                   0L,     12340000000000L);
+        checkComponents(SplitTime.parse("0.001234e-01"),                   0L,    123400000000000L);
+        checkComponents(SplitTime.parse("0.001234e+00"),                   0L,   1234000000000000L);
+        checkComponents(SplitTime.parse("0.001234e+01"),                   0L,  12340000000000000L);
+        checkComponents(SplitTime.parse("0.001234e+02"),                   0L, 123400000000000000L);
+        checkComponents(SplitTime.parse("0.001234e+03"),                   1L, 234000000000000000L);
+        checkComponents(SplitTime.parse("0.001234e+04"),                  12L, 340000000000000000L);
+        checkComponents(SplitTime.parse("0.001234e+05"),                 123L, 400000000000000000L);
+        checkComponents(SplitTime.parse("0.001234e+06"),                1234L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+07"),               12340L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+08"),              123400L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+09"),             1234000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+10"),            12340000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+11"),           123400000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+12"),          1234000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+13"),         12340000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+14"),        123400000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+15"),       1234000000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+16"),      12340000000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+17"),     123400000000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+18"),    1234000000000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+19"),   12340000000000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+20"),  123400000000000000L,                  0L);
+        checkComponents(SplitTime.parse("0.001234e+21"), 1234000000000000000L,                  0L);
+
+        // rounding to closest attosecond
+        checkComponents(SplitTime.parse("+1234.567890123456785012e-4"), 0L, 123456789012345679L);
+        checkComponents(SplitTime.parse("-1234.567890123456785012e-4"), -1L, 876543210987654321L);
+        checkComponents(SplitTime.parse("+1234.567890123456784012e-4"), 0L, 123456789012345678L);
+        checkComponents(SplitTime.parse("-1234.567890123456784012e-4"), -1L, 876543210987654322L);
+        checkComponents(SplitTime.parse("+9999.999999999999994000e-4"), 0L, 999999999999999999L);
+        checkComponents(SplitTime.parse("+9999.999999999999995000e-4"), 1, 0L);
+        checkComponents(SplitTime.parse("-9999.999999999999994000e-4"), -1L, 1L);
+        checkComponents(SplitTime.parse("-9999.999999999999995000e-4"), -1L, 0L);
+        checkComponents(SplitTime.parse("9.0e-20"), 0L, 0L);
+        checkComponents(SplitTime.parse("4.0e-19"), 0L, 0L);
+        checkComponents(SplitTime.parse("5.0e-19"), 0L, 1L);
+
+        try {
+            SplitTime.parse("A");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CANNOT_PARSE_DATA, oe.getSpecifier());
+            Assertions.assertEquals("A", oe.getParts()[0]);
+        }
+
+    }
+
     private void checkMultiple(final int n, final SplitTime small, final SplitTime large) {
         SplitTime sum = SplitTime.ZERO;
         for (int i = 0; i < n; ++i) {
             sum = SplitTime.add(sum, small);
         }
         Assertions.assertTrue(SplitTime.subtract(sum, large).isZero());
+    }
+
+    private void checkComponents(final SplitTime st , final long seconds, final long attoseconds) {
+        Assertions.assertEquals(seconds,     st.getSeconds());
+        Assertions.assertEquals(attoseconds, st.getAttoSeconds());
     }
 
 }
