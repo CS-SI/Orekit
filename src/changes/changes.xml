@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="vincent" type="update" issue="1202">
+            Removed public keyword for test classes and methods.
+        </action>
         <action dev="luc" type="add" issue="1468">
             Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
             added signalTimeOfFlightAdjustableReceiver.
