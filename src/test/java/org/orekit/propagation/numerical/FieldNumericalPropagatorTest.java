@@ -38,7 +38,6 @@ import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
