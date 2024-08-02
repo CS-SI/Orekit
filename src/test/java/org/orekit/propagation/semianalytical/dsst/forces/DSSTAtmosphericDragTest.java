@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -273,7 +271,7 @@ class DSSTAtmosphericDragTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 }

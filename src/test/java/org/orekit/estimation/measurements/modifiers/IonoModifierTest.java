@@ -77,7 +77,7 @@ class IonoModifierTest {
     private double frequency;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
         // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA

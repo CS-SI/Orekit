@@ -1231,7 +1231,7 @@ class APMParserTest {
     }
 
     @Test
-    void testMissingTwoSpacecraftFrames() throws URISyntaxException {
+    void testMissingTwoSpacecraftFrames() {
         final String name = "/ccsds/adm/apm/APM-two-spacecraft-frames.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1247,7 +1247,7 @@ class APMParserTest {
     }
 
     @Test
-    void testNoSpacecraftFrames() throws URISyntaxException {
+    void testNoSpacecraftFrames() {
         final String name = "/ccsds/adm/apm/APM-no-spacecraft-frames.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1263,7 +1263,7 @@ class APMParserTest {
     }
 
     @Test
-    void testMissingFrame() throws URISyntaxException {
+    void testMissingFrame() {
         final String name = "/ccsds/adm/apm/APM-missing-frame.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1279,7 +1279,7 @@ class APMParserTest {
     }
 
     @Test
-    void testMissingQuaternionComponent() throws URISyntaxException {
+    void testMissingQuaternionComponent() {
         final String name = "/ccsds/adm/apm/APM-missing-quaternion-component.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1295,7 +1295,7 @@ class APMParserTest {
     }
 
     @Test
-    void testWrongKeyword() throws URISyntaxException {
+    void testWrongKeyword() {
         final String name = "/ccsds/adm/apm/APM-wrong-keyword.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1312,7 +1312,7 @@ class APMParserTest {
     }
 
     @Test
-    void testWrongEulerSequence() throws URISyntaxException {
+    void testWrongEulerSequence() {
         final String name = "/ccsds/adm/apm/APM-wrong-Euler-sequence.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1330,7 +1330,7 @@ class APMParserTest {
     }
 
     @Test
-    void testMissingEulerSequence() throws URISyntaxException {
+    void testMissingEulerSequence() {
         final String name = "/ccsds/adm/apm/APM-missing-Euler-sequence.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1346,7 +1346,7 @@ class APMParserTest {
     }
 
     @Test
-    void testRepeatedEulerAngle() throws URISyntaxException {
+    void testRepeatedEulerAngle() {
         final String name = "/ccsds/adm/apm/APM-repeated-Euler-angle.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1362,7 +1362,7 @@ class APMParserTest {
     }
 
     @Test
-    void testSpuriousMetaDataSection() throws URISyntaxException {
+    void testSpuriousMetaDataSection() {
         final String name = "/ccsds/adm/apm/spurious-metadata.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {

@@ -16,7 +16,6 @@
  */
 package org.orekit.models.earth.tessellation;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -46,7 +45,7 @@ class DivertedSingularityAimingTest {
     }
 
     @Test
-    void testAroundSingularity() throws IOException {
+    void testAroundSingularity() {
 
         GeodeticPoint singularityGP = aiming.getSingularPoints().get(0);
         Vector3D singularity = earth.transform(singularityGP);
@@ -67,7 +66,7 @@ class DivertedSingularityAimingTest {
     }
 
     @Test
-    void testOppositeSingularity() throws IOException {
+    void testOppositeSingularity() {
 
         GeodeticPoint singularityGP = aiming.getSingularPoints().get(0);
         Vector3D singularity = earth.transform(singularityGP);
@@ -94,7 +93,7 @@ class DivertedSingularityAimingTest {
      * It was fixed by upgrading to Hipparchus 2.3. 
      */
     @Test
-    void testIssue969() throws IOException {
+    void testIssue969() {
 
         // Given
         // -----

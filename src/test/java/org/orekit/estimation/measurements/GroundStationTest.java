@@ -76,7 +76,7 @@ import java.util.Map;
 class GroundStationTest {
 
     @Test
-    void testEstimateClockOffset() throws IOException, ClassNotFoundException {
+    void testEstimateClockOffset() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

@@ -23,8 +23,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Map;
 
@@ -71,7 +69,7 @@ class AstronomicalAmplitudeReaderTest {
     }
 
     @Test
-    void testEmptyFile() throws IOException {
+    void testEmptyFile() {
         try {
             AstronomicalAmplitudeReader reader =
                             new AstronomicalAmplitudeReader("empty-hf-fes2005.dat", 5, 2, 3, 1.0);

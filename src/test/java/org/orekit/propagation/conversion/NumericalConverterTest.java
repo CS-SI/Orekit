@@ -288,8 +288,7 @@ class NumericalConverterTest {
     protected void checkFit(final Orbit orbit, final double duration,
                             final double stepSize, final double threshold,
                             final double expectedRMS,
-                            final String... freeParameters)
-        throws IOException, ParseException {
+                            final String... freeParameters) {
 
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
@@ -404,7 +403,7 @@ class NumericalConverterTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
 
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),

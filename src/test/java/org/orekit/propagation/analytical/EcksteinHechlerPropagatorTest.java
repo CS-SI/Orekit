@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -728,8 +727,7 @@ class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    void testInitializationCorrectness()
-            throws IOException {
+    void testInitializationCorrectness() {
 
         //  Definition of initial conditions
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);

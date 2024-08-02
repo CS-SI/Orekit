@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,13 +71,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 class AEMParserTest {
 
     @BeforeEach
-    void setUp()
-            throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    void testParseAEM01() throws IOException {
+    void testParseAEM01() {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
@@ -189,7 +187,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM02() throws URISyntaxException {
+    void testParseAEM02() {
         final String name = "/ccsds/adm/aem/AEMExample02.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         AemParser parser = new ParserBuilder().
@@ -224,14 +222,14 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseKvnAEM03() throws URISyntaxException {
+    void testParseKvnAEM03() {
         final String ex = "/ccsds/adm/aem/AEMExample03.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         validateAEM03(new ParserBuilder().buildAemParser().parseMessage(source));
     }
 
     @Test
-    void testParseXmlAEM03() throws URISyntaxException {
+    void testParseXmlAEM03() {
         final String ex = "/ccsds/adm/aem/AEMExample03.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -283,7 +281,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM04() throws URISyntaxException {
+    void testParseAEM04() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final String ex = "/ccsds/adm/aem/AEMExample04.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -335,7 +333,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM05() throws URISyntaxException {
+    void testParseAEM05() {
         final String ex = "/ccsds/adm/aem/AEMExample05.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -380,7 +378,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM06a() throws URISyntaxException {
+    void testParseAEM06a() {
         final String ex = "/ccsds/adm/aem/AEMExample06a.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -393,7 +391,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM06b() throws URISyntaxException {
+    void testParseAEM06b() {
         final String ex = "/ccsds/adm/aem/AEMExample06b.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -406,7 +404,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM07() throws URISyntaxException {
+    void testParseAEM07() {
         final String ex = "/ccsds/adm/aem/AEMExample07.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -471,7 +469,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM11() throws URISyntaxException {
+    void testParseAEM11() {
         final String ex = "/ccsds/adm/aem/AEMExample11.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -523,7 +521,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM13() throws URISyntaxException {
+    void testParseAEM13() {
         final TimeScale tai = TimeScalesFactory.getTAI();
         final String ex = "/ccsds/adm/aem/AEMExample13.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -589,7 +587,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testParseAEM14() throws URISyntaxException {
+    void testParseAEM14() {
         final TimeScale tai = TimeScalesFactory.getTAI();
         final String ex = "/ccsds/adm/aem/AEMExample14.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -717,8 +715,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testWrongKeyword()
-            throws URISyntaxException {
+    void testWrongKeyword() {
         // simple test for AEM file, contains a wrong keyword in the metadata.
         final String name = "/ccsds/adm/aem/AEM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -748,8 +745,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testKeywordWithinEphemeris()
-            throws URISyntaxException {
+    void testKeywordWithinEphemeris() {
         // simple test for AEM file, contains p/v entries and other mandatory data.
         final String name = "/ccsds/adm/aem/AEM-keyword-within-ephemeris.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -764,7 +760,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testWrongRotationSequence() throws URISyntaxException {
+    void testWrongRotationSequence() {
         // simple test for AEM file, contains a wrong keyword in the metadata.
         final String name = "/ccsds/adm/aem/AEM-inconsistent-rotation-sequence.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -780,7 +776,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testSpuriousMetaDataSection() throws URISyntaxException {
+    void testSpuriousMetaDataSection() {
         final String name = "/ccsds/adm/aem/spurious-metadata.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -794,7 +790,7 @@ class AEMParserTest {
     }
 
     @Test
-    void testMissingConvention() throws URISyntaxException {
+    void testMissingConvention() {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
@@ -825,8 +821,7 @@ class AEMParserTest {
      * (the parsed one or the default if there is none)
      */
     @Test
-    void testDefaultInterpolationDegree()
-            throws URISyntaxException {
+    void testDefaultInterpolationDegree() {
 
         final String name = "/ccsds/adm/aem/AEMExample01.txt";
         ParserBuilder builder = new ParserBuilder();

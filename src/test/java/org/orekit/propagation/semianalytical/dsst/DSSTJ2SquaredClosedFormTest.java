@@ -52,18 +52,15 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.text.ParseException;
 
 class DSSTJ2SquaredClosedFormTest {
 
     private UnnormalizedSphericalHarmonicsProvider provider;
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
     }

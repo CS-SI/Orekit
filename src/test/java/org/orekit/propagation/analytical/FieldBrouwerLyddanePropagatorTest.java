@@ -17,8 +17,6 @@
 
 package org.orekit.propagation.analytical;
 
-import java.io.IOException;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -875,7 +873,7 @@ class FieldBrouwerLyddanePropagatorTest {
     }
 
     @Test
-    void testMeanOrbit() throws IOException {
+    void testMeanOrbit() {
         doTestMeanOrbit(Binary64Field.getInstance());
     }
 

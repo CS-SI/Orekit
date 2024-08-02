@@ -38,12 +38,9 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -222,7 +219,7 @@ class DSSTZonalTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

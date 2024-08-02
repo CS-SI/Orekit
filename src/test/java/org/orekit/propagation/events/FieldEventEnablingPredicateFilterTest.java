@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -220,7 +219,7 @@ class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    void testExceedHistoryForward() throws IOException {
+    void testExceedHistoryForward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -274,7 +273,7 @@ class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    void testExceedHistoryBackward() throws IOException {
+    void testExceedHistoryBackward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period

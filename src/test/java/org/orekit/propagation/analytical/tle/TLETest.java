@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
-import java.text.ParseException;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -367,7 +366,7 @@ public class TLETest {
     }
 
     @Test
-    void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
+    void testSatCodeCompliance() throws IOException, OrekitException {
 
         BufferedReader rEntry = null;
         BufferedReader rResults = null;

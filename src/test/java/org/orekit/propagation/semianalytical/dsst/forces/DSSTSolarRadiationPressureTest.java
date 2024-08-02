@@ -47,10 +47,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -193,7 +190,7 @@ class DSSTSolarRadiationPressureTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 }

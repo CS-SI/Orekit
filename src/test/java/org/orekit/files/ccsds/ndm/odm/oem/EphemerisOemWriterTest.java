@@ -69,7 +69,7 @@ class EphemerisOemWriterTest {
     private static final double VELOCITY_PRECISION = 1e-2; //in m/s
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

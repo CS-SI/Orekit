@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +56,7 @@ class MeasurementCombinationFactoryTest {
     private ObservationDataSet dataSetRinex3;
 
     @BeforeEach
-    void setUp() throws NoSuchAlgorithmException, IOException {
+    void setUp() {
         Utils.setDataRoot("gnss");
         RinexObservationParser parser = new RinexObservationParser();
 

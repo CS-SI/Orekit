@@ -40,7 +40,7 @@ class YUMAParserTest {
     }
 
     @Test
-    void testNoFile() throws IOException, ParseException {
+    void testNoFile() {
         // the parser for reading Yuma files with a pattern
         YUMAParser reader = new YUMAParser(".*\\.yum$");
         // No such YUMA file, should throw an exception
@@ -113,7 +113,7 @@ class YUMAParserTest {
     }
 
     @Test
-    void testLoadDefault() throws IOException, ParseException, OrekitException {
+    void testLoadDefault() throws OrekitException {
         // the parser for reading Yuma files
         YUMAParser reader = new YUMAParser(null);
         reader.loadData();

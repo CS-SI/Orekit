@@ -78,7 +78,7 @@ class ClockTimeScaleTest {
     }
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

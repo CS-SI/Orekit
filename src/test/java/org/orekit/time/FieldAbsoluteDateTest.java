@@ -676,7 +676,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestLocalTimeLeapSecond(final Field<T> field) throws IOException {
+    private <T extends CalculusFieldElement<T>> void doTestLocalTimeLeapSecond(final Field<T> field) {
 
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> beforeLeap = new FieldAbsoluteDate<>(field, "2012-06-30T23:59:59.8", utc);

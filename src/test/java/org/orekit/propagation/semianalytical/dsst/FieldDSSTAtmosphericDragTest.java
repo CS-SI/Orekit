@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -363,12 +361,12 @@ class FieldDSSTAtmosphericDragTest {
     }
 
     @Test
-    void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() {
         doTestShortPeriodTermsParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 6.0e-14);
     }
 
     @Test
-    void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() {
         doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 3.7e-9);
     }
 
@@ -587,7 +585,7 @@ class FieldDSSTAtmosphericDragTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

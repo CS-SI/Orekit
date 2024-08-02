@@ -1257,7 +1257,7 @@ public class CdmParserTest {
     }
 
     @Test
-    void testMissingTCA() throws URISyntaxException {
+    void testMissingTCA() {
         final String name = "/ccsds/cdm/CDM-missing-TCA.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1272,7 +1272,7 @@ public class CdmParserTest {
     }
 
     @Test
-    void testMissingObj2StateVectorX() throws URISyntaxException {
+    void testMissingObj2StateVectorX() {
         final String name = "/ccsds/cdm/CDM-missing-object2-state-vector.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1287,7 +1287,7 @@ public class CdmParserTest {
     }
 
     @Test
-    void testMissingObj1CovarianceCNDOT_NDOT() throws URISyntaxException {
+    void testMissingObj1CovarianceCNDOT_NDOT() {
         final String name = "/ccsds/cdm/CDM-missing-object1-covariance-block.xml";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));

@@ -497,7 +497,7 @@ public class FieldTLETest {
         }
     }
 
-    public <T extends CalculusFieldElement<T>>void doTestSatCodeCompliance(Field<T> field) throws IOException, OrekitException, ParseException {
+    public <T extends CalculusFieldElement<T>>void doTestSatCodeCompliance(Field<T> field) throws IOException, OrekitException {
 
         BufferedReader rEntry = null;
         BufferedReader rResults = null;

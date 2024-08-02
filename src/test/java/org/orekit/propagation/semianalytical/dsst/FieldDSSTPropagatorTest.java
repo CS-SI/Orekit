@@ -17,7 +17,6 @@
 package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -453,7 +452,7 @@ class FieldDSSTPropagatorTest {
         doTestPropagationWithThirdBody(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestPropagationWithThirdBody(Field<T> field) throws IOException {
+    private <T extends CalculusFieldElement<T>> void doTestPropagationWithThirdBody(Field<T> field) {
 
         final T zero = field.getZero();
 
@@ -1508,7 +1507,7 @@ class FieldDSSTPropagatorTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

@@ -473,7 +473,7 @@ public class TideTest {
     }
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -298,8 +298,7 @@ class AdapterPropagatorTest {
                                            final AbsoluteDate t0, final Vector3D dV,
                                            final double f, final double isp,
                                            final boolean sunAttraction, final boolean moonAttraction,
-                                           final NormalizedSphericalHarmonicsProvider gravityField)
-        throws ParseException, IOException {
+                                           final NormalizedSphericalHarmonicsProvider gravityField) {
 
         SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);

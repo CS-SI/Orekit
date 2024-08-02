@@ -25,12 +25,9 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathArrays.Position;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileNotFoundException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 class IntegerBootstrappingTest {
@@ -59,7 +56,7 @@ class IntegerBootstrappingTest {
     }
 
     @Test
-    void testRandomProblems() throws FileNotFoundException, UnsupportedEncodingException {
+    void testRandomProblems() {
         RandomGenerator random = new Well19937a(0x1c68f36088a9133al);
         int[] count = new int[3];
         for (int k = 0; k < 10000; ++k) {

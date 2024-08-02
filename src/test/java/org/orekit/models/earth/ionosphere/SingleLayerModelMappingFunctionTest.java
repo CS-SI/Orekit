@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SingleLayerModelMappingFunctionTest {
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

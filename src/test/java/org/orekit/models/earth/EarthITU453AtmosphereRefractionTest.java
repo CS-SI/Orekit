@@ -66,7 +66,7 @@ class EarthITU453AtmosphereRefractionTest {
     private String namea = "Alt0";
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential:tides");
         IERSConventions  conventions = IERSConventions.IERS_2010;
         OneAxisEllipsoid earth       = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

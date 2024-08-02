@@ -16,13 +16,9 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -482,7 +478,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testPropagationTypesElliptical() throws ParseException, IOException {
+    void testPropagationTypesElliptical() {
      // setup
         AbsoluteDate         initDate  = new AbsoluteDate();
         SpacecraftState     initialState;
@@ -556,7 +552,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testPropagationTypesHyperbolic() throws ParseException, IOException {
+    void testPropagationTypesHyperbolic() {
 
         SpacecraftState state =
             new SpacecraftState(new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
@@ -857,7 +853,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testEventDetectionBug() throws IOException, ParseException {
+    void testEventDetectionBug() {
 
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate initialDate = new AbsoluteDate(2005, 1, 1, 0, 0, 0.0, utc);
@@ -917,7 +913,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testEphemerisGenerationIssue14() throws IOException {
+    void testEphemerisGenerationIssue14() {
 
         // Propagation of the initial at t + dt
         final double dt = 3200;
@@ -948,7 +944,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testEphemerisAdditionalState() throws IOException {
+    void testEphemerisAdditionalState() {
 
         // Propagation of the initial at t + dt
         final double dt = -3200;
@@ -1078,7 +1074,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testParallelismIssue258() throws InterruptedException, ExecutionException, FileNotFoundException {
+    void testParallelismIssue258() {
 
         Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));

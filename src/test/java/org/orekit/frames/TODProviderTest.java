@@ -41,7 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -175,7 +174,7 @@ class TODProviderTest {
     }
 
     @Test
-    void testInterpolationAccuracyWithEOP() throws FileNotFoundException {
+    void testInterpolationAccuracyWithEOP() {
 
         // max interpolation error observed on a one month period with 60 seconds step
         //
@@ -239,7 +238,7 @@ class TODProviderTest {
     }
 
     @Test
-    void testInterpolationAccuracyWithoutEOP() throws FileNotFoundException {
+    void testInterpolationAccuracyWithoutEOP() {
 
         // max interpolation error observed on a one month period with 60 seconds step
         //

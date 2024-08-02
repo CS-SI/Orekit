@@ -28,8 +28,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -230,7 +228,7 @@ class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    void testOverlappingEphemeridesData() throws IOException {
+    void testOverlappingEphemeridesData() {
         Utils.setDataRoot("overlapping-data/data.zip");
 
         // the data root contains two ephemerides files (JPL DE 405), which overlap in the period

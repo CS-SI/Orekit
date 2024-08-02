@@ -28,13 +28,11 @@ class EarthStandardAtmosphereTest {
     private final double epsilon = 1e-15;
 
     @BeforeEach
-    void setUp()
-            throws Exception {
+    void setUp() {
     }
 
     @AfterEach
-    void tearDown()
-            throws Exception {
+    void tearDown() {
     }
 
     @Test

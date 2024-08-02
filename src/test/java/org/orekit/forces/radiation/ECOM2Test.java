@@ -68,13 +68,9 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.FileNotFoundException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.text.ParseException;
 
 public class ECOM2Test extends AbstractForceModelTest {
 
@@ -459,7 +455,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
+    void testRoughOrbitalModifs() throws OrekitException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),

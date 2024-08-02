@@ -67,7 +67,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class OrekitAttitudeEphemerisFileTest {
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

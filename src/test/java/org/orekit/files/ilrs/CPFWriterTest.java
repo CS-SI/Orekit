@@ -66,12 +66,12 @@ public class CPFWriterTest {
     public Path temporaryFolderPath;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    void testWriteJason3Version2() throws IOException, URISyntaxException {
+    void testWriteJason3Version2() throws IOException {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/jason3_cpf_180613_16401.cne";
@@ -88,7 +88,7 @@ public class CPFWriterTest {
     }
 
     @Test
-    void testWriteLageos1Version2() throws IOException, URISyntaxException {
+    void testWriteLageos1Version2() throws IOException {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";
@@ -105,7 +105,7 @@ public class CPFWriterTest {
     }
 
     @Test
-    void testWriteGalileoVersion1() throws IOException, URISyntaxException {
+    void testWriteGalileoVersion1() throws IOException {
 
         // Simple test for version 1.0, only contains position entries
         final String ex = "/ilrs/galileo212_cpf_180613_6641.esa";
@@ -122,7 +122,7 @@ public class CPFWriterTest {
     }
 
     @Test
-    void testIssue868v1() throws IOException, URISyntaxException {
+    void testIssue868v1() throws IOException {
 
         // Load
         final String ex = "/ilrs/galileo212_cpf_180613_6641.esa";
@@ -148,7 +148,7 @@ public class CPFWriterTest {
     }
 
     @Test
-    void testIssue868v2() throws IOException, URISyntaxException {
+    void testIssue868v2() throws IOException {
 
         // Load
         final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";

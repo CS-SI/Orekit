@@ -48,7 +48,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -350,7 +349,7 @@ class TdmParserTest {
     }
 
     @Test
-    void testNonExistentFile() throws URISyntaxException {
+    void testNonExistentFile() {
         // Try parsing a file that does not exist
         final String realName = "/ccsds/odm/oem/OEMExample2.txt";
         final String wrongName = realName + "xxxxx";
@@ -389,7 +388,7 @@ class TdmParserTest {
     }
 
     @Test
-    void testWrongDataKeywordKeyValue() throws URISyntaxException {
+    void testWrongDataKeywordKeyValue() {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
@@ -405,7 +404,7 @@ class TdmParserTest {
     }
 
     @Test
-    void testWrongDataKeywordXml() throws URISyntaxException {
+    void testWrongDataKeywordXml() {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-data-wrong-keyword.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
@@ -421,7 +420,7 @@ class TdmParserTest {
     }
 
     @Test
-    void testWrongMetaDataKeywordKeyValue() throws URISyntaxException {
+    void testWrongMetaDataKeywordKeyValue() {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
@@ -437,7 +436,7 @@ class TdmParserTest {
     }
 
     @Test
-    void testWrongMetaDataKeywordXml() throws URISyntaxException {
+    void testWrongMetaDataKeywordXml() {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));

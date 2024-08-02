@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +67,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SolarBodyTest {
 
     @Test
-    void testNaif() throws UnsupportedEncodingException, IOException {
+    void testNaif() throws IOException {
         Utils.setDataRoot("regular-data");
         final Frame refFrame = FramesFactory.getICRF();
         final TimeScale tdb = TimeScalesFactory.getTDB();

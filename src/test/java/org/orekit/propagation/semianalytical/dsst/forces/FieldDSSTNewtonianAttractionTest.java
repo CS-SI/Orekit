@@ -33,10 +33,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.text.ParseException;
 import java.util.Arrays;
 
 class FieldDSSTNewtonianAttractionTest {
@@ -93,7 +90,7 @@ class FieldDSSTNewtonianAttractionTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

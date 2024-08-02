@@ -68,7 +68,7 @@ import java.util.Set;
 class CRDParserTest {
 
     @Test
-    void testInvalidFormat() throws URISyntaxException, IOException {
+    void testInvalidFormat() throws IOException {
         try {
             final String ex = "/ilrs/crd_invalid_format.v2C";
             final CRDParser parser = new CRDParser();
@@ -99,7 +99,7 @@ class CRDParserTest {
     }
 
     @Test
-    void testCorruptedData() throws IOException, URISyntaxException {
+    void testCorruptedData() throws IOException {
         try {
             final String ex = "/ilrs/crd_corrupted_data.v2C";
             final CRDParser parser = new CRDParser();
@@ -114,7 +114,7 @@ class CRDParserTest {
     }
 
     @Test
-    void testInvalidRangeType() throws IOException, URISyntaxException {
+    void testInvalidRangeType() throws IOException {
         try {
             final String ex = "/ilrs/crd_invalid_range_type.v2C";
             final CRDParser parser = new CRDParser();
@@ -129,7 +129,7 @@ class CRDParserTest {
     }
 
     @Test
-    void testLageos2Version2() throws URISyntaxException, IOException {
+    void testLageos2Version2() throws IOException {
 
         // Simple test for version 2.0
         final String ex = "/ilrs/lageos2_201802.npt.v2C";
@@ -368,7 +368,7 @@ class CRDParserTest {
     }
 
     @Test
-    void testChampVersion1() throws URISyntaxException, IOException {
+    void testChampVersion1() throws IOException {
 
         // Simple test for version 1.0
         final String ex = "/ilrs/champ_201709-small.frd";
@@ -471,7 +471,7 @@ class CRDParserTest {
     }
 
     @Test
-    void testAllFields() throws URISyntaxException, IOException {
+    void testAllFields() throws IOException {
 
         final String ex = "/ilrs/crd_all_fields.frd";
 
@@ -544,7 +544,7 @@ class CRDParserTest {
     }
 
     @Test
-    void testIssue801() throws URISyntaxException, IOException {
+    void testIssue801() throws IOException {
 
         final String ex = "/ilrs/crd_all_fields.frd";
 

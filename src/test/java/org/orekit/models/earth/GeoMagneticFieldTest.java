@@ -108,7 +108,7 @@ public class GeoMagneticFieldTest {
      * @throws Exception on error.
      */
     @BeforeAll
-    static void setUpBefore() throws Exception {
+    static void setUpBefore() {
         Utils.setDataRoot("earth:geoid:regular-data");
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96", false));
@@ -292,7 +292,7 @@ public class GeoMagneticFieldTest {
     }
 
     @Test
-    void testUnsupportedTransform() throws Exception {
+    void testUnsupportedTransform() {
         assertThrows(OrekitException.class, () -> {
             final GeoMagneticField model = GeoMagneticFieldFactory.getIGRF(1910);
 
@@ -302,7 +302,7 @@ public class GeoMagneticFieldTest {
     }
 
     @Test
-    void testOutsideValidityTransform() throws Exception {
+    void testOutsideValidityTransform() {
         assertThrows(OrekitException.class, () -> {
             final GeoMagneticField model1 = GeoMagneticFieldFactory.getIGRF(2005);
             final GeoMagneticField model2 = GeoMagneticFieldFactory.getIGRF(2010);
@@ -313,7 +313,7 @@ public class GeoMagneticFieldTest {
     }
 
     @Test
-    void testValidTransform() throws Exception {
+    void testValidTransform() {
         final GeoMagneticField model = GeoMagneticFieldFactory.getWMM(2015);
 
         assertTrue(model.supportsTimeTransform());

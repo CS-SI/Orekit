@@ -47,7 +47,7 @@ class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    void testOnePair() throws java.io.IOException {
+    void testOnePair() {
         RandomGenerator random = new Well1024a(0xed7dd911a44c5197l);
 
         for (int i = 0; i < 20; ++i) {
@@ -71,7 +71,7 @@ class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    void testTwoPairs() throws java.io.IOException {
+    void testTwoPairs() {
         RandomGenerator random = new Well1024a(0x976ad943966c9f00l);
 
         for (int i = 0; i < 20; ++i) {

@@ -194,7 +194,7 @@ class FixedTroposphericModelTest {
     }
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         model = FixedTroposphericDelay.getDefaultModel();
     }
 }

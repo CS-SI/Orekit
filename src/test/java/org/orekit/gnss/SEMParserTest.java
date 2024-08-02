@@ -41,7 +41,7 @@ class SEMParserTest {
     }
 
     @Test
-    void testNoFile() throws IOException, ParseException {
+    void testNoFile() {
         // the parser for reading SEM files with *.sem as supported name for SEM files
         SEMParser reader = new SEMParser(".*\\.sem$");
         // No such YUMA file, should throw an exception
@@ -116,7 +116,7 @@ class SEMParserTest {
     }
 
     @Test
-    void testLoadDefault() throws IOException, ParseException, OrekitException {
+    void testLoadDefault() throws OrekitException {
         // the parser for reading SEM files with default supported name *.al3 for SEM files
         SEMParser reader = new SEMParser(null);
         // Reads the SEM file

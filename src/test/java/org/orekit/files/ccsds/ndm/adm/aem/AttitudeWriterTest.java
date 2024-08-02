@@ -73,7 +73,7 @@ public class AttitudeWriterTest {
     public Path temporaryFolderPath;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

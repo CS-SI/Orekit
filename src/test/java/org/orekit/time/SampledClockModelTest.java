@@ -143,7 +143,7 @@ public class SampledClockModelTest {
     }
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

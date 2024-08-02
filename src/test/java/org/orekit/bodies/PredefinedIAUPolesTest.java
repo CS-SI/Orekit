@@ -50,13 +50,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 class PredefinedIAUPolesTest {
 
     @Test
-    void testGCRFAligned() throws UnsupportedEncodingException, IOException {
+    void testGCRFAligned() {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
@@ -65,7 +64,7 @@ class PredefinedIAUPolesTest {
     }
 
     @Test
-    void testSun() throws UnsupportedEncodingException, IOException {
+    void testSun() {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
@@ -80,7 +79,7 @@ class PredefinedIAUPolesTest {
     }
 
     @Test
-    void testNaif() throws UnsupportedEncodingException, IOException {
+    void testNaif() throws IOException {
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/IAU-pole-NAIF.txt");
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8))) {

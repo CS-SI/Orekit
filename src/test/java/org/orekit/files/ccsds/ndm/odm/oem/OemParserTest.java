@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.odm.oem;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URISyntaxException;
@@ -71,8 +70,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class OemParserTest {
 
     @BeforeEach
-    void setUp()
-            throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -92,7 +90,7 @@ class OemParserTest {
     }
 
     @Test
-    void testParseOEM1() throws IOException {
+    void testParseOEM1() {
         //
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -178,7 +176,7 @@ class OemParserTest {
     }
 
     @Test
-    void testParseOEM2() throws URISyntaxException {
+    void testParseOEM2() {
 
         final String ex = "/ccsds/odm/oem/OEMExample2.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -220,7 +218,7 @@ class OemParserTest {
     }
 
     @Test
-    void testParseOEM3KVN() throws IOException {
+    void testParseOEM3KVN() {
 
         final String ex = "/ccsds/odm/oem/OEMExample3.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -349,7 +347,7 @@ class OemParserTest {
     }
 
     @Test
-    void testParseOEM3XML() throws IOException {
+    void testParseOEM3XML() {
 
         final String ex = "/ccsds/odm/oem/OEMExample3.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -479,7 +477,7 @@ class OemParserTest {
     }
 
     @Test
-    void testParseOemMissingOptionalData() throws IOException {
+    void testParseOemMissingOptionalData() {
 
         final String ex = "/ccsds/odm/oem/OEMExample6.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -653,8 +651,7 @@ class OemParserTest {
     }
 
     @Test
-    void testWrongKeyword()
-            throws URISyntaxException {
+    void testWrongKeyword() {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/oem/OEM-wrong-keyword.txt";
@@ -673,8 +670,7 @@ class OemParserTest {
     }
 
     @Test
-    void testKeywordWithinEphemeris()
-            throws URISyntaxException {
+    void testKeywordWithinEphemeris() {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/oem/OEM-keyword-within-ephemeris.txt";
@@ -693,8 +689,7 @@ class OemParserTest {
     }
 
     @Test
-    void testKeywordWithinCovariance()
-            throws URISyntaxException {
+    void testKeywordWithinCovariance() {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/oem/OEM-keyword-within-covariance.txt";
@@ -713,8 +708,7 @@ class OemParserTest {
     }
 
     @Test
-    void testTooLargeCovarianceDimension()
-            throws URISyntaxException {
+    void testTooLargeCovarianceDimension() {
         final String name = "/ccsds/odm/oem/OEM-too-large-covariance-dimension.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -731,8 +725,7 @@ class OemParserTest {
     }
 
     @Test
-    void testTooSmallCovarianceDimension()
-            throws URISyntaxException {
+    void testTooSmallCovarianceDimension() {
         final String name = "/ccsds/odm/oem/OEM-too-small-covariance-dimension.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -750,8 +743,7 @@ class OemParserTest {
     }
 
     @Test
-    void testTooManyCovarianceColumns()
-            throws URISyntaxException {
+    void testTooManyCovarianceColumns() {
         final String name = "/ccsds/odm/oem/OEM-too-many-covariance-columns.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -768,8 +760,7 @@ class OemParserTest {
     }
 
     @Test
-    void testTooFewCovarianceColumns()
-            throws URISyntaxException {
+    void testTooFewCovarianceColumns() {
         final String name = "/ccsds/odm/oem/OEM-too-few-covariance-columns.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -790,8 +781,7 @@ class OemParserTest {
      * (the parsed one or the default if there is none)
      */
     @Test
-    void testDefaultInterpolationDegree()
-            throws URISyntaxException {
+    void testDefaultInterpolationDegree() {
 
         final String name = "/ccsds/odm/oem/OEMExample8.txt";
 

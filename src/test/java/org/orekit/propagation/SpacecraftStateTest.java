@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.text.ParseException;
 
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -78,7 +77,7 @@ class SpacecraftStateTest {
 
     @Test
     void testShiftVsEcksteinHechlerError()
-        throws ParseException, OrekitException {
+        throws OrekitException {
 
 
         // polynomial models for interpolation error in position, velocity, acceleration and attitude
@@ -182,7 +181,7 @@ class SpacecraftStateTest {
 
     @Test
     void testTransform()
-        throws ParseException, OrekitException {
+        throws OrekitException {
 
         double maxDP = 0;
         double maxDV = 0;

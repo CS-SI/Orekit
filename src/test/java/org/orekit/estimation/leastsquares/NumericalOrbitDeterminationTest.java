@@ -64,7 +64,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -212,7 +211,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
     @Test
     void testLageos2()
             throws URISyntaxException, IllegalArgumentException, IOException,
-            OrekitException, ParseException {
+            OrekitException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
@@ -260,7 +259,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
     @Test
     void testGNSS()
             throws URISyntaxException, IllegalArgumentException, IOException,
-            OrekitException, ParseException {
+            OrekitException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
@@ -310,7 +309,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
     @Test
     void testW3B()
             throws URISyntaxException, IllegalArgumentException, IOException,
-            OrekitException, ParseException {
+            OrekitException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();

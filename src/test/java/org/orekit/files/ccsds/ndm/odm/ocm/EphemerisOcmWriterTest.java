@@ -67,7 +67,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class EphemerisOcmWriterTest {
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -75,7 +75,7 @@ class GeoidTest {
      * @throws Exception on error.
      */
     @BeforeAll
-    static void setUpBefore() throws Exception {
+    static void setUpBefore() {
         Utils.setDataRoot("geoid:regular-data");
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.addPotentialCoefficientsReader(

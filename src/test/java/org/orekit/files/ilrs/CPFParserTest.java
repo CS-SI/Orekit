@@ -33,8 +33,6 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -48,7 +46,7 @@ import java.util.List;
 class CPFParserTest {
 
     @Test
-    void testJason3Version2() throws URISyntaxException, IOException {
+    void testJason3Version2() throws URISyntaxException {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/jason3_cpf_180613_16401.cne";
@@ -134,7 +132,7 @@ class CPFParserTest {
     }
 
     @Test
-    void testLageos1Version2() throws URISyntaxException, IOException {
+    void testLageos1Version2() {
 
         // Simple test for version 2.0, only contains position entries
         final String    ex     = "/ilrs/lageos1_cpf_180613_16401.hts";
@@ -215,7 +213,7 @@ class CPFParserTest {
     }
 
     @Test
-    void testGalileoVersion1() throws URISyntaxException, IOException {
+    void testGalileoVersion1() {
 
         // Simple test for version 1.0, only contains position entries
         final String    ex     = "/ilrs/galileo212_cpf_180613_6641.esa";
@@ -293,7 +291,7 @@ class CPFParserTest {
     }
 
     @Test
-    void testAllFields() throws URISyntaxException, IOException {
+    void testAllFields() {
 
         // Simple test for version 2.0, only contains position entries
         final String    ex     = "/ilrs/cpf_all_fields.csg";
@@ -330,7 +328,7 @@ class CPFParserTest {
     }
 
     @Test
-    void testInvalifFormat() throws URISyntaxException, IOException {
+    void testInvalifFormat() {
         try {
             final String ex = "/ilrs/cpf_invalid_format.csg";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -345,7 +343,7 @@ class CPFParserTest {
     }
 
     @Test
-    void testMissingEOF() throws IOException, URISyntaxException {
+    void testMissingEOF() {
         try {
             final String ex = "/ilrs/cpf_unexpected_end_of_file.csg";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -360,7 +358,7 @@ class CPFParserTest {
     }
 
     @Test
-    void testCorruptedData() throws IOException, URISyntaxException {
+    void testCorruptedData() {
         try {
             final String ex = "/ilrs/cpf_corrupted_data.csg";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));

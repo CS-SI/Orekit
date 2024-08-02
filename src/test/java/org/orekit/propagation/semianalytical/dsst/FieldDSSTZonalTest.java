@@ -56,10 +56,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -570,7 +567,7 @@ class FieldDSSTZonalTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

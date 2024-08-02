@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm.acm;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -58,7 +57,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testNonExistentKvnFile() throws URISyntaxException {
+    void testNonExistentKvnFile() {
         final String realName = "/ccsds/adm/acm/ACMExample01.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
@@ -72,7 +71,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testNonExistentXmlFile() throws URISyntaxException {
+    void testNonExistentXmlFile() {
         final String realName = "/ccsds/adm/acm/ACMExample01.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
@@ -86,7 +85,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testIncompatibleKeys() throws URISyntaxException {
+    void testIncompatibleKeys() {
         final String name = "/ccsds/adm/acm/incompatible-keys.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -100,7 +99,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testSensorIndexAlreadyUsed() throws URISyntaxException {
+    void testSensorIndexAlreadyUsed() {
         final String name = "/ccsds/adm/acm/sensor-index-already-used.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -113,7 +112,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testMissingSensorIndex() throws URISyntaxException {
+    void testMissingSensorIndex() {
         final String name = "/ccsds/adm/acm/missing-sensor-index.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -126,7 +125,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testWrongStdDevNumber() throws URISyntaxException {
+    void testWrongStdDevNumber() {
         final String name = "/ccsds/adm/acm/wrong-stddev-number.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -140,7 +139,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testSpuriousMetaDataSection() throws URISyntaxException {
+    void testSpuriousMetaDataSection() {
         final String name = "/ccsds/adm/acm/spurious-metadata.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -154,7 +153,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testMissingTargetMomentum() throws URISyntaxException {
+    void testMissingTargetMomentum() {
         final String name = "/ccsds/adm/acm/missing-target-momentum.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -167,7 +166,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testMissingCenterOfPressure() throws URISyntaxException {
+    void testMissingCenterOfPressure() {
         final String name = "/ccsds/adm/acm/missing-center-of-pressure.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -923,7 +922,7 @@ class AcmParserTest {
     }
 
     @Test
-    void testWriteACM05() throws URISyntaxException, IOException {
+    void testWriteACM05() throws IOException {
         final String name = "/ccsds/adm/acm/ACMExample05.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         AcmParser parser = new ParserBuilder().buildAcmParser();

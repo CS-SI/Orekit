@@ -119,7 +119,7 @@ class UT1ScaleTest {
         final List<Callable<Boolean>> jobs = new ArrayList<Callable<Boolean>>();
         for (int i = 0; i < threads; i++) {
             jobs.add(new Callable<Boolean>() {
-                public Boolean call() throws Exception {
+                public Boolean call() {
                     for (int j = 0; j < timesPerThread; j++) {
                         final double actual = ut1.offsetFromTAI(date.shiftedBy(j * dt));
                         assertEquals(expected[j], actual, 0);

@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -72,12 +69,12 @@ class IntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitType.values());
     }
 
     @Test
-    void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() {
         // TODO: for an unknown reason, derivatives with respect to central attraction
         // coefficient currently (June 2016) do not work in non-Cartesian orbits
         // we don't even know if the test is badly written or if the library code is wrong ...

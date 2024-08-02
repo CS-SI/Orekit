@@ -16,8 +16,6 @@
  */
 package org.orekit.files.sp3;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -33,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SP3CoordinateHermiteInterpolatorTest {
 
     @Test
-    void testNoRates() throws IOException, URISyntaxException {
+    void testNoRates() {
         final String ex = "/sp3/gbm18432.sp3.Z";
 
         final SP3Parser           parser      = new SP3Parser();
@@ -80,7 +78,7 @@ class SP3CoordinateHermiteInterpolatorTest {
     }
 
     @Test
-    void testRates() throws IOException, URISyntaxException {
+    void testRates() {
         final String ex = "/sp3/issue895-minutes-increment.sp3";
 
         final SP3Parser           parser      = new SP3Parser();

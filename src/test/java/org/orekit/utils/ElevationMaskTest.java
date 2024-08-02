@@ -29,13 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ElevationMaskTest {
 
     @BeforeEach
-    void setUp()
-            throws Exception {
+    void setUp() {
     }
 
     @AfterEach
-    void tearDown()
-            throws Exception {
+    void tearDown() {
     }
 
     @Test

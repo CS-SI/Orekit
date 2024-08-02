@@ -67,7 +67,7 @@ class NRLMSISE00Test {
 
     @Test
     void testLegacy() throws
-    NoSuchMethodException, SecurityException, InstantiationException,
+    NoSuchMethodException, SecurityException,
     IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         // Build the model
@@ -197,8 +197,7 @@ class NRLMSISE00Test {
     }
 
     @Test
-    void testDensity() throws
-    InstantiationException, IllegalAccessException,
+    void testDensity() throws IllegalAccessException,
     IllegalArgumentException, InvocationTargetException,
     NoSuchMethodException, SecurityException {
         // Build the input params provider
@@ -949,7 +948,7 @@ class NRLMSISE00Test {
     }
 
     private void checkLegacy(final int nb, final Object out, final boolean print)
-                    throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    throws IllegalArgumentException {
         final double[] tInfRef = {1.250540E+03, 1.166754E+03, 1.239892E+03, 1.027318E+03,
             1.212396E+03, 1.220146E+03, 1.116385E+03, 1.031247E+03,
             1.306052E+03, 1.361868E+03, 1.027318E+03, 1.027318E+03,

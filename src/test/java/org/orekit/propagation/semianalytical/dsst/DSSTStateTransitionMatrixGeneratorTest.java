@@ -159,8 +159,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
         doTestPropagation(PropagationType.OSCULATING, 3.3e-4);
     }
 
-    private void doTestPropagation(PropagationType type, double tolerance)
-        throws FileNotFoundException, UnsupportedEncodingException {
+    private void doTestPropagation(PropagationType type, double tolerance) {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 

@@ -16,8 +16,6 @@
  */
 package org.orekit.bodies;
 
-import java.io.IOException;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -163,7 +161,7 @@ class EllipsoidTest {
     }
 
     @Test
-    void testSinglePoint() throws IOException {
+    void testSinglePoint() {
         final Ellipsoid ellipsoid =
                 new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
         final Ellipse ps = ellipsoid.getPlaneSection(new Vector3D(0, 0, 3), Vector3D.PLUS_K);
@@ -173,7 +171,7 @@ class EllipsoidTest {
     }
 
     @Test
-    void testFieldSinglePoint() throws IOException {
+    void testFieldSinglePoint() {
         doTestFieldSinglePoint(Binary64Field.getInstance());
     }
 
@@ -191,7 +189,7 @@ class EllipsoidTest {
     }
 
     @Test
-    void testRandomNormalSections() throws IOException {
+    void testRandomNormalSections() {
         RandomGenerator random = new Well19937a(0x573c54d152aeafe4l);
         for (int i = 0; i < 100; ++i) {
             double a = 10 * random.nextDouble();
@@ -232,7 +230,7 @@ class EllipsoidTest {
     }
 
     @Test
-    void testFieldRandomNormalSections() throws IOException {
+    void testFieldRandomNormalSections() {
         doTestFieldRandomNormalSections(Binary64Field.getInstance());
     }
 

@@ -51,10 +51,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.text.ParseException;
 
 /** Unit tests for {@link DSSTIntegrableJacobianColumnGenerator}. */
 class DSSTIntegrableJacobianColumnGeneratorTest {
@@ -66,7 +63,7 @@ class DSSTIntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT,
                                     2.4e-3,
                                     PropagationType.MEAN,
@@ -74,7 +71,7 @@ class DSSTIntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() {
         doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                     5.e-3,
                                     PropagationType.MEAN,

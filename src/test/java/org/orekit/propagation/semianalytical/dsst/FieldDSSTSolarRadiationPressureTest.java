@@ -74,10 +74,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -362,12 +359,12 @@ class FieldDSSTSolarRadiationPressureTest {
     }
 
     @Test
-    void testSRPParametersDerivatives() throws ParseException, IOException {
+    void testSRPParametersDerivatives() {
         doTestShortPeriodTermsParametersDerivatives(RadiationSensitive.REFLECTION_COEFFICIENT, 9.e-15);
     }
 
     @Test
-    void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() {
         doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 5.e-11);
     }
 
@@ -584,7 +581,7 @@ class FieldDSSTSolarRadiationPressureTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }

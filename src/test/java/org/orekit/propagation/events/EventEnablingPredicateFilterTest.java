@@ -43,8 +43,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -215,7 +213,7 @@ class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    void testExceedHistoryForward() throws IOException {
+    void testExceedHistoryForward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -268,7 +266,7 @@ class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    void testExceedHistoryBackward() throws IOException {
+    void testExceedHistoryBackward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period

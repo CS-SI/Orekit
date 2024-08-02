@@ -54,8 +54,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
 class DSSTPropagatorBuilderTest {
@@ -329,7 +327,7 @@ class DSSTPropagatorBuilderTest {
     }
 
     @BeforeEach
-    void setUp() throws IOException, ParseException {
+    void setUp() {
 
         Utils.setDataRoot("regular-data:potential");
 

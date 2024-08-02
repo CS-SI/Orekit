@@ -381,7 +381,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testParseOPM3KVN() throws URISyntaxException {
+    void testParseOPM3KVN() {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = "/ccsds/odm/opm/OPMExample3.txt";
@@ -450,7 +450,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testParseOPM3XML() throws URISyntaxException {
+    void testParseOPM3XML() {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         // the content of the file is slightly different from the KVN file in the covariance section
@@ -461,7 +461,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testWriteOPM3() throws URISyntaxException, IOException {
+    void testWriteOPM3() throws IOException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         // the content of the file is slightly different from the KVN file in the covariance section
@@ -535,7 +535,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testParseOPM3NoDesignator() throws URISyntaxException {
+    void testParseOPM3NoDesignator() {
         final String ex = "/ccsds/odm/opm/OPM-no-designator.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
@@ -590,7 +590,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testParseOPM6() throws URISyntaxException {
+    void testParseOPM6() {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = "/ccsds/odm/opm/OPMExample6.txt";
@@ -618,7 +618,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testParseNonStandardUnits() throws URISyntaxException {
+    void testParseNonStandardUnits() {
         // this file is similar to OPMExample6.txt but uses non-standard units
         // it is therefore NOT a regular CCSDS OPM, but is correctly parsed by Orekit
         final String name = "/ccsds/odm/opm/OPM-non-standard-units.txt";
@@ -630,7 +630,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testRefuseNonStandardUnits() throws URISyntaxException {
+    void testRefuseNonStandardUnits() {
         // this file is similar to OPMExample6.txt but uses non-standard units
         // it is therefore NOT a regular CCSDS OPM, but is correctly parsed by Orekit
         final String name = "/ccsds/odm/opm/OPM-non-standard-units.txt";
@@ -834,7 +834,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testUnknownCenter() throws URISyntaxException {
+    void testUnknownCenter() {
         final String name = "/ccsds/odm/opm/OPM-unknown-center.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Opm opm = new ParserBuilder().
@@ -854,7 +854,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testUnknownFrame() throws URISyntaxException {
+    void testUnknownFrame() {
         final String name = "/ccsds/odm/opm/OPM-unknown-frame.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Opm opm = new ParserBuilder().
@@ -888,7 +888,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testWrongKeyword() throws URISyntaxException {
+    void testWrongKeyword() {
         // simple test for OMM file, contains p/v entries and other mandatory data.
         final String name = "/ccsds/odm/opm/OPM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -907,7 +907,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testSpuriousMetaDataSection() throws URISyntaxException {
+    void testSpuriousMetaDataSection() {
         final String name = "/ccsds/odm/opm/spurious-metadata.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -924,7 +924,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testIncompatibleUnits1() throws URISyntaxException {
+    void testIncompatibleUnits1() {
         final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -941,7 +941,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testIncompatibleUnits2() throws URISyntaxException {
+    void testIncompatibleUnits2() {
         final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -958,7 +958,7 @@ class OpmParserTest {
     }
 
     @Test
-    void testIgnoredIncompatibleUnits() throws URISyntaxException {
+    void testIgnoredIncompatibleUnits() {
         final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Opm file = new ParserBuilder().

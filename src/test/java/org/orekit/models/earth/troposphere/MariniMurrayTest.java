@@ -50,7 +50,7 @@ class MariniMurrayTest {
     }
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         latitude = FastMath.toRadians(45.0);
         longitude = FastMath.toRadians(45.0);
     }

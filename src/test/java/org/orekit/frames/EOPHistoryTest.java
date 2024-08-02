@@ -164,7 +164,7 @@ class EOPHistoryTest {
     }
 
     @Test
-    void testTidalInterpolationEffects() throws IOException, OrekitException {
+    void testTidalInterpolationEffects() throws OrekitException {
 
         final EOPHistory h1 = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         final EOPHistory h2 = h1.getEOPHistoryWithoutCachedTidalCorrection();

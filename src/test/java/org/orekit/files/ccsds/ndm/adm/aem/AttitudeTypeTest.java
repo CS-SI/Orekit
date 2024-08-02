@@ -58,8 +58,7 @@ class AttitudeTypeTest {
     ContextBinding context;
 
     @BeforeEach
-    void setUp()
-            throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         metadata = new AemMetadata(4);
         context  =  new ContextBinding(() -> IERSConventions.IERS_2010,

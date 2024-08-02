@@ -85,8 +85,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -982,7 +980,7 @@ class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    void testMeanOrbit() throws IOException {
+    void testMeanOrbit() {
         doTestMeanOrbit(Binary64Field.getInstance());
     }
 

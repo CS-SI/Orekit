@@ -59,7 +59,6 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -206,7 +205,7 @@ class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDeterminati
     @Test
     void testLageos2()
             throws URISyntaxException, IllegalArgumentException, IOException,
-            OrekitException, ParseException {
+            OrekitException {
 
         // input in resources directory
         final String inputPathModel = NumericalSequentialOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/sequential_od_test_Lageos.in").toURI().getPath();

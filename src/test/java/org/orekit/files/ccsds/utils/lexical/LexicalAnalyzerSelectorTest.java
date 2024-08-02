@@ -147,12 +147,12 @@ class LexicalAnalyzerSelectorTest {
     }
 
     @Test
-    void testTooSmallBinary() throws IOException {
+    void testTooSmallBinary() {
         checkFormat(FileFormat.KVN, new DataSource("small", () -> new ByteArrayInputStream(new byte[] { 0x3c, 0x3f, 0x78 })));
     }
 
     @Test
-    void testTooSmallCharacters() throws IOException {
+    void testTooSmallCharacters() {
         checkFormat(FileFormat.KVN, new DataSource("small", () -> new StringReader("<?x")));
     }
 

@@ -334,8 +334,7 @@ class BoxAndSolarArraySpacecraftTest {
     private Vector3D oldDragAcceleration(final BoxAndSolarArraySpacecraft boxWithoutSolarArray,
                                          final SpacecraftState state,
                                          final double density, final Vector3D relativeVelocity)
-         throws IllegalArgumentException, IllegalAccessException,
-                NoSuchFieldException, SecurityException {
+         throws IllegalArgumentException, SecurityException {
 
         final double dragCoeff = boxWithoutSolarArray.getDragParametersDrivers().get(0).getValue();
 

@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.radiation;
 
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -161,7 +160,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    void testLightingInterplanetary() throws ParseException {
+    void testLightingInterplanetary() {
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
@@ -187,7 +186,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    void testLighting() throws ParseException {
+    void testLighting() {
 
         // Given
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),

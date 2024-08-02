@@ -63,8 +63,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class OmmParserTest {
 
     @BeforeEach
-    void setUp()
-            throws Exception {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -190,7 +189,7 @@ class OmmParserTest {
 
     }
 
-    private void validateOMM2(final Omm file) throws URISyntaxException {
+    private void validateOMM2(final Omm file) {
         assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         assertEquals(OmmMetadata.SGP_SGP4_THEORY, file.getMetadata().getMeanElementTheory());
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
@@ -255,7 +254,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testParseOMM3() throws URISyntaxException {
+    void testParseOMM3() {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
@@ -306,7 +305,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testParseOMM5() throws URISyntaxException {
+    void testParseOMM5() {
         // simple test for OMM file, contains SGP4-XP elements with BTERM
         final String name = "/ccsds/odm/omm/OMMExample5.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -327,7 +326,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testWrongKeyword() throws URISyntaxException {
+    void testWrongKeyword() {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMM-wrong-keyword.txt";
@@ -348,7 +347,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testEmptyObjectID() throws URISyntaxException {
+    void testEmptyObjectID() {
         // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
         final String name = "/ccsds/odm/omm/OMM-empty-object-id.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -389,7 +388,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testEmptyObjectIDXml() throws URISyntaxException {
+    void testEmptyObjectIDXml() {
         // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
         String name = "/ccsds/odm/omm/OMM-empty-object-id.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -429,7 +428,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testRemoveUserData() throws URISyntaxException {
+    void testRemoveUserData() {
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
@@ -450,7 +449,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testChangeVersionAndAddMessageId() throws URISyntaxException {
+    void testChangeVersionAndAddMessageId() {
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
@@ -526,7 +525,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testSpuriousMetaDataSection() throws URISyntaxException {
+    void testSpuriousMetaDataSection() {
         final String name = "/ccsds/odm/omm/spurious-metadata.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -560,7 +559,7 @@ class OmmParserTest {
     }
 
     @Test
-    void testNonExistentFile() throws URISyntaxException {
+    void testNonExistentFile() {
         final String realName = "/ccsds/odm/omm/OMMExample1.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));

@@ -140,7 +140,7 @@ class SolidTidesFieldTest {
 
     @Test
     void testK1Example()
-            throws NoSuchFieldException, IllegalAccessException,
+            throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         // the reference for this test is the example at the bottom of page 86, IERS conventions 2010 section 6.2.1
         final PoissonSeriesParser k21Parser =

@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.IOException;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -729,7 +728,7 @@ class TopocentricFrameTest {
     }
 
     @Test
-    void testVisibilityCircle() throws IOException {
+    void testVisibilityCircle() {
 
         // a few random from International Laser Ranging Service
         final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
